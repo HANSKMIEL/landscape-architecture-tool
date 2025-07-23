@@ -102,103 +102,39 @@ class ApiService {
     return this.request('/plants/categories');
   }
 
-  // Products API
+  // Products API (placeholder for future implementation)
   async getProducts(params = {}) {
-    const queryString = new URLSearchParams(params).toString();
-    return this.request(`/products${queryString ? `?${queryString}` : ''}`);
+    // For now, return mock data
+    return {
+      products: [],
+      total: 0,
+      pages: 0,
+      current_page: 1
+    };
   }
 
-  async getProduct(id) {
-    return this.request(`/products/${id}`);
-  }
-
-  async createProduct(data) {
-    return this.request('/products', {
-      method: 'POST',
-      body: data,
-    });
-  }
-
-  async updateProduct(id, data) {
-    return this.request(`/products/${id}`, {
-      method: 'PUT',
-      body: data,
-    });
-  }
-
-  async deleteProduct(id) {
-    return this.request(`/products/${id}`, {
-      method: 'DELETE',
-    });
-  }
-
-  // Clients API
+  // Clients API (placeholder for future implementation)
   async getClients(params = {}) {
-    const queryString = new URLSearchParams(params).toString();
-    return this.request(`/clients${queryString ? `?${queryString}` : ''}`);
+    // For now, return mock data
+    return {
+      clients: [],
+      total: 0,
+      pages: 0,
+      current_page: 1
+    };
   }
 
-  async getClient(id) {
-    return this.request(`/clients/${id}`);
-  }
-
-  async createClient(data) {
-    return this.request('/clients', {
-      method: 'POST',
-      body: data,
-    });
-  }
-
-  async updateClient(id, data) {
-    return this.request(`/clients/${id}`, {
-      method: 'PUT',
-      body: data,
-    });
-  }
-
-  async deleteClient(id) {
-    return this.request(`/clients/${id}`, {
-      method: 'DELETE',
-    });
-  }
-
-  // Projects API
+  // Projects API (placeholder for future implementation)
   async getProjects(params = {}) {
-    const queryString = new URLSearchParams(params).toString();
-    return this.request(`/projects${queryString ? `?${queryString}` : ''}`);
-  }
-
-  async getProject(id) {
-    return this.request(`/projects/${id}`);
-  }
-
-  async createProject(data) {
-    return this.request('/projects', {
-      method: 'POST',
-      body: data,
-    });
-  }
-
-  async updateProject(id, data) {
-    return this.request(`/projects/${id}`, {
-      method: 'PUT',
-      body: data,
-    });
-  }
-
-  async deleteProject(id) {
-    return this.request(`/projects/${id}`, {
-      method: 'DELETE',
-    });
+    // For now, return mock data
+    return {
+      projects: [],
+      total: 0,
+      pages: 0,
+      current_page: 1
+    };
   }
 }
 
-// Create instance and export both ways
-const apiService = new ApiService();
-
-// Named export (for components using: import { apiService } from '../services/api')
-export { apiService };
-
-// Default export (for components using: import apiService from '../services/api')
-export default apiService;
+export default new ApiService();
 
