@@ -1,7 +1,9 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import './landscapeimport './enhanced-styles.css'-app.css'
+import './landscape-app.css'
+import './enhanced-styles.css'
 import App from './App.jsx'
+
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <App />
