@@ -1,44 +1,30 @@
-# 🌱 Landscape Architecture Tool
+# Landscape Architecture Management Tool
 
-Professional landscape architecture management system with AI-powered features.
+A comprehensive web application for managing landscape architecture projects, suppliers, plants, products, and clients.
 
-## 🚀 Features
+## 🌱 Features
 
-- **Supplier Management** - Complete supplier database with contact information
-- **Plant Catalog** - Comprehensive plant database with growing requirements
-- **Product Inventory** - Track landscape products and materials
-- **Client Management** - Manage client information and project history
-- **Project Management** - Track projects with budget and timeline management
-- **AI Plant Recommendations** - Get intelligent plant suggestions based on criteria
-- **Professional Dashboard** - Overview of all business metrics
-- **Dutch Sample Data** - Pre-loaded with realistic Dutch business examples
+### Core Functionality
+- **Dashboard** - Overview with statistics and recent activity
+- **Suppliers Management** - Complete CRUD operations for suppliers
+- **Plants Catalog** - Manage plant inventory with detailed information
+- **Products Management** - Track products and inventory
+- **Clients Database** - Manage client information and projects
+- **Projects Management** - Create and manage landscape projects
 
-## 🧱 Project Structure
+### Advanced Features
+- **Plant Recommendations** - Smart suggestions based on project criteria
+- **Budget Tracking** - Project cost management and reporting
+- **Search & Filtering** - Advanced search across all entities
+- **Dutch Localization** - Sample data and formatting for Dutch market
+- **Responsive Design** - Works on desktop and mobile devices
 
-```
-landscape-architecture-complete/
-├── src/                    # Backend source code
-│   ├── models/            # Database models
-│   ├── routes/            # API endpoints
-│   ├── utils/             # Utilities and sample data
-│   └── main.py           # Flask application entry point
-├── frontend/              # React frontend
-│   ├── src/
-│   │   ├── components/    # React components
-│   │   ├── services/      # API service layer
-│   │   └── App.jsx       # Main application component
-│   └── public/           # Static assets
-├── requirements.txt       # Python dependencies
-├── docker-compose.yml    # Docker orchestration
-└── README.md            # This file
-```
-
-## 🛠️ Installation
+## 🚀 Quick Start
 
 ### Prerequisites
 - Python 3.11+
-- Node.js 18+
-- npm or pnpm
+- Node.js 20+
+- npm or yarn
 
 ### Backend Setup
 ```bash
@@ -61,43 +47,169 @@ npm install --legacy-peer-deps
 npm run dev
 ```
 
-## 🌐 Usage
+### Access the Application
+- **Frontend:** http://localhost:5174
+- **Backend API:** http://127.0.0.1:5001
+- **API Documentation:** http://127.0.0.1:5001/api/
 
-1. **Start Backend**: The Flask API will run on `http://127.0.0.1:5001`
-2. **Start Frontend**: The React app will run on `http://localhost:5174`
-3. **Access Application**: Open your browser to the frontend URL
+## 📁 Project Structure
 
-## 📊 Sample Data
-
-The application comes pre-loaded with Dutch sample data including:
-- 3 Suppliers (Boomkwekerij Peters, Van der Berg Tuinmaterialen, GreenScape Supplies)
-- 3 Plants (Acer platanoides, Lavandula angustifolia, Buxus sempervirens)
-- 4 Products (Garden soil, Mulch, Irrigation kit, Stone pavers)
-- 3 Clients (Gemeente Amsterdam, Villa Roosendaal, Bedrijventerrein Westpoort)
-- 3 Projects (Vondelpark renovation, Private garden design, Business park landscaping)
+```
+landscape-architecture-complete/
+├── src/                          # Backend (Python/Flask)
+│   ├── main.py                   # Main Flask application
+│   ├── models/
+│   │   └── landscape.py          # Database models
+│   ├── routes/                   # API routes
+│   │   ├── dashboard.py
+│   │   ├── suppliers.py
+│   │   ├── plants.py
+│   │   ├── products.py
+│   │   ├── clients.py
+│   │   └── projects.py
+│   └── utils/
+│       └── sample_data.py        # Sample data initialization
+├── frontend/                     # Frontend (React/Vite)
+│   ├── src/
+│   │   ├── components/           # React components
+│   │   ├── services/
+│   │   │   └── api.js           # API service layer
+│   │   └── lib/
+│   │       └── utils.js         # Utility functions
+│   ├── package.json
+│   └── vite.config.js
+├── requirements.txt              # Python dependencies
+└── README.md
+```
 
 ## 🔧 API Endpoints
 
-- `GET /api/dashboard/stats` - Dashboard statistics
-- `GET /api/dashboard/recent-activity` - Recent activity feed
+### Dashboard
+- `GET /api/dashboard/stats` - Get dashboard statistics
+- `GET /api/dashboard/recent-activity` - Get recent activity feed
+
+### Suppliers
 - `GET /api/suppliers` - List all suppliers
+- `POST /api/suppliers` - Create new supplier
+- `PUT /api/suppliers/{id}` - Update supplier
+- `DELETE /api/suppliers/{id}` - Delete supplier
+
+### Plants
 - `GET /api/plants` - List all plants
+- `POST /api/plants` - Create new plant
+- `PUT /api/plants/{id}` - Update plant
+- `DELETE /api/plants/{id}` - Delete plant
+
+### Products
 - `GET /api/products` - List all products
+- `POST /api/products` - Create new product
+- `PUT /api/products/{id}` - Update product
+- `DELETE /api/products/{id}` - Delete product
+
+### Clients
 - `GET /api/clients` - List all clients
+- `POST /api/clients` - Create new client
+- `PUT /api/clients/{id}` - Update client
+- `DELETE /api/clients/{id}` - Delete client
+
+### Projects
 - `GET /api/projects` - List all projects
+- `POST /api/projects` - Create new project
+- `PUT /api/projects/{id}` - Update project
+- `DELETE /api/projects/{id}` - Delete project
 
-## 🐳 Docker Support
+## 🛠️ Development
 
+### Running Tests
+```bash
+# Backend tests
+python -m pytest tests/
+
+# Frontend tests
+cd frontend
+npm run test
+```
+
+### Building for Production
+```bash
+# Build frontend
+cd frontend
+npm run build
+
+# The built files will be in frontend/dist/
+```
+
+### Code Quality
+```bash
+# Python linting
+flake8 src/
+
+# Python formatting
+black src/
+
+# Import sorting
+isort src/
+```
+
+## 🚀 Deployment
+
+### Using Docker (Recommended)
 ```bash
 # Build and run with Docker Compose
 docker-compose up --build
 ```
 
-## 📝 License
+### Manual Deployment
+1. Build the frontend: `cd frontend && npm run build`
+2. Copy built files to Flask static directory
+3. Configure production WSGI server (gunicorn, uWSGI)
+4. Set up reverse proxy (nginx, Apache)
+5. Configure SSL certificates
 
-This project is licensed under the MIT License.
+## 🔧 Configuration
 
-## 👨‍💻 Author
+### Environment Variables
+- `FLASK_ENV` - Set to 'production' for production deployment
+- `DATABASE_URL` - Database connection string (defaults to SQLite)
+- `SECRET_KEY` - Flask secret key for sessions
 
-Created by Jaap Miel - Professional Landscape Architect
+### Database
+The application uses SQLite by default for development. For production, configure PostgreSQL or MySQL via the `DATABASE_URL` environment variable.
+
+## 📝 Sample Data
+
+The application includes comprehensive Dutch sample data:
+- **3 Suppliers** - Dutch garden suppliers with realistic contact information
+- **3 Plants** - Common Dutch landscape plants (Acer platanoides, Lavandula, Buxus)
+- **4 Products** - Garden supplies and materials
+- **3 Clients** - Dutch municipalities and private clients
+- **3 Projects** - Realistic landscape projects
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## 📄 License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## 🆘 Support
+
+For support and questions:
+- Create an issue on GitHub
+- Check the API documentation at `/api/`
+- Review the sample data in `src/utils/sample_data.py`
+
+## 🔄 Updates
+
+### Latest Changes
+- Fixed GitHub Actions CI/CD pipeline to use npm instead of pnpm
+- Updated package.json with compatible dependencies
+- Enhanced utils.js with comprehensive utility functions
+- Improved error handling and logging
+- Added Dutch localization and sample data
 
