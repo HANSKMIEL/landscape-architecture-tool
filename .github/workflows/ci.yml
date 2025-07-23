@@ -48,7 +48,7 @@ jobs:
     - name: Install dependencies
       run: |
         cd frontend
-        pnpm install
+        pnpm install --legacy-peer-deps
     
     - name: Build frontend
       run: |
