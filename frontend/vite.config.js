@@ -18,5 +18,8 @@ export default defineConfig({
     outDir: 'dist',
     sourcemap: false,
   },
+  css: {
+    // Remove PostCSS configuration entirely
+  },
 })
 
