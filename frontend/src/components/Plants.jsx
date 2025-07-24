@@ -1,324 +1,869 @@
-import { useState, useEffect } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { 
-  Search, 
-  Plus, 
-  Leaf, 
-  Sun, 
-  Droplets, 
-  Lightbulb,
-  Filter,
-  Star
-} from 'lucide-react'
-import { toast } from 'sonner'
-import apiService from '../services/api'
+import React, { useState, useEffect } from 'react';
 
-const Plants = ({ language }) => {
-  const [plants, setPlants] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [searchTerm, setSearchTerm] = useState('')
-  const [totalPlants, setTotalPlants] = useState(0)
-  const [filters, setFilters] = useState({
+const Plants = () => {
+  const [plants, setPlants] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingPlant, setEditingPlant] = useState(null);
+  const [suppliers, setSuppliers] = useState([]);
+
+  // Form state
+  const [formData, setFormData] = useState({
+    name: '',
+    common_name: '',
     category: '',
+    height_min: '',
+    height_max: '',
+    width_min: '',
+    width_max: '',
     sun_requirements: '',
-    water_requirements: '',
-    native_only: false
-  })
+    soil_type: '',
+    water_needs: '',
+    hardiness_zone: '',
+    bloom_time: '',
+    bloom_color: '',
+    foliage_color: '',
+    native: false,
+    supplier_id: '',
+    price: '',
+    availability: '',
+    planting_season: '',
+    maintenance: '',
+    notes: ''
+  });
 
-  const translations = {
-    en: {
-      title: 'Plants',
-      subtitle: 'Manage your plant database and get AI recommendations',
-      search: 'Search plants...',
-      addPlant: 'Add Plant',
-      getRecommendations: 'Get AI Recommendations',
-      filters: 'Filters',
-      category: 'Category',
-      sunRequirements: 'Sun Requirements',
-      waterRequirements: 'Water Requirements',
-      nativeOnly: 'Native Plants Only',
-      scientificName: 'Scientific Name',
-      commonName: 'Common Name',
-      height: 'Height',
-      width: 'Width',
-      bloomTime: 'Bloom Time',
-      bloomColor: 'Bloom Color',
-      maintenance: 'Maintenance',
-      price: 'Price',
-      supplier: 'Supplier',
-      loading: 'Loading plants...',
-      noPlants: 'No plants found',
-      error: 'Error loading plants',
-      native: 'Native',
-      deerResistant: 'Deer Resistant',
-      droughtTolerant: 'Drought Tolerant',
-      attractsPollinators: 'Attracts Pollinators',
-      low: 'Low',
-      medium: 'Medium',
-      high: 'High',
-      fullSun: 'Full Sun',
-      partialSun: 'Partial Sun',
-      shade: 'Shade'
-    },
-    nl: {
-      title: 'Planten',
-      subtitle: 'Beheer uw plantendatabase en krijg AI-aanbevelingen',
-      search: 'Zoek planten...',
-      addPlant: 'Plant Toevoegen',
-      getRecommendations: 'AI-Aanbevelingen Krijgen',
-      filters: 'Filters',
-      category: 'Categorie',
-      sunRequirements: 'Zonvereisten',
-      waterRequirements: 'Watervereisten',
-      nativeOnly: 'Alleen Inheemse Planten',
-      scientificName: 'Wetenschappelijke Naam',
-      commonName: 'Nederlandse Naam',
-      height: 'Hoogte',
-      width: 'Breedte',
-      bloomTime: 'Bloeitijd',
-      bloomColor: 'Bloeikleur',
-      maintenance: 'Onderhoud',
-      price: 'Prijs',
-      supplier: 'Leverancier',
-      loading: 'Planten laden...',
-      noPlants: 'Geen planten gevonden',
-      error: 'Fout bij laden van planten',
-      native: 'Inheems',
-      deerResistant: 'Hertresistent',
-      droughtTolerant: 'Droogteresistent',
-      attractsPollinators: 'Trekt Bestuivers Aan',
-      low: 'Laag',
-      medium: 'Gemiddeld',
-      high: 'Hoog',
-      fullSun: 'Volle Zon',
-      partialSun: 'Gedeeltelijke Zon',
-      shade: 'Schaduw'
+  // Fetch plants data
+  const fetchPlants = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const response = await fetch(`http://127.0.0.1:5001/api/plants${searchTerm ? `?search=${encodeURIComponent(searchTerm)}` : ''}`);
+      if (!response.ok) {
+        throw new Error(`API error: ${response.status} ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      setPlants(data);
+    } catch (err) {
+      console.error('Error fetching plants:', err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
-  }
+  };
 
-  const t = translations[language]
+  // Fetch suppliers for dropdown
+  const fetchSuppliers = async () => {
+    try {
+      const response = await fetch('http://127.0.0.1:5001/api/suppliers');
+      if (response.ok) {
+        const data = await response.json();
+        setSuppliers(data);
+      }
+    } catch (err) {
+      console.error('Error fetching suppliers:', err);
+    }
+  };
 
   useEffect(() => {
-    loadPlants()
-  }, [searchTerm, filters])
+    fetchPlants();
+    fetchSuppliers();
+  }, [searchTerm]);
 
-  const loadPlants = async () => {
+  // Handle form input changes
+  const handleInputChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value
+    }));
+  };
+
+  // Reset form
+  const resetForm = () => {
+    setFormData({
+      name: '',
+      common_name: '',
+      category: '',
+      height_min: '',
+      height_max: '',
+      width_min: '',
+      width_max: '',
+      sun_requirements: '',
+      soil_type: '',
+      water_needs: '',
+      hardiness_zone: '',
+      bloom_time: '',
+      bloom_color: '',
+      foliage_color: '',
+      native: false,
+      supplier_id: '',
+      price: '',
+      availability: '',
+      planting_season: '',
+      maintenance: '',
+      notes: ''
+    });
+  };
+
+  // Handle add plant
+  const handleAddPlant = async (e) => {
+    e.preventDefault();
     try {
-      setLoading(true)
-      const params = {
-        ...(searchTerm && { search: searchTerm }),
-        ...filters
+      const response = await fetch('http://127.0.0.1:5001/api/plants', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to add plant: ${response.statusText}`);
       }
-      const data = await apiService.getPlants(params)
-      setPlants(data.plants || [])
-      setTotalPlants(data.total || 0)
-    } catch (error) {
-      console.error('Error loading plants:', error)
-      toast.error(`${t.error}: ${error.message}`)
-    } finally {
-      setLoading(false)
+
+      await fetchPlants();
+      setShowAddModal(false);
+      resetForm();
+      alert('Plant succesvol toegevoegd!');
+    } catch (err) {
+      console.error('Error adding plant:', err);
+      alert(`Fout bij toevoegen plant: ${err.message}`);
     }
-  }
+  };
 
-  const handleSearchChange = (e) => {
-    setSearchTerm(e.target.value)
-  }
+  // Handle edit plant
+  const handleEditPlant = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await fetch(`http://127.0.0.1:5001/api/plants/${editingPlant.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
 
-  const getMaintenanceLabel = (level) => {
-    const labels = {
-      'Low': t.low,
-      'Medium': t.medium,
-      'High': t.high
+      if (!response.ok) {
+        throw new Error(`Failed to update plant: ${response.statusText}`);
+      }
+
+      await fetchPlants();
+      setShowEditModal(false);
+      setEditingPlant(null);
+      resetForm();
+      alert('Plant succesvol bijgewerkt!');
+    } catch (err) {
+      console.error('Error updating plant:', err);
+      alert(`Fout bij bijwerken plant: ${err.message}`);
     }
-    return labels[level] || level
-  }
+  };
 
-  const getSunRequirementsLabel = (requirement) => {
-    const labels = {
-      'Full Sun': t.fullSun,
-      'Partial Sun': t.partialSun,
-      'Shade': t.shade
+  // Handle delete plant
+  const handleDeletePlant = async (plantId, plantName) => {
+    if (!confirm(`Weet je zeker dat je "${plantName}" wilt verwijderen?`)) {
+      return;
     }
-    return labels[requirement] || requirement
-  }
 
-  const getWaterRequirementsLabel = (requirement) => {
-    const labels = {
-      'Low': t.low,
-      'Medium': t.medium,
-      'High': t.high
+    try {
+      const response = await fetch(`http://127.0.0.1:5001/api/plants/${plantId}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to delete plant: ${response.statusText}`);
+      }
+
+      await fetchPlants();
+      alert('Plant succesvol verwijderd!');
+    } catch (err) {
+      console.error('Error deleting plant:', err);
+      alert(`Fout bij verwijderen plant: ${err.message}`);
     }
-    return labels[requirement] || requirement
-  }
+  };
 
-  if (loading) {
+  // Open edit modal
+  const openEditModal = (plant) => {
+    setEditingPlant(plant);
+    setFormData({
+      name: plant.name || '',
+      common_name: plant.common_name || '',
+      category: plant.category || '',
+      height_min: plant.height_min || '',
+      height_max: plant.height_max || '',
+      width_min: plant.width_min || '',
+      width_max: plant.width_max || '',
+      sun_requirements: plant.sun_requirements || '',
+      soil_type: plant.soil_type || '',
+      water_needs: plant.water_needs || '',
+      hardiness_zone: plant.hardiness_zone || '',
+      bloom_time: plant.bloom_time || '',
+      bloom_color: plant.bloom_color || '',
+      foliage_color: plant.foliage_color || '',
+      native: plant.native || false,
+      supplier_id: plant.supplier_id || '',
+      price: plant.price || '',
+      availability: plant.availability || '',
+      planting_season: plant.planting_season || '',
+      maintenance: plant.maintenance || '',
+      notes: plant.notes || ''
+    });
+    setShowEditModal(true);
+  };
+
+  // Get supplier name by ID
+  const getSupplierName = (supplierId) => {
+    const supplier = suppliers.find(s => s.id === supplierId);
+    return supplier ? supplier.name : 'Onbekend';
+  };
+
+  // Format currency
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat('nl-NL', {
+      style: 'currency',
+      currency: 'EUR',
+      minimumFractionDigits: 2
+    }).format(amount);
+  };
+
+  // Loading component
+  const LoadingSpinner = () => (
+    <div className="flex justify-center items-center py-12">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-landscape-primary"></div>
+    </div>
+  );
+
+  // Error component
+  const ErrorDisplay = () => (
+    <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
+      <div className="w-12 h-12 mx-auto mb-4 bg-red-100 rounded-full flex items-center justify-center">
+        <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      </div>
+      <h3 className="text-lg font-semibold text-red-800 mb-2">Fout bij laden van planten</h3>
+      <p className="text-red-600 mb-4">{error}</p>
+      <button
+        onClick={fetchPlants}
+        className="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200"
+      >
+        Opnieuw proberen
+      </button>
+    </div>
+  );
+
+  // Empty state component
+  const EmptyState = () => (
+    <div className="text-center py-12">
+      <div className="w-24 h-24 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+        <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+        </svg>
+      </div>
+      <h3 className="text-lg font-semibold text-gray-900 mb-2">
+        {searchTerm ? 'Geen planten gevonden' : 'Nog geen planten toegevoegd'}
+      </h3>
+      <p className="text-gray-600 mb-6">
+        {searchTerm 
+          ? `Geen resultaten voor "${searchTerm}". Probeer een andere zoekterm.`
+          : 'Voeg je eerste plant toe om te beginnen met je plantendatabase.'
+        }
+      </p>
+      {!searchTerm && (
+        <button
+          onClick={() => setShowAddModal(true)}
+          className="bg-landscape-primary hover:bg-landscape-primary-dark text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200"
+        >
+          Eerste plant toevoegen
+        </button>
+      )}
+    </div>
+  );
+
+  // Modal component
+  const Modal = ({ isOpen, onClose, title, children }) => {
+    if (!isOpen) return null;
+
     return (
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">{t.title}</h1>
-          <p className="text-gray-600">{t.subtitle}</p>
-        </div>
-        <div className="flex items-center justify-center h-64">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto"></div>
-            <p className="mt-2 text-gray-500">{t.loading}</p>
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="flex items-center justify-between p-6 border-b">
+            <h2 className="text-xl font-semibold text-gray-900">{title}</h2>
+            <button
+              onClick={onClose}
+              className="text-gray-400 hover:text-gray-600 transition-colors duration-200"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+          <div className="p-6">
+            {children}
           </div>
         </div>
       </div>
-    )
-  }
+    );
+  };
+
+  // Plant form component
+  const PlantForm = ({ onSubmit, submitText }) => (
+    <form onSubmit={onSubmit} className="space-y-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Wetenschappelijke naam *
+          </label>
+          <input
+            type="text"
+            name="name"
+            value={formData.name}
+            onChange={handleInputChange}
+            required
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-landscape-primary focus:border-transparent"
+            placeholder="bijv. Acer platanoides"
+          />
+        </div>
+        
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Nederlandse naam *
+          </label>
+          <input
+            type="text"
+            name="common_name"
+            value={formData.common_name}
+            onChange={handleInputChange}
+            required
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-landscape-primary focus:border-transparent"
+            placeholder="bijv. Noorse esdoorn"
+          />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Categorie *
+          </label>
+          <select
+            name="category"
+            value={formData.category}
+            onChange={handleInputChange}
+            required
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-landscape-primary focus:border-transparent"
+          >
+            <option value="">Selecteer categorie</option>
+            <option value="Boom">Boom</option>
+            <option value="Heester">Heester</option>
+            <option value="Vaste plant">Vaste plant</option>
+            <option value="Eenjarige">Eenjarige</option>
+            <option value="Bol- en knolgewas">Bol- en knolgewas</option>
+            <option value="Gras">Gras</option>
+            <option value="Varen">Varen</option>
+            <option value="Klimplant">Klimplant</option>
+          </select>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Leverancier
+          </label>
+          <select
+            name="supplier_id"
+            value={formData.supplier_id}
+            onChange={handleInputChange}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-landscape-primary focus:border-transparent"
+          >
+            <option value="">Selecteer leverancier</option>
+            {suppliers.map(supplier => (
+              <option key={supplier.id} value={supplier.id}>
+                {supplier.name}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Min. hoogte (m)
+          </label>
+          <input
+            type="number"
+            name="height_min"
+            value={formData.height_min}
+            onChange={handleInputChange}
+            step="0.1"
+            min="0"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-landscape-primary focus:border-transparent"
+          />
+        </div>
+        
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Max. hoogte (m)
+          </label>
+          <input
+            type="number"
+            name="height_max"
+            value={formData.height_max}
+            onChange={handleInputChange}
+            step="0.1"
+            min="0"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-landscape-primary focus:border-transparent"
+          />
+        </div>
+        
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Min. breedte (m)
+          </label>
+          <input
+            type="number"
+            name="width_min"
+            value={formData.width_min}
+            onChange={handleInputChange}
+            step="0.1"
+            min="0"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-landscape-primary focus:border-transparent"
+          />
+        </div>
+        
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Max. breedte (m)
+          </label>
+          <input
+            type="number"
+            name="width_max"
+            value={formData.width_max}
+            onChange={handleInputChange}
+            step="0.1"
+            min="0"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-landscape-primary focus:border-transparent"
+          />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Zonbehoefte
+          </label>
+          <select
+            name="sun_requirements"
+            value={formData.sun_requirements}
+            onChange={handleInputChange}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-landscape-primary focus:border-transparent"
+          >
+            <option value="">Selecteer zonbehoefte</option>
+            <option value="Volle zon">Volle zon</option>
+            <option value="Zon tot halfschaduw">Zon tot halfschaduw</option>
+            <option value="Halfschaduw">Halfschaduw</option>
+            <option value="Halfschaduw tot schaduw">Halfschaduw tot schaduw</option>
+            <option value="Schaduw">Schaduw</option>
+          </select>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Waterbehoefte
+          </label>
+          <select
+            name="water_needs"
+            value={formData.water_needs}
+            onChange={handleInputChange}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-landscape-primary focus:border-transparent"
+          >
+            <option value="">Selecteer waterbehoefte</option>
+            <option value="Droog">Droog</option>
+            <option value="Droog tot matig">Droog tot matig</option>
+            <option value="Matig">Matig</option>
+            <option value="Matig tot vochtig">Matig tot vochtig</option>
+            <option value="Vochtig">Vochtig</option>
+            <option value="Nat">Nat</option>
+          </select>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Onderhoud
+          </label>
+          <select
+            name="maintenance"
+            value={formData.maintenance}
+            onChange={handleInputChange}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-landscape-primary focus:border-transparent"
+          >
+            <option value="">Selecteer onderhoudsniveau</option>
+            <option value="Laag">Laag</option>
+            <option value="Matig">Matig</option>
+            <option value="Hoog">Hoog</option>
+          </select>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Grondtype
+          </label>
+          <input
+            type="text"
+            name="soil_type"
+            value={formData.soil_type}
+            onChange={handleInputChange}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-landscape-primary focus:border-transparent"
+            placeholder="bijv. Alle grondsoorten"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Hardheidszone
+          </label>
+          <input
+            type="text"
+            name="hardiness_zone"
+            value={formData.hardiness_zone}
+            onChange={handleInputChange}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-landscape-primary focus:border-transparent"
+            placeholder="bijv. 4-7"
+          />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Bloeitijd
+          </label>
+          <input
+            type="text"
+            name="bloom_time"
+            value={formData.bloom_time}
+            onChange={handleInputChange}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-landscape-primary focus:border-transparent"
+            placeholder="bijv. April-Mei"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Bloeikleur
+          </label>
+          <input
+            type="text"
+            name="bloom_color"
+            value={formData.bloom_color}
+            onChange={handleInputChange}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-landscape-primary focus:border-transparent"
+            placeholder="bijv. Wit, roze"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Bladkleur
+          </label>
+          <input
+            type="text"
+            name="foliage_color"
+            value={formData.foliage_color}
+            onChange={handleInputChange}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-landscape-primary focus:border-transparent"
+            placeholder="bijv. Groen, geel in herfst"
+          />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Prijs (€)
+          </label>
+          <input
+            type="number"
+            name="price"
+            value={formData.price}
+            onChange={handleInputChange}
+            step="0.01"
+            min="0"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-landscape-primary focus:border-transparent"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Beschikbaarheid
+          </label>
+          <select
+            name="availability"
+            value={formData.availability}
+            onChange={handleInputChange}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-landscape-primary focus:border-transparent"
+          >
+            <option value="">Selecteer beschikbaarheid</option>
+            <option value="Voorradig">Voorradig</option>
+            <option value="Beperkt voorradig">Beperkt voorradig</option>
+            <option value="Op bestelling">Op bestelling</option>
+            <option value="Niet beschikbaar">Niet beschikbaar</option>
+          </select>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Plantseizoen
+          </label>
+          <select
+            name="planting_season"
+            value={formData.planting_season}
+            onChange={handleInputChange}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-landscape-primary focus:border-transparent"
+          >
+            <option value="">Selecteer plantseizoen</option>
+            <option value="Voorjaar">Voorjaar</option>
+            <option value="Zomer">Zomer</option>
+            <option value="Herfst">Herfst</option>
+            <option value="Winter">Winter</option>
+            <option value="Herfst/Voorjaar">Herfst/Voorjaar</option>
+            <option value="Jaar rond">Jaar rond</option>
+          </select>
+        </div>
+      </div>
+
+      <div>
+        <label className="flex items-center space-x-2">
+          <input
+            type="checkbox"
+            name="native"
+            checked={formData.native}
+            onChange={handleInputChange}
+            className="rounded border-gray-300 text-landscape-primary focus:ring-landscape-primary"
+          />
+          <span className="text-sm font-medium text-gray-700">Inheemse plant</span>
+        </label>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Opmerkingen
+        </label>
+        <textarea
+          name="notes"
+          value={formData.notes}
+          onChange={handleInputChange}
+          rows={3}
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-landscape-primary focus:border-transparent"
+          placeholder="Aanvullende informatie over de plant..."
+        />
+      </div>
+
+      <div className="flex justify-end space-x-4 pt-4">
+        <button
+          type="button"
+          onClick={() => {
+            setShowAddModal(false);
+            setShowEditModal(false);
+            resetForm();
+          }}
+          className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors duration-200"
+        >
+          Annuleren
+        </button>
+        <button
+          type="submit"
+          className="bg-landscape-primary hover:bg-landscape-primary-dark text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200"
+        >
+          {submitText}
+        </button>
+      </div>
+    </form>
+  );
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">{t.title}</h1>
-          <p className="text-gray-600">{t.subtitle}</p>
+    <div className="min-h-screen bg-gray-50 p-6">
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900">Planten</h1>
+          <p className="text-gray-600 mt-2">Beheer uw plantendatabase</p>
         </div>
-        <div className="flex items-center space-x-3">
-          <Button variant="outline" className="flex items-center space-x-2">
-            <Lightbulb className="h-4 w-4" />
-            <span>{t.getRecommendations}</span>
-          </Button>
-          <Button className="flex items-center space-x-2">
-            <Plus className="h-4 w-4" />
-            <span>{t.addPlant}</span>
-          </Button>
-        </div>
-      </div>
 
-      {/* Search and Filters */}
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
-        <div className="lg:col-span-2">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-            <Input
-              placeholder={t.search}
-              value={searchTerm}
-              onChange={handleSearchChange}
-              className="pl-10"
-            />
+        {/* Search and Add */}
+        <div className="bg-white rounded-lg shadow-sm border p-6 mb-6">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
+            <div className="flex-1 max-w-md">
+              <div className="relative">
+                <svg className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                <input
+                  type="text"
+                  placeholder="Zoek planten..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-landscape-primary focus:border-transparent"
+                />
+              </div>
+            </div>
+            <button
+              onClick={() => setShowAddModal(true)}
+              className="bg-landscape-primary hover:bg-landscape-primary-dark text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 flex items-center space-x-2"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+              </svg>
+              <span>Plant toevoegen</span>
+            </button>
           </div>
         </div>
-        <Button variant="outline" className="flex items-center space-x-2">
-          <Filter className="h-4 w-4" />
-          <span>{t.filters}</span>
-        </Button>
-      </div>
 
-      {/* Plants List */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center justify-between">
-            <span>{t.title} ({totalPlants})</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {plants.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {plants.map((plant) => (
-                <div key={plant.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                      <Leaf className="h-6 w-6 text-green-600" />
+        {/* Content */}
+        {error ? (
+          <ErrorDisplay />
+        ) : loading ? (
+          <LoadingSpinner />
+        ) : plants.length === 0 ? (
+          <div className="bg-white rounded-lg shadow-sm border">
+            <EmptyState />
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {plants.map((plant) => (
+              <div key={plant.id} className="bg-white rounded-lg shadow-sm border hover:shadow-md transition-shadow duration-200">
+                <div className="p-6">
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="flex-1">
+                      <h3 className="text-lg font-semibold text-gray-900 mb-1">
+                        {plant.common_name}
+                      </h3>
+                      <p className="text-sm text-gray-600 italic mb-2">
+                        {plant.name}
+                      </p>
+                      <div className="flex items-center space-x-2">
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-landscape-primary/10 text-landscape-primary">
+                          {plant.category}
+                        </span>
+                        {plant.native && (
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                            Inheems
+                          </span>
+                        )}
+                      </div>
                     </div>
-                    {plant.native_to_netherlands && (
-                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                        {t.native}
-                      </span>
+                  </div>
+
+                  <div className="space-y-2 mb-4">
+                    {plant.height_min && plant.height_max && (
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-600">Hoogte:</span>
+                        <span className="font-medium">{plant.height_min}m - {plant.height_max}m</span>
+                      </div>
+                    )}
+                    {plant.sun_requirements && (
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-600">Zon:</span>
+                        <span className="font-medium">{plant.sun_requirements}</span>
+                      </div>
+                    )}
+                    {plant.bloom_time && (
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-600">Bloei:</span>
+                        <span className="font-medium">{plant.bloom_time}</span>
+                      </div>
+                    )}
+                    {plant.price && (
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-600">Prijs:</span>
+                        <span className="font-medium text-landscape-primary">
+                          {formatCurrency(plant.price)}
+                        </span>
+                      </div>
+                    )}
+                    {plant.supplier_id && (
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-600">Leverancier:</span>
+                        <span className="font-medium">{getSupplierName(plant.supplier_id)}</span>
+                      </div>
                     )}
                   </div>
 
-                  <div className="space-y-2">
-                    <h3 className="text-lg font-semibold text-gray-900">{plant.name}</h3>
-                    {plant.scientific_name && (
-                      <p className="text-sm italic text-gray-600">{plant.scientific_name}</p>
-                    )}
-                    {plant.common_name && (
-                      <p className="text-sm text-gray-600">{plant.common_name}</p>
-                    )}
-
-                    <div className="flex items-center space-x-4 text-sm text-gray-500">
-                      {plant.sun_requirements && (
-                        <div className="flex items-center space-x-1">
-                          <Sun className="h-4 w-4" />
-                          <span>{getSunRequirementsLabel(plant.sun_requirements)}</span>
-                        </div>
-                      )}
-                      {plant.water_requirements && (
-                        <div className="flex items-center space-x-1">
-                          <Droplets className="h-4 w-4" />
-                          <span>{getWaterRequirementsLabel(plant.water_requirements)}</span>
-                        </div>
-                      )}
-                    </div>
-
-                    {(plant.mature_height || plant.mature_width) && (
-                      <div className="text-sm text-gray-600">
-                        {plant.mature_height && <span>{t.height}: {plant.mature_height}</span>}
-                        {plant.mature_height && plant.mature_width && <span> × </span>}
-                        {plant.mature_width && <span>{t.width}: {plant.mature_width}</span>}
-                      </div>
-                    )}
-
-                    {plant.bloom_time && (
-                      <div className="text-sm text-gray-600">
-                        <span>{t.bloomTime}: {plant.bloom_time}</span>
-                        {plant.bloom_color && <span> ({plant.bloom_color})</span>}
-                      </div>
-                    )}
-
-                    {plant.maintenance_level && (
-                      <div className="text-sm text-gray-600">
-                        {t.maintenance}: {getMaintenanceLabel(plant.maintenance_level)}
-                      </div>
-                    )}
-
-                    <div className="flex flex-wrap gap-1 mt-3">
-                      {plant.deer_resistant && (
-                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                          {t.deerResistant}
-                        </span>
-                      )}
-                      {plant.drought_tolerant && (
-                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                          {t.droughtTolerant}
-                        </span>
-                      )}
-                      {plant.attracts_pollinators && (
-                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                          {t.attractsPollinators}
+                  <div className="flex items-center justify-between pt-4 border-t">
+                    <div className="flex items-center space-x-2">
+                      {plant.availability && (
+                        <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                          plant.availability === 'Voorradig' 
+                            ? 'bg-green-100 text-green-800'
+                            : plant.availability === 'Beperkt voorradig'
+                            ? 'bg-yellow-100 text-yellow-800'
+                            : 'bg-red-100 text-red-800'
+                        }`}>
+                          {plant.availability}
                         </span>
                       )}
                     </div>
-
-                    <div className="flex items-center justify-between pt-3 border-t">
-                      {plant.price && (
-                        <span className="text-lg font-semibold text-green-600">
-                          €{plant.price.toFixed(2)}
-                        </span>
-                      )}
-                      {plant.supplier_name && (
-                        <span className="text-sm text-gray-500">{plant.supplier_name}</span>
-                      )}
+                    <div className="flex items-center space-x-2">
+                      <button
+                        onClick={() => openEditModal(plant)}
+                        className="text-landscape-primary hover:text-landscape-primary-dark transition-colors duration-200"
+                        title="Bewerken"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                      </button>
+                      <button
+                        onClick={() => handleDeletePlant(plant.id, plant.common_name)}
+                        className="text-red-600 hover:text-red-800 transition-colors duration-200"
+                        title="Verwijderen"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                      </button>
                     </div>
                   </div>
                 </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-8">
-              <Leaf className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-500">{t.noPlants}</p>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-    </div>
-  )
-}
+              </div>
+            ))}
+          </div>
+        )}
 
-export default Plants
+        {/* Add Modal */}
+        <Modal
+          isOpen={showAddModal}
+          onClose={() => {
+            setShowAddModal(false);
+            resetForm();
+          }}
+          title="Plant toevoegen"
+        >
+          <PlantForm onSubmit={handleAddPlant} submitText="Plant toevoegen" />
+        </Modal>
+
+        {/* Edit Modal */}
+        <Modal
+          isOpen={showEditModal}
+          onClose={() => {
+            setShowEditModal(false);
+            setEditingPlant(null);
+            resetForm();
+          }}
+          title="Plant bewerken"
+        >
+          <PlantForm onSubmit={handleEditPlant} submitText="Plant bijwerken" />
+        </Modal>
+      </div>
+    </div>
+  );
+};
+
+export default Plants;
 
