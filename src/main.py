@@ -457,6 +457,10 @@ def main():
         print("For production, use: gunicorn -c gunicorn.conf.py wsgi:application")
 
 
+# Create app instance for WSGI servers (like Waitress, Gunicorn)
+app = create_app()
+
+
 if __name__ == '__main__':
     main()
 

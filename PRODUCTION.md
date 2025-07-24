@@ -36,11 +36,56 @@ chmod +x deploy-production.sh
 
 The production setup includes:
 
-- **Gunicorn WSGI Server**: Production-grade Python application server
+- **WSGI Server Options**: 
+  - **Waitress**: Pure Python WSGI server (recommended for simplicity)
+  - **Gunicorn**: Production-grade Python application server (recommended for high traffic)
 - **Nginx Reverse Proxy**: Load balancing, SSL termination, static file serving
 - **PostgreSQL Database**: Production database with proper user management
 - **Redis**: Caching and rate limiting backend
 - **SSL/TLS**: HTTPS encryption with security headers
+
+## WSGI Server Deployment
+
+### Option 1: Waitress (Recommended for Small to Medium Applications)
+
+**Quick Start with Waitress:**
+```bash
+# Install dependencies
+pip install -r requirements.txt
+
+# Run with Waitress directly
+waitress-serve --host=0.0.0.0 --port=8080 src.main:app
+
+# Or use the WSGI entry point
+python src/wsgi.py
+```
+
+**Waitress Configuration:**
+```bash
+# Basic production setup
+waitress-serve \
+  --host=0.0.0.0 \
+  --port=8080 \
+  --threads=4 \
+  --connection-limit=100 \
+  --channel-timeout=120 \
+  src.main:app
+```
+
+**Advantages of Waitress:**
+- Pure Python implementation (no compilation required)
+- Works on Windows, Linux, and macOS
+- Good performance for most applications
+- Simple configuration and deployment
+- Built-in support for HTTP/1.1 and HTTP/1.0
+
+### Option 2: Gunicorn (Recommended for High Traffic Applications)
+
+**Quick Start with Gunicorn:**
+```bash
+# Run with Gunicorn
+gunicorn -c gunicorn.conf.py wsgi:application
+```
 
 ## Configuration
 
@@ -146,13 +191,48 @@ sudo nginx -t  # Test configuration
 
 ## Performance Optimization
 
-### Gunicorn Configuration
+### Performance Configuration
 
+**Waitress Configuration (waitress.ini):**
+```ini
+[server:main]
+use = egg:waitress#main
+host = 0.0.0.0
+port = 8080
+threads = 4
+connection_limit = 100
+channel_timeout = 120
+```
+
+**Gunicorn Configuration:**
 The `gunicorn.conf.py` file includes optimized settings:
 - Worker processes: `CPU_COUNT * 2 + 1`
 - Worker class: `sync` (suitable for most workloads)
 - Timeout: `30` seconds
 - Max requests per worker: `1000`
+
+## WSGI Entry Points
+
+The application provides two WSGI entry points:
+
+### 1. Direct Import from main.py
+```bash
+# Use this for Waitress or other WSGI servers
+waitress-serve --host=0.0.0.0 --port=8080 src.main:app
+gunicorn src.main:app
+```
+
+### 2. Dedicated WSGI Module
+```bash
+# Use this for more complex production setups
+waitress-serve --host=0.0.0.0 --port=8080 src.wsgi:application
+gunicorn src.wsgi:application
+```
+
+The `src/wsgi.py` file provides:
+- Proper path configuration for imports
+- Application initialization
+- Direct execution capability with Waitress fallback
 
 ### Database Optimization
 
