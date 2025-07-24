@@ -1,39 +1,93 @@
 version: '3.8'
 
 services:
+  # PostgreSQL database for production
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: landscape_architecture_prod
+      POSTGRES_USER: landscape_user
+      POSTGRES_PASSWORD: landscape_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - backend
+    restart: unless-stopped
+
+  # Redis for caching and rate limiting
+  redis:
+    image: redis:7-alpine
+    volumes:
+      - redis_data:/data
+    networks:
+      - backend
+    restart: unless-stopped
+
+  # Backend API
   backend:
     build: .
     ports:
       - "5000:5000"
     environment:
       - FLASK_ENV=production
-      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - SECRET_KEY=${SECRET_KEY:-change-this-in-production}
+      - DATABASE_URL=postgresql://landscape_user:landscape_password@db:5432/landscape_architecture_prod
+      - REDIS_URL=redis://redis:6379/0
     volumes:
-      - ./src/database:/app/src/database
+      - ./logs:/app/logs
+    depends_on:
+      - db
+      - redis
+    networks:
+      - backend
+      - frontend
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5000/api/dashboard/stats"]
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
       interval: 30s
       timeout: 10s
       retries: 3
     restart: unless-stopped
 
+  # Nginx reverse proxy
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro  # Mount SSL certificates here
+      - nginx_logs:/var/log/nginx
+    depends_on:
+      - backend
+    networks:
+      - frontend
+    restart: unless-stopped
+
+  # Frontend (if building frontend in Docker)
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    ports:
-      - "3000:3000"
-    environment:
-      - VITE_API_BASE_URL=http://backend:5000/api
-    depends_on:
-      - backend
+    volumes:
+      - frontend_dist:/app/dist
+    networks:
+      - frontend
     restart: unless-stopped
 
 networks:
-  default:
+  backend:
+    driver: bridge
+  frontend:
     driver: bridge
 
 volumes:
-  database:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  nginx_logs:
+    driver: local
+  frontend_dist:
     driver: local
 

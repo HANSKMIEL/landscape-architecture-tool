@@ -5,16 +5,23 @@ WORKDIR /app
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
     curl \
+    postgresql-client \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements first for better caching
 COPY requirements.txt .
 
 # Install Python dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt && \
+    pip install --no-cache-dir psycopg2-binary
 
 # Copy application code
 COPY . .
+
+# Create non-root user
+RUN useradd --create-home --shell /bin/bash app && \
+    chown -R app:app /app
+USER app
 
 # Create database directory
 RUN mkdir -p src/database
@@ -24,8 +31,8 @@ EXPOSE 5000
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:5000/api/dashboard/stats || exit 1
+    CMD curl -f http://localhost:5000/health || exit 1
 
-# Run the application
-CMD ["python", "src/main.py"]
+# Run the application with Gunicorn
+CMD ["gunicorn", "-c", "gunicorn.conf.py", "wsgi:application"]
 
