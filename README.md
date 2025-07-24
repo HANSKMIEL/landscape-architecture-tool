@@ -19,6 +19,14 @@ A comprehensive web application for managing landscape architecture projects, su
 - **Dutch Localization** - Sample data and formatting for Dutch market
 - **Responsive Design** - Works on desktop and mobile devices
 
+### New in v2.0 (Backend Refactoring)
+- **Modular Architecture** - Separated models, services, routes, and utilities
+- **Persistent Database** - SQLite database with SQLAlchemy ORM
+- **Data Validation** - Pydantic schemas for request validation
+- **Database Migrations** - Flask-Migrate for schema management
+- **Structured Error Handling** - Comprehensive error handling framework
+- **Service Layer** - Business logic separation from API routes
+
 ## 🚀 Quick Start
 
 ### Prerequisites
@@ -55,20 +63,31 @@ npm run dev
 ## 📁 Project Structure
 
 ```
-landscape-architecture-complete/
+landscape-architecture-tool/
 ├── src/                          # Backend (Python/Flask)
-│   ├── main.py                   # Main Flask application
+│   ├── main.py                   # Main Flask application (refactored)
 │   ├── models/
-│   │   └── landscape.py          # Database models
-│   ├── routes/                   # API routes
+│   │   ├── user.py               # Database configuration
+│   │   └── landscape.py          # Database models (updated)
+│   ├── routes/                   # API routes (blueprints for future use)
 │   │   ├── dashboard.py
 │   │   ├── suppliers.py
 │   │   ├── plants.py
 │   │   ├── products.py
 │   │   ├── clients.py
 │   │   └── projects.py
-│   └── utils/
-│       └── sample_data.py        # Sample data initialization
+│   ├── services/                 # Business logic layer (NEW)
+│   │   └── __init__.py           # Service classes for all entities
+│   ├── schemas/                  # Pydantic validation schemas (NEW)
+│   │   └── __init__.py           # Request/response schemas
+│   └── utils/                    # Utilities
+│       ├── sample_data.py        # Sample data initialization (legacy)
+│       ├── db_init.py            # Database initialization (NEW)
+│       └── error_handlers.py     # Error handling framework (NEW)
+├── migrations/                   # Database migrations (NEW)
+│   ├── env.py
+│   ├── script.py.mako
+│   └── versions/
 ├── frontend/                     # Frontend (React/Vite)
 │   ├── src/
 │   │   ├── components/           # React components
@@ -78,9 +97,49 @@ landscape-architecture-complete/
 │   │       └── utils.js         # Utility functions
 │   ├── package.json
 │   └── vite.config.js
-├── requirements.txt              # Python dependencies
+├── requirements.txt              # Python dependencies (updated)
 └── README.md
 ```
+
+## 🏗️ Architecture Overview
+
+### Backend Architecture (v2.0)
+
+The backend has been completely refactored from a monolithic structure to a modular, production-ready architecture:
+
+#### **Models Layer** (`src/models/`)
+- **SQLAlchemy Models**: Persistent database entities with relationships
+- **Database Configuration**: Centralized database setup and configuration
+
+#### **Services Layer** (`src/services/`)
+- **Business Logic**: Core business operations separated from API routes
+- **CRUD Operations**: Standardized create, read, update, delete operations
+- **Data Processing**: Complex data operations and calculations
+
+#### **Schemas Layer** (`src/schemas/`)
+- **Pydantic Validation**: Input validation and data sanitization
+- **Type Safety**: Strong typing for API requests and responses
+- **Documentation**: Auto-generated API documentation from schemas
+
+#### **Utilities Layer** (`src/utils/`)
+- **Error Handling**: Structured error responses and logging
+- **Database Initialization**: Automated database setup and sample data
+- **Helper Functions**: Reusable utility functions
+
+#### **Database Layer**
+- **SQLite Database**: Persistent storage with relational integrity
+- **Migrations**: Version-controlled database schema changes
+- **Relationships**: Foreign key constraints and data consistency
+
+### Key Improvements
+
+1. **Separation of Concerns**: Each layer has a specific responsibility
+2. **Scalability**: Modular structure allows for easy expansion
+3. **Maintainability**: Clear code organization and documentation
+4. **Data Persistence**: No more data loss on server restart
+5. **Validation**: Input validation prevents data corruption
+6. **Error Handling**: Consistent error responses across all endpoints
+7. **Migration Support**: Database schema changes are managed and versioned
 
 ## 🔧 API Endpoints
 
@@ -90,39 +149,59 @@ landscape-architecture-complete/
 
 ### Suppliers
 - `GET /api/suppliers` - List all suppliers
-- `POST /api/suppliers` - Create new supplier
-- `PUT /api/suppliers/{id}` - Update supplier
+- `POST /api/suppliers` - Create new supplier (with validation)
+- `PUT /api/suppliers/{id}` - Update supplier (with validation)
 - `DELETE /api/suppliers/{id}` - Delete supplier
 
 ### Plants
 - `GET /api/plants` - List all plants
-- `POST /api/plants` - Create new plant
-- `PUT /api/plants/{id}` - Update plant
+- `POST /api/plants` - Create new plant (with validation)
+- `PUT /api/plants/{id}` - Update plant (with validation)
 - `DELETE /api/plants/{id}` - Delete plant
 
 ### Products
 - `GET /api/products` - List all products
-- `POST /api/products` - Create new product
-- `PUT /api/products/{id}` - Update product
+- `POST /api/products` - Create new product (with validation)
+- `PUT /api/products/{id}` - Update product (with validation)
 - `DELETE /api/products/{id}` - Delete product
 
 ### Clients
 - `GET /api/clients` - List all clients
-- `POST /api/clients` - Create new client
-- `PUT /api/clients/{id}` - Update client
+- `POST /api/clients` - Create new client (with validation)
+- `PUT /api/clients/{id}` - Update client (with validation)
 - `DELETE /api/clients/{id}` - Delete client
 
 ### Projects
 - `GET /api/projects` - List all projects
-- `POST /api/projects` - Create new project
-- `PUT /api/projects/{id}` - Update project
+- `POST /api/projects` - Create new project (with validation)
+- `PUT /api/projects/{id}` - Update project (with validation)
 - `DELETE /api/projects/{id}` - Delete project
 
 ## 🛠️ Development
 
+### Database Operations
+
+#### Initialize Database
+```bash
+# Initialize migration repository (one time)
+PYTHONPATH=. flask --app src.main db init
+
+# Create migration for schema changes
+PYTHONPATH=. flask --app src.main db migrate -m "Description of changes"
+
+# Apply migrations to database
+PYTHONPATH=. flask --app src.main db upgrade
+```
+
+#### Sample Data
+```bash
+# Sample data is automatically loaded on first run
+# Database will be created at: landscape_architecture.db
+```
+
 ### Running Tests
 ```bash
-# Backend tests
+# Backend tests (when available)
 python -m pytest tests/
 
 # Frontend tests
@@ -185,6 +264,8 @@ The application includes comprehensive Dutch sample data:
 - **3 Clients** - Dutch municipalities and private clients
 - **3 Projects** - Realistic landscape projects
 
+Data is automatically loaded on first application startup and persisted in the database.
+
 ## 🤝 Contributing
 
 1. Fork the repository
@@ -202,11 +283,20 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 For support and questions:
 - Create an issue on GitHub
 - Check the API documentation at `/api/`
-- Review the sample data in `src/utils/sample_data.py`
+- Review the sample data initialization in `src/utils/db_init.py`
 
 ## 🔄 Updates
 
-### Latest Changes
+### Version 2.0 - Backend Refactoring (Latest)
+- Complete backend architecture refactoring
+- Modular structure with services, schemas, and utilities
+- Persistent SQLite database with SQLAlchemy ORM
+- Pydantic validation for all API requests
+- Structured error handling framework
+- Database migrations with Flask-Migrate
+- Comprehensive logging and monitoring
+
+### Version 1.0 - Initial Release
 - Fixed GitHub Actions CI/CD pipeline to use npm instead of pnpm
 - Updated package.json with compatible dependencies
 - Enhanced utils.js with comprehensive utility functions
