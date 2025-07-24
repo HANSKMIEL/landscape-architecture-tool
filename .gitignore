@@ -37,6 +37,7 @@ instance/
 *.db
 *.sqlite
 *.sqlite3
+landscape_architecture.db
 src/database/app.db
 
 # Environment Variables
