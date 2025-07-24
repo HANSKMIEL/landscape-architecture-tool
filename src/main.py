@@ -5,12 +5,21 @@ Refactored modular version with persistent database
 """
 
 import os
+import sys
 import logging
 from datetime import datetime
 from flask import Flask, jsonify
 from flask_cors import CORS
 from flask_migrate import Migrate
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 from pydantic import ValidationError
+
+# Add project root to Python path
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+# Import configuration
+from src.config import get_config
 
 # Import models and database
 from src.models.user import db
@@ -36,10 +45,23 @@ from src.utils.error_handlers import register_error_handlers, handle_errors
 from src.utils.db_init import initialize_database, populate_sample_data
 
 # Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
+def configure_logging(app):
+    """Configure logging based on environment"""
+    log_level = getattr(logging, app.config['LOG_LEVEL'].upper())
+    
+    if not app.debug:
+        # Production logging
+        logging.basicConfig(
+            level=log_level,
+            format='%(asctime)s %(levelname)s %(name)s %(threadName)s : %(message)s'
+        )
+    else:
+        # Development logging
+        logging.basicConfig(
+            level=logging.INFO,
+            format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+        )
+
 logger = logging.getLogger(__name__)
 
 
@@ -47,17 +69,26 @@ def create_app():
     """Application factory pattern"""
     app = Flask(__name__)
     
-    # Configuration
-    app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
-        'DATABASE_URL', 'sqlite:///landscape_architecture.db'
-    )
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-    app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-key')
+    # Load configuration
+    config = get_config()
+    app.config.from_object(config)
+    
+    # Configure logging
+    configure_logging(app)
     
     # Initialize extensions
     db.init_app(app)
     migrate = Migrate(app, db)
-    CORS(app, origins=["http://localhost:5174", "http://127.0.0.1:5174"])
+    
+    # CORS configuration
+    CORS(app, origins=app.config['CORS_ORIGINS'])
+    
+    # Rate limiting
+    limiter = Limiter(
+        key_func=get_remote_address,
+        default_limits=[app.config['RATELIMIT_DEFAULT']]
+    )
+    limiter.init_app(app)
     
     # Register error handlers
     register_error_handlers(app)
@@ -379,16 +410,29 @@ def create_app():
             'status': 'healthy',
             'timestamp': datetime.now().isoformat(),
             'version': '2.0.0',
-            'database_status': 'connected'
+            'database_status': 'connected',
+            'environment': os.environ.get('FLASK_ENV', 'development')
         })
+    
+    # Add security headers
+    @app.after_request
+    def add_security_headers(response):
+        """Add security headers to all responses"""
+        response.headers['X-Content-Type-Options'] = 'nosniff'
+        response.headers['X-Frame-Options'] = 'DENY'
+        response.headers['X-XSS-Protection'] = '1; mode=block'
+        if app.config.get('SESSION_COOKIE_SECURE'):
+            response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
+        return response
     
     return app
 
 
-# Create the application
-app = create_app()
-
-if __name__ == '__main__':
+# Create the application only when run directly
+def main():
+    """Main entry point for development server"""
+    app = create_app()
+    
     logger.info("Starting Landscape Architecture Management System...")
     logger.info("Backend API will be available at: http://127.0.0.1:5001")
     logger.info("API documentation available at: http://127.0.0.1:5001/api/")
@@ -400,11 +444,19 @@ if __name__ == '__main__':
         # Populate with sample data if empty
         populate_sample_data()
     
-    # Start the Flask development server
-    app.run(
-        host='127.0.0.1',
-        port=5001,
-        debug=True,
-        use_reloader=True
-    )
+    # Start the Flask development server (only in development)
+    if os.environ.get('FLASK_ENV', 'development') == 'development':
+        app.run(
+            host='127.0.0.1',
+            port=5001,
+            debug=True,
+            use_reloader=True
+        )
+    else:
+        logger.warning("Use a production WSGI server (like Gunicorn) instead of Flask dev server")
+        print("For production, use: gunicorn -c gunicorn.conf.py wsgi:application")
+
+
+if __name__ == '__main__':
+    main()
 
