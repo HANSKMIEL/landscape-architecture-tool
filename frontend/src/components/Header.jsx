@@ -1,82 +1,54 @@
-import { Menu, Bell, User, Globe } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { Menu, Globe } from 'lucide-react'
 
-const Header = ({ onMenuClick, language, onLanguageToggle }) => {
-  const currentDate = new Date().toLocaleDateString(language === 'nl' ? 'nl-NL' : 'en-US', {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  })
-
-  const translations = {
-    en: {
-      welcome: 'Welcome back, Hans',
-      notifications: 'Notifications',
-      profile: 'Profile',
-      language: 'Language'
-    },
-    nl: {
-      welcome: 'Welkom terug, Hans',
-      notifications: 'Meldingen',
-      profile: 'Profiel',
-      language: 'Taal'
-    }
-  }
-
-  const t = translations[language]
-
+const Header = ({ onMenuClick, language, onLanguageToggle, sidebarOpen }) => {
   return (
-    <header className="bg-white shadow-sm border-b border-gray-200">
-      <div className="flex items-center justify-between px-6 py-4">
+    <header className="bg-white border-b border-gray-200 px-4 sm:px-6 py-4">
+      <div className="flex items-center justify-between">
+        {/* Left side - Menu button and title */}
         <div className="flex items-center space-x-4">
-          <Button
-            variant="ghost"
-            size="sm"
+          <button
             onClick={onMenuClick}
-            className="lg:hidden"
+            className="mobile-menu-btn p-2 rounded-md text-gray-600 hover:bg-gray-100 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500 transition-colors"
+            aria-label={sidebarOpen ? "Close menu" : "Open menu"}
+            aria-expanded={sidebarOpen}
           >
-            <Menu className="h-5 w-5" />
-          </Button>
+            <Menu className="w-6 h-6" />
+          </button>
           
-          <div>
-            <h2 className="text-xl font-semibold text-gray-900">{t.welcome}</h2>
-            <p className="text-sm text-gray-500">{currentDate}</p>
+          <div className="hidden sm:block">
+            <h1 className="text-xl font-semibold text-gray-900">
+              Landscape Architecture Tool
+            </h1>
           </div>
         </div>
 
+        {/* Right side - Language toggle and other controls */}
         <div className="flex items-center space-x-4">
-          <Button
-            variant="ghost"
-            size="sm"
+          <button
             onClick={onLanguageToggle}
-            className="flex items-center space-x-2"
-            title={t.language}
+            className="flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500 transition-colors"
+            aria-label={`Switch to ${language === 'en' ? 'Dutch' : 'English'}`}
           >
-            <Globe className="h-4 w-4" />
-            <span className="text-sm font-medium">{language.toUpperCase()}</span>
-          </Button>
-
-          <Button
-            variant="ghost"
-            size="sm"
-            className="relative"
-            title={t.notifications}
-          >
-            <Bell className="h-5 w-5" />
-            <span className="absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full"></span>
-          </Button>
-
-          <Button
-            variant="ghost"
-            size="sm"
-            className="flex items-center space-x-2"
-            title={t.profile}
-          >
-            <User className="h-5 w-5" />
-            <span className="hidden sm:inline text-sm">Hans</span>
-          </Button>
+            <Globe className="w-4 h-4" />
+            <span className="hidden sm:inline">
+              {language === 'en' ? 'EN' : 'NL'}
+            </span>
+          </button>
+          
+          {/* User profile or additional controls can go here */}
+          <div className="flex items-center space-x-2">
+            <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center">
+              <span className="text-white text-sm font-medium">LA</span>
+            </div>
+          </div>
         </div>
+      </div>
+      
+      {/* Mobile title - shown when sidebar is closed */}
+      <div className="sm:hidden mt-2">
+        <h1 className="text-lg font-semibold text-gray-900">
+          Landscape Architecture
+        </h1>
       </div>
     </header>
   )
