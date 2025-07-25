@@ -48,7 +48,7 @@ services:
       retries: 3
     restart: unless-stopped
 
-  # Nginx reverse proxy
+  # Nginx reverse proxy and static file server
   nginx:
     image: nginx:alpine
     ports:
@@ -60,20 +60,31 @@ services:
       - nginx_logs:/var/log/nginx
     depends_on:
       - backend
+      - frontend
     networks:
       - frontend
     restart: unless-stopped
+    environment:
+      - BACKEND_HOST=backend
+      - FRONTEND_HOST=frontend
 
-  # Frontend (if building frontend in Docker)
+  # Frontend (React/Vite application)
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    volumes:
-      - frontend_dist:/app/dist
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
     networks:
       - frontend
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
 networks:
   backend:
@@ -87,7 +98,5 @@ volumes:
   redis_data:
     driver: local
   nginx_logs:
-    driver: local
-  frontend_dist:
     driver: local
 

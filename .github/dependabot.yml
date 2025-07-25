@@ -1,0 +1,150 @@
+# Configuration for Dependabot automated dependency updates
+# See https://docs.github.com/github/administering-a-repository/configuration-options-for-dependency-updates
+
+version: 2
+updates:
+  # Enable version updates for Python (pip)
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+    open-pull-requests-limit: 10
+    reviewers:
+      - "HANSKMIEL"
+    assignees:
+      - "HANSKMIEL"
+    commit-message:
+      prefix: "deps(python)"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "python"
+      - "security"
+    ignore:
+      # Ignore patch updates for stable dependencies
+      - dependency-name: "gunicorn"
+        update-types: ["version-update:semver-patch"]
+      - dependency-name: "werkzeug"
+        update-types: ["version-update:semver-patch"]
+    groups:
+      flask-ecosystem:
+        patterns:
+          - "flask*"
+          - "Flask*"
+        exclude-patterns:
+          - "flask-limiter"
+      database-stack:
+        patterns:
+          - "sqlalchemy"
+          - "alembic"
+          - "psycopg*"
+      testing-tools:
+        patterns:
+          - "pytest*"
+          - "*test*"
+
+  # Enable version updates for npm (frontend)
+  - package-ecosystem: "npm"
+    directory: "/frontend"
+    schedule:
+      interval: "weekly"
+      day: "tuesday"
+      time: "09:00"
+    open-pull-requests-limit: 10
+    reviewers:
+      - "HANSKMIEL"
+    assignees:
+      - "HANSKMIEL"
+    commit-message:
+      prefix: "deps(frontend)"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "frontend"
+      - "javascript"
+    ignore:
+      # Ignore patch updates for stable UI libraries
+      - dependency-name: "react"
+        update-types: ["version-update:semver-patch"]
+      - dependency-name: "react-dom"
+        update-types: ["version-update:semver-patch"]
+    groups:
+      react-ecosystem:
+        patterns:
+          - "react*"
+          - "@types/react*"
+      radix-ui:
+        patterns:
+          - "@radix-ui/*"
+      build-tools:
+        patterns:
+          - "vite*"
+          - "@vitejs/*"
+          - "eslint*"
+      styling:
+        patterns:
+          - "tailwind*"
+          - "clsx"
+          - "class-variance-authority"
+
+  # Enable version updates for Docker
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "wednesday"
+      time: "09:00"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "HANSKMIEL"
+    assignees:
+      - "HANSKMIEL"
+    commit-message:
+      prefix: "deps(docker)"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "docker"
+      - "infrastructure"
+
+  # Enable version updates for Frontend Docker
+  - package-ecosystem: "docker"
+    directory: "/frontend"
+    schedule:
+      interval: "weekly"
+      day: "wednesday"
+      time: "09:30"
+    open-pull-requests-limit: 3
+    reviewers:
+      - "HANSKMIEL"
+    assignees:
+      - "HANSKMIEL"
+    commit-message:
+      prefix: "deps(frontend-docker)"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "docker"
+      - "frontend"
+
+  # Enable version updates for GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "thursday"
+      time: "09:00"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "HANSKMIEL"
+    assignees:
+      - "HANSKMIEL"
+    commit-message:
+      prefix: "ci"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "github-actions"
+      - "ci-cd"
