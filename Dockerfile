@@ -1,6 +1,6 @@
 # Multi-stage Dockerfile for Landscape Architecture Tool Backend
 # Stage 1: Build stage
-FROM python:3.11-slim as builder
+FROM python:3.13-slim as builder
 
 WORKDIR /app
 
@@ -25,7 +25,7 @@ RUN pip install --no-cache-dir --upgrade pip --trusted-host pypi.org --trusted-h
     pip install --no-cache-dir psycopg2-binary gunicorn --trusted-host pypi.org --trusted-host pypi.python.org --trusted-host files.pythonhosted.org
 
 # Stage 2: Production stage
-FROM python:3.11-slim as production
+FROM python:3.13-slim as production
 
 WORKDIR /app
 
