@@ -281,14 +281,33 @@ PYTHONPATH=. flask --app src.main db upgrade
 ```
 
 ### Running Tests
-```bash
-# Backend tests (when available)
-python -m pytest tests/
 
-# Frontend tests
+#### Backend Tests
+```bash
+# Run all backend tests (28 tests available)
+PYTHONPATH=. python -m pytest tests/ -v
+
+# Results: ✅ 28 PASSED (as of July 25, 2025)
+# Coverage: Health checks, API endpoints, CRUD operations, security
+```
+
+#### Frontend Tests  
+```bash
 cd frontend
 npm run test
+# Note: Frontend test suite not yet implemented
+# Build verification: npm run build (✅ WORKING)
 ```
+
+#### Test Status (Latest: July 25, 2025)
+- **Backend Tests**: ✅ 28/28 PASSING
+- **API Endpoints**: ✅ All CRUD operations working
+- **Sample Data**: ✅ Loading correctly  
+- **Docker Compose**: ✅ Configuration validated
+- **Frontend Build**: ✅ Production build successful
+- **Code Quality**: ⚠️ Style improvements needed (see [TEST_REPORT.md](./TEST_REPORT.md))
+
+For comprehensive test results and code quality analysis, see [TEST_REPORT.md](./TEST_REPORT.md).
 
 ### Building for Production
 ```bash
