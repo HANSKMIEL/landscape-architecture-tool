@@ -1,6 +1,7 @@
+from datetime import date, datetime
+from typing import List, Optional
+
 from pydantic import BaseModel, EmailStr, Field
-from typing import Optional, List
-from datetime import datetime, date
 
 
 class SupplierCreateSchema(BaseModel):
@@ -137,7 +138,7 @@ class ProjectCreateSchema(BaseModel):
     client_id: int = Field(..., gt=0)
     status: Optional[str] = Field("Planning", max_length=50)
     start_date: Optional[str] = None  # ISO date string
-    end_date: Optional[str] = None    # ISO date string
+    end_date: Optional[str] = None  # ISO date string
     budget: Optional[float] = Field(None, ge=0)
     location: Optional[str] = None
     project_type: Optional[str] = Field(None, max_length=50)
@@ -152,7 +153,7 @@ class ProjectUpdateSchema(BaseModel):
     client_id: Optional[int] = Field(None, gt=0)
     status: Optional[str] = Field(None, max_length=50)
     start_date: Optional[str] = None  # ISO date string
-    end_date: Optional[str] = None    # ISO date string
+    end_date: Optional[str] = None  # ISO date string
     budget: Optional[float] = Field(None, ge=0)
     location: Optional[str] = None
     project_type: Optional[str] = Field(None, max_length=50)

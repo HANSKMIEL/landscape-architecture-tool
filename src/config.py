@@ -9,72 +9,81 @@ from datetime import timedelta
 
 class Config:
     """Base configuration"""
-    SECRET_KEY = os.environ.get('SECRET_KEY') or 'dev-secret-key-change-in-production'
+
+    SECRET_KEY = os.environ.get("SECRET_KEY") or "dev-secret-key-change-in-production"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'sqlite:///landscape_architecture.db'
-    
+    SQLALCHEMY_DATABASE_URI = (
+        os.environ.get("DATABASE_URL") or "sqlite:///landscape_architecture.db"
+    )
+
     # Security configurations
     SESSION_COOKIE_SECURE = True
     SESSION_COOKIE_HTTPONLY = True
-    SESSION_COOKIE_SAMESITE = 'Lax'
+    SESSION_COOKIE_SAMESITE = "Lax"
     PERMANENT_SESSION_LIFETIME = timedelta(hours=1)
-    
+
     # Rate limiting
-    RATELIMIT_STORAGE_URL = os.environ.get('REDIS_URL') or 'memory://'
+    RATELIMIT_STORAGE_URL = os.environ.get("REDIS_URL") or "memory://"
     RATELIMIT_DEFAULT = "100 per hour"
-    
+
     # CORS settings
-    CORS_ORIGINS = os.environ.get('CORS_ORIGINS', 'http://localhost:5174,http://127.0.0.1:5174').split(',')
-    
+    CORS_ORIGINS = os.environ.get(
+        "CORS_ORIGINS", "http://localhost:5174,http://127.0.0.1:5174"
+    ).split(",")
+
     # Logging
-    LOG_LEVEL = os.environ.get('LOG_LEVEL', 'INFO')
+    LOG_LEVEL = os.environ.get("LOG_LEVEL", "INFO")
 
 
 class DevelopmentConfig(Config):
     """Development configuration"""
+
     DEBUG = True
     SESSION_COOKIE_SECURE = False  # Allow HTTP in development
 
 
 class ProductionConfig(Config):
     """Production configuration"""
+
     DEBUG = False
-    SECRET_KEY = os.environ.get('SECRET_KEY')
-    
+    SECRET_KEY = os.environ.get("SECRET_KEY")
+
     # Production database - use SQLite for demo, PostgreSQL in real production
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
-        'sqlite:///landscape_architecture_prod.db'
-    
+    SQLALCHEMY_DATABASE_URI = (
+        os.environ.get("DATABASE_URL") or "sqlite:///landscape_architecture_prod.db"
+    )
+
     # Enhanced security for production
     SESSION_COOKIE_SECURE = True
     SESSION_COOKIE_HTTPONLY = True
-    SESSION_COOKIE_SAMESITE = 'Strict'
-    
+    SESSION_COOKIE_SAMESITE = "Strict"
+
     # Stricter rate limiting in production
     RATELIMIT_DEFAULT = "50 per hour"
-    
+
     # Production logging
-    LOG_LEVEL = 'WARNING'
+    LOG_LEVEL = "WARNING"
 
 
 class TestingConfig(Config):
     """Testing configuration"""
+
     TESTING = True
     DEBUG = True
-    SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
+    SQLALCHEMY_DATABASE_URI = "sqlite:///:memory:"
     SESSION_COOKIE_SECURE = False
 
 
 # Configuration mapping
 config_map = {
-    'development': DevelopmentConfig,
-    'production': ProductionConfig,
-    'testing': TestingConfig,
-    'default': DevelopmentConfig
+    "development": DevelopmentConfig,
+    "production": ProductionConfig,
+    "testing": TestingConfig,
+    "default": DevelopmentConfig,
 }
 
 
 def get_config():
     """Get configuration based on FLASK_ENV environment variable"""
-    env = os.environ.get('FLASK_ENV', 'development')
+    env = os.environ.get("FLASK_ENV", "development")
     return config_map.get(env, DevelopmentConfig)

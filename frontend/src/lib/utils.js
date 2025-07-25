@@ -1,5 +1,6 @@
 import { clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
+import { parsePhoneNumber, isValidPhoneNumber } from 'libphonenumber-js'
 
 export function cn(...inputs) {
   return twMerge(clsx(inputs))
@@ -21,18 +22,32 @@ export function formatDate(date, locale = 'nl-NL') {
   }).format(new Date(date))
 }
 
-export function formatPhoneNumber(phone) {
-  // Format Dutch phone numbers
-  const cleaned = phone.replace(/\D/g, '')
-  if (cleaned.length === 10) {
-    return cleaned.replace(/(\d{2})(\d{3})(\d{2})(\d{3})/, '$1 $2 $3 $4')
+export function formatPhoneNumber(phone, defaultCountry = 'NL') {
+  try {
+    const phoneNumber = parsePhoneNumber(phone, defaultCountry)
+    return phoneNumber.formatNational()
+  } catch (error) {
+    // Fallback to basic formatting for Dutch numbers
+    const cleaned = phone.replace(/\D/g, '')
+    if (cleaned.length === 10 && cleaned.startsWith('0')) {
+      return cleaned.replace(/(\d{2})(\d{3})(\d{2})(\d{3})/, '$1 $2 $3 $4')
+    }
+    return phone
   }
-  return phone
+}
+
+export function validatePhoneNumber(phone, defaultCountry = 'NL') {
+  try {
+    return isValidPhoneNumber(phone, defaultCountry)
+  } catch (error) {
+    return false
+  }
 }
 
 export function validateEmail(email) {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-  return emailRegex.test(email)
+  // More robust email validation regex following RFC 5322 standard
+  const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/
+  return emailRegex.test(email) && email.length <= 254
 }
 
 export function validateDutchPostalCode(postalCode) {
@@ -70,8 +85,8 @@ export function slugify(text) {
     .toString()
     .toLowerCase()
     .replace(/\s+/g, '-')
-    .replace(/[^\w\-]+/g, '')
-    .replace(/\-\-+/g, '-')
+    .replace(/[^\w-]+/g, '')
+    .replace(/--+/g, '-')
     .replace(/^-+/, '')
     .replace(/-+$/, '')
 }

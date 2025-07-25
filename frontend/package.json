@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
+    "lint": "eslint .",
     "preview": "vite preview",
     "test": "echo \"No tests specified\" && exit 0"
   },
@@ -40,6 +40,7 @@
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.0.0",
     "date-fns": "^2.30.0",
+    "libphonenumber-js": "^1.12.10",
     "lucide-react": "^0.294.0",
     "react": "^19.1.0",
     "react-day-picker": "^9.8.0",

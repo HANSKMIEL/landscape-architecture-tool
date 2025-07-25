@@ -1,13 +1,14 @@
-from flask import jsonify
-from pydantic import ValidationError
 import logging
 
+from flask import jsonify
+from pydantic import ValidationError
 
 logger = logging.getLogger(__name__)
 
 
 class LandscapeError(Exception):
     """Base exception for landscape application"""
+
     def __init__(self, message, status_code=500, payload=None):
         super().__init__()
         self.message = message
@@ -15,7 +16,7 @@ class LandscapeError(Exception):
         self.payload = payload
 
     def to_dict(self):
-        result = {'error': self.message}
+        result = {"error": self.message}
         if self.payload:
             result.update(self.payload)
         return result
@@ -23,12 +24,16 @@ class LandscapeError(Exception):
 
 class LandscapeValidationError(LandscapeError):
     """Exception for validation errors"""
+
     def __init__(self, message, errors=None):
-        super().__init__(message, status_code=400, payload={'validation_errors': errors})
+        super().__init__(
+            message, status_code=400, payload={"validation_errors": errors}
+        )
 
 
 class NotFoundError(LandscapeError):
     """Exception for resource not found"""
+
     def __init__(self, resource, resource_id=None):
         message = f"{resource} not found"
         if resource_id:
@@ -38,6 +43,7 @@ class NotFoundError(LandscapeError):
 
 class DatabaseError(LandscapeError):
     """Exception for database operations"""
+
     def __init__(self, message):
         super().__init__(f"Database error: {message}", status_code=500)
 
@@ -45,22 +51,21 @@ class DatabaseError(LandscapeError):
 def handle_validation_error(error):
     """Handle Pydantic validation errors"""
     logger.warning(f"Validation error: {error}")
-    
+
     if isinstance(error, ValidationError):
         errors = []
         for err in error.errors():
-            errors.append({
-                'field': '.'.join(str(x) for x in err['loc']),
-                'message': err['msg'],
-                'type': err['type']
-            })
-        
-        return jsonify({
-            'error': 'Validation failed',
-            'validation_errors': errors
-        }), 400
-    
-    return jsonify({'error': str(error)}), 400
+            errors.append(
+                {
+                    "field": ".".join(str(x) for x in err["loc"]),
+                    "message": err["msg"],
+                    "type": err["type"],
+                }
+            )
+
+        return jsonify({"error": "Validation failed", "validation_errors": errors}), 400
+
+    return jsonify({"error": str(error)}), 400
 
 
 def handle_landscape_error(error):
@@ -72,31 +77,36 @@ def handle_landscape_error(error):
 def handle_generic_error(error):
     """Handle generic exceptions"""
     logger.error(f"Unexpected error: {str(error)}")
-    return jsonify({
-        'error': 'Internal server error',
-        'message': 'An unexpected error occurred'
-    }), 500
+    return (
+        jsonify(
+            {
+                "error": "Internal server error",
+                "message": "An unexpected error occurred",
+            }
+        ),
+        500,
+    )
 
 
 def register_error_handlers(app):
     """Register error handlers with Flask app"""
-    
+
     @app.errorhandler(ValidationError)
     def validation_error_handler(error):
         return handle_validation_error(error)
-    
+
     @app.errorhandler(LandscapeError)
     def landscape_error_handler(error):
         return handle_landscape_error(error)
-    
+
     @app.errorhandler(404)
     def not_found_handler(error):
-        return jsonify({'error': 'Resource not found'}), 404
-    
+        return jsonify({"error": "Resource not found"}), 404
+
     @app.errorhandler(500)
     def internal_error_handler(error):
         return handle_generic_error(error)
-    
+
     @app.errorhandler(Exception)
     def generic_error_handler(error):
         return handle_generic_error(error)
@@ -104,6 +114,7 @@ def register_error_handlers(app):
 
 def handle_errors(f):
     """Decorator for handling errors in route functions"""
+
     def wrapper(*args, **kwargs):
         try:
             return f(*args, **kwargs)
@@ -114,6 +125,6 @@ def handle_errors(f):
         except Exception as e:
             logger.error(f"Error in {f.__name__}: {str(e)}")
             return handle_generic_error(e)
-    
+
     wrapper.__name__ = f.__name__
     return wrapper
