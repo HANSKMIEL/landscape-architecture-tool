@@ -20,9 +20,9 @@ RUN python -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
 # Install Python dependencies
-RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir -r requirements.txt && \
-    pip install --no-cache-dir psycopg2-binary gunicorn
+RUN pip install --no-cache-dir --upgrade pip --trusted-host pypi.org --trusted-host pypi.python.org --trusted-host files.pythonhosted.org && \
+    pip install --no-cache-dir -r requirements.txt --trusted-host pypi.org --trusted-host pypi.python.org --trusted-host files.pythonhosted.org && \
+    pip install --no-cache-dir psycopg2-binary gunicorn --trusted-host pypi.org --trusted-host pypi.python.org --trusted-host files.pythonhosted.org
 
 # Stage 2: Production stage
 FROM python:3.11-slim as production
