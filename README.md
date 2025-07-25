@@ -29,6 +29,60 @@ A comprehensive web application for managing landscape architecture projects, su
 
 ## 🚀 Quick Start
 
+### 🌐 Start in GitHub Codespaces (Recommended for Cloud Development)
+
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/HANSKMIEL/landscape-architecture-tool)
+
+GitHub Codespaces provides a complete, cloud-based development environment that runs directly in your browser. No local setup required!
+
+**Features:**
+- 🏗️ **Pre-configured Environment**: Python 3.11, Node.js 20, and all dependencies automatically installed
+- 🗄️ **Database Ready**: SQLite database with sample data pre-loaded
+- 🔧 **VS Code Integration**: Full IDE with extensions for Python, React, and Tailwind CSS
+- ⚡ **Port Forwarding**: Frontend (5174) and Backend (5001) automatically accessible
+- 🐳 **Docker Support**: Optional full-stack setup with PostgreSQL and Redis
+
+**Getting Started with Codespaces:**
+
+1. **Create a Codespace:**
+   - Click the "Open in GitHub Codespaces" badge above, or
+   - Go to the repository → Click "Code" → "Codespaces" → "Create codespace on main"
+
+2. **Wait for Setup (2-3 minutes):**
+   - The environment will automatically install dependencies
+   - Database will be initialized with sample data
+   - You'll see: "Codespace is ready! 🚀"
+
+3. **Start Development:**
+   ```bash
+   # Terminal 1: Start backend API
+   start-backend
+
+   # Terminal 2: Start frontend
+   start-frontend
+   ```
+
+4. **Access Your Application:**
+   - Frontend: Click on the "Frontend (Vite)" port forwarding notification
+   - Backend API: Access via "Backend API (Development)" port
+   - Health Check: Visit `/health` endpoint to verify backend is running
+
+5. **Available Commands:**
+   ```bash
+   help-dev          # Show all available commands
+   start-backend     # Start Flask API server (port 5001)
+   start-frontend    # Start Vite dev server (port 5174)
+   start-docker      # Optional: Start full stack with Docker
+   ```
+
+**Codespaces Environment:**
+- **Database**: SQLite (development) with sample data
+- **Frontend**: React + Vite with hot reloading
+- **Backend**: Flask with auto-restart
+- **Ports**: Automatically forwarded and accessible via GitHub's secure URLs
+
+### 🏠 Local Development
+
 ### Prerequisites
 - Python 3.11+
 - Node.js 20+
@@ -232,7 +286,14 @@ isort src/
 
 ## 🚀 Deployment
 
-### Using Docker (Recommended)
+### 🌐 GitHub Codespaces (Development)
+Perfect for testing, development, and collaboration:
+```bash
+# Already set up! Just click the Codespaces badge in README
+# Everything runs in the cloud with zero local setup
+```
+
+### Using Docker (Recommended for Production)
 ```bash
 # Build and run with Docker Compose
 docker-compose up --build
