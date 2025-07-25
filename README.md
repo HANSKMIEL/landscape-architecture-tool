@@ -2,9 +2,33 @@
 
 A comprehensive web application for managing landscape architecture projects, suppliers, plants, products, and clients.
 
-## 🌱 Features
+## 🏢 Enterprise Features
 
-### Core Functionality
+### 🔄 Automated DevOps
+- **CI/CD Pipeline** - Automated testing with PostgreSQL and Redis services
+- **Dependency Management** - Automated security and dependency updates via Dependabot
+- **Code Quality** - Automated linting, formatting, and security scanning
+- **Docker Support** - Multi-stage builds for optimized production deployment
+
+### 🌐 Cloud-First Development
+- **GitHub Codespaces** - Instant cloud development environment
+- **VS Code Remote** - Consistent development with devcontainers
+- **OneDrive Integration** - Cloud storage and collaboration features
+- **Container Orchestration** - Production-ready Docker Compose setup
+
+### 🔐 Security & Compliance
+- **Automated Security Scanning** - Trivy and Bandit integration
+- **Dependency Vulnerability Checking** - Safety and automated updates
+- **Environment Configuration** - Secure secrets management
+- **Multi-stage Docker Builds** - Minimal attack surface
+
+### 📊 Monitoring & Analytics
+- **Health Checks** - Comprehensive application monitoring
+- **Logging** - Structured logging with configurable levels
+- **Performance Metrics** - Built-in performance tracking
+- **Error Handling** - Centralized error management
+
+## 🌱 Core Features
 - **Dashboard** - Overview with statistics and recent activity
 - **Suppliers Management** - Complete CRUD operations for suppliers
 - **Plants Catalog** - Manage plant inventory with detailed information
@@ -29,75 +53,115 @@ A comprehensive web application for managing landscape architecture projects, su
 
 ## 🚀 Quick Start
 
-### Prerequisites
-- Python 3.11+
-- Node.js 20+
-- npm or yarn
+### ⚡ Instant Cloud Development (Recommended)
 
-### Backend Setup
+Get started immediately with zero local setup:
+
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/HANSKMIEL/landscape-architecture-tool)
+
+**GitHub Codespaces** provides a complete development environment in the cloud:
+- Pre-configured with all dependencies
+- VS Code with extensions installed
+- PostgreSQL and Redis services ready
+- Port forwarding for instant access
+- No Docker or local setup required
+
+### 🐳 Docker Setup (Local Development)
+
+Start the full application stack with one command:
+
 ```bash
-# Install Python dependencies
+git clone https://github.com/HANSKMIEL/landscape-architecture-tool.git
+cd landscape-architecture-tool
+
+# Start all services (PostgreSQL, Redis, Backend, Frontend, Nginx)
+docker-compose up --build
+
+# Access the application:
+# Frontend: http://localhost:3000
+# Backend API: http://localhost:5000
+# Nginx Proxy: http://localhost:80
+```
+
+### 🖥️ VS Code Remote Development
+
+Use VS Code with devcontainers for consistent development:
+
+1. Install [VS Code](https://code.visualstudio.com/) and [Remote-Containers extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
+2. Clone the repository and open in VS Code
+3. Click "Reopen in Container" when prompted
+4. Complete environment with debugging, linting, and testing ready
+
+### Manual Setup (Traditional Development)
+
+For detailed manual setup instructions, see [SETUP_INSTRUCTIONS.md](./SETUP_INSTRUCTIONS.md)
+
+**Quick Manual Setup:**
+```bash
+# Backend
 pip install -r requirements.txt
+export PYTHONPATH=. && python src/main.py
 
-# Start the backend server
-set PYTHONPATH=. && python src/main.py
+# Frontend (in new terminal)
+cd frontend && npm install --legacy-peer-deps && npm run dev
 ```
 
-### Frontend Setup
-```bash
-# Navigate to frontend directory
-cd frontend
-
-# Install dependencies
-npm install --legacy-peer-deps
-
-# Start development server
-npm run dev
-```
-
-### Access the Application
-- **Frontend:** http://localhost:5174
-- **Backend API:** http://127.0.0.1:5001
-- **API Documentation:** http://127.0.0.1:5001/api/
+**Access Points:**
+- Frontend: http://localhost:5174
+- Backend API: http://localhost:5000
+- API Documentation: http://localhost:5000/api/
 
 ## 📁 Project Structure
 
 ```
 landscape-architecture-tool/
-├── src/                          # Backend (Python/Flask)
-│   ├── main.py                   # Main Flask application (refactored)
+├── .devcontainer/             # VS Code devcontainer & Codespaces config
+│   └── devcontainer.json      # Development environment specification
+├── .github/                   # GitHub automation & workflows
+│   ├── workflows/
+│   │   └── ci.yml            # CI/CD pipeline with PostgreSQL testing
+│   └── dependabot.yml       # Automated dependency updates
+├── src/                       # Backend (Python/Flask)
+│   ├── main.py               # Main Flask application (refactored)
 │   ├── models/
-│   │   ├── user.py               # Database configuration
-│   │   └── landscape.py          # Database models (updated)
-│   ├── routes/                   # API routes (blueprints for future use)
+│   │   ├── user.py          # Database configuration
+│   │   └── landscape.py     # Database models (updated)
+│   ├── routes/              # API routes (blueprints for future use)
 │   │   ├── dashboard.py
 │   │   ├── suppliers.py
 │   │   ├── plants.py
 │   │   ├── products.py
 │   │   ├── clients.py
 │   │   └── projects.py
-│   ├── services/                 # Business logic layer (NEW)
-│   │   └── __init__.py           # Service classes for all entities
-│   ├── schemas/                  # Pydantic validation schemas (NEW)
-│   │   └── __init__.py           # Request/response schemas
-│   └── utils/                    # Utilities
-│       ├── sample_data.py        # Sample data initialization (legacy)
-│       ├── db_init.py            # Database initialization (NEW)
-│       └── error_handlers.py     # Error handling framework (NEW)
-├── migrations/                   # Database migrations (NEW)
+│   ├── services/            # Business logic layer (NEW)
+│   │   └── __init__.py     # Service classes for all entities
+│   ├── schemas/             # Pydantic validation schemas (NEW)
+│   │   └── __init__.py     # Request/response schemas
+│   └── utils/               # Utilities
+│       ├── sample_data.py   # Sample data initialization (legacy)
+│       ├── db_init.py      # Database initialization (NEW)
+│       └── error_handlers.py # Error handling framework (NEW)
+├── frontend/                # Frontend (React/Vite)
+│   ├── src/
+│   │   ├── components/      # React components
+│   │   ├── services/
+│   │   │   └── api.js      # API service layer
+│   │   └── lib/
+│   │       └── utils.js    # Utility functions
+│   ├── Dockerfile          # Multi-stage frontend container
+│   ├── package.json
+│   └── vite.config.js
+├── migrations/              # Database migrations (NEW)
 │   ├── env.py
 │   ├── script.py.mako
 │   └── versions/
-├── frontend/                     # Frontend (React/Vite)
-│   ├── src/
-│   │   ├── components/           # React components
-│   │   ├── services/
-│   │   │   └── api.js           # API service layer
-│   │   └── lib/
-│   │       └── utils.js         # Utility functions
-│   ├── package.json
-│   └── vite.config.js
-├── requirements.txt              # Python dependencies (updated)
+├── tests/                   # Backend tests
+├── Dockerfile              # Multi-stage backend container
+├── docker-compose.yml      # Multi-service orchestration
+├── .env.example            # Environment configuration template
+├── SETUP_INSTRUCTIONS.md   # Comprehensive setup guide
+├── ONEDRIVE_GUIDE.md       # Cloud integration guide
+├── requirements.txt        # Python dependencies (updated)
 └── README.md
 ```
 
@@ -177,7 +241,24 @@ The backend has been completely refactored from a monolithic structure to a modu
 - `PUT /api/projects/{id}` - Update project (with validation)
 - `DELETE /api/projects/{id}` - Delete project
 
-## 🛠️ Development
+## 📚 Documentation & Setup
+
+### 📖 Comprehensive Guides
+- **[SETUP_INSTRUCTIONS.md](./SETUP_INSTRUCTIONS.md)** - Complete setup guide for all environments
+- **[ONEDRIVE_GUIDE.md](./ONEDRIVE_GUIDE.md)** - Cloud storage and collaboration setup
+- **API Documentation** - Interactive docs at `/api/` when backend is running
+
+### 🚀 Quick Start Options
+1. **[GitHub Codespaces](https://codespaces.new/HANSKMIEL/landscape-architecture-tool)** - Instant cloud development
+2. **Docker** - `docker-compose up --build` for full stack
+3. **VS Code Remote** - Devcontainer support for consistent environment
+4. **Manual Setup** - Traditional local development setup
+
+### 🔧 Development Tools
+- **Automated Testing** - CI/CD with PostgreSQL and Redis services
+- **Code Quality** - Linting, formatting, and security scanning
+- **Dependency Management** - Automated updates via Dependabot
+- **Health Monitoring** - Comprehensive health checks and logging
 
 ### Database Operations
 
