@@ -81,6 +81,23 @@ GitHub Codespaces provides a complete, cloud-based development environment that 
 - **Backend**: Flask with auto-restart
 - **Ports**: Automatically forwarded and accessible via GitHub's secure URLs
 
+**🐳 Advanced: Full Docker Stack in Codespaces (Optional)**
+
+For testing the complete production-like environment with PostgreSQL and Redis:
+
+```bash
+# Start full stack with Docker Compose
+docker-compose up -d
+
+# The following services will be available:
+# - PostgreSQL: localhost:5432
+# - Redis: localhost:6379  
+# - Backend: localhost:5000 (Docker version)
+# - Nginx: localhost:80 (full proxy setup)
+```
+
+This gives you the exact same environment as production, but requires more resources and setup time.
+
 ### 🏠 Local Development
 
 ### Prerequisites
