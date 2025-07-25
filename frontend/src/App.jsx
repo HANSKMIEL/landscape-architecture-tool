@@ -1,17 +1,19 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense, lazy } from 'react'
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
 import ResponsiveSidebar from './components/ResponsiveSidebar'
 import Header from './components/Header'
-import Dashboard from './components/Dashboard'
-import Suppliers from './components/Suppliers'
-import Plants from './components/Plants'
-import Products from './components/Products'
-import Clients from './components/Clients'
-import Projects from './components/Projects'
-import PlantRecommendations from './components/PlantRecommendations'
-import Reports from './components/Reports'
-import Settings from './components/Settings'
+
+// Dynamic imports for route components
+const Dashboard = lazy(() => import('./components/Dashboard'))
+const Suppliers = lazy(() => import('./components/Suppliers'))
+const Plants = lazy(() => import('./components/Plants'))
+const Products = lazy(() => import('./components/Products'))
+const Clients = lazy(() => import('./components/Clients'))
+const Projects = lazy(() => import('./components/Projects'))
+const PlantRecommendations = lazy(() => import('./components/PlantRecommendations'))
+const Reports = lazy(() => import('./components/Reports'))
+const Settings = lazy(() => import('./components/Settings'))
 import './unified-professional-styles.css'
 import './enhanced_sidebar_styles.css'
 
@@ -73,18 +75,24 @@ function App() {
           
           {/* Main content */}
           <main className="p-4 sm:p-6">
-            <Routes>
-              <Route path="/" element={<Navigate to="/dashboard" replace />} />
-              <Route path="/dashboard" element={<Dashboard language={language} />} />
-              <Route path="/suppliers" element={<Suppliers language={language} />} />
-              <Route path="/plants" element={<Plants language={language} />} />
-              <Route path="/products" element={<Products language={language} />} />
-              <Route path="/clients" element={<Clients language={language} />} />
-              <Route path="/projects" element={<Projects language={language} />} />
-              <Route path="/plant-recommendations" element={<PlantRecommendations language={language} />} />
-              <Route path="/reports" element={<Reports language={language} />} />
-              <Route path="/settings" element={<Settings language={language} />} />
-            </Routes>
+            <Suspense fallback={
+              <div className="flex items-center justify-center h-64">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+              </div>
+            }>
+              <Routes>
+                <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                <Route path="/dashboard" element={<Dashboard language={language} />} />
+                <Route path="/suppliers" element={<Suppliers language={language} />} />
+                <Route path="/plants" element={<Plants language={language} />} />
+                <Route path="/products" element={<Products language={language} />} />
+                <Route path="/clients" element={<Clients language={language} />} />
+                <Route path="/projects" element={<Projects language={language} />} />
+                <Route path="/plant-recommendations" element={<PlantRecommendations language={language} />} />
+                <Route path="/reports" element={<Reports language={language} />} />
+                <Route path="/settings" element={<Settings language={language} />} />
+              </Routes>
+            </Suspense>
           </main>
         </div>
         
