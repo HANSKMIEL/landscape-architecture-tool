@@ -68,10 +68,6 @@ const Suppliers = ({ language }) => {
 
   const t = translations[language]
 
-  useEffect(() => {
-    loadSuppliers()
-  }, [loadSuppliers])
-
   const loadSuppliers = useCallback(async () => {
     try {
       setLoading(true)
@@ -86,6 +82,10 @@ const Suppliers = ({ language }) => {
       setLoading(false)
     }
   }, [searchTerm, t])
+
+  useEffect(() => {
+    loadSuppliers()
+  }, [loadSuppliers])
 
   const handleDeleteSupplier = async (supplierId) => {
     if (!confirm(`${t.deleteConfirm}`)) return
