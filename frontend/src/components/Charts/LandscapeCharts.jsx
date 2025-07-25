@@ -85,7 +85,7 @@ export const LandscapeBarChart = ({ data, dataKey, xAxisKey, title, height = 300
 }
 
 // Pie Chart Component
-export const LandscapePieChart = ({ data, dataKey, nameKey, title, height = 300 }) => {
+export const LandscapePieChart = ({ data, dataKey, title, height = 300 }) => {
   return (
     <div className="w-full">
       {title && <h3 className="text-lg font-semibold mb-4 text-gray-800">{title}</h3>}

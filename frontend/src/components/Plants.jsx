@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 
 const Plants = () => {
   const [plants, setPlants] = useState([]);
@@ -36,7 +36,7 @@ const Plants = () => {
   });
 
   // Fetch plants data
-  const fetchPlants = async () => {
+  const fetchPlants = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -54,7 +54,7 @@ const Plants = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [searchTerm]);
 
   // Fetch suppliers for dropdown
   const fetchSuppliers = async () => {
@@ -72,7 +72,7 @@ const Plants = () => {
   useEffect(() => {
     fetchPlants();
     fetchSuppliers();
-  }, [searchTerm]);
+  }, [fetchPlants]);
 
   // Handle form input changes
   const handleInputChange = (e) => {

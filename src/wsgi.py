@@ -19,7 +19,8 @@ if __name__ == "__main__":
     # For direct execution, run with Waitress
     try:
         from waitress import serve
-        serve(application, host='0.0.0.0', port=8080)
+
+        serve(application, host="0.0.0.0", port=8080)
     except ImportError:
         print("Waitress not installed. Install with: pip install waitress")
-        application.run(host='0.0.0.0', port=8080)
+        application.run(host="0.0.0.0", port=8080)

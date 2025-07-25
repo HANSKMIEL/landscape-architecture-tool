@@ -103,7 +103,7 @@ class ApiService {
   }
 
   // Products API (placeholder for future implementation)
-  async getProducts(params = {}) {
+  async getProducts() {
     // For now, return mock data
     return {
       products: [],
@@ -114,7 +114,7 @@ class ApiService {
   }
 
   // Clients API (placeholder for future implementation)
-  async getClients(params = {}) {
+  async getClients() {
     // For now, return mock data
     return {
       clients: [],
@@ -125,7 +125,7 @@ class ApiService {
   }
 
   // Projects API (placeholder for future implementation)
-  async getProjects(params = {}) {
+  async getProjects() {
     // For now, return mock data
     return {
       projects: [],
