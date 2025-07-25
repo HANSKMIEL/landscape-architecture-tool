@@ -11,7 +11,9 @@ describe('Utility Functions', () => {
     })
 
     it('handles conditional classes', () => {
-      const result = cn('base-class', true && 'conditional-class', false && 'hidden-class')
+      const condition1 = true
+      const condition2 = false
+      const result = cn('base-class', condition1 && 'conditional-class', condition2 && 'hidden-class')
       expect(result).toContain('base-class')
       expect(result).toContain('conditional-class')
       expect(result).not.toContain('hidden-class')
