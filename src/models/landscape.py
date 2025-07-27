@@ -102,10 +102,14 @@ class Plant(db.Model):
     name = db.Column(db.String(200), nullable=False)
     common_name = db.Column(db.String(200))
     category = db.Column(db.String(50))  # Tree, Shrub, Perennial, Annual, etc.
+    
+    # Size attributes
     height_min = db.Column(db.Float)
     height_max = db.Column(db.Float)
     width_min = db.Column(db.Float)
     width_max = db.Column(db.Float)
+    
+    # Basic care requirements
     sun_requirements = db.Column(db.String(50))
     soil_type = db.Column(db.String(100))
     water_needs = db.Column(db.String(50))
@@ -114,11 +118,55 @@ class Plant(db.Model):
     bloom_color = db.Column(db.String(100))
     foliage_color = db.Column(db.String(100))
     native = db.Column(db.Boolean, default=False)
+    
+    # Extended climate attributes
+    temperature_min = db.Column(db.Float)  # Min temperature tolerance (°C)
+    temperature_max = db.Column(db.Float)  # Max temperature tolerance (°C)
+    humidity_preference = db.Column(db.String(50))  # Low, Medium, High
+    wind_tolerance = db.Column(db.String(50))  # Low, Medium, High
+    
+    # Extended soil attributes
+    soil_ph_min = db.Column(db.Float)  # Minimum pH preference
+    soil_ph_max = db.Column(db.Float)  # Maximum pH preference
+    soil_drainage = db.Column(db.String(50))  # Poor, Good, Excellent
+    soil_fertility = db.Column(db.String(50))  # Low, Medium, High
+    
+    # Maintenance attributes
+    maintenance = db.Column(db.String(50))
+    pruning_needs = db.Column(db.String(50))  # None, Light, Moderate, Heavy
+    fertilizer_needs = db.Column(db.String(50))  # None, Light, Moderate, Heavy
+    pest_resistance = db.Column(db.String(50))  # Low, Medium, High
+    disease_resistance = db.Column(db.String(50))  # Low, Medium, High
+    
+    # Aesthetics attributes
+    plant_form = db.Column(db.String(50))  # Upright, Spreading, Weeping, etc.
+    foliage_texture = db.Column(db.String(50))  # Fine, Medium, Coarse
+    seasonal_interest = db.Column(db.String(200))  # Spring flowers, Fall color, etc.
+    fragrance = db.Column(db.Boolean, default=False)
+    
+    # Spatial attributes
+    growth_rate = db.Column(db.String(50))  # Slow, Medium, Fast
+    mature_spread = db.Column(db.Float)  # Final spread in meters
+    root_system = db.Column(db.String(50))  # Shallow, Deep, Fibrous, Taproot
+    
+    # Ecological attributes
+    wildlife_value = db.Column(db.String(50))  # Low, Medium, High
+    pollinator_friendly = db.Column(db.Boolean, default=False)
+    deer_resistant = db.Column(db.Boolean, default=False)
+    invasive_potential = db.Column(db.String(50))  # None, Low, Medium, High
+    
+    # Project context attributes
+    suitable_for_containers = db.Column(db.Boolean, default=False)
+    suitable_for_hedging = db.Column(db.Boolean, default=False)
+    suitable_for_screening = db.Column(db.Boolean, default=False)
+    suitable_for_groundcover = db.Column(db.Boolean, default=False)
+    suitable_for_slopes = db.Column(db.Boolean, default=False)
+    
+    # Existing attributes
     supplier_id = db.Column(db.Integer, db.ForeignKey("suppliers.id"))
     price = db.Column(db.Float)
     availability = db.Column(db.String(50))
     planting_season = db.Column(db.String(100))
-    maintenance = db.Column(db.String(50))
     notes = db.Column(db.Text)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(
@@ -131,10 +179,14 @@ class Plant(db.Model):
             "name": self.name,
             "common_name": self.common_name,
             "category": self.category,
+            
+            # Size attributes
             "height_min": self.height_min,
             "height_max": self.height_max,
             "width_min": self.width_min,
             "width_max": self.width_max,
+            
+            # Basic care requirements
             "sun_requirements": self.sun_requirements,
             "soil_type": self.soil_type,
             "water_needs": self.water_needs,
@@ -143,13 +195,154 @@ class Plant(db.Model):
             "bloom_color": self.bloom_color,
             "foliage_color": self.foliage_color,
             "native": self.native,
+            
+            # Extended climate attributes
+            "temperature_min": self.temperature_min,
+            "temperature_max": self.temperature_max,
+            "humidity_preference": self.humidity_preference,
+            "wind_tolerance": self.wind_tolerance,
+            
+            # Extended soil attributes
+            "soil_ph_min": self.soil_ph_min,
+            "soil_ph_max": self.soil_ph_max,
+            "soil_drainage": self.soil_drainage,
+            "soil_fertility": self.soil_fertility,
+            
+            # Maintenance attributes
+            "maintenance": self.maintenance,
+            "pruning_needs": self.pruning_needs,
+            "fertilizer_needs": self.fertilizer_needs,
+            "pest_resistance": self.pest_resistance,
+            "disease_resistance": self.disease_resistance,
+            
+            # Aesthetics attributes
+            "plant_form": self.plant_form,
+            "foliage_texture": self.foliage_texture,
+            "seasonal_interest": self.seasonal_interest,
+            "fragrance": self.fragrance,
+            
+            # Spatial attributes
+            "growth_rate": self.growth_rate,
+            "mature_spread": self.mature_spread,
+            "root_system": self.root_system,
+            
+            # Ecological attributes
+            "wildlife_value": self.wildlife_value,
+            "pollinator_friendly": self.pollinator_friendly,
+            "deer_resistant": self.deer_resistant,
+            "invasive_potential": self.invasive_potential,
+            
+            # Project context attributes
+            "suitable_for_containers": self.suitable_for_containers,
+            "suitable_for_hedging": self.suitable_for_hedging,
+            "suitable_for_screening": self.suitable_for_screening,
+            "suitable_for_groundcover": self.suitable_for_groundcover,
+            "suitable_for_slopes": self.suitable_for_slopes,
+            
+            # Existing attributes
             "supplier_id": self.supplier_id,
             "supplier_name": self.supplier.name if self.supplier else None,
             "price": self.price,
             "availability": self.availability,
             "planting_season": self.planting_season,
-            "maintenance": self.maintenance,
             "notes": self.notes,
+            "created_at": (
+                self.created_at.isoformat() if self.created_at else None
+            ),
+            "updated_at": (
+                self.updated_at.isoformat() if self.updated_at else None
+            ),
+        }
+
+
+class PlantRecommendationRequest(db.Model):
+    __tablename__ = "plant_recommendation_requests"
+
+    id = db.Column(db.Integer, primary_key=True)
+    
+    # Request criteria
+    project_type = db.Column(db.String(100))  # Garden, Landscape, Commercial, etc.
+    site_conditions = db.Column(db.JSON)  # Store complex site data as JSON
+    
+    # Environmental criteria
+    hardiness_zone = db.Column(db.String(20))
+    sun_exposure = db.Column(db.String(50))  # Full Sun, Partial, Shade
+    soil_type = db.Column(db.String(100))
+    soil_ph = db.Column(db.Float)
+    moisture_level = db.Column(db.String(50))
+    
+    # Design criteria
+    desired_height_min = db.Column(db.Float)
+    desired_height_max = db.Column(db.Float)
+    desired_width_min = db.Column(db.Float)
+    desired_width_max = db.Column(db.Float)
+    color_preferences = db.Column(db.String(200))
+    bloom_season = db.Column(db.String(100))
+    
+    # Maintenance criteria
+    maintenance_level = db.Column(db.String(50))  # Low, Medium, High
+    budget_range = db.Column(db.String(50))
+    
+    # Special requirements
+    native_preference = db.Column(db.Boolean, default=False)
+    wildlife_friendly = db.Column(db.Boolean, default=False)
+    deer_resistant_required = db.Column(db.Boolean, default=False)
+    pollinator_friendly_required = db.Column(db.Boolean, default=False)
+    
+    # Project context
+    container_planting = db.Column(db.Boolean, default=False)
+    screening_purpose = db.Column(db.Boolean, default=False)
+    hedging_purpose = db.Column(db.Boolean, default=False)
+    groundcover_purpose = db.Column(db.Boolean, default=False)
+    slope_planting = db.Column(db.Boolean, default=False)
+    
+    # Request metadata
+    user_id = db.Column(db.String(100))  # Optional user identifier
+    session_id = db.Column(db.String(100))  # Session tracking
+    ip_address = db.Column(db.String(45))  # For analytics
+    
+    # Results and feedback
+    recommended_plants = db.Column(db.JSON)  # Store recommendation results
+    user_feedback = db.Column(db.JSON)  # Store user feedback for learning
+    feedback_rating = db.Column(db.Integer)  # Overall rating 1-5
+    
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(
+        db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
+    )
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "project_type": self.project_type,
+            "site_conditions": self.site_conditions,
+            "hardiness_zone": self.hardiness_zone,
+            "sun_exposure": self.sun_exposure,
+            "soil_type": self.soil_type,
+            "soil_ph": self.soil_ph,
+            "moisture_level": self.moisture_level,
+            "desired_height_min": self.desired_height_min,
+            "desired_height_max": self.desired_height_max,
+            "desired_width_min": self.desired_width_min,
+            "desired_width_max": self.desired_width_max,
+            "color_preferences": self.color_preferences,
+            "bloom_season": self.bloom_season,
+            "maintenance_level": self.maintenance_level,
+            "budget_range": self.budget_range,
+            "native_preference": self.native_preference,
+            "wildlife_friendly": self.wildlife_friendly,
+            "deer_resistant_required": self.deer_resistant_required,
+            "pollinator_friendly_required": self.pollinator_friendly_required,
+            "container_planting": self.container_planting,
+            "screening_purpose": self.screening_purpose,
+            "hedging_purpose": self.hedging_purpose,
+            "groundcover_purpose": self.groundcover_purpose,
+            "slope_planting": self.slope_planting,
+            "user_id": self.user_id,
+            "session_id": self.session_id,
+            "recommended_plants": self.recommended_plants,
+            "user_feedback": self.user_feedback,
+            "feedback_rating": self.feedback_rating,
             "created_at": (
                 self.created_at.isoformat() if self.created_at else None
             ),

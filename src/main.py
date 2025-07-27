@@ -52,6 +52,9 @@ from src.utils.db_init import initialize_database, populate_sample_data
 # Import utilities
 from src.utils.error_handlers import handle_errors, register_error_handlers
 
+# Import route blueprints
+from src.routes.plant_recommendations import plant_recommendations_bp
+
 
 # Configure logging
 def configure_logging(app):
@@ -103,6 +106,9 @@ def create_app():
     # Register error handlers
     register_error_handlers(app)
 
+    # Register route blueprints
+    app.register_blueprint(plant_recommendations_bp)
+
     # Initialize services
     supplier_service = SupplierService()
     plant_service = PlantService()
@@ -131,6 +137,14 @@ def create_app():
                     "products": "/api/products",
                     "clients": "/api/clients",
                     "projects": "/api/projects",
+                    "plant_recommendations": {
+                        "recommendations": "/api/plant-recommendations",
+                        "criteria_options": "/api/plant-recommendations/criteria-options",
+                        "feedback": "/api/plant-recommendations/feedback",
+                        "history": "/api/plant-recommendations/history",
+                        "export": "/api/plant-recommendations/export",
+                        "import": "/api/plant-recommendations/import"
+                    },
                 },
                 "status": "operational",
                 "database": "persistent",
