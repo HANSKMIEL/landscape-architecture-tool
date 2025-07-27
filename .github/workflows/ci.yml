@@ -574,6 +574,8 @@ jobs:
         rm -f backend.pid
 
   monitoring:
+    permissions:
+      contents: read
     runs-on: ubuntu-latest
     needs: [test-backend, test-frontend, code-quality, security-scan]
     if: always()
