@@ -61,7 +61,7 @@ def get_plant_recommendations():
     }
     """
     try:
-        data = request.get_json()
+        data = request.get_json(force=True, silent=True)
         if not data:
             return jsonify({'error': 'Request body is required'}), 400
         

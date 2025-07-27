@@ -87,6 +87,23 @@ This document outlines the planned development activities, testing procedures, a
 
 ## Testing Instructions
 
+### Running the Development Log System
+The development log system tracks progress and development activities automatically.
+
+1. **View Current Development Log**:
+   ```bash
+   cat dev_log.md
+   ```
+
+2. **Add Development Entry**:
+   ```bash
+   scripts/update_dev_log.py --action feature_added --description "New feature implementation" --author "developer"
+   scripts/update_dev_log.py --action bug_fixed --description "Fixed critical issue" --author "developer"
+   scripts/update_dev_log.py --action refactor --description "Code refactoring" --author "developer"
+   scripts/update_dev_log.py --action test_added --description "Added new tests" --author "developer"
+   scripts/update_dev_log.py --action docs_updated --description "Updated documentation" --author "developer"
+   ```
+
 ### Running the Plant Recommendation System
 1. **Start the Backend**:
    ```bash
