@@ -5,10 +5,15 @@ A comprehensive web application for managing landscape architecture projects, su
 ## 🏢 Enterprise Features
 
 ### 🔄 Automated DevOps
-- **CI/CD Pipeline** - Automated testing with PostgreSQL and Redis services
+- **Modern CI/CD Pipeline** - Comprehensive automated testing with PostgreSQL and Redis services
+- **Enhanced Error Handling** - Detailed failure reporting with artifact uploads for debugging
+- **Security-First Approach** - Trivy vulnerability scanning, Safety checks, npm audit integration
+- **Multi-Environment Testing** - SQLite and PostgreSQL testing with integration tests
+- **Code Quality Enforcement** - Python linting (flake8, black, isort), security scanning (bandit)
+- **Docker Integration** - Automated container builds with vulnerability scanning
+- **Monitoring & Reporting** - Real-time pipeline monitoring with comprehensive status reports
+- **DeepSource Integration** - Automated code quality analysis with coverage reporting
 - **Dependency Management** - Automated security and dependency updates via Dependabot
-- **Code Quality** - Automated linting, formatting, and security scanning
-- **Docker Support** - Multi-stage builds for optimized production deployment
 
 ### 🌐 Cloud-First Development
 - **GitHub Codespaces** - Instant cloud development environment
@@ -241,6 +246,85 @@ The backend has been completely refactored from a monolithic structure to a modu
 - `PUT /api/projects/{id}` - Update project (with validation)
 - `DELETE /api/projects/{id}` - Delete project
 
+## 🔄 CI/CD Pipeline
+
+The project uses a modernized CI/CD pipeline that ensures code quality, security, and reliability through automated testing and validation.
+
+### Pipeline Architecture
+
+The CI/CD pipeline consists of the following jobs that run in parallel and sequence:
+
+#### **Core Testing Jobs** (Run in Parallel)
+- **`test-backend`** - Backend testing with SQLite and PostgreSQL
+- **`test-frontend`** - Frontend build, lint, and dependency security audit
+- **`code-quality`** - Python linting, formatting checks, and security scanning
+- **`security-scan`** - Trivy vulnerability scanning and Python safety checks
+
+#### **Integration & Deployment Jobs** (Sequential)
+- **`integration-tests`** - End-to-end API testing with real services
+- **`docker-build`** - Container builds and vulnerability scanning
+- **`monitoring`** - Pipeline status monitoring and reporting
+- **`deepsource`** - Code quality analysis and coverage reporting
+- **`deploy`** - Deployment readiness validation
+
+### Enhanced Error Handling
+
+The pipeline features improved error handling with detailed artifact collection:
+
+- **Migration Failures** - Database migration issues captured with environment details
+- **Test Failures** - Detailed test reports with failure context
+- **Linting Issues** - Complete lint reports with line-by-line feedback
+- **Security Vulnerabilities** - JSON reports with vulnerability details
+- **Build Failures** - Comprehensive build logs and dependency information
+
+### Security Features
+
+- **Dependency Scanning** - npm audit for frontend, Safety for Python backend
+- **Container Security** - Trivy scanning for Docker images
+- **Code Security** - Bandit security linting for Python code
+- **SARIF Upload** - Security results uploaded to GitHub Security tab
+
+### Monitoring & Observability
+
+- **Pipeline Monitoring** - Real-time job status and performance metrics
+- **Artifact Management** - Organized collection of build artifacts and reports
+- **Health Checks** - Enhanced service health validation with timeouts
+- **Coverage Reporting** - Automated test coverage analysis
+
+### Setting Up CI/CD
+
+#### Required Secrets
+Add these to your GitHub repository secrets for full functionality:
+
+```bash
+DEEPSOURCE_DSN=https://your-deepsource-dsn@deepsource.io  # Optional: For DeepSource integration
+```
+
+#### Environment Configuration
+The pipeline uses the existing `.env.example` for configuration templates.
+
+#### Customizing the Pipeline
+Edit `.github/workflows/ci.yml` to modify:
+- Test timeout values
+- Security scan severity levels
+- Artifact retention periods
+- Deployment conditions
+
+### Pipeline Triggers
+
+- **Push to main/develop** - Full pipeline execution
+- **Pull Requests to main** - All jobs except deployment
+- **Manual Triggers** - Can be run manually from GitHub Actions tab
+
+### Artifact Collection
+
+The pipeline automatically collects and stores:
+- Test reports and coverage data
+- Security scan results (SARIF format)
+- Code quality reports
+- Build artifacts and logs
+- Failure diagnostics
+
 ## 📚 Documentation & Setup
 
 ### 📖 Comprehensive Guides
@@ -259,6 +343,84 @@ The backend has been completely refactored from a monolithic structure to a modu
 - **Code Quality** - Linting, formatting, and security scanning
 - **Dependency Management** - Automated updates via Dependabot
 - **Health Monitoring** - Comprehensive health checks and logging
+
+### 🛠️ Environment Setup
+
+#### Environment Configuration
+Copy the template and customize for your environment:
+
+```bash
+# Copy environment template
+cp .env.example .env
+
+# Edit with your configuration
+nano .env
+```
+
+Key configuration sections:
+- **Application Environment**: Set `FLASK_ENV` (development/production)
+- **Database**: Configure PostgreSQL or SQLite connection
+- **Security**: Generate secure `SECRET_KEY` with `openssl rand -hex 32`
+- **Redis**: Configure caching and rate limiting
+- **CORS**: Set allowed origins for frontend
+- **Logging**: Configure log levels and output
+
+#### Local Development Setup
+
+```bash
+# Install Python dependencies
+pip install -r requirements.txt
+
+# Install frontend dependencies
+cd frontend
+npm install --legacy-peer-deps
+
+# Initialize database
+flask --app src.main db upgrade
+
+# Seed with sample data (optional)
+python scripts/dev_log.py add sample-data "Added Dutch sample data for testing"
+
+# Run backend development server
+python src/main.py
+
+# Run frontend development server (in another terminal)
+cd frontend
+npm run dev
+```
+
+#### Production Setup Checklist
+
+- [ ] Configure PostgreSQL database
+- [ ] Set up Redis for caching
+- [ ] Generate secure SECRET_KEY
+- [ ] Configure CORS origins
+- [ ] Set up SSL certificates (optional)
+- [ ] Configure Gunicorn workers
+- [ ] Set LOG_LEVEL to WARNING
+- [ ] Review and secure environment variables
+
+#### Maintenance Tasks
+
+```bash
+# Update dependencies
+pip install --upgrade -r requirements.txt
+cd frontend && npm update
+
+# Run security audits
+pip install safety && safety check
+cd frontend && npm audit
+
+# Check code quality
+flake8 src/ tests/
+black src/ tests/
+isort src/ tests/
+bandit -r src/
+
+# Run comprehensive tests
+python -m pytest tests/ -v
+cd frontend && npm run test
+```
 
 ### Database Operations
 
