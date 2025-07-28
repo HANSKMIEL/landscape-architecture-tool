@@ -159,3 +159,17 @@ class ProjectUpdateSchema(BaseModel):
     area_size: Optional[float] = Field(None, ge=0)
     notes: Optional[str] = None
     project_manager: Optional[str] = Field(None, max_length=100)
+
+
+class ProjectPlantCreateSchema(BaseModel):
+    plant_id: int = Field(..., gt=0)
+    quantity: int = Field(..., gt=0)
+    unit_cost: Optional[float] = Field(None, ge=0)
+    notes: Optional[str] = None
+
+
+class ProjectPlantUpdateSchema(BaseModel):
+    quantity: Optional[int] = Field(None, gt=0)
+    unit_cost: Optional[float] = Field(None, ge=0)
+    status: Optional[str] = Field(None, max_length=50)
+    notes: Optional[str] = None

@@ -424,6 +424,11 @@ class Project(db.Model):
         db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
     )
 
+    # Relationships
+    project_plants = db.relationship(
+        "ProjectPlant", backref="project", lazy=True, cascade="all, delete-orphan"
+    )
+
     def to_dict(self):
         return {
             "id": self.id,
@@ -440,6 +445,54 @@ class Project(db.Model):
             "area_size": self.area_size,
             "notes": self.notes,
             "project_manager": self.project_manager,
+            "created_at": (
+                self.created_at.isoformat() if self.created_at else None
+            ),
+            "updated_at": (
+                self.updated_at.isoformat() if self.updated_at else None
+            ),
+        }
+
+
+class ProjectPlant(db.Model):
+    """Association table for Project-Plant relationships with additional data"""
+    __tablename__ = "project_plants"
+
+    id = db.Column(db.Integer, primary_key=True)
+    project_id = db.Column(
+        db.Integer, db.ForeignKey("projects.id"), nullable=False
+    )
+    plant_id = db.Column(
+        db.Integer, db.ForeignKey("plants.id"), nullable=False
+    )
+    quantity = db.Column(db.Integer, nullable=False, default=1)
+    unit_cost = db.Column(db.Float)  # Cost per plant
+    status = db.Column(db.String(50), default="planned")  # planned, ordered, planted, completed
+    notes = db.Column(db.Text)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(
+        db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
+    )
+
+    # Relationships
+    plant = db.relationship("Plant", backref="project_plants", lazy=True)
+
+    # Unique constraint to prevent duplicate plant entries per project
+    __table_args__ = (
+        db.UniqueConstraint('project_id', 'plant_id', name='unique_project_plant'),
+    )
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "project_id": self.project_id,
+            "plant_id": self.plant_id,
+            "plant": self.plant.to_dict() if self.plant else None,
+            "quantity": self.quantity,
+            "unit_cost": self.unit_cost,
+            "total_cost": (self.unit_cost * self.quantity) if self.unit_cost else None,
+            "status": self.status,
+            "notes": self.notes,
             "created_at": (
                 self.created_at.isoformat() if self.created_at else None
             ),
