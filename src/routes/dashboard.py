@@ -15,12 +15,8 @@ def get_dashboard_stats():
             "plants": Plant.query.count(),
             "clients": Client.query.count(),
             "projects": Project.query.count(),
-            "active_projects": Project.query.filter_by(
-                status="In Progress"
-            ).count(),
-            "completed_projects": Project.query.filter_by(
-                status="Completed"
-            ).count(),
+            "active_projects": Project.query.filter_by(status="In Progress").count(),
+            "completed_projects": Project.query.filter_by(status="Completed").count(),
             "monthly_revenue": 15420.50,  # This would be calculated from actual project data
         }
 
@@ -38,9 +34,7 @@ def get_dashboard_stats():
         products = Product.query.all()
         for product in products:
             category = product.category or "Uncategorized"
-            product_categories[category] = (
-                product_categories.get(category, 0) + 1
-            )
+            product_categories[category] = product_categories.get(category, 0) + 1
 
         stats["product_categories"] = product_categories
 
@@ -70,9 +64,7 @@ def get_recent_activity():
             )
 
         # Get recent clients
-        recent_clients = (
-            Client.query.order_by(Client.created_at.desc()).limit(3).all()
-        )
+        recent_clients = Client.query.order_by(Client.created_at.desc()).limit(3).all()
         for client in recent_clients:
             activities.append(
                 {

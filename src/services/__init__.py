@@ -37,9 +37,7 @@ class BaseService:
                 "has_prev": paginated.has_prev,
             }
         except Exception as e:
-            logger.error(
-                f"Error getting all {self.model_class.__name__}: {str(e)}"
-            )
+            logger.error(f"Error getting all {self.model_class.__name__}: {str(e)}")
             raise
 
     def get_by_id(self, entity_id: int) -> Optional[Any]:
@@ -63,14 +61,10 @@ class BaseService:
             return entity.to_dict()
         except Exception as e:
             db.session.rollback()
-            logger.error(
-                f"Error creating {self.model_class.__name__}: {str(e)}"
-            )
+            logger.error(f"Error creating {self.model_class.__name__}: {str(e)}")
             raise
 
-    def update(
-        self, entity_id: int, data: Dict[str, Any]
-    ) -> Optional[Dict[str, Any]]:
+    def update(self, entity_id: int, data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         """Update entity"""
         try:
             entity = self.model_class.query.get(entity_id)
@@ -135,9 +129,7 @@ class SupplierService(BaseService):
             )
 
             return {
-                "suppliers": [
-                    supplier.to_dict() for supplier in paginated.items
-                ],
+                "suppliers": [supplier.to_dict() for supplier in paginated.items],
                 "total": paginated.total,
                 "pages": paginated.pages,
                 "current_page": page,

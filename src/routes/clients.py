@@ -40,9 +40,7 @@ def get_clients():
         # Format response with project counts
         clients_data = []
         for client in clients.items:
-            project_count = Project.query.filter_by(
-                client_id=client.id
-            ).count()
+            project_count = Project.query.filter_by(client_id=client.id).count()
             active_projects = Project.query.filter_by(
                 client_id=client.id, status="in_progress"
             ).count()
@@ -62,14 +60,10 @@ def get_clients():
                     "project_count": project_count,
                     "active_projects": active_projects,
                     "created_at": (
-                        client.created_at.isoformat()
-                        if client.created_at
-                        else None
+                        client.created_at.isoformat() if client.created_at else None
                     ),
                     "updated_at": (
-                        client.updated_at.isoformat()
-                        if client.updated_at
-                        else None
+                        client.updated_at.isoformat() if client.updated_at else None
                     ),
                 }
             )
@@ -165,25 +159,17 @@ def get_client(client_id):
                     "name": project.name,
                     "description": project.description,
                     "status": project.status,
-                    "budget": (
-                        float(project.budget) if project.budget else None
-                    ),
+                    "budget": (float(project.budget) if project.budget else None),
                     "spent": float(project.spent) if project.spent else None,
                     "location": project.location,
                     "start_date": (
-                        project.start_date.isoformat()
-                        if project.start_date
-                        else None
+                        project.start_date.isoformat() if project.start_date else None
                     ),
                     "end_date": (
-                        project.end_date.isoformat()
-                        if project.end_date
-                        else None
+                        project.end_date.isoformat() if project.end_date else None
                     ),
                     "created_at": (
-                        project.created_at.isoformat()
-                        if project.created_at
-                        else None
+                        project.created_at.isoformat() if project.created_at else None
                     ),
                 }
             )
@@ -203,14 +189,10 @@ def get_client(client_id):
                 "projects": projects_data,
                 "project_count": len(projects_data),
                 "created_at": (
-                    client.created_at.isoformat()
-                    if client.created_at
-                    else None
+                    client.created_at.isoformat() if client.created_at else None
                 ),
                 "updated_at": (
-                    client.updated_at.isoformat()
-                    if client.updated_at
-                    else None
+                    client.updated_at.isoformat() if client.updated_at else None
                 ),
             }
         )
@@ -228,14 +210,10 @@ def update_client(client_id):
 
         # Check if email is being changed and if it already exists
         if "email" in data and data["email"] != client.email:
-            existing_client = Client.query.filter_by(
-                email=data["email"]
-            ).first()
+            existing_client = Client.query.filter_by(email=data["email"]).first()
             if existing_client:
                 return (
-                    jsonify(
-                        {"error": "Client with this email already exists"}
-                    ),
+                    jsonify({"error": "Client with this email already exists"}),
                     400,
                 )
 
@@ -340,8 +318,7 @@ def get_client_stats():
         )
 
         top_clients_data = [
-            {"name": name, "project_count": count}
-            for name, count in top_clients
+            {"name": name, "project_count": count} for name, count in top_clients
         ]
 
         # Geographic distribution
@@ -422,9 +399,7 @@ def export_clients():
 
         clients_data = []
         for client in clients:
-            project_count = Project.query.filter_by(
-                client_id=client.id
-            ).count()
+            project_count = Project.query.filter_by(client_id=client.id).count()
 
             clients_data.append(
                 {
@@ -439,9 +414,7 @@ def export_clients():
                     "notes": client.notes,
                     "project_count": project_count,
                     "created_at": (
-                        client.created_at.isoformat()
-                        if client.created_at
-                        else None
+                        client.created_at.isoformat() if client.created_at else None
                     ),
                 }
             )

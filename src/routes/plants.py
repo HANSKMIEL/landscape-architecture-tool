@@ -37,9 +37,7 @@ def get_plants():
             query = query.filter(Plant.sun_requirements == sun_requirements)
 
         if water_requirements:
-            query = query.filter(
-                Plant.water_requirements == water_requirements
-            )
+            query = query.filter(Plant.water_requirements == water_requirements)
 
         if native_only:
             query = query.filter(Plant.native_to_netherlands.is_(True))
@@ -79,7 +77,7 @@ def get_plant_recommendations():
         - Soil Type: {site_conditions.get('soil_type', 'Unknown')}
         - Water Availability: {site_conditions.get('water_availability', 'Medium')}
         - Climate Zone: Netherlands (Hardiness Zone 8-9)
-        
+
         Preferences:
         - Maintenance Level: {preferences.get('maintenance_level', 'Medium')}
         - Native Plants Preferred: {preferences.get('native_preferred', False)}
@@ -91,26 +89,34 @@ def get_plant_recommendations():
         available_plants = Plant.query.all()
         plant_list = []
         for plant in available_plants[:20]:  # Limit for AI processing
-            plant_info = f"{plant.name} ({plant.scientific_name}) - {plant.category}, {plant.sun_requirements}, {plant.water_requirements}"
+            plant_info = (
+                f"{plant.name} ({plant.scientific_name}) - "
+                f"{plant.category}, {plant.sun_requirements}, "
+                f"{plant.water_requirements}"
+            )
             plant_list.append(plant_info)
 
         # Create AI prompt
-        prompt = f"""
-        As a landscape architecture expert, recommend the best plants for this project:
-        
-        {context}
-        
-        Available plants in our database:
-        {chr(10).join(plant_list)}
-        
-        Please recommend 5-8 plants that would work best for these conditions. For each plant, provide:
-        1. Plant name
-        2. Why it's suitable for these conditions
-        3. Design considerations
-        4. Maintenance requirements
-        
-        Focus on plants that are suitable for Dutch climate and the specified conditions.
-        """
+        prompt_parts = [
+            "As a landscape architecture expert, recommend the best plants "
+            "for this project:",
+            "",
+            context,
+            "",
+            "Available plants in our database:",
+            chr(10).join(plant_list),
+            "",
+            "Please recommend 5-8 plants that would work best for these conditions.",
+            "For each plant, provide:",
+            "1. Plant name",
+            "2. Why it's suitable for these conditions",
+            "3. Design considerations",
+            "4. Maintenance requirements",
+            "",
+            "Focus on plants that are suitable for Dutch climate and the "
+            "specified conditions.",
+        ]
+        prompt = "\n".join(prompt_parts)
 
         try:
             # Call OpenAI API
@@ -120,7 +126,10 @@ def get_plant_recommendations():
                 messages=[
                     {
                         "role": "system",
-                        "content": "You are an expert landscape architect specializing in Dutch gardens and sustainable plant selection.",
+                        "content": (
+                            "You are an expert landscape architect specializing in "
+                            "Dutch gardens and sustainable plant selection."
+                        ),
                     },
                     {"role": "user", "content": prompt},
                 ],
@@ -133,7 +142,8 @@ def get_plant_recommendations():
             # Get matching plants from database
             recommended_plants = []
             for plant in available_plants:
-                # Simple matching logic - in production, this would be more sophisticated
+                # Simple matching logic - in production, this would be more
+                # sophisticated
                 if any(
                     keyword in plant.name.lower()
                     or keyword in plant.scientific_name.lower()
@@ -153,7 +163,7 @@ def get_plant_recommendations():
                 }
             )
 
-        except Exception as ai_error:
+        except Exception:
             # Fallback to rule-based recommendations if AI fails
             fallback_plants = []
             query = Plant.query
@@ -169,16 +179,17 @@ def get_plant_recommendations():
                 )
 
             if preferences.get("native_preferred"):
-                query = query.filter(Plant.native_to_netherlands == True)
+                query = query.filter(Plant.native_to_netherlands.is_(True))
 
             fallback_plants = query.limit(8).all()
 
             return jsonify(
                 {
-                    "recommendations": "AI recommendations temporarily unavailable. Here are plants matching your basic criteria.",
-                    "matching_plants": [
-                        plant.to_dict() for plant in fallback_plants
-                    ],
+                    "recommendations": (
+                        "AI recommendations temporarily unavailable. Here are plants "
+                        "matching your basic criteria."
+                    ),
+                    "matching_plants": [plant.to_dict() for plant in fallback_plants],
                     "criteria_used": {
                         "site_conditions": site_conditions,
                         "project_type": project_type,

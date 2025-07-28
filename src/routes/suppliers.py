@@ -29,9 +29,7 @@ def get_suppliers():
 
         return jsonify(
             {
-                "suppliers": [
-                    supplier.to_dict() for supplier in suppliers.items
-                ],
+                "suppliers": [supplier.to_dict() for supplier in suppliers.items],
                 "total": suppliers.total,
                 "pages": suppliers.pages,
                 "current_page": page,

@@ -18,47 +18,26 @@ from flask_migrate import Migrate
 # Add project root to Python path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-# Import configuration
-from src.config import get_config
-
-# Import models and database
-from src.models.user import db
-
-# Import schemas
-from src.schemas import (
-    ClientCreateSchema,
-    ClientUpdateSchema,
-    PlantCreateSchema,
-    PlantUpdateSchema,
-    ProductCreateSchema,
-    ProductUpdateSchema,
-    ProjectCreateSchema,
-    ProjectUpdateSchema,
-    ProjectPlantCreateSchema,
-    ProjectPlantUpdateSchema,
-    SupplierCreateSchema,
-    SupplierUpdateSchema,
-)
-
-# Import services
-from src.services import (
-    ClientService,
-    DashboardService,
-    PlantService,
-    ProductService,
-    ProjectService,
-    SupplierService,
-)
-from src.services.analytics import AnalyticsService
-from src.utils.db_init import initialize_database, populate_sample_data
-
-# Import utilities
-from src.utils.error_handlers import handle_errors, register_error_handlers
-
-# Import route blueprints
-from src.routes.plant_recommendations import plant_recommendations_bp
-from src.routes.project_plants import project_plants_bp
-from src.routes.reports import reports_bp
+from src.config import get_config  # noqa: E402
+from src.models.user import db  # noqa: E402
+from src.routes.plant_recommendations import \
+    plant_recommendations_bp  # noqa: E402
+from src.routes.project_plants import project_plants_bp  # noqa: E402
+from src.routes.reports import reports_bp  # noqa: E402
+from src.schemas import ClientUpdateSchema  # noqa: E402
+from src.schemas import (ClientCreateSchema, PlantCreateSchema,  # noqa: E402
+                         PlantUpdateSchema, ProductCreateSchema,
+                         ProductUpdateSchema, ProjectCreateSchema,
+                         ProjectUpdateSchema, SupplierCreateSchema,
+                         SupplierUpdateSchema)
+from src.services import PlantService  # noqa: E402
+from src.services import (ClientService, DashboardService, ProductService,  # noqa: E402
+                          ProjectService, SupplierService)
+from src.services.analytics import AnalyticsService  # noqa: E402
+from src.utils.db_init import (initialize_database,  # noqa: E402
+                               populate_sample_data)
+from src.utils.error_handlers import handle_errors  # noqa: E402
+from src.utils.error_handlers import register_error_handlers  # noqa: E402
 
 
 # Configure logging
@@ -142,10 +121,12 @@ def create_app():
                     },
                     "analytics": {
                         "plant_usage": "/api/analytics/plant-usage",
-                        "project_performance": "/api/analytics/project-performance", 
+                        "project_performance": "/api/analytics/project-performance",
                         "client_insights": "/api/analytics/client-insights",
                         "financial": "/api/analytics/financial",
-                        "recommendation_effectiveness": "/api/analytics/recommendation-effectiveness"
+                        "recommendation_effectiveness": (
+                            "/api/analytics/recommendation-effectiveness"
+                        ),
                     },
                     "suppliers": "/api/suppliers",
                     "plants": "/api/plants",
@@ -154,11 +135,13 @@ def create_app():
                     "projects": "/api/projects",
                     "plant_recommendations": {
                         "recommendations": "/api/plant-recommendations",
-                        "criteria_options": "/api/plant-recommendations/criteria-options",
+                        "criteria_options": (
+                            "/api/plant-recommendations/criteria-options"
+                        ),
                         "feedback": "/api/plant-recommendations/feedback",
                         "history": "/api/plant-recommendations/history",
                         "export": "/api/plant-recommendations/export",
-                        "import": "/api/plant-recommendations/import"
+                        "import": "/api/plant-recommendations/import",
                     },
                 },
                 "status": "operational",
@@ -187,11 +170,11 @@ def create_app():
     def get_plant_usage_analytics():
         """Get plant usage analytics"""
         from flask import request
-        
+
         start_date = request.args.get("start_date")
         end_date = request.args.get("end_date")
         date_range = (start_date, end_date) if start_date or end_date else None
-        
+
         analytics = analytics_service.get_plant_usage_analytics(date_range)
         return jsonify(analytics)
 
@@ -200,10 +183,10 @@ def create_app():
     def get_project_performance_analytics():
         """Get project performance analytics"""
         from flask import request
-        
+
         project_id = request.args.get("project_id")
         project_id = int(project_id) if project_id else None
-        
+
         analytics = analytics_service.get_project_performance_metrics(project_id)
         return jsonify(analytics)
 
@@ -219,16 +202,17 @@ def create_app():
     def get_financial_analytics():
         """Get financial analytics"""
         from flask import request
-        
+
         start_date = request.args.get("start_date")
         end_date = request.args.get("end_date")
-        
+
         if not start_date or not end_date:
             # Default to last 12 months
             from datetime import datetime, timedelta
+
             end_date = datetime.now().isoformat()
             start_date = (datetime.now() - timedelta(days=365)).isoformat()
-        
+
         analytics = analytics_service.get_financial_reporting((start_date, end_date))
         return jsonify(analytics)
 
@@ -304,9 +288,7 @@ def create_app():
 
         search = request.args.get("search", "")
         result = plant_service.get_all(search=search)
-        return jsonify(
-            result["plants"] if "plants" in result else result["items"]
-        )
+        return jsonify(result["plants"] if "plants" in result else result["items"])
 
     @app.route("/api/plants", methods=["POST"])
     @handle_errors
@@ -360,9 +342,7 @@ def create_app():
 
         search = request.args.get("search", "")
         result = product_service.get_all(search=search)
-        return jsonify(
-            result["products"] if "products" in result else result["items"]
-        )
+        return jsonify(result["products"] if "products" in result else result["items"])
 
     @app.route("/api/products", methods=["POST"])
     @handle_errors
@@ -416,9 +396,7 @@ def create_app():
 
         search = request.args.get("search", "")
         result = client_service.get_all(search=search)
-        return jsonify(
-            result["clients"] if "clients" in result else result["items"]
-        )
+        return jsonify(result["clients"] if "clients" in result else result["items"])
 
     @app.route("/api/clients", methods=["POST"])
     @handle_errors
@@ -434,9 +412,7 @@ def create_app():
 
         # Add registration date if not provided
         if "registration_date" not in validated_data:
-            validated_data["registration_date"] = datetime.now().strftime(
-                "%Y-%m-%d"
-            )
+            validated_data["registration_date"] = datetime.now().strftime("%Y-%m-%d")
 
         client = client_service.create(validated_data)
         return jsonify(client), 201
@@ -481,9 +457,7 @@ def create_app():
         client_id = int(client_id) if client_id else None
 
         result = project_service.get_all(search=search, client_id=client_id)
-        return jsonify(
-            result["projects"] if "projects" in result else result["items"]
-        )
+        return jsonify(result["projects"] if "projects" in result else result["items"])
 
     @app.route("/api/projects", methods=["POST"])
     @handle_errors
@@ -581,9 +555,7 @@ def main():
         logger.warning(
             "Use a production WSGI server (like Gunicorn) instead of Flask dev server"
         )
-        print(
-            "For production, use: gunicorn -c gunicorn.conf.py wsgi:application"
-        )
+        print("For production, use: gunicorn -c gunicorn.conf.py wsgi:application")
 
 
 # Create app instance for WSGI servers (like Waitress, Gunicorn)

@@ -3,7 +3,6 @@
 # This file handles all report generation operations
 
 import io
-import os
 from datetime import datetime
 
 from flask import Blueprint, jsonify, request, send_file
@@ -11,15 +10,11 @@ from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 from reportlab.lib.units import inch
-from reportlab.platypus import (
-    Paragraph,
-    SimpleDocTemplate,
-    Spacer,
-    Table,
-    TableStyle,
-)
+from reportlab.platypus import (Paragraph, SimpleDocTemplate, Spacer, Table,
+                                TableStyle)
 
-from src.models.landscape import Client, Plant, Product, Project, Supplier, ProjectPlant, db
+from src.models.landscape import (Client, Plant, Product, Project,
+                                  ProjectPlant, Supplier, db)
 
 reports_bp = Blueprint("reports", __name__)
 
@@ -36,13 +31,9 @@ def generate_business_summary():
         # Build date filter
         date_filter = []
         if start_date:
-            date_filter.append(
-                Project.created_at >= datetime.fromisoformat(start_date)
-            )
+            date_filter.append(Project.created_at >= datetime.fromisoformat(start_date))
         if end_date:
-            date_filter.append(
-                Project.created_at <= datetime.fromisoformat(end_date)
-            )
+            date_filter.append(Project.created_at <= datetime.fromisoformat(end_date))
 
         # Get statistics
         total_projects = Project.query.filter(*date_filter).count()
@@ -107,7 +98,9 @@ def generate_business_summary():
             db.session.query(
                 Plant.name,
                 Plant.common_name,
-                db.func.count(ProjectPlant.project_id.distinct()).label("project_count"),
+                db.func.count(ProjectPlant.project_id.distinct()).label(
+                    "project_count"
+                ),
             )
             .join(ProjectPlant, Plant.id == ProjectPlant.plant_id)
             .join(Project, ProjectPlant.project_id == Project.id)
@@ -148,9 +141,7 @@ def generate_business_summary():
                     "total_spent": total_spent,
                     "avg_budget": avg_budget,
                     "utilization_rate": (
-                        (total_spent / total_budget * 100)
-                        if total_budget > 0
-                        else 0
+                        (total_spent / total_budget * 100) if total_budget > 0 else 0
                     ),
                 },
             },
@@ -184,9 +175,7 @@ def generate_business_summary_pdf(data):
             spaceAfter=30,
             textColor=colors.HexColor("#2D5016"),
         )
-        story.append(
-            Paragraph("Landscape Architecture Business Summary", title_style)
-        )
+        story.append(Paragraph("Landscape Architecture Business Summary", title_style))
         story.append(Spacer(1, 20))
 
         # Generation info
@@ -241,16 +230,10 @@ def generate_business_summary_pdf(data):
 
         # Project status distribution
         if data["project_stats"]["status_distribution"]:
-            story.append(
-                Paragraph("Project Status Distribution", styles["Heading2"])
-            )
+            story.append(Paragraph("Project Status Distribution", styles["Heading2"]))
             status_data = [["Status", "Count"]]
-            for status, count in data["project_stats"][
-                "status_distribution"
-            ].items():
-                status_data.append(
-                    [status.replace("_", " ").title(), str(count)]
-                )
+            for status, count in data["project_stats"]["status_distribution"].items():
+                status_data.append([status.replace("_", " ").title(), str(count)])
 
             status_table = Table(status_data, colWidths=[3 * inch, 1.5 * inch])
             status_table.setStyle(
@@ -315,12 +298,8 @@ def generate_business_summary_pdf(data):
 
         # Top clients
         if data["top_clients"]:
-            story.append(
-                Paragraph("Top Clients by Project Count", styles["Heading2"])
-            )
-            client_data = [
-                ["Client", "Type", "Projects", "Total Budget (€)"]
-            ]
+            story.append(Paragraph("Top Clients by Project Count", styles["Heading2"]))
+            client_data = [["Client", "Type", "Projects", "Total Budget (€)"]]
             for client in data["top_clients"][:5]:  # Top 5
                 client_data.append(
                     [
@@ -374,9 +353,7 @@ def generate_business_summary_pdf(data):
                     ]
                 )
 
-            plant_table = Table(
-                plant_data, colWidths=[2 * inch, 2 * inch, 1 * inch]
-            )
+            plant_table = Table(plant_data, colWidths=[2 * inch, 2 * inch, 1 * inch])
             plant_table.setStyle(
                 TableStyle(
                     [
@@ -439,7 +416,7 @@ def generate_project_report(project_id):
                         "bloom_color": plant.bloom_color,
                         "maintenance": plant.maintenance,
                         "quantity": project_plant.quantity,
-                        "unit_cost": project_plant.unit_cost
+                        "unit_cost": project_plant.unit_cost,
                     }
                 )
 
@@ -457,22 +434,16 @@ def generate_project_report(project_id):
                 "budget": float(project.budget) if project.budget else 0,
                 "spent": 0,  # No spent field in current model
                 "location": project.location,
-                "area_size": (
-                    float(project.area_size) if project.area_size else 0
-                ),
+                "area_size": (float(project.area_size) if project.area_size else 0),
                 "start_date": (
-                    project.start_date.isoformat()
-                    if project.start_date
-                    else None
+                    project.start_date.isoformat() if project.start_date else None
                 ),
                 "end_date": (
                     project.end_date.isoformat() if project.end_date else None
                 ),
                 "notes": project.notes,
                 "created_at": (
-                    project.created_at.isoformat()
-                    if project.created_at
-                    else None
+                    project.created_at.isoformat() if project.created_at else None
                 ),
             },
             "client": {
@@ -522,9 +493,7 @@ def generate_project_report_pdf(data):
             spaceAfter=30,
             textColor=colors.HexColor("#2D5016"),
         )
-        story.append(
-            Paragraph(f"Project Report: {project['name']}", title_style)
-        )
+        story.append(Paragraph(f"Project Report: {project['name']}", title_style))
         story.append(Spacer(1, 20))
 
         # Project details
@@ -618,9 +587,7 @@ def generate_project_report_pdf(data):
         # Plants list
         if data["plants"]:
             story.append(Paragraph("Plant List", styles["Heading2"]))
-            plant_data = [
-                ["Plant Name", "Common Name", "Category", "Sun", "Water"]
-            ]
+            plant_data = [["Plant Name", "Common Name", "Category", "Sun", "Water"]]
             for plant in data["plants"]:
                 plant_data.append(
                     [
@@ -667,19 +634,13 @@ def generate_project_report_pdf(data):
         # Products list
         if data["products"]:
             story.append(Paragraph("Product List", styles["Heading2"]))
-            product_data = [
-                ["Product Name", "Category", "Price (€)", "Supplier"]
-            ]
+            product_data = [["Product Name", "Category", "Price (€)", "Supplier"]]
             for product in data["products"]:
                 product_data.append(
                     [
                         product["name"],
                         product["category"] or "-",
-                        (
-                            f"€{product['price']:,.2f}"
-                            if product["price"]
-                            else "-"
-                        ),
+                        (f"€{product['price']:,.2f}" if product["price"] else "-"),
                         product["supplier_name"] or "-",
                     ]
                 )
@@ -748,9 +709,7 @@ def generate_plant_usage_report():
             )
             .join(Project.plants)
             .join(Project)
-            .group_by(
-                Plant.id, Plant.name, Plant.scientific_name, Plant.category
-            )
+            .group_by(Plant.id, Plant.name, Plant.scientific_name, Plant.category)
             .order_by(db.desc("project_count"))
             .all()
         )
@@ -780,9 +739,7 @@ def generate_plant_usage_report():
             .all()
         )
 
-        category_distribution = {
-            category: count for category, count in category_stats
-        }
+        category_distribution = {category: count for category, count in category_stats}
 
         return jsonify(
             {
