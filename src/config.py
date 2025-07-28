@@ -34,6 +34,13 @@ class Config:
     # Logging
     LOG_LEVEL = os.environ.get("LOG_LEVEL", "INFO")
 
+    # Performance monitoring
+    PERFORMANCE_MONITORING_ENABLED = True
+    SLOW_REQUEST_THRESHOLD = float(os.environ.get("SLOW_REQUEST_THRESHOLD", "1.0"))
+    SLOW_QUERY_THRESHOLD = float(os.environ.get("SLOW_QUERY_THRESHOLD", "0.1"))
+    MEMORY_MONITORING_ENABLED = True
+    CACHE_DEFAULT_TIMEOUT = int(os.environ.get("CACHE_DEFAULT_TIMEOUT", "300"))
+
 
 class DevelopmentConfig(Config):
     """Development configuration"""
@@ -63,6 +70,10 @@ class ProductionConfig(Config):
 
     # Production logging
     LOG_LEVEL = "WARNING"
+
+    # Production performance settings
+    SLOW_REQUEST_THRESHOLD = 0.5  # Stricter in production
+    SLOW_QUERY_THRESHOLD = 0.05   # Stricter in production
 
 
 class TestingConfig(Config):

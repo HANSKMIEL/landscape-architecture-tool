@@ -44,9 +44,12 @@ from src.services import (  # noqa: E402
     SupplierService,
 )
 from src.services.analytics import AnalyticsService  # noqa: E402
+from src.services.performance_analytics import performance_analytics, get_performance_analytics  # noqa: E402
 from src.utils.db_init import initialize_database, populate_sample_data  # noqa: E402
 from src.utils.error_handlers import handle_errors  # noqa: E402
 from src.utils.error_handlers import register_error_handlers  # noqa: E402
+from src.utils.performance import PerformanceMonitoringMiddleware, DatabasePerformanceProfiler  # noqa: E402
+from src.utils.cache import init_cache_service, cache_api_response  # noqa: E402
 
 
 # Configure logging
@@ -85,6 +88,25 @@ def create_app():
     # Initialize extensions
     db.init_app(app)
     Migrate(app, db)
+
+    # Initialize performance monitoring
+    performance_monitor = PerformanceMonitoringMiddleware()
+    performance_monitor.init_app(app)
+    
+    # Initialize database performance profiler
+    db_profiler = DatabasePerformanceProfiler()
+    db_profiler.init_app(app)
+    
+    # Initialize cache service
+    try:
+        import redis
+        redis_client = redis.Redis.from_url(
+            app.config.get('RATELIMIT_STORAGE_URL', 'redis://localhost:6379/0')
+        ) if app.config.get('RATELIMIT_STORAGE_URL', '').startswith('redis://') else None
+        init_cache_service(redis_client, default_timeout=300)
+    except ImportError:
+        logger.warning("Redis not available, using memory cache only")
+        init_cache_service(None, default_timeout=300)
 
     # CORS configuration
     CORS(app, origins=app.config["CORS_ORIGINS"])
@@ -137,6 +159,14 @@ def create_app():
                             "/api/analytics/recommendation-effectiveness"
                         ),
                     },
+                    "performance": {
+                        "metrics": "/api/performance/metrics",
+                        "analytics": "/api/performance/analytics",
+                        "summary": "/api/performance/summary",
+                        "alerts": "/api/performance/alerts",
+                        "trends": "/api/performance/trends",
+                        "thresholds": "/api/performance/thresholds",
+                    },
                     "suppliers": "/api/suppliers",
                     "plants": "/api/plants",
                     "products": "/api/products",
@@ -161,6 +191,7 @@ def create_app():
     # Dashboard endpoints
     @app.route("/api/dashboard/stats", methods=["GET"])
     @handle_errors
+    @cache_api_response(timeout=600)
     def get_dashboard_stats():
         """Get dashboard statistics"""
         stats = dashboard_service.get_stats()
@@ -168,6 +199,7 @@ def create_app():
 
     @app.route("/api/dashboard/recent-activity", methods=["GET"])
     @handle_errors
+    @cache_api_response(timeout=300)
     def get_recent_activity():
         """Get recent activity for dashboard"""
         activities = dashboard_service.get_recent_activity()
@@ -231,6 +263,104 @@ def create_app():
         """Get recommendation system effectiveness analytics"""
         analytics = analytics_service.get_recommendation_effectiveness()
         return jsonify(analytics)
+
+    # Performance monitoring endpoints
+    @app.route("/api/performance/metrics", methods=["GET"])
+    @handle_errors
+    def get_performance_metrics_endpoint():
+        """Get current performance metrics"""
+        from src.utils.performance import get_performance_metrics
+        metrics = get_performance_metrics()
+        return jsonify(metrics)
+
+    @app.route("/api/performance/analytics", methods=["GET"])
+    @handle_errors
+    def get_performance_analytics_endpoint():
+        """Get detailed performance analytics"""
+        from flask import request
+        minutes = int(request.args.get("minutes", 5))
+        analytics = performance_analytics.analyze_performance(minutes)
+        return jsonify(analytics)
+
+    @app.route("/api/performance/summary", methods=["GET"])
+    @handle_errors
+    def get_performance_summary_endpoint():
+        """Get performance summary"""
+        summary = performance_analytics.get_performance_summary()
+        return jsonify(summary)
+
+    @app.route("/api/performance/alerts", methods=["GET"])
+    @handle_errors
+    def get_performance_alerts_endpoint():
+        """Get performance alerts"""
+        from flask import request
+        resolved = request.args.get("resolved")
+        if resolved is not None:
+            resolved = resolved.lower() == "true"
+        alerts = performance_analytics.get_alerts(resolved)
+        return jsonify(alerts)
+
+    @app.route("/api/performance/alerts/<alert_id>/resolve", methods=["POST"])
+    @handle_errors
+    def resolve_performance_alert_endpoint(alert_id):
+        """Resolve a performance alert"""
+        success = performance_analytics.resolve_alert(alert_id)
+        if success:
+            return jsonify({"message": "Alert resolved successfully"})
+        else:
+            return jsonify({"error": "Alert not found"}), 404
+
+    @app.route("/api/performance/trends", methods=["GET"])
+    @handle_errors
+    def get_performance_trends_endpoint():
+        """Get performance trends"""
+        from flask import request
+        hours = int(request.args.get("hours", 24))
+        trends = performance_analytics.get_performance_trends(hours)
+        return jsonify(trends)
+
+    @app.route("/api/performance/thresholds", methods=["GET"])
+    @handle_errors
+    def get_performance_thresholds_endpoint():
+        """Get performance monitoring thresholds"""
+        return jsonify(performance_analytics.thresholds)
+
+    @app.route("/api/performance/thresholds", methods=["PUT"])
+    @handle_errors
+    def update_performance_thresholds_endpoint():
+        """Update performance monitoring thresholds"""
+        from flask import request
+        data = request.get_json()
+        success = performance_analytics.update_thresholds(data)
+        if success:
+            return jsonify({"message": "Thresholds updated successfully"})
+        else:
+            return jsonify({"error": "Failed to update thresholds"}), 400
+
+    @app.route("/api/performance/cache/stats", methods=["GET"])
+    @handle_errors
+    def get_cache_stats_endpoint():
+        """Get cache performance statistics"""
+        from src.utils.cache import cache_service, query_cache
+        stats = {
+            "cache_stats": cache_service.get_stats(),
+            "query_cache_stats": query_cache.get_stats()
+        }
+        return jsonify(stats)
+
+    @app.route("/api/performance/cache/clear", methods=["POST"])
+    @handle_errors
+    def clear_cache_endpoint():
+        """Clear application cache"""
+        from flask import request
+        from src.utils.cache import cache_service
+        
+        pattern = request.json.get("pattern", "*") if request.json else "*"
+        cleared = cache_service.clear(pattern)
+        return jsonify({
+            "message": f"Cleared {cleared} cache entries",
+            "pattern": pattern
+        })
 
     # Suppliers endpoints
     @app.route("/api/suppliers", methods=["GET"])
