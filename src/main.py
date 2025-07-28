@@ -547,8 +547,8 @@ def main():
     app = create_app()
 
     logger.info("Starting Landscape Architecture Management System...")
-    logger.info("Backend API will be available at: http://127.0.0.1:5001")
-    logger.info("API documentation available at: http://127.0.0.1:5001/api/")
+    logger.info("Backend API will be available at: http://127.0.0.1:5000")
+    logger.info("API documentation available at: http://127.0.0.1:5000/api/")
 
     with app.app_context():
         # Initialize database
@@ -557,9 +557,14 @@ def main():
         # Populate with sample data if empty
         populate_sample_data()
 
-    # Start the Flask development server (only in development)
-    if os.environ.get("FLASK_ENV", "development") == "development":
-        app.run(host="127.0.0.1", port=5001, debug=True, use_reloader=True)
+    # Start the Flask development server (development or integration testing)
+    flask_env = os.environ.get("FLASK_ENV", "development")
+    if flask_env in ["development", "testing"]:
+        port = int(os.environ.get("PORT", 5000))
+        # For testing, disable reloader to avoid issues in CI
+        debug_mode = flask_env == "development"
+        use_reloader = flask_env == "development"
+        app.run(host="127.0.0.1", port=port, debug=debug_mode, use_reloader=use_reloader)
     else:
         logger.warning(
             "Use a production WSGI server (like Gunicorn) instead of Flask dev server"

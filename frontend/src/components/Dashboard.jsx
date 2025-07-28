@@ -14,14 +14,14 @@ const Dashboard = () => {
       setError(null);
 
       // Fetch dashboard stats
-      const statsResponse = await fetch('http://127.0.0.1:5001/api/dashboard/stats');
+      const statsResponse = await fetch('http://127.0.0.1:5000/api/dashboard/stats');
       if (!statsResponse.ok) {
         throw new Error(`Stats API error: ${statsResponse.status} ${statsResponse.statusText}`);
       }
       const statsData = await statsResponse.json();
 
       // Fetch recent activity
-      const activityResponse = await fetch('http://127.0.0.1:5001/api/dashboard/recent-activity');
+      const activityResponse = await fetch('http://127.0.0.1:5000/api/dashboard/recent-activity');
       if (!activityResponse.ok) {
         throw new Error(`Activity API error: ${activityResponse.status} ${activityResponse.statusText}`);
       }
@@ -89,7 +89,7 @@ const Dashboard = () => {
         </h3>
         <p className="text-gray-600 mb-6">
           {error.includes('Failed to fetch') 
-            ? 'Controleer of de backend server draait op http://127.0.0.1:5001'
+            ? 'Controleer of de backend server draait op http://127.0.0.1:5000'
             : error
           }
         </p>
@@ -103,7 +103,7 @@ const Dashboard = () => {
           <p>Zorg ervoor dat:</p>
           <ul className="list-disc list-inside mt-2 space-y-1">
             <li>De backend server draait</li>
-            <li>Port 5001 beschikbaar is</li>
+            <li>Port 5000 beschikbaar is</li>
             <li>CORS correct is geconfigureerd</li>
           </ul>
         </div>

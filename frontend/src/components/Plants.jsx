@@ -41,7 +41,7 @@ const Plants = () => {
       setLoading(true);
       setError(null);
       
-      const response = await fetch(`http://127.0.0.1:5001/api/plants${searchTerm ? `?search=${encodeURIComponent(searchTerm)}` : ''}`);
+      const response = await fetch(`http://127.0.0.1:5000/api/plants${searchTerm ? `?search=${encodeURIComponent(searchTerm)}` : ''}`);
       if (!response.ok) {
         throw new Error(`API error: ${response.status} ${response.statusText}`);
       }
@@ -59,7 +59,7 @@ const Plants = () => {
   // Fetch suppliers for dropdown
   const fetchSuppliers = async () => {
     try {
-      const response = await fetch('http://127.0.0.1:5001/api/suppliers');
+      const response = await fetch('http://127.0.0.1:5000/api/suppliers');
       if (response.ok) {
         const data = await response.json();
         setSuppliers(data);
@@ -114,7 +114,7 @@ const Plants = () => {
   const handleAddPlant = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch('http://127.0.0.1:5001/api/plants', {
+      const response = await fetch('http://127.0.0.1:5000/api/plants', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -140,7 +140,7 @@ const Plants = () => {
   const handleEditPlant = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch(`http://127.0.0.1:5001/api/plants/${editingPlant.id}`, {
+      const response = await fetch(`http://127.0.0.1:5000/api/plants/${editingPlant.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -170,7 +170,7 @@ const Plants = () => {
     }
 
     try {
-      const response = await fetch(`http://127.0.0.1:5001/api/plants/${plantId}`, {
+      const response = await fetch(`http://127.0.0.1:5000/api/plants/${plantId}`, {
         method: 'DELETE',
       });
 
