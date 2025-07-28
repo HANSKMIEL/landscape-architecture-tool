@@ -39,7 +39,8 @@ def get_plant_usage_analytics():
         data = analytics_service.get_plant_usage_analytics(date_range)
         return jsonify(data)
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        app.logger.error(f"Error in get_plant_usage_analytics: {e}")
+        return jsonify({"error": "An internal error occurred."}), 500
 
 
 @reports_bp.route("/api/analytics/project-performance", methods=["GET"])
@@ -50,7 +51,8 @@ def get_project_performance_analytics():
         data = analytics_service.get_project_performance_metrics(project_id)
         return jsonify(data)
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        app.logger.error(f"Error in get_project_performance_analytics: {e}")
+        return jsonify({"error": "An internal error occurred."}), 500
 
 
 @reports_bp.route("/api/analytics/client-insights", methods=["GET"])
@@ -60,7 +62,8 @@ def get_client_insights():
         data = analytics_service.get_client_relationship_insights()
         return jsonify(data)
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        app.logger.error(f"Error in get_client_insights: {e}")
+        return jsonify({"error": "An internal error occurred."}), 500
 
 
 @reports_bp.route("/api/analytics/financial-reporting", methods=["GET"])
@@ -79,7 +82,8 @@ def get_financial_reporting():
         data = analytics_service.get_financial_reporting(date_range)
         return jsonify(data)
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        app.logger.error(f"Error in get_financial_reporting: {e}")
+        return jsonify({"error": "An internal error occurred."}), 500
 
 
 @reports_bp.route("/api/analytics/recommendation-effectiveness", methods=["GET"])

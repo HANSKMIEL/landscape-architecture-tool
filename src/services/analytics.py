@@ -128,7 +128,8 @@ class AnalyticsService:
                 ]
             }
         except Exception as e:
-            return {'error': str(e)}
+            app.logger.error(f"Error in get_plant_usage_analytics: {e}")
+            return {'error': "An internal error occurred."}
     
     def get_project_performance_metrics(self, project_id: Optional[int] = None) -> Dict:
         """Get project performance and timeline analytics"""
@@ -242,7 +243,8 @@ class AnalyticsService:
                 ]
             }
         except Exception as e:
-            return {'error': str(e)}
+            app.logger.error(f"Error in get_project_performance_metrics: {e}")
+            return {'error': "An internal error occurred."}
     
     def get_client_relationship_insights(self) -> Dict:
         """Get client relationship and business analytics"""
