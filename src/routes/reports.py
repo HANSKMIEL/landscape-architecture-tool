@@ -20,8 +20,110 @@ from reportlab.platypus import (
 )
 
 from src.models.landscape import Client, Plant, Product, Project, Supplier, db
+from src.services.analytics import AnalyticsService
 
 reports_bp = Blueprint("reports", __name__)
+
+# Initialize analytics service
+analytics_service = AnalyticsService()
+
+
+@reports_bp.route("/api/analytics/plant-usage", methods=["GET"])
+def get_plant_usage_analytics():
+    """Get plant usage analytics"""
+    try:
+        start_date = request.args.get("start_date")
+        end_date = request.args.get("end_date")
+        date_range = (start_date, end_date) if start_date or end_date else None
+        
+        data = analytics_service.get_plant_usage_analytics(date_range)
+        return jsonify(data)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@reports_bp.route("/api/analytics/project-performance", methods=["GET"])
+def get_project_performance_analytics():
+    """Get project performance analytics"""
+    try:
+        project_id = request.args.get("project_id", type=int)
+        data = analytics_service.get_project_performance_metrics(project_id)
+        return jsonify(data)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@reports_bp.route("/api/analytics/client-insights", methods=["GET"])
+def get_client_insights():
+    """Get client relationship insights"""
+    try:
+        data = analytics_service.get_client_relationship_insights()
+        return jsonify(data)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@reports_bp.route("/api/analytics/financial-reporting", methods=["GET"])
+def get_financial_reporting():
+    """Get financial reporting analytics"""
+    try:
+        start_date = request.args.get("start_date")
+        end_date = request.args.get("end_date")
+        
+        if not start_date or not end_date:
+            # Default to last 12 months
+            end_date = datetime.now().isoformat()
+            start_date = (datetime.now().replace(month=1, day=1)).isoformat()
+        
+        date_range = (start_date, end_date)
+        data = analytics_service.get_financial_reporting(date_range)
+        return jsonify(data)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@reports_bp.route("/api/analytics/recommendation-effectiveness", methods=["GET"])
+def get_recommendation_effectiveness():
+    """Get recommendation system effectiveness metrics"""
+    try:
+        data = analytics_service.get_recommendation_effectiveness()
+        return jsonify(data)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@reports_bp.route("/api/analytics/overview", methods=["GET"])
+def get_analytics_overview():
+    """Get comprehensive analytics overview"""
+    try:
+        start_date = request.args.get("start_date")
+        end_date = request.args.get("end_date")
+        date_range = (start_date, end_date) if start_date or end_date else None
+        
+        # Get all analytics data
+        plant_usage = analytics_service.get_plant_usage_analytics(date_range)
+        project_performance = analytics_service.get_project_performance_metrics()
+        client_insights = analytics_service.get_client_relationship_insights()
+        
+        # Financial reporting needs date range
+        if not start_date or not end_date:
+            end_date = datetime.now().isoformat()
+            start_date = (datetime.now().replace(month=1, day=1)).isoformat()
+        financial_data = analytics_service.get_financial_reporting((start_date, end_date))
+        
+        recommendation_data = analytics_service.get_recommendation_effectiveness()
+        
+        return jsonify({
+            "generated_at": datetime.utcnow().isoformat(),
+            "date_range": {"start_date": start_date, "end_date": end_date},
+            "plant_usage": plant_usage,
+            "project_performance": project_performance,
+            "client_insights": client_insights,
+            "financial_reporting": financial_data,
+            "recommendation_effectiveness": recommendation_data
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 @reports_bp.route("/api/reports/business-summary", methods=["GET"])

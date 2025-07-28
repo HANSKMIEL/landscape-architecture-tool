@@ -54,6 +54,7 @@ from src.utils.error_handlers import handle_errors, register_error_handlers
 
 # Import route blueprints
 from src.routes.plant_recommendations import plant_recommendations_bp
+from src.routes.reports import reports_bp
 
 
 # Configure logging
@@ -108,6 +109,7 @@ def create_app():
 
     # Register route blueprints
     app.register_blueprint(plant_recommendations_bp)
+    app.register_blueprint(reports_bp)
 
     # Initialize services
     supplier_service = SupplierService()

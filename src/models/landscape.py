@@ -2,6 +2,21 @@ from datetime import datetime
 
 from src.models.user import db
 
+# Association tables for many-to-many relationships
+project_plants = db.Table('project_plants',
+    db.Column('project_id', db.Integer, db.ForeignKey('projects.id'), primary_key=True),
+    db.Column('plant_id', db.Integer, db.ForeignKey('plants.id'), primary_key=True),
+    db.Column('quantity', db.Integer, default=1),
+    db.Column('notes', db.Text)
+)
+
+project_products = db.Table('project_products',
+    db.Column('project_id', db.Integer, db.ForeignKey('projects.id'), primary_key=True),
+    db.Column('product_id', db.Integer, db.ForeignKey('products.id'), primary_key=True),
+    db.Column('quantity', db.Integer, default=1),
+    db.Column('notes', db.Text)
+)
+
 
 class Supplier(db.Model):
     __tablename__ = "suppliers"
@@ -422,6 +437,20 @@ class Project(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(
         db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
+    )
+
+    # Relationships
+    plants = db.relationship(
+        'Plant', 
+        secondary=project_plants, 
+        backref=db.backref('projects', lazy='dynamic'),
+        lazy='dynamic'
+    )
+    products = db.relationship(
+        'Product', 
+        secondary=project_products, 
+        backref=db.backref('projects', lazy='dynamic'),
+        lazy='dynamic'
     )
 
     def to_dict(self):
