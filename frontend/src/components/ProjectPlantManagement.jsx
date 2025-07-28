@@ -281,17 +281,6 @@ const ProjectPlantManagement = ({ projectId, language = 'en' }) => {
     }).format(amount);
   };
 
-  // Get status badge variant
-  const getStatusVariant = (status) => {
-    switch (status) {
-      case 'planned': return 'secondary';
-      case 'ordered': return 'warning';
-      case 'planted': return 'info';
-      case 'completed': return 'success';
-      default: return 'secondary';
-    }
-  };
-
   // Filter available plants based on search
   const filteredPlants = availablePlants.filter(plant =>
     plant.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -304,7 +293,7 @@ const ProjectPlantManagement = ({ projectId, language = 'en' }) => {
       fetchCostAnalysis();
       fetchAvailablePlants();
     }
-  }, [projectId]);
+  }, [projectId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Loading component
   const LoadingSpinner = () => (

@@ -106,7 +106,7 @@ const ReportingDashboard = ({ language = 'en' }) => {
 
   useEffect(() => {
     loadAnalyticsData();
-  }, [dateRange]);
+  }, [dateRange]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const loadAnalyticsData = async () => {
     setLoading(true);
