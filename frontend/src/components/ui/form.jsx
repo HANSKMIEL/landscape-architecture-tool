@@ -131,8 +131,8 @@ function FormMessage({
   );
 }
 
-export {
-  useFormField,
+export { 
+  useFormField, // eslint-disable-line react-refresh/only-export-components
   Form,
   FormItem,
   FormLabel,

@@ -52,7 +52,7 @@ const Projects = ({ language }) => {
       setLoading(true);
       setError(null);
       
-      const response = await fetch('http://127.0.0.1:5001/api/projects');
+      const response = await fetch('http://127.0.0.1:5000/api/projects');
       if (!response.ok) {
         throw new Error(`API error: ${response.status}`);
       }

@@ -88,7 +88,7 @@ const Products = ({ language }) => {
   const loadProducts = async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://127.0.0.1:5001/api/products');
+      const response = await fetch('http://127.0.0.1:5000/api/products');
       if (!response.ok) throw new Error('Failed to load products');
       const data = await response.json();
       setProducts(data);
@@ -112,7 +112,7 @@ const Products = ({ language }) => {
   const handleAddProduct = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch('http://127.0.0.1:5001/api/products', {
+      const response = await fetch('http://127.0.0.1:5000/api/products', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -143,7 +143,7 @@ const Products = ({ language }) => {
   const handleEditProduct = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch(`http://127.0.0.1:5001/api/products/${selectedProduct.id}`, {
+      const response = await fetch(`http://127.0.0.1:5000/api/products/${selectedProduct.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -167,7 +167,7 @@ const Products = ({ language }) => {
     if (!confirm(t.confirmDelete)) return;
     
     try {
-      const response = await fetch(`http://127.0.0.1:5001/api/products/${productId}`, {
+      const response = await fetch(`http://127.0.0.1:5000/api/products/${productId}`, {
         method: 'DELETE',
       });
       

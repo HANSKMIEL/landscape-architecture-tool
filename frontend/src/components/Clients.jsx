@@ -114,7 +114,7 @@ const Clients = ({ language }) => {
   const loadClients = async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://127.0.0.1:5001/api/clients');
+      const response = await fetch('http://127.0.0.1:5000/api/clients');
       if (!response.ok) throw new Error('Failed to load clients');
       const data = await response.json();
       setClients(data);
@@ -127,7 +127,7 @@ const Clients = ({ language }) => {
 
   const loadProjects = async () => {
     try {
-      const response = await fetch('http://127.0.0.1:5001/api/projects');
+      const response = await fetch('http://127.0.0.1:5000/api/projects');
       if (!response.ok) throw new Error('Failed to load projects');
       const data = await response.json();
       setProjects(data);
@@ -149,7 +149,7 @@ const Clients = ({ language }) => {
   const handleAddClient = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch('http://127.0.0.1:5001/api/clients', {
+      const response = await fetch('http://127.0.0.1:5000/api/clients', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -181,7 +181,7 @@ const Clients = ({ language }) => {
   const handleEditClient = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch(`http://127.0.0.1:5001/api/clients/${selectedClient.id}`, {
+      const response = await fetch(`http://127.0.0.1:5000/api/clients/${selectedClient.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -205,7 +205,7 @@ const Clients = ({ language }) => {
     if (!confirm(t.confirmDelete)) return;
     
     try {
-      const response = await fetch(`http://127.0.0.1:5001/api/clients/${clientId}`, {
+      const response = await fetch(`http://127.0.0.1:5000/api/clients/${clientId}`, {
         method: 'DELETE',
       });
       

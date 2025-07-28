@@ -276,6 +276,7 @@ const PlantRecommendations = ({ language = 'en' }) => {
     }
   }
 
+  // eslint-disable-next-line no-unused-vars
   const submitFeedback = async (feedbackData) => {
     if (!requestId) return
     
