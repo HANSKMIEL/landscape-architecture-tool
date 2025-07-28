@@ -266,7 +266,9 @@ def populate_sample_data():
         projects_data = [
             {
                 "name": "Vondelpark Renovatie Fase 2",
-                "description": "Herinrichting van de zuidelijke zone van het Vondelpark",
+                "description": (
+                    "Herinrichting van de zuidelijke zone van het Vondelpark"
+                ),
                 "client_id": clients[1].id,
                 "status": "In uitvoering",
                 "start_date": "2024-04-01",
@@ -316,7 +318,9 @@ def populate_sample_data():
 
         logger.info("Sample data created successfully!")
         logger.info(
-            f"Created {len(suppliers)} suppliers, {len(plants_data)} plants, {len(products_data)} products, {len(clients)} clients, and {len(projects_data)} projects."
+            f"Created {len(suppliers)} suppliers, {len(plants_data)} plants, "
+            f"{len(products_data)} products, {len(clients)} clients, "
+            f"and {len(projects_data)} projects."
         )
 
     except Exception as e:

@@ -71,7 +71,15 @@ class AnalyticsService:
                     "total_quantity": int(total_quantity) if total_quantity else 0,
                     "avg_cost": float(avg_cost) if avg_cost else 0,
                 }
-                for plant_id, name, common_name, category, project_count, total_quantity, avg_cost in plant_usage
+                for (
+                    plant_id,
+                    name,
+                    common_name,
+                    category,
+                    project_count,
+                    total_quantity,
+                    avg_cost,
+                ) in plant_usage
             ]
 
             # Category distribution
@@ -278,7 +286,15 @@ class AnalyticsService:
                         last_project_date.isoformat() if last_project_date else None
                     ),
                 }
-                for client_id, name, client_type, project_count, total_value, avg_project_value, last_project_date in top_clients
+                for (
+                    client_id,
+                    name,
+                    client_type,
+                    project_count,
+                    total_value,
+                    avg_project_value,
+                    last_project_date,
+                ) in top_clients
             ]
 
             # Client type distribution

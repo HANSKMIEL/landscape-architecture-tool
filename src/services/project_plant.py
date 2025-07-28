@@ -73,7 +73,8 @@ class ProjectPlantService:
             db.session.commit()
 
             logger.info(
-                f"Added plant {plant_id} to project {project_id} with quantity {quantity}"
+                f"Added plant {plant_id} to project {project_id} "
+                f"with quantity {quantity}"
             )
             return project_plant
 
@@ -105,7 +106,8 @@ class ProjectPlantService:
             db.session.commit()
 
             logger.info(
-                f"Updated plant {plant_id} quantity to {new_quantity} in project {project_id}"
+                f"Updated plant {plant_id} quantity to {new_quantity} "
+                f"in project {project_id}"
             )
             return project_plant
 
@@ -318,7 +320,8 @@ class ProjectPlantService:
             db.session.commit()
 
             logger.info(
-                f"Updated plant {plant_id} unit cost to {unit_cost} in project {project_id}"
+                f"Updated plant {plant_id} unit cost to {unit_cost} "
+                f"in project {project_id}"
             )
             return project_plant
 

@@ -127,7 +127,8 @@ def generate_business_summary():
                 }
             )
 
-        # Most used products - disabled for now as Product-Project relationship not directly modeled
+        # Most used products - disabled for now as Product-Project
+        # relationship not directly modeled
         product_usage_data = []
 
         report_data = {
@@ -194,7 +195,8 @@ def generate_business_summary_pdf(data):
         if data["period"]["start_date"] and data["period"]["end_date"]:
             story.append(
                 Paragraph(
-                    f"Period: {data['period']['start_date']} to {data['period']['end_date']}",
+                    f"Period: {data['period']['start_date']} "
+                    f"to {data['period']['end_date']}",
                     styles["Normal"],
                 )
             )
@@ -387,7 +389,9 @@ def generate_business_summary_pdf(data):
         return send_file(
             buffer,
             as_attachment=True,
-            download_name=f'business_summary_{datetime.utcnow().strftime("%Y%m%d")}.pdf',
+            download_name=(
+                f'business_summary_{datetime.utcnow().strftime("%Y%m%d")}.pdf'
+            ),
             mimetype="application/pdf",
         )
 
@@ -426,7 +430,8 @@ def generate_project_report(project_id):
                     }
                 )
 
-        # Get project products with details - disabled as no direct Product-Project relationship
+        # Get project products with details - disabled as no direct
+        # Product-Project relationship
         products_data = []
         total_product_cost = 0
 
@@ -693,7 +698,10 @@ def generate_project_report_pdf(data):
         return send_file(
             buffer,
             as_attachment=True,
-            download_name=f'project_{project["name"].replace(" ", "_")}_{datetime.utcnow().strftime("%Y%m%d")}.pdf',
+            download_name=(
+                f'project_{project["name"].replace(" ", "_")}_'
+                f'{datetime.utcnow().strftime("%Y%m%d")}.pdf'
+            ),
             mimetype="application/pdf",
         )
 

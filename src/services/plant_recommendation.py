@@ -213,7 +213,8 @@ class PlantRecommendationEngine:
                 )
             else:
                 warnings.append(
-                    f"Hardiness zone mismatch: plant {plant.hardiness_zone}, site {criteria.hardiness_zone}"
+                    f"Hardiness zone mismatch: plant {plant.hardiness_zone}, "
+                    f"site {criteria.hardiness_zone}"
                 )
 
         # Sun exposure matching
@@ -227,7 +228,8 @@ class PlantRecommendationEngine:
             else:
                 score += 0.3  # Partial compatibility
                 warnings.append(
-                    f"Sun exposure concern: plant needs {plant.sun_requirements}, site has {criteria.sun_exposure}"
+                    f"Sun exposure concern: plant needs {plant.sun_requirements}, "
+                    f"site has {criteria.sun_exposure}"
                 )
 
         # Soil type matching
@@ -250,7 +252,8 @@ class PlantRecommendationEngine:
             else:
                 score += 0.2
                 warnings.append(
-                    f"pH concern: plant prefers {plant.soil_ph_min}-{plant.soil_ph_max}, site is {criteria.soil_ph}"
+                    f"pH concern: plant prefers {plant.soil_ph_min}-"
+                    f"{plant.soil_ph_max}, site is {criteria.soil_ph}"
                 )
 
         # Moisture level matching
@@ -262,7 +265,8 @@ class PlantRecommendationEngine:
             else:
                 score += 0.4
                 warnings.append(
-                    f"Water needs mismatch: plant needs {plant.water_needs}, site has {criteria.moisture_level}"
+                    f"Water needs mismatch: plant needs {plant.water_needs}, "
+                    f"site has {criteria.moisture_level}"
                 )
 
         return score / total_factors if total_factors > 0 else 0.5
@@ -312,7 +316,9 @@ class PlantRecommendationEngine:
             else:
                 score += 0.3
                 warnings.append(
-                    f"Height difference: plant {plant.height_min}-{plant.height_max}m, desired {criteria.desired_height_min}-{criteria.desired_height_max}m"
+                    f"Height difference: plant {plant.height_min}-{plant.height_max}m, "
+                    f"desired {criteria.desired_height_min}-"
+                    f"{criteria.desired_height_max}m"
                 )
 
         # Width matching
@@ -388,7 +394,8 @@ class PlantRecommendationEngine:
             else:
                 score += 0.4
                 warnings.append(
-                    f"Maintenance mismatch: plant needs {plant.maintenance}, preference is {criteria.maintenance_level}"
+                    f"Maintenance mismatch: plant needs {plant.maintenance}, "
+                    f"preference is {criteria.maintenance_level}"
                 )
 
         # Budget considerations (simplified)
@@ -403,7 +410,8 @@ class PlantRecommendationEngine:
             else:
                 score += 0.2
                 warnings.append(
-                    f"Price concern: ${plant.price} may exceed {criteria.budget_range} budget"
+                    f"Price concern: ${plant.price} may exceed "
+                    f"{criteria.budget_range} budget"
                 )
 
         # Pest and disease resistance

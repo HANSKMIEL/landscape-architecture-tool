@@ -603,7 +603,9 @@ def remove_product_from_project(project_id, product_id):
 
         return jsonify(
             {
-                "message": f'Product "{product.name}" removed from project "{project.name}"'
+                "message": (
+                    f'Product "{product.name}" removed from project "{project.name}"'
+                )
             }
         )
 

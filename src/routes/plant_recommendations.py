@@ -7,9 +7,10 @@ including recommendations, feedback, history, and data import/export.
 
 import csv
 import io
+import logging
 import uuid
 from typing import Any, Dict
-import logging
+
 from flask import Blueprint, jsonify, request, session
 
 from src.models.landscape import Plant, PlantRecommendationRequest
@@ -141,9 +142,15 @@ def get_plant_recommendations():
 
         return jsonify(response)
 
-    except Exception as e:
+    except Exception:
         logging.exception("Failed to get recommendations")
-        return jsonify({"error": "Failed to get recommendations due to an internal error."}), 500
+        return (
+            jsonify(
+                {"error": "Failed to get recommendations due to an internal error."}
+            ),
+            500,
+        )
+
 
 @plant_recommendations_bp.route(
     "/api/plant-recommendations/criteria-options", methods=["GET"]
@@ -407,7 +414,9 @@ def export_recommendations():
             csv_content,
             mimetype="text/csv",
             headers={
-                "Content-Disposition": f"attachment; filename=plant_recommendations_{request_id}.csv"
+                "Content-Disposition": (
+                    f"attachment; filename=plant_recommendations_{request_id}.csv"
+                )
             },
         )
 
@@ -513,7 +522,9 @@ def import_plant_data():
 
             except Exception as e:
                 logging.error(f"Error processing row {row_num}: {str(e)}")
-                errors.append(f"Row {row_num}: An error occurred while processing this row")
+                errors.append(
+                    f"Row {row_num}: An error occurred while processing this row"
+                )
 
         # Commit if no errors
         if not errors:
@@ -539,7 +550,10 @@ def import_plant_data():
 
     except Exception as e:
         logging.error(f"Failed to import plant data: {str(e)}")
-        return jsonify({"error": "An internal error occurred while importing plant data"}), 500
+        return (
+            jsonify({"error": "An internal error occurred while importing plant data"}),
+            500,
+        )
 
 
 # Helper functions
@@ -554,7 +568,10 @@ def _format_criteria_summary(criteria: RecommendationCriteria) -> Dict[str, Any]
     if criteria.soil_type:
         summary["Soil Type"] = criteria.soil_type
     if criteria.desired_height_min or criteria.desired_height_max:
-        height_range = f"{criteria.desired_height_min or 'Any'}-{criteria.desired_height_max or 'Any'}m"
+        height_range = (
+            f"{criteria.desired_height_min or 'Any'}-"
+            f"{criteria.desired_height_max or 'Any'}m"
+        )
         summary["Desired Height"] = height_range
     if criteria.maintenance_level:
         summary["Maintenance Level"] = criteria.maintenance_level
