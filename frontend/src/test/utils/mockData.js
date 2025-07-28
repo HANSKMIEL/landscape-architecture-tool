@@ -79,17 +79,20 @@ export const createMockSupplier = (overrides = {}) => ({
 
 // Dashboard stats mock data factory
 export const createMockDashboardStats = (overrides = {}) => ({
-  total_plants: 156,
-  total_projects: 12,
-  total_clients: 8,
-  total_suppliers: 5,
+  suppliers: 5,
+  plants: 156,
+  products: 45,
+  clients: 8,
+  projects: 12,
   active_projects: 3,
   completed_projects: 7,
   pending_projects: 2,
+  total_budget: 150000,
   plants_in_season: 45,
   low_stock_plants: 8,
   revenue_this_month: 25000,
   revenue_last_month: 18000,
+  last_updated: '2024-01-20T10:30:00Z',
   ...overrides
 })
 
@@ -97,21 +100,21 @@ export const createMockDashboardStats = (overrides = {}) => ({
 export const createMockRecentActivity = (overrides = []) => [
   {
     id: 1,
-    type: 'project_created',
+    title: 'Project Created',
     description: 'New project "Garden Redesign" created',
     timestamp: '2024-01-20T10:30:00Z',
     user: 'Admin'
   },
   {
     id: 2,
-    type: 'plant_added',
+    title: 'Plant Added',
     description: 'Added "Japanese Maple" to inventory',
     timestamp: '2024-01-19T14:15:00Z',
     user: 'Admin'
   },
   {
     id: 3,
-    type: 'client_contacted',
+    title: 'Client Contact',
     description: 'Called client about project timeline',
     timestamp: '2024-01-18T09:45:00Z',
     user: 'Admin'

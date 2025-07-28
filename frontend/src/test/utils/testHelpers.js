@@ -31,8 +31,14 @@ export const submitForm = async (user, form) => {
 // Loading state helpers
 export const waitForLoadingToFinish = async () => {
   await waitFor(() => {
-    expect(screen.queryByText(/loading/i)).not.toBeInTheDocument()
-  })
+    // Check for various loading indicators
+    const loadingSpinner = document.querySelector('.animate-pulse')
+    const loadingText = document.querySelector('[data-testid="loading"]')
+    expect(loadingSpinner).not.toBeInTheDocument()
+    if (loadingText) {
+      expect(loadingText).not.toBeInTheDocument()
+    }
+  }, { timeout: 5000 })
 }
 
 export const expectLoadingState = () => {

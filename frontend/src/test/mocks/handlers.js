@@ -40,7 +40,8 @@ export const handlers = [
       )
     }
     
-    return HttpResponse.json(createApiResponse(plants))
+    // Return plants array directly, not wrapped
+    return HttpResponse.json(plants)
   }),
 
   http.get(`${API_BASE}/plants/:id`, ({ params }) => {
@@ -95,7 +96,8 @@ export const handlers = [
       projects = projects.filter(project => project.status === status)
     }
     
-    return HttpResponse.json(createApiResponse(projects))
+    // Return projects array directly, not wrapped
+    return HttpResponse.json(projects)
   }),
 
   http.get(`${API_BASE}/projects/:id`, ({ params }) => {
@@ -134,7 +136,8 @@ export const handlers = [
       )
     }
     
-    return HttpResponse.json(createApiResponse(clients))
+    // Return clients array directly, not wrapped
+    return HttpResponse.json(clients)
   }),
 
   http.get(`${API_BASE}/clients/:id`, ({ params }) => {
@@ -173,7 +176,8 @@ export const handlers = [
       )
     }
     
-    return HttpResponse.json(createApiResponse(suppliers))
+    // Return suppliers array directly, not wrapped
+    return HttpResponse.json(suppliers)
   }),
 
   http.get(`${API_BASE}/suppliers/:id`, ({ params }) => {
