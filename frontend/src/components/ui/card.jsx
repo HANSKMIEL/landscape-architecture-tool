@@ -1,18 +1,54 @@
 import * as React from "react"
-
+import { cva } from "class-variance-authority"
 import { cn } from "@/lib/utils"
+
+// Enhanced card variants using design tokens
+const cardVariants = cva(
+  "bg-card text-card-foreground flex flex-col rounded-lg border shadow-sm transition-all duration-200",
+  {
+    variants: {
+      variant: {
+        default: "border-gray-200 shadow-sm hover:shadow-md",
+        elevated: "border-gray-200 shadow-md hover:shadow-lg",
+        featured: "border-primary-200 bg-gradient-to-br from-primary-50 to-secondary-50 shadow-md hover:shadow-lg",
+        landscape: "border-green-200 bg-gradient-to-br from-green-50 to-blue-50 shadow-md hover:shadow-lg",
+        interactive: "border-gray-200 shadow-sm hover:shadow-md hover:border-primary-300 cursor-pointer",
+        success: "border-green-200 bg-green-50 shadow-sm",
+        warning: "border-yellow-200 bg-yellow-50 shadow-sm",
+        error: "border-red-200 bg-red-50 shadow-sm",
+        info: "border-blue-200 bg-blue-50 shadow-sm",
+      },
+      size: {
+        sm: "p-4 gap-3",
+        default: "p-6 gap-4",
+        lg: "p-8 gap-6",
+      },
+      fullWidth: {
+        true: "w-full",
+        false: "w-auto",
+      }
+    },
+    defaultVariants: {
+      variant: "default",
+      size: "default", 
+      fullWidth: false,
+    },
+  }
+)
 
 function Card({
   className,
+  variant = "default",
+  size = "default",
+  fullWidth = false,
+  onClick,
   ...props
 }) {
   return (
     <div
       data-slot="card"
-      className={cn(
-        "bg-card text-card-foreground flex flex-col gap-6 rounded-xl border py-6 shadow-sm",
-        className
-      )}
+      className={cn(cardVariants({ variant, size, fullWidth }), className)}
+      onClick={onClick}
       {...props} />
   );
 }
@@ -25,7 +61,7 @@ function CardHeader({
     <div
       data-slot="card-header"
       className={cn(
-        "@container/card-header grid auto-rows-min grid-rows-[auto_auto] items-start gap-1.5 px-6 has-data-[slot=card-action]:grid-cols-[1fr_auto] [.border-b]:pb-6",
+        "grid auto-rows-min grid-rows-[auto_auto] items-start gap-1.5 has-data-[slot=card-action]:grid-cols-[1fr_auto]",
         className
       )}
       {...props} />
@@ -98,4 +134,5 @@ export {
   CardAction,
   CardDescription,
   CardContent,
+  cardVariants,
 }
