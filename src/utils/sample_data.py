@@ -5,7 +5,7 @@ from src.models.user import db
 
 
 def initialize_sample_data():
-    """Initialize the database with realistic Dutch landscape architecture sample data"""
+    """Initialize database with realistic Dutch landscape architecture sample data"""
 
     # Check if data already exists
     if Supplier.query.first():

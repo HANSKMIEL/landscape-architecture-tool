@@ -6,7 +6,7 @@ based on environmental conditions, design requirements, and project context.
 """
 
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from typing import Dict, List, Optional
 
 from src.models.landscape import Plant, PlantRecommendationRequest
 from src.models.user import db

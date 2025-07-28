@@ -17,7 +17,7 @@ def get_dashboard_stats():
             "projects": Project.query.count(),
             "active_projects": Project.query.filter_by(status="In Progress").count(),
             "completed_projects": Project.query.filter_by(status="Completed").count(),
-            "monthly_revenue": 15420.50,  # This would be calculated from actual project data
+            "monthly_revenue": 15420.50,  # This would be calculated from actual data
         }
 
         # Get project status distribution
@@ -57,7 +57,10 @@ def get_recent_activity():
             activities.append(
                 {
                     "type": "project",
-                    "message": f'New project "{project.name}" created for {project.client.name}',
+                    "message": (
+                        f'New project "{project.name}" created for '
+                        f"{project.client.name}"
+                    ),
                     "timestamp": project.created_at.isoformat(),
                     "icon": "folder",
                 }

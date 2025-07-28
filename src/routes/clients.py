@@ -273,7 +273,10 @@ def delete_client(client_id):
 
         return jsonify(
             {
-                "message": f"Client and {project_count} associated projects deleted successfully"
+                "message": (
+                    f"Client and {project_count} associated projects "
+                    f"deleted successfully"
+                )
             }
         )
 

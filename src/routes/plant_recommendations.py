@@ -14,8 +14,10 @@ from flask import Blueprint, jsonify, request, session
 
 from src.models.landscape import Plant, PlantRecommendationRequest
 from src.models.user import db
-from src.services.plant_recommendation import (PlantRecommendationEngine,
-                                               RecommendationCriteria)
+from src.services.plant_recommendation import (
+    PlantRecommendationEngine,
+    RecommendationCriteria,
+)
 
 # Create blueprint
 plant_recommendations_bp = Blueprint("plant_recommendations", __name__)

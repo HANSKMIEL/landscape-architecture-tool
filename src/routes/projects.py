@@ -6,8 +6,15 @@ from datetime import datetime
 
 from flask import Blueprint, jsonify, request
 
-from src.models.landscape import (Client, Plant, Product, Project, db,
-                                  project_plants, project_products)
+from src.models.landscape import (
+    Client,
+    Plant,
+    Product,
+    Project,
+    db,
+    project_plants,
+    project_products,
+)
 
 projects_bp = Blueprint("projects", __name__)
 
