@@ -1,0 +1,20 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+echo "🔍 Running pre-commit checks..."
+
+# Run frontend linting
+echo "📝 Checking frontend code style..."
+cd frontend && npm run lint
+
+# Run frontend tests
+echo "🧪 Running frontend tests..."
+cd frontend && npm test -- --run
+
+# Check if tests passed
+if [ $? -ne 0 ]; then
+  echo "❌ Frontend tests failed. Commit aborted."
+  exit 1
+fi
+
+echo "✅ All pre-commit checks passed!"
