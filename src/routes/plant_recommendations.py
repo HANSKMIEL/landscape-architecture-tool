@@ -512,7 +512,8 @@ def import_plant_data():
                 imported_plants.append(plant.name)
 
             except Exception as e:
-                errors.append(f"Row {row_num}: {str(e)}")
+                logging.error(f"Error processing row {row_num}: {str(e)}")
+                errors.append(f"Row {row_num}: An error occurred while processing this row")
 
         # Commit if no errors
         if not errors:
@@ -537,7 +538,8 @@ def import_plant_data():
             )
 
     except Exception as e:
-        return jsonify({"error": f"Failed to import plant data: {str(e)}"}), 500
+        logging.error(f"Failed to import plant data: {str(e)}")
+        return jsonify({"error": "An internal error occurred while importing plant data"}), 500
 
 
 # Helper functions
