@@ -1,5 +1,3 @@
-import { describe, it, expect } from 'vitest'
-
 // Test to validate Fast Refresh compatibility
 describe('Fast Refresh Compatibility', () => {
   it('should import variants from separate utility file', async () => {
