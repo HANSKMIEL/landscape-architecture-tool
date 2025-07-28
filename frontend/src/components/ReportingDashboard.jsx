@@ -130,7 +130,7 @@ const ReportingDashboard = ({ language = 'en' }) => {
       if (dateRange.start) params.append('start_date', dateRange.start);
       if (dateRange.end) params.append('end_date', dateRange.end);
 
-      const response = await fetch(`/api/analytics/overview?${params}`);
+      const response = await fetch(`http://127.0.0.1:5001/api/analytics/overview?${params}`);
       if (!response.ok) throw new Error('Failed to fetch analytics data');
       
       const data = await response.json();
@@ -158,7 +158,7 @@ const ReportingDashboard = ({ language = 'en' }) => {
       if (dateRange.end) params.append('end_date', dateRange.end);
       params.append('format', format);
 
-      const response = await fetch(`/api/reports/business-summary?${params}`);
+      const response = await fetch(`http://127.0.0.1:5001/api/reports/business-summary?${params}`);
       if (!response.ok) throw new Error('Export failed');
 
       const blob = await response.blob();
