@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Coverage Report</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .header { background: #f5f5f5; padding: 20px; border-radius: 5px; }
+        .metric { display: inline-block; margin: 10px; padding: 10px; border-radius: 5px; }
+        .high { background: #d4edda; color: #155724; }
+        .medium { background: #fff3cd; color: #856404; }
+        .low { background: #f8d7da; color: #721c24; }
+        .coverage-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        .coverage-table th, .coverage-table td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        .coverage-table th { background-color: #f2f2f2; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Frontend Test Coverage Report</h1>
+        <p>Generated on: {{DATE}}</p>
+    </div>
+    
+    <div class="metrics">
+        <div class="metric {{LINES_CLASS}}">
+            <strong>Lines:</strong> {{LINES_PCT}}%
+        </div>
+        <div class="metric {{FUNCTIONS_CLASS}}">
+            <strong>Functions:</strong> {{FUNCTIONS_PCT}}%
+        </div>
+        <div class="metric {{BRANCHES_CLASS}}">
+            <strong>Branches:</strong> {{BRANCHES_PCT}}%
+        </div>
+        <div class="metric {{STATEMENTS_CLASS}}">
+            <strong>Statements:</strong> {{STATEMENTS_PCT}}%
+        </div>
+    </div>
+    
+    <h2>Coverage by Directory</h2>
+    <table class="coverage-table">
+        <thead>
+            <tr>
+                <th>Directory</th>
+                <th>Lines</th>
+                <th>Functions</th>
+                <th>Branches</th>
+                <th>Statements</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{DIRECTORY_ROWS}}
+        </tbody>
+    </table>
+</body>
+</html>
