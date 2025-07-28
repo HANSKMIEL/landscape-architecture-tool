@@ -49,6 +49,7 @@ from src.services import (
     ProjectService,
     SupplierService,
 )
+from src.services.analytics import AnalyticsService
 from src.utils.db_init import initialize_database, populate_sample_data
 
 # Import utilities
@@ -57,6 +58,7 @@ from src.utils.error_handlers import handle_errors, register_error_handlers
 # Import route blueprints
 from src.routes.plant_recommendations import plant_recommendations_bp
 from src.routes.project_plants import project_plants_bp
+from src.routes.reports import reports_bp
 
 
 # Configure logging
@@ -112,6 +114,7 @@ def create_app():
     # Register route blueprints
     app.register_blueprint(plant_recommendations_bp)
     app.register_blueprint(project_plants_bp)
+    app.register_blueprint(reports_bp)
 
     # Initialize services
     supplier_service = SupplierService()
@@ -120,6 +123,7 @@ def create_app():
     client_service = ClientService()
     project_service = ProjectService()
     dashboard_service = DashboardService()
+    analytics_service = AnalyticsService()
 
     # API Routes
     @app.route("/api/", methods=["GET"])
@@ -135,6 +139,13 @@ def create_app():
                     "dashboard": {
                         "stats": "/api/dashboard/stats",
                         "recent_activity": "/api/dashboard/recent-activity",
+                    },
+                    "analytics": {
+                        "plant_usage": "/api/analytics/plant-usage",
+                        "project_performance": "/api/analytics/project-performance", 
+                        "client_insights": "/api/analytics/client-insights",
+                        "financial": "/api/analytics/financial",
+                        "recommendation_effectiveness": "/api/analytics/recommendation-effectiveness"
                     },
                     "suppliers": "/api/suppliers",
                     "plants": "/api/plants",
@@ -169,6 +180,64 @@ def create_app():
         """Get recent activity for dashboard"""
         activities = dashboard_service.get_recent_activity()
         return jsonify(activities)
+
+    # Analytics endpoints
+    @app.route("/api/analytics/plant-usage", methods=["GET"])
+    @handle_errors
+    def get_plant_usage_analytics():
+        """Get plant usage analytics"""
+        from flask import request
+        
+        start_date = request.args.get("start_date")
+        end_date = request.args.get("end_date")
+        date_range = (start_date, end_date) if start_date or end_date else None
+        
+        analytics = analytics_service.get_plant_usage_analytics(date_range)
+        return jsonify(analytics)
+
+    @app.route("/api/analytics/project-performance", methods=["GET"])
+    @handle_errors
+    def get_project_performance_analytics():
+        """Get project performance analytics"""
+        from flask import request
+        
+        project_id = request.args.get("project_id")
+        project_id = int(project_id) if project_id else None
+        
+        analytics = analytics_service.get_project_performance_metrics(project_id)
+        return jsonify(analytics)
+
+    @app.route("/api/analytics/client-insights", methods=["GET"])
+    @handle_errors
+    def get_client_insights_analytics():
+        """Get client relationship insights"""
+        analytics = analytics_service.get_client_relationship_insights()
+        return jsonify(analytics)
+
+    @app.route("/api/analytics/financial", methods=["GET"])
+    @handle_errors
+    def get_financial_analytics():
+        """Get financial analytics"""
+        from flask import request
+        
+        start_date = request.args.get("start_date")
+        end_date = request.args.get("end_date")
+        
+        if not start_date or not end_date:
+            # Default to last 12 months
+            from datetime import datetime, timedelta
+            end_date = datetime.now().isoformat()
+            start_date = (datetime.now() - timedelta(days=365)).isoformat()
+        
+        analytics = analytics_service.get_financial_reporting((start_date, end_date))
+        return jsonify(analytics)
+
+    @app.route("/api/analytics/recommendation-effectiveness", methods=["GET"])
+    @handle_errors
+    def get_recommendation_effectiveness_analytics():
+        """Get recommendation system effectiveness analytics"""
+        analytics = analytics_service.get_recommendation_effectiveness()
+        return jsonify(analytics)
 
     # Suppliers endpoints
     @app.route("/api/suppliers", methods=["GET"])
