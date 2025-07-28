@@ -19,7 +19,7 @@ from reportlab.platypus import (
     TableStyle,
 )
 
-from src.models.landscape import Client, Plant, Product, Project, Supplier, db
+from src.models.landscape import Client, Plant, Product, Project, Supplier, ProjectPlant, db
 
 reports_bp = Blueprint("reports", __name__)
 
@@ -65,7 +65,6 @@ def generate_business_summary():
         budget_stats = (
             db.session.query(
                 db.func.sum(Project.budget),
-                db.func.sum(Project.spent),
                 db.func.avg(Project.budget),
             )
             .filter(Project.budget.isnot(None), *date_filter)
@@ -73,31 +72,31 @@ def generate_business_summary():
         )
 
         total_budget = float(budget_stats[0]) if budget_stats[0] else 0
-        total_spent = float(budget_stats[1]) if budget_stats[1] else 0
-        avg_budget = float(budget_stats[2]) if budget_stats[2] else 0
+        total_spent = 0  # No spent field in current model
+        avg_budget = float(budget_stats[1]) if budget_stats[1] else 0
 
         # Top clients by project count
         top_clients = (
             db.session.query(
                 Client.name,
-                Client.company,
+                Client.client_type,
                 db.func.count(Project.id).label("project_count"),
                 db.func.sum(Project.budget).label("total_budget"),
             )
             .join(Project)
             .filter(*date_filter)
-            .group_by(Client.id, Client.name, Client.company)
+            .group_by(Client.id, Client.name, Client.client_type)
             .order_by(db.desc("project_count"))
             .limit(10)
             .all()
         )
 
         top_clients_data = []
-        for name, company, count, budget in top_clients:
+        for name, client_type, count, budget in top_clients:
             top_clients_data.append(
                 {
                     "name": name,
-                    "company": company,
+                    "client_type": client_type,
                     "project_count": count,
                     "total_budget": float(budget) if budget else 0,
                 }
@@ -107,49 +106,30 @@ def generate_business_summary():
         plant_usage = (
             db.session.query(
                 Plant.name,
-                Plant.scientific_name,
-                db.func.count(db.distinct(Project.id)).label("project_count"),
+                Plant.common_name,
+                db.func.count(ProjectPlant.project_id.distinct()).label("project_count"),
             )
-            .join(Project.plants)
-            .join(Project)
+            .join(ProjectPlant, Plant.id == ProjectPlant.plant_id)
+            .join(Project, ProjectPlant.project_id == Project.id)
             .filter(*date_filter)
-            .group_by(Plant.id, Plant.name, Plant.scientific_name)
-            .order_by(db.desc("project_count"))
+            .group_by(Plant.id, Plant.name, Plant.common_name)
+            .order_by(db.func.count(ProjectPlant.project_id.distinct()).desc())
             .limit(10)
             .all()
         )
 
         plant_usage_data = []
-        for name, scientific_name, count in plant_usage:
+        for name, common_name, count in plant_usage:
             plant_usage_data.append(
                 {
                     "name": name,
-                    "scientific_name": scientific_name,
+                    "common_name": common_name,
                     "project_count": count,
                 }
             )
 
-        # Most used products
-        product_usage = (
-            db.session.query(
-                Product.name,
-                Product.category,
-                db.func.count(db.distinct(Project.id)).label("project_count"),
-            )
-            .join(Project.products)
-            .join(Project)
-            .filter(*date_filter)
-            .group_by(Product.id, Product.name, Product.category)
-            .order_by(db.desc("project_count"))
-            .limit(10)
-            .all()
-        )
-
+        # Most used products - disabled for now as Product-Project relationship not directly modeled
         product_usage_data = []
-        for name, category, count in product_usage:
-            product_usage_data.append(
-                {"name": name, "category": category, "project_count": count}
-            )
 
         report_data = {
             "generated_at": datetime.utcnow().isoformat(),
@@ -339,13 +319,13 @@ def generate_business_summary_pdf(data):
                 Paragraph("Top Clients by Project Count", styles["Heading2"])
             )
             client_data = [
-                ["Client", "Company", "Projects", "Total Budget (€)"]
+                ["Client", "Type", "Projects", "Total Budget (€)"]
             ]
             for client in data["top_clients"][:5]:  # Top 5
                 client_data.append(
                     [
                         client["name"],
-                        client["company"] or "-",
+                        client["client_type"] or "-",
                         str(client["project_count"]),
                         (
                             f"€{client['total_budget']:,.2f}"
@@ -384,12 +364,12 @@ def generate_business_summary_pdf(data):
         # Most used plants
         if data["plant_usage"]:
             story.append(Paragraph("Most Used Plants", styles["Heading2"]))
-            plant_data = [["Plant Name", "Scientific Name", "Projects"]]
+            plant_data = [["Plant Name", "Common Name", "Projects"]]
             for plant in data["plant_usage"][:5]:  # Top 5
                 plant_data.append(
                     [
                         plant["name"],
-                        plant["scientific_name"] or "-",
+                        plant["common_name"] or "-",
                         str(plant["project_count"]),
                     ]
                 )
@@ -442,40 +422,30 @@ def generate_project_report(project_id):
 
         # Get project plants with details
         plants_data = []
-        for plant in project.plants:
-            plants_data.append(
-                {
-                    "name": plant.name,
-                    "scientific_name": plant.scientific_name,
-                    "category": plant.category,
-                    "sun_requirements": plant.sun_requirements,
-                    "water_requirements": plant.water_requirements,
-                    "hardiness_zone": plant.hardiness_zone,
-                    "mature_height": plant.mature_height,
-                    "mature_width": plant.mature_width,
-                    "bloom_time": plant.bloom_time,
-                    "flower_color": plant.flower_color,
-                    "maintenance_level": plant.maintenance_level,
-                }
-            )
+        for project_plant in project.project_plants:
+            plant = project_plant.plant
+            if plant:
+                plants_data.append(
+                    {
+                        "name": plant.name,
+                        "common_name": plant.common_name,
+                        "category": plant.category,
+                        "sun_requirements": plant.sun_requirements,
+                        "water_needs": plant.water_needs,
+                        "hardiness_zone": plant.hardiness_zone,
+                        "height_max": plant.height_max,
+                        "width_max": plant.width_max,
+                        "bloom_time": plant.bloom_time,
+                        "bloom_color": plant.bloom_color,
+                        "maintenance": plant.maintenance,
+                        "quantity": project_plant.quantity,
+                        "unit_cost": project_plant.unit_cost
+                    }
+                )
 
-        # Get project products with details
+        # Get project products with details - disabled as no direct Product-Project relationship
         products_data = []
         total_product_cost = 0
-        for product in project.products:
-            product_info = {
-                "name": product.name,
-                "description": product.description,
-                "category": product.category,
-                "price": float(product.price) if product.price else 0,
-                "unit": product.unit,
-                "sku": product.sku,
-                "supplier_name": (
-                    product.supplier.name if product.supplier else None
-                ),
-            }
-            products_data.append(product_info)
-            total_product_cost += product_info["price"]
 
         report_data = {
             "generated_at": datetime.utcnow().isoformat(),
@@ -485,7 +455,7 @@ def generate_project_report(project_id):
                 "description": project.description,
                 "status": project.status,
                 "budget": float(project.budget) if project.budget else 0,
-                "spent": float(project.spent) if project.spent else 0,
+                "spent": 0,  # No spent field in current model
                 "location": project.location,
                 "area_size": (
                     float(project.area_size) if project.area_size else 0
@@ -509,11 +479,10 @@ def generate_project_report(project_id):
                 "name": project.client.name,
                 "email": project.client.email,
                 "phone": project.client.phone,
-                "company": project.client.company,
+                "client_type": project.client.client_type,
                 "address": project.client.address,
                 "city": project.client.city,
                 "postal_code": project.client.postal_code,
-                "country": project.client.country,
             },
             "plants": plants_data,
             "products": products_data,
@@ -521,11 +490,7 @@ def generate_project_report(project_id):
                 "total_plants": len(plants_data),
                 "total_products": len(products_data),
                 "total_product_cost": total_product_cost,
-                "budget_utilization": (
-                    (float(project.spent) / float(project.budget) * 100)
-                    if project.budget and project.budget > 0
-                    else 0
-                ),
+                "budget_utilization": 0,  # No spent field available
             },
         }
 
@@ -619,13 +584,12 @@ def generate_project_report_pdf(data):
         client_data = [
             ["Field", "Value"],
             ["Name", client["name"]],
-            ["Company", client["company"] or "-"],
+            ["Type", client["client_type"] or "-"],
             ["Email", client["email"]],
             ["Phone", client["phone"] or "-"],
             ["Address", client["address"] or "-"],
             ["City", client["city"] or "-"],
             ["Postal Code", client["postal_code"] or "-"],
-            ["Country", client["country"] or "-"],
         ]
 
         client_table = Table(client_data, colWidths=[2 * inch, 3 * inch])
@@ -655,16 +619,16 @@ def generate_project_report_pdf(data):
         if data["plants"]:
             story.append(Paragraph("Plant List", styles["Heading2"]))
             plant_data = [
-                ["Plant Name", "Scientific Name", "Category", "Sun", "Water"]
+                ["Plant Name", "Common Name", "Category", "Sun", "Water"]
             ]
             for plant in data["plants"]:
                 plant_data.append(
                     [
                         plant["name"],
-                        plant["scientific_name"] or "-",
+                        plant["common_name"] or "-",
                         plant["category"] or "-",
                         plant["sun_requirements"] or "-",
-                        plant["water_requirements"] or "-",
+                        plant["water_needs"] or "-",
                     ]
                 )
 
