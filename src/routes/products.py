@@ -47,14 +47,10 @@ def get_products():
             query = query.filter(Product.supplier_id == int(supplier_id))
 
         if in_stock:
-            query = query.filter(
-                Product.in_stock == (in_stock.lower() == "true")
-            )
+            query = query.filter(Product.in_stock == (in_stock.lower() == "true"))
 
         # Execute query with pagination
-        products = query.paginate(
-            page=page, per_page=per_page, error_out=False
-        )
+        products = query.paginate(page=page, per_page=per_page, error_out=False)
 
         # Format response
         products_data = []
@@ -74,14 +70,10 @@ def get_products():
                         product.supplier.name if product.supplier else None
                     ),
                     "created_at": (
-                        product.created_at.isoformat()
-                        if product.created_at
-                        else None
+                        product.created_at.isoformat() if product.created_at else None
                     ),
                     "updated_at": (
-                        product.updated_at.isoformat()
-                        if product.updated_at
-                        else None
+                        product.updated_at.isoformat() if product.updated_at else None
                     ),
                 }
             )
@@ -123,9 +115,7 @@ def create_product():
             unit=data.get("unit"),
             sku=data.get("sku"),
             in_stock=data.get("in_stock", True),
-            supplier_id=(
-                int(data["supplier_id"]) if data.get("supplier_id") else None
-            ),
+            supplier_id=(int(data["supplier_id"]) if data.get("supplier_id") else None),
             created_at=datetime.utcnow(),
             updated_at=datetime.utcnow(),
         )
@@ -264,15 +254,9 @@ def get_product_stats():
                 "out_of_stock_products": out_of_stock_products,
                 "category_distribution": category_distribution,
                 "price_stats": {
-                    "min_price": (
-                        float(price_stats[0]) if price_stats[0] else 0
-                    ),
-                    "max_price": (
-                        float(price_stats[1]) if price_stats[1] else 0
-                    ),
-                    "avg_price": (
-                        float(price_stats[2]) if price_stats[2] else 0
-                    ),
+                    "min_price": (float(price_stats[0]) if price_stats[0] else 0),
+                    "max_price": (float(price_stats[1]) if price_stats[1] else 0),
+                    "avg_price": (float(price_stats[2]) if price_stats[2] else 0),
                 },
             }
         )
@@ -299,11 +283,7 @@ def import_products():
             df = pd.read_excel(io.BytesIO(file.read()))
         else:
             return (
-                jsonify(
-                    {
-                        "error": "Unsupported file format. Use CSV or Excel files."
-                    }
-                ),
+                jsonify({"error": "Unsupported file format. Use CSV or Excel files."}),
                 400,
             )
 
@@ -335,9 +315,7 @@ def import_products():
                             break
 
                 # Skip if no name
-                if not product_data.get("name") or pd.isna(
-                    product_data["name"]
-                ):
+                if not product_data.get("name") or pd.isna(product_data["name"]):
                     errors.append(f"Row {index + 1}: Missing product name")
                     continue
 
@@ -435,9 +413,7 @@ def export_products():
                         product.supplier.name if product.supplier else None
                     ),
                     "created_at": (
-                        product.created_at.isoformat()
-                        if product.created_at
-                        else None
+                        product.created_at.isoformat() if product.created_at else None
                     ),
                 }
             )

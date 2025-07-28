@@ -64,9 +64,7 @@ def handle_validation_error(error):
             )
 
         return (
-            jsonify(
-                {"error": "Validation failed", "validation_errors": errors}
-            ),
+            jsonify({"error": "Validation failed", "validation_errors": errors}),
             400,
         )
 

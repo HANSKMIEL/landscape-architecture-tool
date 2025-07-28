@@ -10,7 +10,7 @@ import sys
 project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, project_root)
 
-from src.main import app
+from src.main import app  # noqa: E402
 
 # Expose application for WSGI servers
 application = app

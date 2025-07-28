@@ -10,9 +10,7 @@ from datetime import timedelta
 class Config:
     """Base configuration"""
 
-    SECRET_KEY = (
-        os.environ.get("SECRET_KEY") or "dev-secret-key-change-in-production"
-    )
+    SECRET_KEY = os.environ.get("SECRET_KEY") or "dev-secret-key-change-in-production"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_DATABASE_URI = (
         os.environ.get("DATABASE_URL") or "sqlite:///landscape_architecture.db"
@@ -52,8 +50,7 @@ class ProductionConfig(Config):
 
     # Production database - use SQLite for demo, PostgreSQL in real production
     SQLALCHEMY_DATABASE_URI = (
-        os.environ.get("DATABASE_URL")
-        or "sqlite:///landscape_architecture_prod.db"
+        os.environ.get("DATABASE_URL") or "sqlite:///landscape_architecture_prod.db"
     )
 
     # Enhanced security for production

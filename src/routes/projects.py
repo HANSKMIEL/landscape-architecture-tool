@@ -51,9 +51,7 @@ def get_projects():
             query = query.filter(Project.client_id == int(client_id))
 
         # Execute query with pagination
-        projects = query.paginate(
-            page=page, per_page=per_page, error_out=False
-        )
+        projects = query.paginate(page=page, per_page=per_page, error_out=False)
 
         # Format response
         projects_data = []
@@ -79,23 +77,17 @@ def get_projects():
                     "name": project.name,
                     "description": project.description,
                     "status": project.status,
-                    "budget": (
-                        float(project.budget) if project.budget else None
-                    ),
+                    "budget": (float(project.budget) if project.budget else None),
                     "spent": float(project.spent) if project.spent else None,
                     "location": project.location,
                     "area_size": (
                         float(project.area_size) if project.area_size else None
                     ),
                     "start_date": (
-                        project.start_date.isoformat()
-                        if project.start_date
-                        else None
+                        project.start_date.isoformat() if project.start_date else None
                     ),
                     "end_date": (
-                        project.end_date.isoformat()
-                        if project.end_date
-                        else None
+                        project.end_date.isoformat() if project.end_date else None
                     ),
                     "notes": project.notes,
                     "client_id": project.client_id,
@@ -114,14 +106,10 @@ def get_projects():
                         for p in products
                     ],
                     "created_at": (
-                        project.created_at.isoformat()
-                        if project.created_at
-                        else None
+                        project.created_at.isoformat() if project.created_at else None
                     ),
                     "updated_at": (
-                        project.updated_at.isoformat()
-                        if project.updated_at
-                        else None
+                        project.updated_at.isoformat() if project.updated_at else None
                     ),
                 }
             )
@@ -170,9 +158,7 @@ def create_project():
             budget=float(data["budget"]) if data.get("budget") else None,
             spent=float(data["spent"]) if data.get("spent") else None,
             location=data.get("location"),
-            area_size=(
-                float(data["area_size"]) if data.get("area_size") else None
-            ),
+            area_size=(float(data["area_size"]) if data.get("area_size") else None),
             start_date=(
                 datetime.fromisoformat(data["start_date"])
                 if data.get("start_date")
@@ -287,13 +273,9 @@ def get_project(project_id):
                 "budget": float(project.budget) if project.budget else None,
                 "spent": float(project.spent) if project.spent else None,
                 "location": project.location,
-                "area_size": (
-                    float(project.area_size) if project.area_size else None
-                ),
+                "area_size": (float(project.area_size) if project.area_size else None),
                 "start_date": (
-                    project.start_date.isoformat()
-                    if project.start_date
-                    else None
+                    project.start_date.isoformat() if project.start_date else None
                 ),
                 "end_date": (
                     project.end_date.isoformat() if project.end_date else None
@@ -308,14 +290,10 @@ def get_project(project_id):
                 "plants": plants_data,
                 "products": products_data,
                 "created_at": (
-                    project.created_at.isoformat()
-                    if project.created_at
-                    else None
+                    project.created_at.isoformat() if project.created_at else None
                 ),
                 "updated_at": (
-                    project.updated_at.isoformat()
-                    if project.updated_at
-                    else None
+                    project.updated_at.isoformat() if project.updated_at else None
                 ),
             }
         )
@@ -345,9 +323,7 @@ def update_project(project_id):
         if "location" in data:
             project.location = data["location"]
         if "area_size" in data:
-            project.area_size = (
-                float(data["area_size"]) if data["area_size"] else None
-            )
+            project.area_size = float(data["area_size"]) if data["area_size"] else None
         if "start_date" in data:
             project.start_date = (
                 datetime.fromisoformat(data["start_date"])
@@ -356,9 +332,7 @@ def update_project(project_id):
             )
         if "end_date" in data:
             project.end_date = (
-                datetime.fromisoformat(data["end_date"])
-                if data["end_date"]
-                else None
+                datetime.fromisoformat(data["end_date"]) if data["end_date"] else None
             )
         if "notes" in data:
             project.notes = data["notes"]
@@ -473,8 +447,7 @@ def get_project_stats():
         )
 
         top_clients = [
-            {"name": name, "project_count": count}
-            for name, count in client_stats
+            {"name": name, "project_count": count} for name, count in client_stats
         ]
 
         # Monthly project creation trend (last 6 months)
@@ -483,9 +456,7 @@ def get_project_stats():
                 db.func.date_trunc("month", Project.created_at).label("month"),
                 db.func.count(Project.id).label("count"),
             )
-            .filter(
-                Project.created_at >= datetime.utcnow() - timedelta(days=180)
-            )
+            .filter(Project.created_at >= datetime.utcnow() - timedelta(days=180))
             .group_by("month")
             .order_by("month")
             .all()
@@ -505,18 +476,14 @@ def get_project_stats():
                     "total_spent": total_spent,
                     "avg_budget": avg_budget,
                     "utilization_rate": (
-                        (total_spent / total_budget * 100)
-                        if total_budget > 0
-                        else 0
+                        (total_spent / total_budget * 100) if total_budget > 0 else 0
                     ),
                 },
                 "recent_projects": recent_projects,
                 "top_clients": top_clients,
                 "monthly_trend": monthly_trend,
                 "completed_projects": status_distribution.get("completed", 0),
-                "in_progress_projects": status_distribution.get(
-                    "in_progress", 0
-                ),
+                "in_progress_projects": status_distribution.get("in_progress", 0),
                 "planning_projects": status_distribution.get("planning", 0),
             }
         )
@@ -548,9 +515,7 @@ def add_plant_to_project(project_id):
         db.session.commit()
 
         return jsonify(
-            {
-                "message": f'Plant "{plant.name}" added to project "{project.name}"'
-            }
+            {"message": f'Plant "{plant.name}" added to project "{project.name}"'}
         )
 
     except Exception as e:
@@ -576,9 +541,7 @@ def remove_plant_from_project(project_id, plant_id):
         db.session.commit()
 
         return jsonify(
-            {
-                "message": f'Plant "{plant.name}" removed from project "{project.name}"'
-            }
+            {"message": f'Plant "{plant.name}" removed from project "{project.name}"'}
         )
 
     except Exception as e:
@@ -612,9 +575,7 @@ def add_product_to_project(project_id):
         db.session.commit()
 
         return jsonify(
-            {
-                "message": f'Product "{product.name}" added to project "{project.name}"'
-            }
+            {"message": f'Product "{product.name}" added to project "{project.name}"'}
         )
 
     except Exception as e:
@@ -642,7 +603,9 @@ def remove_product_from_project(project_id, product_id):
 
         return jsonify(
             {
-                "message": f'Product "{product.name}" removed from project "{project.name}"'
+                "message": (
+                    f'Product "{product.name}" removed from project "{project.name}"'
+                )
             }
         )
 
