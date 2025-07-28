@@ -9,7 +9,7 @@ import csv
 import io
 import uuid
 from typing import Any, Dict
-
+import logging
 from flask import Blueprint, jsonify, request, session
 
 from src.models.landscape import Plant, PlantRecommendationRequest
@@ -142,8 +142,8 @@ def get_plant_recommendations():
         return jsonify(response)
 
     except Exception as e:
-        return jsonify({"error": f"Failed to get recommendations: {str(e)}"}), 500
-
+        logging.exception("Failed to get recommendations")
+        return jsonify({"error": "Failed to get recommendations due to an internal error."}), 500
 
 @plant_recommendations_bp.route(
     "/api/plant-recommendations/criteria-options", methods=["GET"]
