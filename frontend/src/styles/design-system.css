@@ -1,0 +1,293 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Design System CSS Variables */
+@layer base {
+  :root {
+    /* Colors - Using HSL for better manipulation */
+    --background: 0 0% 100%;
+    --foreground: 224 71.4% 4.1%;
+    --card: 0 0% 100%;
+    --card-foreground: 224 71.4% 4.1%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 224 71.4% 4.1%;
+    --primary: 142 76% 36%;
+    --primary-foreground: 355.7 100% 97.3%;
+    --secondary: 220 14.3% 95.9%;
+    --secondary-foreground: 220.9 39.3% 11%;
+    --muted: 220 14.3% 95.9%;
+    --muted-foreground: 220 8.9% 46.1%;
+    --accent: 220 14.3% 95.9%;
+    --accent-foreground: 220.9 39.3% 11%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 20% 98%;
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 142 76% 36%;
+    --radius: 0.5rem;
+
+    /* Landscape Architecture Specific Variables */
+    --landscape-primary: 142 76% 36%; /* Green #22c55e */
+    --landscape-primary-dark: 142 69% 32%; /* Green #16a34a */
+    --landscape-secondary: 217 91% 60%; /* Blue #3b82f6 */
+    --landscape-secondary-dark: 221 83% 53%; /* Blue #2563eb */
+    
+    /* Status Colors */
+    --success: 158 64% 52%;
+    --warning: 43 96% 56%;
+    --error: 0 84% 60%;
+    --info: 217 91% 60%;
+    
+    /* Semantic Colors for Landscape Context */
+    --nature-green: 122 39% 49%;
+    --earth-brown: 29 24% 30%;
+    --sky-blue: 204 94% 94%;
+    --stone-gray: 210 6% 54%;
+    --water-blue: 199 89% 48%;
+    
+    /* Spacing Scale */
+    --space-xs: 0.25rem;
+    --space-sm: 0.5rem;
+    --space-md: 1rem;
+    --space-lg: 1.5rem;
+    --space-xl: 2rem;
+    --space-2xl: 3rem;
+    --space-3xl: 4rem;
+    --space-4xl: 6rem;
+    --space-5xl: 8rem;
+    
+    /* Typography Scale */
+    --text-xs: 0.75rem;
+    --text-sm: 0.875rem;
+    --text-base: 1rem;
+    --text-lg: 1.125rem;
+    --text-xl: 1.25rem;
+    --text-2xl: 1.5rem;
+    --text-3xl: 1.875rem;
+    --text-4xl: 2.25rem;
+    --text-5xl: 3rem;
+    
+    /* Line Heights */
+    --leading-tight: 1.25;
+    --leading-snug: 1.375;
+    --leading-normal: 1.5;
+    --leading-relaxed: 1.625;
+    --leading-loose: 2;
+    
+    /* Border Radius */
+    --radius-sm: 0.25rem;
+    --radius-md: 0.5rem;
+    --radius-lg: 0.75rem;
+    --radius-xl: 1rem;
+    --radius-2xl: 1.5rem;
+    
+    /* Shadows */
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+    
+    /* Z-Index Scale */
+    --z-dropdown: 1000;
+    --z-sticky: 1020;
+    --z-fixed: 1030;
+    --z-modal-backdrop: 1040;
+    --z-modal: 1050;
+    --z-popover: 1060;
+    --z-tooltip: 1070;
+    --z-toast: 1080;
+  }
+
+  .dark {
+    --background: 224 71.4% 4.1%;
+    --foreground: 210 20% 98%;
+    --card: 224 71.4% 4.1%;
+    --card-foreground: 210 20% 98%;
+    --popover: 224 71.4% 4.1%;
+    --popover-foreground: 210 20% 98%;
+    --primary: 142 76% 36%;
+    --primary-foreground: 355.7 100% 97.3%;
+    --secondary: 215 27.9% 16.9%;
+    --secondary-foreground: 210 20% 98%;
+    --muted: 215 27.9% 16.9%;
+    --muted-foreground: 217.9 10.6% 64.9%;
+    --accent: 215 27.9% 16.9%;
+    --accent-foreground: 210 20% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 20% 98%;
+    --border: 215 27.9% 16.9%;
+    --input: 215 27.9% 16.9%;
+    --ring: 142 76% 36%;
+  }
+}
+
+/* Base Typography */
+@layer base {
+  * {
+    border-color: hsl(var(--border));
+  }
+  
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+  
+  /* Landscape-specific typography */
+  .heading-landscape {
+    @apply font-semibold tracking-tight text-primary-700;
+  }
+  
+  .text-landscape-muted {
+    @apply text-gray-600;
+  }
+  
+  .text-landscape-emphasis {
+    @apply text-primary-600 font-medium;
+  }
+}
+
+/* Component Layer - Design System Components */
+@layer components {
+  /* Container System */
+  .container-landscape {
+    @apply container mx-auto px-4 sm:px-6 lg:px-8;
+    max-width: 1200px;
+  }
+  
+  .container-narrow {
+    @apply container mx-auto px-4 sm:px-6 lg:px-8;
+    max-width: 800px;
+  }
+  
+  .container-wide {
+    @apply container mx-auto px-4 sm:px-6 lg:px-8;
+    max-width: 1400px;
+  }
+  
+  /* Grid System */
+  .grid-landscape {
+    @apply grid gap-6;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  }
+  
+  .grid-cards {
+    @apply grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4;
+  }
+  
+  .grid-dashboard {
+    @apply grid gap-6 md:grid-cols-2 lg:grid-cols-3;
+  }
+  
+  /* Card Variants */
+  .card-landscape {
+    @apply bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-200;
+  }
+  
+  .card-landscape-elevated {
+    @apply bg-white rounded-lg border border-gray-200 shadow-md hover:shadow-lg transition-shadow duration-200;
+  }
+  
+  .card-landscape-featured {
+    @apply bg-gradient-to-br from-primary-50 to-secondary-50 rounded-lg border border-primary-200 shadow-md;
+  }
+  
+  /* Button Variants */
+  .btn-landscape-primary {
+    @apply bg-primary-500 hover:bg-primary-600 text-white font-medium py-2 px-4 rounded-md shadow-sm hover:shadow-md transition-all duration-200;
+  }
+  
+  .btn-landscape-secondary {
+    @apply bg-secondary-500 hover:bg-secondary-600 text-white font-medium py-2 px-4 rounded-md shadow-sm hover:shadow-md transition-all duration-200;
+  }
+  
+  .btn-landscape-outline {
+    @apply border border-primary-500 text-primary-600 hover:bg-primary-50 font-medium py-2 px-4 rounded-md transition-all duration-200;
+  }
+  
+  /* Form Elements */
+  .input-landscape {
+    @apply border border-gray-300 rounded-md px-3 py-2 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent;
+  }
+  
+  .label-landscape {
+    @apply block text-sm font-medium text-gray-700 mb-1;
+  }
+  
+  /* Status Indicators */
+  .status-success {
+    @apply bg-green-100 text-green-800 border border-green-200;
+  }
+  
+  .status-warning {
+    @apply bg-yellow-100 text-yellow-800 border border-yellow-200;
+  }
+  
+  .status-error {
+    @apply bg-red-100 text-red-800 border border-red-200;
+  }
+  
+  .status-info {
+    @apply bg-blue-100 text-blue-800 border border-blue-200;
+  }
+  
+  /* Navigation */
+  .nav-landscape {
+    @apply bg-white border-b border-gray-200 shadow-sm;
+  }
+  
+  .nav-item-landscape {
+    @apply text-gray-600 hover:text-primary-600 px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200;
+  }
+  
+  .nav-item-active {
+    @apply text-primary-600 bg-primary-50 border-r-2 border-primary-500;
+  }
+  
+  /* Responsive Utilities */
+  .responsive-padding {
+    @apply px-4 sm:px-6 lg:px-8;
+  }
+  
+  .responsive-margin {
+    @apply mx-4 sm:mx-6 lg:mx-8;
+  }
+  
+  .responsive-text {
+    @apply text-sm sm:text-base lg:text-lg;
+  }
+}
+
+/* Utility Layer - Custom Utilities */
+@layer utilities {
+  /* Landscape-specific spacing */
+  .space-landscape-xs { gap: var(--space-xs); }
+  .space-landscape-sm { gap: var(--space-sm); }
+  .space-landscape-md { gap: var(--space-md); }
+  .space-landscape-lg { gap: var(--space-lg); }
+  .space-landscape-xl { gap: var(--space-xl); }
+  
+  /* Custom shadows for landscape context */
+  .shadow-landscape-soft {
+    box-shadow: 0 2px 8px 0 rgb(34 197 94 / 0.1);
+  }
+  
+  .shadow-landscape-strong {
+    box-shadow: 0 8px 24px 0 rgb(34 197 94 / 0.15);
+  }
+  
+  /* Focus states */
+  .focus-landscape {
+    @apply focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2;
+  }
+  
+  /* Hover states */
+  .hover-landscape {
+    @apply hover:bg-primary-50 hover:border-primary-300 transition-colors duration-200;
+  }
+  
+  /* Text selection */
+  .select-landscape {
+    @apply selection:bg-primary-100 selection:text-primary-900;
+  }
+}

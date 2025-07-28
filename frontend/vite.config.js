@@ -53,7 +53,7 @@ export default defineConfig({
     }
   },
   css: {
-    // Remove PostCSS configuration entirely
+    postcss: './postcss.config.js',
   },
 })
 

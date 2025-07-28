@@ -14,6 +14,7 @@ const Projects = lazy(() => import('./components/Projects'))
 const PlantRecommendations = lazy(() => import('./components/PlantRecommendations'))
 const Reports = lazy(() => import('./components/Reports'))
 const Settings = lazy(() => import('./components/Settings'))
+const DesignSystemShowcase = lazy(() => import('./components/DesignSystemShowcase'))
 import './unified-professional-styles.css'
 import './enhanced_sidebar_styles.css'
 
@@ -91,6 +92,7 @@ function App() {
                 <Route path="/plant-recommendations" element={<PlantRecommendations language={language} />} />
                 <Route path="/reports" element={<Reports language={language} />} />
                 <Route path="/settings" element={<Settings language={language} />} />
+                <Route path="/design-system" element={<DesignSystemShowcase />} />
               </Routes>
             </Suspense>
           </main>
