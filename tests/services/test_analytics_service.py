@@ -299,9 +299,10 @@ class TestAnalyticsService(DatabaseTestMixin):
         )
         
         # Add seasonal plants to projects
-        ProjectPlant(project=spring_project, plant=spring_plant, quantity=10)
-        ProjectPlant(project=summer_project, plant=summer_plant, quantity=15)
-        ProjectPlant(project=summer_project, plant=fall_plant, quantity=5)
+        db.session.add(ProjectPlant(project=spring_project, plant=spring_plant, quantity=10))
+        db.session.add(ProjectPlant(project=summer_project, plant=summer_plant, quantity=15))
+        db.session.add(ProjectPlant(project=summer_project, plant=fall_plant, quantity=5))
+        db.session.commit()
         
         result = analytics.get_seasonal_analytics()
         
