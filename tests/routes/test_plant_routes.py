@@ -22,7 +22,12 @@ class TestPlantRoutes(DatabaseTestMixin):
         
         assert response.status_code == 200
         data = response.get_json()
-        assert data == []  # API returns simple list when empty
+        assert isinstance(data, dict)  # API returns structured response consistently
+        assert "plants" in data
+        assert data["plants"] == []
+        assert data["total"] == 0
+        assert data["current_page"] == 1
+        assert data["pages"] == 0
 
     def test_get_plants_with_data(self, client, app_context, sample_plants):
         """Test getting plants with sample data"""
