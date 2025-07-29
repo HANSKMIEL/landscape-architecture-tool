@@ -469,8 +469,11 @@ class TestAnalyticsServiceIntegration(DatabaseTestMixin):
         )
         
         # Add plants to projects
-        ProjectPlant(project=old_project, plant=plant, quantity=5)
-        ProjectPlant(project=recent_project, plant=plant, quantity=10)
+        old_project_plant = ProjectPlant(project=old_project, plant=plant, quantity=5)
+        recent_project_plant = ProjectPlant(project=recent_project, plant=plant, quantity=10)
+        db.session.add(old_project_plant)
+        db.session.add(recent_project_plant)
+        db.session.commit()
         
         # Test different date ranges
         
