@@ -13,7 +13,16 @@ export default [
       globals: { 
         ...globals.browser,
         ...globals.jest,
-        ...globals.node
+        ...globals.node,
+        vi: 'readonly',
+        describe: 'readonly',
+        it: 'readonly',
+        test: 'readonly',
+        expect: 'readonly',
+        beforeEach: 'readonly',
+        afterEach: 'readonly',
+        beforeAll: 'readonly',
+        afterAll: 'readonly'
       },
       parserOptions: {
         ecmaVersion: 'latest',
@@ -32,9 +41,15 @@ export default [
       'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]' }],
       'react-refresh/only-export-components': [
         'warn',
-        { allowConstantExport: true },
+        { allowConstantExport: true, allowExportNames: ['render', 'renderWithLanguage'] },
       ],
     },
+  },
+  {
+    files: ['**/test/utils/**/*', '**/src/test/**/*'],
+    rules: {
+      'react-refresh/only-export-components': 'off',
+    }
   },
   {
     files: ['**/__tests__/**/*', '**/*.test.*'],
@@ -49,7 +64,16 @@ export default [
     },
     languageOptions: {
       globals: {
-        ...globals.jest
+        ...globals.jest,
+        vi: 'readonly',
+        describe: 'readonly',
+        it: 'readonly',
+        test: 'readonly',
+        expect: 'readonly',
+        beforeEach: 'readonly',
+        afterEach: 'readonly',
+        beforeAll: 'readonly',
+        afterAll: 'readonly'
       }
     }
   },

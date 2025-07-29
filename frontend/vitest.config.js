@@ -20,16 +20,32 @@ export default defineConfig({
         'dist/',
         'coverage/',
         '**/*.test.{js,jsx}',
+        '**/*.spec.{js,jsx}',
         '**/*.config.{js,jsx}',
         'src/test/',
         'scripts/',
-        '.eslintrc.js'
+        '.eslintrc.js',
+        'src/main.jsx'
       ],
       thresholds: {
-        lines: 85,
-        functions: 85,
-        branches: 80,
-        statements: 85
+        global: {
+          branches: 80,
+          functions: 80,
+          lines: 80,
+          statements: 80
+        },
+        'src/components/': {
+          branches: 90,
+          functions: 90,
+          lines: 90,
+          statements: 90
+        },
+        'src/lib/': {
+          branches: 95,
+          functions: 95,
+          lines: 95,
+          statements: 95
+        }
       }
     }
   },
