@@ -318,7 +318,7 @@ def create_app():
             return jsonify({"error": "Validation failed", "validation_errors": error_messages}), 400
         except ValueError as e:
             logger.error("Validation error occurred: %s", str(e))
-            return jsonify({"error": "Validation failed", "validation_errors": [str(e)]}), 400
+            return jsonify({"error": "Validation failed", "validation_errors": [str(e)]}), 422
 
     @app.route("/api/suppliers/<int:supplier_id>", methods=["PUT"])
     @handle_errors
@@ -344,7 +344,7 @@ def create_app():
             error_messages = [error.get('msg', str(error)) for error in e.errors()]
             return jsonify({"error": "Validation failed", "validation_errors": error_messages}), 400
         except ValueError as e:
-            return jsonify({"error": "Validation failed", "validation_errors": [str(e)]}), 400
+            return jsonify({"error": "Validation failed", "validation_errors": [str(e)]}), 422
 
     @app.route("/api/suppliers/<int:supplier_id>", methods=["DELETE"])
     @handle_errors
@@ -604,8 +604,13 @@ def create_app():
     def get_plants():
         """Get all plants"""
         from flask import request
+        from src.models.landscape import Plant
+        from sqlalchemy import and_
 
         search = request.args.get("search", "")
+        category = request.args.get("category", "")
+        sun_exposure = request.args.get("sun_exposure", "")
+        native_only = request.args.get("native_only", "").lower() == "true"
         page = request.args.get("page", 1, type=int)
         per_page = request.args.get("per_page", 50, type=int)
         
@@ -613,7 +618,41 @@ def create_app():
         if page < 1 or per_page < 1:
             return jsonify({"error": "Invalid pagination parameters"}), 400
         
-        result = plant_service.get_all(search=search, page=page, per_page=per_page)
+        # Build query with filters
+        query = Plant.query
+        
+        # Apply filters
+        filters = []
+        if search:
+            filters.append(
+                Plant.name.contains(search)
+                | Plant.common_name.contains(search)
+                | Plant.category.contains(search)
+            )
+        
+        if category:
+            filters.append(Plant.category == category)
+            
+        if sun_exposure:
+            filters.append(Plant.sun_exposure == sun_exposure)
+            
+        if native_only:
+            filters.append(Plant.native == True)
+        
+        if filters:
+            query = query.filter(and_(*filters))
+        
+        # Apply pagination
+        paginated = query.order_by(Plant.name).paginate(
+            page=page, per_page=per_page, error_out=False
+        )
+        
+        result = {
+            "plants": [plant.to_dict() for plant in paginated.items],
+            "total": paginated.total,
+            "pages": paginated.pages,
+            "current_page": page,
+        }
         
         # Return empty list if no plants, otherwise return full structure
         if result["total"] == 0:

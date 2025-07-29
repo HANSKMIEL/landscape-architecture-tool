@@ -635,6 +635,7 @@ class AnalyticsService:
             # Add client_name field for backward compatibility
             for client in top_by_budget:
                 client["client_name"] = client["name"]
+                client["total_budget"] = client["total_value"]  # Add expected field name
             
             return {
                 "total_clients": insights.get("total_clients", 0),
