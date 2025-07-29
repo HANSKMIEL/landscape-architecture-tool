@@ -34,8 +34,8 @@ class PerformanceCache:
             try:
                 current_app.logger.error(f"Redis connection failed: {e}")
             except RuntimeError:
-                # No Flask context available, use print for logging
-                print(f"Redis connection failed: {e}")
+                # No Flask context available, use logging for fallback
+                logging.error(f"Redis connection failed: {e}")
             self.redis_client = None
     
     def get(self, key: str) -> Optional[Any]:
