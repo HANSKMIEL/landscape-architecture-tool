@@ -315,7 +315,7 @@ def create_app():
         except ValidationError as e:
             # Convert Pydantic errors to string format for consistency
             error_messages = [error.get('msg', str(error)) for error in e.errors()]
-            return jsonify({"error": "Validation failed", "validation_errors": error_messages}), 400
+            return jsonify({"error": "Validation failed", "validation_errors": error_messages}), 422
         except ValueError as e:
             logger.error("Validation error occurred: %s", str(e))
             return jsonify({"error": "Validation failed", "validation_errors": [str(e)]}), 422
@@ -342,7 +342,7 @@ def create_app():
         except ValidationError as e:
             # Convert Pydantic errors to string format for consistency
             error_messages = [error.get('msg', str(error)) for error in e.errors()]
-            return jsonify({"error": "Validation failed", "validation_errors": error_messages}), 400
+            return jsonify({"error": "Validation failed", "validation_errors": error_messages}), 422
         except ValueError as e:
             return jsonify({"error": "Validation failed", "validation_errors": [str(e)]}), 422
 
@@ -401,7 +401,7 @@ def create_app():
         except ValidationError as e:
             # Convert Pydantic errors to string format for consistency
             error_messages = [error.get('msg', str(error)) for error in e.errors()]
-            return jsonify({"error": "Validation failed", "validation_errors": error_messages}), 400
+            return jsonify({"error": "Validation failed", "validation_errors": error_messages}), 422
 
     @app.route("/api/suppliers/<int:supplier_id>/plants", methods=["GET"])
     @handle_errors
@@ -484,28 +484,54 @@ def create_app():
         
         limit = request.args.get("limit", 10, type=int)
         
-        # Get suppliers with their item counts
+        # Get suppliers with their item counts using subqueries
+        from sqlalchemy import select
+        
+        # Subquery for product counts
+        product_counts = (
+            db.session.query(
+                Product.supplier_id,
+                func.count(Product.id).label("product_count")
+            )
+            .group_by(Product.supplier_id)
+            .subquery()
+        )
+        
+        # Subquery for plant counts
+        plant_counts = (
+            db.session.query(
+                Plant.supplier_id,
+                func.count(Plant.id).label("plant_count")
+            )
+            .group_by(Plant.supplier_id)
+            .subquery()
+        )
+        
+        # Main query
         top_suppliers = (
             db.session.query(
                 Supplier,
-                func.count(Product.id).label("product_count"),
-                func.count(Plant.id).label("plant_count")
+                func.coalesce(product_counts.c.product_count, 0).label("product_count"),
+                func.coalesce(plant_counts.c.plant_count, 0).label("plant_count")
             )
-            .outerjoin(Product)
-            .outerjoin(Plant)
-            .group_by(Supplier.id)
-            .order_by((func.count(Product.id) + func.count(Plant.id)).desc())
+            .outerjoin(product_counts, Supplier.id == product_counts.c.supplier_id)
+            .outerjoin(plant_counts, Supplier.id == plant_counts.c.supplier_id)
+            .order_by((
+                func.coalesce(product_counts.c.product_count, 0) + 
+                func.coalesce(plant_counts.c.plant_count, 0)
+            ).desc())
             .limit(limit)
             .all()
         )
         
         suppliers_list = []
         for supplier, product_count, plant_count in top_suppliers:
-            supplier_dict = supplier.to_dict()
-            supplier_dict["product_count"] = product_count
-            supplier_dict["plant_count"] = plant_count
-            supplier_dict["total_items"] = product_count + plant_count
-            suppliers_list.append(supplier_dict)
+            suppliers_list.append({
+                "supplier": supplier.to_dict(),
+                "product_count": product_count,
+                "plant_count": plant_count,
+                "total_items": product_count + plant_count
+            })
             
         return jsonify({"suppliers": suppliers_list})
 
@@ -571,7 +597,7 @@ def create_app():
         data = request.get_json()
         
         if not data or "suppliers" not in data:
-            return jsonify({"error": "Missing suppliers data"}), 400
+            return jsonify({"error": "Missing suppliers data"}), 422
             
         suppliers_data = data["suppliers"]
         imported_suppliers = []
@@ -616,7 +642,7 @@ def create_app():
         
         # Validate pagination parameters
         if page < 1 or per_page < 1:
-            return jsonify({"error": "Invalid pagination parameters"}), 400
+            return jsonify({"error": "Invalid pagination parameters"}), 422
         
         # Build query with filters
         query = Plant.query
@@ -669,7 +695,7 @@ def create_app():
         try:
             data = request.get_json()
             if data is None:
-                return jsonify({"error": "Invalid JSON or missing content-type header"}), 400
+                return jsonify({"error": "Invalid JSON or missing content-type header"}), 422
         except Exception:
             return jsonify({"error": "Invalid JSON format"}), 400
 
@@ -683,7 +709,7 @@ def create_app():
         except ValidationError as e:
             # Convert Pydantic errors to string format for consistency
             error_messages = [error.get('msg', str(error)) for error in e.errors()]
-            return jsonify({"error": "Validation failed", "validation_errors": error_messages}), 400
+            return jsonify({"error": "Validation failed", "validation_errors": error_messages}), 422
 
     @app.route("/api/plants/<int:plant_id>", methods=["GET"])
     @handle_errors
@@ -719,7 +745,7 @@ def create_app():
         except ValidationError as e:
             # Convert Pydantic errors to string format for consistency
             error_messages = [error.get('msg', str(error)) for error in e.errors()]
-            return jsonify({"error": "Validation failed", "validation_errors": error_messages}), 400
+            return jsonify({"error": "Validation failed", "validation_errors": error_messages}), 422
         except ValueError as e:
             return jsonify({"error": str(e)}), 400
 
@@ -805,7 +831,7 @@ def create_app():
         data = request.get_json()
         
         if not data or "plants" not in data:
-            return jsonify({"error": "Missing plants data"}), 400
+            return jsonify({"error": "Missing plants data"}), 422
             
         plants_data = data["plants"]
         imported_plants = []
@@ -864,7 +890,7 @@ def create_app():
         except ValidationError as e:
             # Convert Pydantic errors to string format for consistency
             error_messages = [error.get('msg', str(error)) for error in e.errors()]
-            return jsonify({"error": "Validation failed", "validation_errors": error_messages}), 400
+            return jsonify({"error": "Validation failed", "validation_errors": error_messages}), 422
 
     @app.route("/api/products/<int:product_id>", methods=["PUT"])
     @handle_errors
@@ -888,7 +914,7 @@ def create_app():
         except ValidationError as e:
             # Convert Pydantic errors to string format for consistency
             error_messages = [error.get('msg', str(error)) for error in e.errors()]
-            return jsonify({"error": "Validation failed", "validation_errors": error_messages}), 400
+            return jsonify({"error": "Validation failed", "validation_errors": error_messages}), 422
 
     @app.route("/api/products/<int:product_id>", methods=["DELETE"])
     @handle_errors
@@ -936,7 +962,7 @@ def create_app():
         except ValidationError as e:
             # Convert Pydantic errors to string format for consistency
             error_messages = [error.get('msg', str(error)) for error in e.errors()]
-            return jsonify({"error": "Validation failed", "validation_errors": error_messages}), 400
+            return jsonify({"error": "Validation failed", "validation_errors": error_messages}), 422
 
     @app.route("/api/clients/<int:client_id>", methods=["PUT"])
     @handle_errors
@@ -960,7 +986,7 @@ def create_app():
         except ValidationError as e:
             # Convert Pydantic errors to string format for consistency
             error_messages = [error.get('msg', str(error)) for error in e.errors()]
-            return jsonify({"error": "Validation failed", "validation_errors": error_messages}), 400
+            return jsonify({"error": "Validation failed", "validation_errors": error_messages}), 422
 
     @app.route("/api/clients/<int:client_id>", methods=["DELETE"])
     @handle_errors
@@ -1007,7 +1033,7 @@ def create_app():
         except ValidationError as e:
             # Convert Pydantic errors to string format for consistency
             error_messages = [error.get('msg', str(error)) for error in e.errors()]
-            return jsonify({"error": "Validation failed", "validation_errors": error_messages}), 400
+            return jsonify({"error": "Validation failed", "validation_errors": error_messages}), 422
 
     @app.route("/api/projects/<int:project_id>", methods=["PUT"])
     @handle_errors
@@ -1031,7 +1057,7 @@ def create_app():
         except ValidationError as e:
             # Convert Pydantic errors to string format for consistency
             error_messages = [error.get('msg', str(error)) for error in e.errors()]
-            return jsonify({"error": "Validation failed", "validation_errors": error_messages}), 400
+            return jsonify({"error": "Validation failed", "validation_errors": error_messages}), 422
 
     @app.route("/api/projects/<int:project_id>", methods=["DELETE"])
     @handle_errors
