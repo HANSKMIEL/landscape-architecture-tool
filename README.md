@@ -418,13 +418,16 @@ cd frontend
 npm run dev
 ```
 
-**Note:** If you encounter issues installing dependencies via pip, some packages like pandas can be installed via system package manager:
+**Note:** If you encounter issues installing dependencies via pip, some packages can be installed via system package manager:
 ```bash
-# Ubuntu/Debian
-sudo apt install python3-pandas python3-dev
+# Ubuntu/Debian - Install system packages for better compatibility
+sudo apt install python3-pandas python3-factory-boy python3-fake-factory
+
+# Then install remaining dependencies
+pip install -r requirements.txt -r requirements-dev.txt
 
 # Alternative for other platforms
-conda install pandas
+conda install pandas factory_boy faker
 ```
 
 #### Production Setup Checklist

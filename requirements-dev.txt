@@ -9,8 +9,10 @@ pytest-mock==3.11.1
 pytest-xdist==3.3.1
 pytest-html==3.2.0
 pytest-timeout==2.1.0
-factory-boy==3.3.3
-faker==37.4.2
+# factory-boy can be satisfied by system package python3-factory-boy (2.11.1)
+factory-boy>=2.11.1
+# faker can be satisfied by system package python3-fake-factory (22.0.0)
+faker>=22.0.0
 
 # Code quality and formatting
 black==24.8.0
