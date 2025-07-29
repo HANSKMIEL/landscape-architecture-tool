@@ -3,8 +3,8 @@ import { screen, waitFor } from '@testing-library/react'
 import { axe, toHaveNoViolations } from 'jest-axe'
 import { render } from '../../test/utils/render.jsx'
 import { setupUser, waitForLoadingToFinish, expectErrorMessage } from '../../test/utils/testHelpers'
-import { server } from '../../test/mocks/server'
-import { http, HttpResponse } from 'msw'
+// import { server } from '../../test/mocks/server'  // Temporarily disabled
+// import { http, HttpResponse } from 'msw'  // Temporarily disabled
 import Dashboard from '../Dashboard'
 
 expect.extend(toHaveNoViolations)

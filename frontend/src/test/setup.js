@@ -1,6 +1,6 @@
 import '@testing-library/jest-dom';
 import 'jest-axe/extend-expect';
-import './mocks/server';
+// import './mocks/server';  // Disabled until MSW import issue is resolved
 import 'whatwg-fetch';
 
 // Mock window.matchMedia

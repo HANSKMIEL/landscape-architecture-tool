@@ -8,6 +8,9 @@ export default {
   transform: {
     '^.+\\.(js|jsx)$': 'babel-jest'
   },
+  transformIgnorePatterns: [
+    'node_modules/(?!(msw|msw/node|@bundled-es-modules|@mswjs)/)'
+  ],
   testMatch: [
     '<rootDir>/src/**/__tests__/**/*.{js,jsx}',
     '<rootDir>/src/**/*.{test,spec}.{js,jsx}'
@@ -17,9 +20,10 @@ export default {
     '!src/main.jsx',
     '!src/**/*.stories.{js,jsx}'
   ],
-  globals: {
-    'ts-jest': {
-      useESM: true
-    }
+  // Force Jest to treat .js files as ES modules for MSW
+  preset: undefined,
+  moduleFileExtensions: ['js', 'jsx', 'json'],
+  testEnvironmentOptions: {
+    customExportConditions: ['node', 'node-addons']
   }
 };
