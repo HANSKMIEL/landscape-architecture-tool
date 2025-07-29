@@ -19,7 +19,7 @@ faker==19.6.0
 coverage==7.3.2
 
 # Environment Management
-python-dotenv>=1.0.0
+python-dotenv==1.0.0
 
 # Code Quality Tools
 flake8>=6.0.0
