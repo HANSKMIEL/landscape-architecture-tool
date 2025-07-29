@@ -107,7 +107,7 @@ class ProjectService:
         return Project.query.filter_by(status=status).order_by(Project.created_at.desc()).all()
 
     @staticmethod
-    def add_plant_to_project(project_id: int, plant_id: int, quantity: int, unit_price: float = None) -> bool:
+    def add_plant_to_project(project_id: int, plant_id: int, quantity: int, unit_cost: float = None) -> bool:
         """Add a plant to a project"""
         project = Project.query.get(project_id)
         plant = Plant.query.get(plant_id)
@@ -128,7 +128,7 @@ class ProjectService:
                 project_id=project_id,
                 plant_id=plant_id,
                 quantity=quantity,
-                unit_price=unit_price or plant.price
+                unit_cost=unit_cost or plant.price
             )
             db.session.add(project_plant)
 
@@ -160,8 +160,8 @@ class ProjectService:
             plant_data = project_plant.plant.to_dict()
             plant_data.update({
                 'quantity': project_plant.quantity,
-                'unit_price': project_plant.unit_price,
-                'total_price': project_plant.quantity * (project_plant.unit_price or 0),
+                'unit_cost': project_plant.unit_cost,
+                'total_price': project_plant.quantity * (project_plant.unit_cost or 0),
                 'notes': project_plant.notes
             })
             result.append(plant_data)
@@ -177,14 +177,14 @@ class ProjectService:
         plant_costs = []
         
         for project_plant in project_plants:
-            unit_price = project_plant.unit_price or 0
-            line_total = project_plant.quantity * unit_price
+            unit_cost = project_plant.unit_cost or 0
+            line_total = project_plant.quantity * unit_cost
             total_cost += line_total
             
             plant_costs.append({
                 'plant_name': project_plant.plant.name,
                 'quantity': project_plant.quantity,
-                'unit_price': unit_price,
+                'unit_cost': unit_cost,
                 'line_total': line_total
             })
         

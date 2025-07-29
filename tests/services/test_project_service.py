@@ -193,7 +193,7 @@ class TestProjectService(DatabaseTestMixin):
             sample_project.id, 
             sample_plant.id, 
             quantity=5, 
-            unit_price=25.99
+            unit_cost=25.99
         )
         
         assert result is True
@@ -206,7 +206,7 @@ class TestProjectService(DatabaseTestMixin):
         
         assert project_plant is not None
         assert project_plant.quantity == 5
-        assert project_plant.unit_price == 25.99
+        assert project_plant.unit_cost == 25.99
 
     def test_add_plant_to_project_existing_plant(self, app_context, sample_project, sample_plant):
         """Test adding a plant that already exists in project (should increase quantity)"""
@@ -265,8 +265,8 @@ class TestProjectService(DatabaseTestMixin):
         plant2 = plant_factory(name="Plant 2", price=20.0)
         
         # Add plants to project
-        ProjectService.add_plant_to_project(sample_project.id, plant1.id, quantity=5, unit_price=12.0)
-        ProjectService.add_plant_to_project(sample_project.id, plant2.id, quantity=3, unit_price=25.0)
+        ProjectService.add_plant_to_project(sample_project.id, plant1.id, quantity=5, unit_cost=12.0)
+        ProjectService.add_plant_to_project(sample_project.id, plant2.id, quantity=3, unit_cost=25.0)
         
         project_plants = ProjectService.get_project_plants(sample_project.id)
         
@@ -275,7 +275,7 @@ class TestProjectService(DatabaseTestMixin):
         # Check first plant data
         plant1_data = next(p for p in project_plants if p['name'] == "Plant 1")
         assert plant1_data['quantity'] == 5
-        assert plant1_data['unit_price'] == 12.0
+        assert plant1_data['unit_cost'] == 12.0
         assert plant1_data['total_price'] == 60.0
 
     def test_calculate_project_cost(self, app_context, sample_project, plant_factory):
@@ -284,8 +284,8 @@ class TestProjectService(DatabaseTestMixin):
         plant2 = plant_factory(name="Plant 2")
         
         # Add plants with different quantities and prices
-        ProjectService.add_plant_to_project(sample_project.id, plant1.id, quantity=5, unit_price=10.0)
-        ProjectService.add_plant_to_project(sample_project.id, plant2.id, quantity=3, unit_price=20.0)
+        ProjectService.add_plant_to_project(sample_project.id, plant1.id, quantity=5, unit_cost=10.0)
+        ProjectService.add_plant_to_project(sample_project.id, plant2.id, quantity=3, unit_cost=20.0)
         
         cost_analysis = ProjectService.calculate_project_cost(sample_project.id)
         
@@ -390,7 +390,7 @@ class TestProjectServiceIntegration(DatabaseTestMixin):
         assert project.id is not None
         
         # Add plants to project
-        ProjectService.add_plant_to_project(project.id, plant.id, quantity=10, unit_price=20.0)
+        ProjectService.add_plant_to_project(project.id, plant.id, quantity=10, unit_cost=20.0)
         
         # Check project plants
         project_plants = ProjectService.get_project_plants(project.id)
@@ -432,7 +432,7 @@ class TestProjectServiceIntegration(DatabaseTestMixin):
                 project.id, 
                 plant.id, 
                 quantity=i*2,
-                unit_price=plant.price + 5.0
+                unit_cost=plant.price + 5.0
             )
         
         # Verify all plants added
