@@ -227,17 +227,25 @@ jobs:
         cd frontend
         npm run build
         
-    - name: Test frontend
+    - name: Test frontend with coverage
       run: |
         cd frontend
-        npm run test
+        npm run test:coverage
       continue-on-error: true
+      
+    - name: Upload frontend coverage reports
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: frontend-coverage-reports
+        path: frontend/coverage/
+        retention-days: 30
       
     - name: Create frontend test report
       if: failure()
       run: |
         cd frontend
-        echo "Frontend tests not configured or failed" > ../frontend-test-status.log
+        echo "Frontend tests failed" > ../frontend-test-status.log
         echo "Timestamp: $(date)" >> ../frontend-test-status.log
         
     - name: Upload frontend test report
