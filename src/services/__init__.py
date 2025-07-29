@@ -4,6 +4,8 @@ from typing import Any, Dict, List, Optional
 
 from src.models.landscape import Client, Plant, Product, Project, Supplier
 from src.models.user import db
+from src.utils.cache import cached, invalidate_cache_on_change
+from src.utils.performance import monitor_db_performance
 
 logger = logging.getLogger(__name__)
 
@@ -14,6 +16,7 @@ class BaseService:
     def __init__(self, model_class):
         self.model_class = model_class
 
+    @monitor_db_performance
     def get_all(
         self, search: str = None, page: int = 1, per_page: int = 50
     ) -> Dict[str, Any]:
@@ -40,6 +43,7 @@ class BaseService:
             logger.error(f"Error getting all {self.model_class.__name__}: {str(e)}")
             raise
 
+    @monitor_db_performance
     def get_by_id(self, entity_id: int) -> Optional[Any]:
         """Get entity by ID"""
         try:
@@ -51,6 +55,8 @@ class BaseService:
             )
             raise
 
+    @monitor_db_performance
+    @invalidate_cache_on_change("all")
     def create(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Create new entity"""
         try:
@@ -64,6 +70,8 @@ class BaseService:
             logger.error(f"Error creating {self.model_class.__name__}: {str(e)}")
             raise
 
+    @monitor_db_performance
+    @invalidate_cache_on_change("all")
     def update(self, entity_id: int, data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         """Update entity"""
         try:
@@ -85,6 +93,8 @@ class BaseService:
             )
             raise
 
+    @monitor_db_performance
+    @invalidate_cache_on_change("all")
     def delete(self, entity_id: int) -> bool:
         """Delete entity"""
         try:
@@ -289,6 +299,7 @@ class ProjectService(BaseService):
 class DashboardService:
     """Service for dashboard statistics and data"""
 
+    @cached(timeout=600, key_prefix="dashboard_stats")
     @staticmethod
     def get_stats() -> Dict[str, Any]:
         """Get dashboard statistics"""
@@ -316,6 +327,7 @@ class DashboardService:
             logger.error(f"Error getting dashboard stats: {str(e)}")
             raise
 
+    @cached(timeout=300, key_prefix="dashboard_activity")
     @staticmethod
     def get_recent_activity() -> List[Dict[str, Any]]:
         """Get recent activity for dashboard"""
