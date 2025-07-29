@@ -196,7 +196,9 @@ class QueryPerformanceMonitor:
                         f"Query error in {func.__name__} after {execution_time:.3f}s: {str(e)}"
                     )
                 except RuntimeError:
-                    print(f"Query error in {func.__name__} after {execution_time:.3f}s: {str(e)}")
+                    logging.getLogger(__name__).error(
+                        f"Query error in {func.__name__} after {execution_time:.3f}s: {str(e)}"
+                    )
                 raise
         
         return wrapper
