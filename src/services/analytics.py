@@ -553,3 +553,238 @@ class AnalyticsService:
 
         except Exception as e:
             return {"error": str(e)}
+
+    def get_project_performance_analytics(self, project_id: Optional[int] = None) -> Dict:
+        """Get project performance analytics (alias for compatibility)"""
+        result = self.get_project_performance_metrics(project_id)
+        
+        # Adapt the result to match test expectations
+        if "error" in result:
+            return {
+                "total_projects": 0,
+                "completion_rate": 0,
+                "average_duration": 0,
+                "projects_by_status": {},
+                "error": result["error"]
+            }
+        
+        status_dist = result.get("status_distribution", {})
+        timeline_analysis = result.get("timeline_analysis", [])
+        
+        # Calculate completion rate
+        total_projects = sum(status_dist.values())
+        completed_projects = status_dist.get("completed", 0)
+        completion_rate = (completed_projects / total_projects * 100) if total_projects > 0 else 0
+        
+        # Calculate average duration from timeline analysis
+        durations = [p["duration_days"] for p in timeline_analysis if p.get("duration_days", 0) > 0]
+        average_duration = sum(durations) / len(durations) if durations else 0
+        
+        return {
+            "total_projects": total_projects,
+            "completion_rate": completion_rate,
+            "average_duration": average_duration,
+            "projects_by_status": status_dist,
+            "timeline_analysis": timeline_analysis
+        }
+
+    def get_client_analytics(self) -> Dict:
+        """Get client analytics"""
+        try:
+            insights = self.get_client_relationship_insights()
+            
+            if "error" in insights:
+                return {
+                    "total_clients": 0,
+                    "top_clients_by_projects": [],
+                    "top_clients_by_budget": [],
+                    "client_distribution": {},
+                    "error": insights["error"]
+                }
+            
+            top_clients = insights.get("top_clients", [])
+            
+            # Sort by project count for top_clients_by_projects
+            top_by_projects = sorted(top_clients, key=lambda x: x["project_count"], reverse=True)[:10]
+            
+            # Sort by total value for top_clients_by_budget  
+            top_by_budget = sorted(top_clients, key=lambda x: x["total_value"], reverse=True)[:10]
+            
+            return {
+                "total_clients": insights.get("total_clients", 0),
+                "top_clients_by_projects": top_by_projects,
+                "top_clients_by_budget": top_by_budget,
+                "client_distribution": insights.get("client_type_distribution", {}),
+                "geographic_distribution": insights.get("geographic_distribution", [])
+            }
+            
+        except Exception as e:
+            return {
+                "total_clients": 0,
+                "top_clients_by_projects": [],
+                "top_clients_by_budget": [],
+                "client_distribution": {},
+                "error": str(e)
+            }
+
+    def get_recommendation_analytics(self) -> Dict:
+        """Get recommendation analytics (alias for compatibility)"""
+        try:
+            result = self.get_recommendation_effectiveness()
+            
+            if "error" in result:
+                return {
+                    "total_requests": 0,
+                    "feedback_rate": 0,
+                    "average_satisfaction": 0,
+                    "popular_criteria": [],
+                    "error": result["error"]
+                }
+                
+            return {
+                "total_requests": result.get("total_requests", 0),
+                "feedback_rate": result.get("feedback_rate", 0),
+                "average_satisfaction": result.get("average_rating", 0),
+                "popular_criteria": result.get("popular_criteria", []),
+                "usage_trends": result.get("usage_trends", []),
+                "rating_distribution": result.get("rating_distribution", {})
+            }
+            
+        except Exception as e:
+            return {
+                "total_requests": 0,
+                "feedback_rate": 0,
+                "average_satisfaction": 0,
+                "popular_criteria": [],
+                "error": str(e)
+            }
+
+    def get_seasonal_analytics(self) -> Dict:
+        """Get seasonal analytics"""
+        try:
+            # Projects by month
+            projects_by_month = (
+                db.session.query(
+                    func.strftime("%Y-%m", Project.created_at).label("month"),
+                    func.count(Project.id).label("project_count")
+                )
+                .group_by(func.strftime("%Y-%m", Project.created_at))
+                .order_by(func.strftime("%Y-%m", Project.created_at))
+                .all()
+            )
+            
+            monthly_data = [
+                {"month": month if month else "", "project_count": project_count}
+                for month, project_count in projects_by_month
+            ]
+            
+            # Plant usage by season (based on bloom_time)
+            seasonal_usage = (
+                db.session.query(
+                    Plant.bloom_time,
+                    func.count(ProjectPlant.id).label("usage_count"),
+                    func.sum(ProjectPlant.quantity).label("total_quantity")
+                )
+                .join(ProjectPlant, Plant.id == ProjectPlant.plant_id)
+                .filter(Plant.bloom_time.isnot(None))
+                .group_by(Plant.bloom_time)
+                .all()
+            )
+            
+            plant_usage_by_season = {
+                bloom_time: {
+                    "usage_count": usage_count,
+                    "total_quantity": int(total_quantity) if total_quantity else 0
+                }
+                for bloom_time, usage_count, total_quantity in seasonal_usage
+            }
+            
+            # Identify peak seasons (months with most projects)
+            peak_seasons = sorted(monthly_data, key=lambda x: x["project_count"], reverse=True)[:3]
+            
+            return {
+                "projects_by_month": monthly_data,
+                "plant_usage_by_season": plant_usage_by_season,
+                "peak_seasons": [season["month"] for season in peak_seasons]
+            }
+            
+        except Exception as e:
+            return {
+                "projects_by_month": [],
+                "plant_usage_by_season": {},
+                "peak_seasons": [],
+                "error": str(e)
+            }
+
+    def get_geographic_analytics(self) -> Dict:
+        """Get geographic analytics"""
+        try:
+            # Projects by location
+            projects_by_location = (
+                db.session.query(
+                    Project.location,
+                    func.count(Project.id).label("project_count"),
+                    func.sum(Project.budget).label("total_budget")
+                )
+                .filter(Project.location.isnot(None))
+                .group_by(Project.location)
+                .order_by(func.count(Project.id).desc())
+                .limit(20)
+                .all()
+            )
+            
+            location_data = [
+                {
+                    "location": location,
+                    "project_count": project_count,
+                    "total_budget": float(total_budget) if total_budget else 0
+                }
+                for location, project_count, total_budget in projects_by_location
+            ]
+            
+            # Regional plant preferences (by client city)
+            regional_preferences = (
+                db.session.query(
+                    Client.city,
+                    Plant.category,
+                    func.count(ProjectPlant.id).label("usage_count")
+                )
+                .join(Project, Client.id == Project.client_id)
+                .join(ProjectPlant, Project.id == ProjectPlant.project_id)
+                .join(Plant, ProjectPlant.plant_id == Plant.id)
+                .filter(Client.city.isnot(None))
+                .filter(Plant.category.isnot(None))
+                .group_by(Client.city, Plant.category)
+                .all()
+            )
+            
+            regional_plant_preferences = {}
+            for city, category, usage_count in regional_preferences:
+                if city not in regional_plant_preferences:
+                    regional_plant_preferences[city] = {}
+                regional_plant_preferences[city][category] = usage_count
+            
+            # Coverage areas (unique cities with projects)
+            coverage_areas = (
+                db.session.query(Client.city)
+                .join(Project)
+                .filter(Client.city.isnot(None))
+                .distinct()
+                .all()
+            )
+            
+            coverage_list = [city[0] for city in coverage_areas]
+            
+            return {
+                "projects_by_location": location_data,
+                "regional_plant_preferences": regional_plant_preferences,
+                "coverage_areas": coverage_list
+            }
+            
+        except Exception as e:
+            return {
+                "projects_by_location": [],
+                "regional_plant_preferences": {},
+                "coverage_areas": [],
+                "error": str(e)
+            }

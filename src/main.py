@@ -244,10 +244,56 @@ def create_app():
         from flask import request
 
         search = request.args.get("search", "")
-        result = supplier_service.get_all(search=search)
-        return jsonify(
-            result["suppliers"] if "suppliers" in result else result["items"]
-        )
+        specialization = request.args.get("specialization", "")
+        page = request.args.get("page", 1, type=int)
+        per_page = request.args.get("per_page", 50, type=int)
+        
+        # Handle specialization filter
+        if specialization:
+            # Filter suppliers by specialization manually for now
+            from src.models.landscape import Supplier
+            from sqlalchemy import or_
+            
+            query = Supplier.query
+            if search:
+                search_term = f"%{search}%"
+                query = query.filter(
+                    or_(
+                        Supplier.name.ilike(search_term),
+                        Supplier.contact_person.ilike(search_term),
+                        Supplier.email.ilike(search_term),
+                        Supplier.city.ilike(search_term)
+                    )
+                )
+            
+            query = query.filter(Supplier.specialization.ilike(f"%{specialization}%"))
+            
+            paginated = query.order_by(Supplier.name).paginate(
+                page=page, per_page=per_page, error_out=False
+            )
+            
+            result = {
+                "suppliers": [supplier.to_dict() for supplier in paginated.items],
+                "total": paginated.total,
+                "pages": paginated.pages,
+                "current_page": page,
+            }
+        else:
+            result = supplier_service.get_all(search=search, page=page, per_page=per_page)
+        
+        return jsonify(result)
+
+    @app.route("/api/suppliers/<int:supplier_id>", methods=["GET"])
+    @handle_errors
+    def get_supplier(supplier_id):
+        """Get specific supplier by ID"""
+        from src.models.landscape import Supplier
+        
+        supplier = Supplier.query.get(supplier_id)
+        if not supplier:
+            return jsonify({"error": "Supplier not found"}), 404
+            
+        return jsonify(supplier.to_dict())
 
     @app.route("/api/suppliers", methods=["POST"])
     @handle_errors
@@ -292,6 +338,138 @@ def create_app():
 
         return jsonify({"message": "Supplier deleted successfully"})
 
+    # Additional supplier endpoints
+    @app.route("/api/suppliers/<int:supplier_id>/products", methods=["GET"])
+    @handle_errors
+    def get_supplier_products(supplier_id):
+        """Get products for a specific supplier"""
+        from src.models.landscape import Supplier, Product
+        
+        supplier = Supplier.query.get(supplier_id)
+        if not supplier:
+            return jsonify({"error": "Supplier not found"}), 404
+            
+        products = Product.query.filter_by(supplier_id=supplier_id).all()
+        return jsonify([product.to_dict() for product in products])
+
+    @app.route("/api/suppliers/<int:supplier_id>/plants", methods=["GET"])
+    @handle_errors
+    def get_supplier_plants(supplier_id):
+        """Get plants for a specific supplier"""
+        from src.models.landscape import Supplier, Plant
+        
+        supplier = Supplier.query.get(supplier_id)
+        if not supplier:
+            return jsonify({"error": "Supplier not found"}), 404
+            
+        plants = Plant.query.filter_by(supplier_id=supplier_id).all()
+        return jsonify([plant.to_dict() for plant in plants])
+
+    @app.route("/api/suppliers/<int:supplier_id>/statistics", methods=["GET"])
+    @handle_errors
+    def get_supplier_statistics(supplier_id):
+        """Get statistics for a specific supplier"""
+        from src.models.landscape import Supplier, Product, Plant
+        
+        supplier = Supplier.query.get(supplier_id)
+        if not supplier:
+            return jsonify({"error": "Supplier not found"}), 404
+            
+        product_count = Product.query.filter_by(supplier_id=supplier_id).count()
+        plant_count = Plant.query.filter_by(supplier_id=supplier_id).count()
+        
+        return jsonify({
+            "supplier_id": supplier_id,
+            "supplier_name": supplier.name,
+            "product_count": product_count,
+            "plant_count": plant_count,
+            "total_items": product_count + plant_count
+        })
+
+    @app.route("/api/suppliers/specializations", methods=["GET"])
+    @handle_errors
+    def get_supplier_specializations():
+        """Get all unique supplier specializations"""
+        from src.models.landscape import Supplier
+        from sqlalchemy import func, distinct
+        
+        specializations = db.session.query(distinct(Supplier.specialization)).filter(
+            Supplier.specialization.isnot(None)
+        ).all()
+        
+        return jsonify([spec[0] for spec in specializations])
+
+    @app.route("/api/suppliers/top", methods=["GET"])
+    @handle_errors
+    def get_top_suppliers():
+        """Get top suppliers by product/plant count"""
+        from flask import request
+        from src.models.landscape import Supplier, Product, Plant
+        from sqlalchemy import func
+        
+        limit = request.args.get("limit", 10, type=int)
+        
+        # Get suppliers with their item counts
+        top_suppliers = (
+            db.session.query(
+                Supplier,
+                func.count(Product.id).label("product_count"),
+                func.count(Plant.id).label("plant_count")
+            )
+            .outerjoin(Product)
+            .outerjoin(Plant)
+            .group_by(Supplier.id)
+            .order_by((func.count(Product.id) + func.count(Plant.id)).desc())
+            .limit(limit)
+            .all()
+        )
+        
+        result = []
+        for supplier, product_count, plant_count in top_suppliers:
+            supplier_dict = supplier.to_dict()
+            supplier_dict["product_count"] = product_count
+            supplier_dict["plant_count"] = plant_count
+            supplier_dict["total_items"] = product_count + plant_count
+            result.append(supplier_dict)
+            
+        return jsonify(result)
+
+    @app.route("/api/suppliers/<int:supplier_id>/contact", methods=["GET"])
+    @handle_errors
+    def get_supplier_contact(supplier_id):
+        """Get contact information for a specific supplier"""
+        from src.models.landscape import Supplier
+        
+        supplier = Supplier.query.get(supplier_id)
+        if not supplier:
+            return jsonify({"error": "Supplier not found"}), 404
+            
+        return jsonify({
+            "id": supplier.id,
+            "name": supplier.name,
+            "contact_person": supplier.contact_person,
+            "email": supplier.email,
+            "phone": supplier.phone,
+            "address": supplier.address,
+            "city": supplier.city,
+            "postal_code": supplier.postal_code,
+            "website": supplier.website
+        })
+
+    @app.route("/api/suppliers/export", methods=["GET"])
+    @handle_errors
+    def export_suppliers():
+        """Export suppliers data"""
+        from flask import request
+        
+        format_type = request.args.get("format", "json").lower()
+        suppliers = supplier_service.get_all()
+        
+        if format_type == "json":
+            return jsonify(suppliers)
+        else:
+            return jsonify({"error": "Unsupported format"}), 400
+
     # Plants endpoints
     @app.route("/api/plants", methods=["GET"])
     @handle_errors
@@ -317,6 +495,18 @@ def create_app():
 
         plant = plant_service.create(validated_data)
         return jsonify(plant), 201
+
+    @app.route("/api/plants/<int:plant_id>", methods=["GET"])
+    @handle_errors
+    def get_plant(plant_id):
+        """Get specific plant by ID"""
+        from src.models.landscape import Plant
+        
+        plant = Plant.query.get(plant_id)
+        if not plant:
+            return jsonify({"error": "Plant not found"}), 404
+            
+        return jsonify(plant.to_dict())
 
     @app.route("/api/plants/<int:plant_id>", methods=["PUT"])
     @handle_errors

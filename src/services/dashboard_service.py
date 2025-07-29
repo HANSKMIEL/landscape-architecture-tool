@@ -363,3 +363,8 @@ class DashboardService:
                 'suppliers': Supplier.query.count()
             }
         }
+
+    @staticmethod
+    def get_stats() -> Dict:
+        """Get dashboard statistics (alias for get_dashboard_summary)"""
+        return DashboardService.get_dashboard_summary()
