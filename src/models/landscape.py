@@ -103,8 +103,10 @@ class Plant(db.Model):
 
     # Basic care requirements
     sun_requirements = db.Column(db.String(50))
+    sun_exposure = db.Column(db.String(50))
     soil_type = db.Column(db.String(100))
     water_needs = db.Column(db.String(50))
+    moisture_level = db.Column(db.String(50))
     hardiness_zone = db.Column(db.String(20))
     bloom_time = db.Column(db.String(100))
     bloom_color = db.Column(db.String(100))
@@ -178,8 +180,10 @@ class Plant(db.Model):
             "width_max": self.width_max,
             # Basic care requirements
             "sun_requirements": self.sun_requirements,
+            "sun_exposure": self.sun_exposure,
             "soil_type": self.soil_type,
             "water_needs": self.water_needs,
+            "moisture_level": self.moisture_level,
             "hardiness_zone": self.hardiness_zone,
             "bloom_time": self.bloom_time,
             "bloom_color": self.bloom_color,
@@ -331,6 +335,7 @@ class Client(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
+    company = db.Column(db.String(200))
     contact_person = db.Column(db.String(100))
     email = db.Column(db.String(120))
     phone = db.Column(db.String(20))
@@ -355,6 +360,7 @@ class Client(db.Model):
         return {
             "id": self.id,
             "name": self.name,
+            "company": self.company,
             "contact_person": self.contact_person,
             "email": self.email,
             "phone": self.phone,
@@ -382,6 +388,8 @@ class Project(db.Model):
     project_type = db.Column(db.String(50))
     start_date = db.Column(db.String(20))  # ISO date string
     end_date = db.Column(db.String(20))  # ISO date string
+    target_completion_date = db.Column(db.Date)
+    actual_completion_date = db.Column(db.Date)
     budget = db.Column(db.Float)
     location = db.Column(db.Text)
     area_size = db.Column(db.Float)  # in square meters
@@ -408,6 +416,8 @@ class Project(db.Model):
             "project_type": self.project_type,
             "start_date": self.start_date,
             "end_date": self.end_date,
+            "target_completion_date": (self.target_completion_date.isoformat() if self.target_completion_date else None),
+            "actual_completion_date": (self.actual_completion_date.isoformat() if self.actual_completion_date else None),
             "budget": self.budget,
             "location": self.location,
             "area_size": self.area_size,

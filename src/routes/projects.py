@@ -453,7 +453,7 @@ def get_project_stats():
         # Monthly project creation trend (last 6 months)
         monthly_stats = (
             db.session.query(
-                db.func.date_trunc("month", Project.created_at).label("month"),
+                db.func.strftime("%Y-%m", Project.created_at).label("month"),
                 db.func.count(Project.id).label("count"),
             )
             .filter(Project.created_at >= datetime.utcnow() - timedelta(days=180))

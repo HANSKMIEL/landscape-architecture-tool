@@ -198,13 +198,13 @@ class DashboardService:
         # Monthly project value trends (last 12 months)
         twelve_months_ago = datetime.utcnow() - timedelta(days=365)
         monthly_values = db.session.query(
-            func.date_trunc('month', Project.created_at).label('month'),
+            func.strftime('%Y-%m', Project.created_at).label('month'),
             func.sum(Project.budget).label('total_value')
         ).filter(
             Project.created_at >= twelve_months_ago,
             Project.budget.isnot(None)
         ).group_by(
-            func.date_trunc('month', Project.created_at)
+            func.strftime('%Y-%m', Project.created_at)
         ).order_by('month').all()
         
         return {

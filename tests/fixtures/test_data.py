@@ -82,19 +82,19 @@ class PlantFactory(factory.alchemy.SQLAlchemyModelFactory):
     width_max = factory.Faker('random_int', min=100, max=300)
     hardiness_zone = factory.Faker('random_element', elements=['3a', '3b', '4a', '4b', '5a', '5b'])
     sun_requirements = factory.Faker('random_element', elements=['full_sun', 'partial_shade', 'full_shade'])
+    sun_exposure = factory.Faker('random_element', elements=['full_sun', 'partial_shade', 'full_shade'])
     soil_type = factory.Faker('random_element', elements=['clay', 'sand', 'loam', 'silt'])
     soil_ph_min = factory.Faker('pyfloat', left_digits=1, right_digits=1, positive=True, min_value=4.0, max_value=6.0)
     soil_ph_max = factory.Faker('pyfloat', left_digits=1, right_digits=1, positive=True, min_value=7.0, max_value=9.0)
     moisture_level = factory.Faker('random_element', elements=['low', 'medium', 'high'])
-    bloom_season = factory.Faker('random_element', elements=['spring', 'summer', 'fall', 'winter'])
-    flower_color = factory.Faker('color_name')
-    maintenance_level = factory.Faker('random_element', elements=['low', 'medium', 'high'])
+    bloom_time = factory.Faker('random_element', elements=['spring', 'summer', 'fall', 'winter'])
+    bloom_color = factory.Faker('color_name')
+    maintenance = factory.Faker('random_element', elements=['low', 'medium', 'high'])
     price = factory.Faker('pyfloat', left_digits=2, right_digits=2, positive=True)
     notes = factory.Faker('text', max_nb_chars=200)
     native = factory.Faker('boolean')
-    wildlife_friendly = factory.Faker('boolean')
-    deer_resistant = factory.Faker('boolean')
     pollinator_friendly = factory.Faker('boolean')
+    deer_resistant = factory.Faker('boolean')
     supplier = factory.SubFactory(SupplierFactory)
 
 
@@ -107,6 +107,7 @@ class ClientFactory(factory.alchemy.SQLAlchemyModelFactory):
         sqlalchemy_session_persistence = "commit"
     
     name = factory.Faker('company')  # For business/organization client names
+    company = factory.Faker('company')
     email = factory.Faker('email')
     phone = factory.Faker('phone_number')
     address = factory.Faker('street_address')
