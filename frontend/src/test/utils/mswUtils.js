@@ -2,7 +2,9 @@
 
 // Mock an API endpoint with specific response
 export const mockApiEndpoint = (method, url, response, status = 200) => {
-  if (!global.fetch) {
+  if (global.fetch && global.fetch.mockClear) {
+    resetApiMocks()
+  } else if (!global.fetch) {
     global.fetch = vi.fn()
   }
   
