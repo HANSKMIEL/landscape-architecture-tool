@@ -28,7 +28,8 @@ isort>=5.12.0
 
 # Security Testing
 bandit>=1.7.0
-safety>=2.3.0
+safety==3.2.9
+safety-schemas==0.0.5
 
 # Documentation
 sphinx>=7.0.0
