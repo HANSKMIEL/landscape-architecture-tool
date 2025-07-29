@@ -188,7 +188,17 @@ export const handlers = [
 
   ...createHandler('get', '/api/clients/:id', ({ params }) => {
     const id = parseInt(params.id);
-    return HttpResponse.json(createMockClient({ id }));
+    const clients = createMockArray(createMockClient, 12); // Mock list of clients
+    const client = clients.find(client => client.id === id);
+    
+    if (!client) {
+      return HttpResponse.json(
+        { error: "Client not found" },
+        { status: 404 }
+      );
+    }
+    
+    return HttpResponse.json(client);
   }),
 
   ...createHandler('post', '/api/clients', async ({ request }) => {
