@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+// Jest provides describe, it, expect as globals
 import { render, screen } from '@testing-library/react'
 import { axe, toHaveNoViolations } from 'jest-axe'
 import { BrowserRouter } from 'react-router-dom'

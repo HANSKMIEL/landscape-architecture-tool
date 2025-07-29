@@ -1,42 +1,42 @@
-import '@testing-library/jest-dom'
-import 'jest-axe/extend-expect'
-import './mocks/server'
+import '@testing-library/jest-dom';
+import 'jest-axe/extend-expect';
+import './mocks/server';
 
-// Mock environment variables
+// Mock window.matchMedia
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
-  value: vi.fn().mockImplementation(query => ({
+  value: jest.fn().mockImplementation(query => ({
     matches: false,
     media: query,
     onchange: null,
-    addListener: vi.fn(),
-    removeListener: vi.fn(),
-    addEventListener: vi.fn(),
-    removeEventListener: vi.fn(),
-    dispatchEvent: vi.fn(),
+    addListener: jest.fn(),
+    removeListener: jest.fn(),
+    addEventListener: jest.fn(),
+    removeEventListener: jest.fn(),
+    dispatchEvent: jest.fn(),
   })),
-})
+});
 
 // Mock IntersectionObserver
-global.IntersectionObserver = vi.fn().mockImplementation(() => ({
-  observe: vi.fn(),
-  unobserve: vi.fn(),
-  disconnect: vi.fn(),
-}))
+global.IntersectionObserver = jest.fn().mockImplementation(() => ({
+  observe: jest.fn(),
+  unobserve: jest.fn(),
+  disconnect: jest.fn(),
+}));
 
 // Mock ResizeObserver
-global.ResizeObserver = vi.fn().mockImplementation(() => ({
-  observe: vi.fn(),
-  unobserve: vi.fn(),
-  disconnect: vi.fn(),
-}))
+global.ResizeObserver = jest.fn().mockImplementation(() => ({
+  observe: jest.fn(),
+  unobserve: jest.fn(),
+  disconnect: jest.fn(),
+}));
 
 // Mock console methods to reduce noise in tests
 global.console = {
   ...console,
   // Uncomment to silence console during tests
-  // log: vi.fn(),
-  // debug: vi.fn(),
-  // warn: vi.fn(),
-  error: vi.fn(),
-}
+  // log: jest.fn(),
+  // debug: jest.fn(),
+  // warn: jest.fn(),
+  error: jest.fn(),
+};

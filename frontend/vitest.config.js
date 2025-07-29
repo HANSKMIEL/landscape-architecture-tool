@@ -9,18 +9,19 @@ export default defineConfig({
   plugins: [react()],
   test: {
     environment: 'jsdom',
-    setupFiles: ['./src/test/setup.js'],
+    setupFiles: ['./src/test/setup-vitest.js'],
     globals: true,
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
-      reportsDirectory: './coverage',
+      reportsDirectory: './coverage-vitest',
       exclude: [
         'node_modules/',
         'src/test/',
         '**/*.{test,spec}.{js,jsx}',
         '**/vite.config.js',
         '**/vitest.config.js',
+        '**/jest.config.js',
         'src/main.jsx',
         'dist/'
       ],

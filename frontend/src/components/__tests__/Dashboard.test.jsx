@@ -1,10 +1,10 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+// Jest provides describe, it, expect, beforeEach as globals
 import { screen, waitFor } from '@testing-library/react'
 import { axe, toHaveNoViolations } from 'jest-axe'
 import { render } from '../../test/utils/render.jsx'
 import { setupUser, waitForLoadingToFinish, expectErrorMessage } from '../../test/utils/testHelpers'
 import { server } from '../../test/mocks/server'
-import { http, HttpResponse } from 'msw'
+// MSW http and HttpResponse are not available with simple mock, will be implemented later
 import Dashboard from '../Dashboard'
 
 expect.extend(toHaveNoViolations)

@@ -1,16 +1,17 @@
-// Simple mock server for Jest testing
+// Simple mock server for Vitest testing
 // MSW integration will be implemented in a future update
+import { vi } from 'vitest'
 
 // Create a mock server object for compatibility
 const server = {
-  listen: jest.fn(),
-  resetHandlers: jest.fn(),
-  close: jest.fn(),
-  use: jest.fn()
+  listen: vi.fn(),
+  resetHandlers: vi.fn(),
+  close: vi.fn(),
+  use: vi.fn()
 };
 
 // Mock the global fetch for basic API mocking
-global.fetch = jest.fn((url) => {
+global.fetch = vi.fn((url) => {
   // Simple mock responses for dashboard endpoints
   if (url.includes('/api/dashboard/stats')) {
     return Promise.resolve({
@@ -71,7 +72,7 @@ beforeAll(() => {
 // Reset handlers between tests to ensure clean state
 afterEach(() => {
   server.resetHandlers();
-  jest.clearAllMocks();
+  vi.clearAllMocks();
 });
 
 // Clean up after tests are finished
@@ -79,5 +80,5 @@ afterAll(() => {
   server.close();
 });
 
-// Export using CommonJS for Jest compatibility
-module.exports = { server };
+// Export for Vitest compatibility
+export { server };
