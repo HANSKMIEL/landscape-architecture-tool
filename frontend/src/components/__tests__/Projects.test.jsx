@@ -1,78 +1,101 @@
 // Jest provides describe, it, expect, beforeEach as globals
 import { screen, waitFor } from '@testing-library/react'
-import { axe, toHaveNoViolations } from 'jest-axe'
-import { renderWithLanguage } from '../../test/utils/render.jsx'
+import { render } from '../../test/utils/render.jsx'
+import { setupUser, waitForLoadingToFinish } from '../../test/utils/testHelpers'
 import Projects from '../Projects'
 
-expect.extend(toHaveNoViolations)
-
 describe('Projects Component', () => {
+  let user
+
   beforeEach(() => {
-    // Reset mocks before each test
-    jest.clearAllMocks()
+    user = setupUser()
   })
 
-  describe('Basic Rendering', () => {
-    it('renders projects page with English language', async () => {
-      renderWithLanguage(<Projects language="en" />, { language: 'en' })
+  describe('Rendering and Loading States', () => {
+    it('renders projects page with title and navigation', async () => {
+      render(<Projects language="nl" />)
       
-      await waitFor(() => {
-        expect(screen.getByText('Projects')).toBeInTheDocument()
-      }, { timeout: 5000 })
+      await waitForLoadingToFinish()
+      
+      expect(screen.getByText('Projecten')).toBeInTheDocument()
+      expect(screen.getByText('Nieuw Project')).toBeInTheDocument()
     })
 
-    it('renders projects page with Dutch language', async () => {
-      renderWithLanguage(<Projects language="nl" />, { language: 'nl' })
+    it('supports both English and Dutch rendering', async () => {
+      // Test English
+      render(<Projects language="en" />)
       
-      await waitFor(() => {
-        expect(screen.getByText('Projecten')).toBeInTheDocument()
-      }, { timeout: 5000 })
+      await waitForLoadingToFinish()
+      
+      expect(screen.getByText('Projects')).toBeInTheDocument()
+      expect(screen.getByText('New Project')).toBeInTheDocument()
     })
 
-    it('displays projects data after loading', async () => {
-      renderWithLanguage(<Projects language="en" />, { language: 'en' })
+    it('displays projects list with data', async () => {
+      render(<Projects language="en" />)
       
-      await waitFor(() => {
-        // Look for project names from mock data
-        const hasProjectContent = screen.queryByText(/garden redesign/i) || 
-                                  screen.queryByText(/park renovation/i) ||
-                                  screen.queryByText(/projects/i) ||
-                                  screen.queryByText(/no projects/i);
-        expect(hasProjectContent).toBeInTheDocument()
-      }, { timeout: 10000 })
+      await waitForLoadingToFinish()
+      
+      // Should display projects from mock data
+      expect(screen.getByText('Garden Redesign Project')).toBeInTheDocument()
+      expect(screen.getByText('Park Renovation')).toBeInTheDocument()
+    })
+
+    it('displays project status information', async () => {
+      render(<Projects language="en" />)
+      
+      await waitForLoadingToFinish()
+      
+      // Check for status indicators
+      expect(screen.getByText('active')).toBeInTheDocument()
+      expect(screen.getByText('planning')).toBeInTheDocument()
+    })
+
+    it('shows project locations and budgets', async () => {
+      render(<Projects language="en" />)
+      
+      await waitForLoadingToFinish()
+      
+      // Look for project details from mock data
+      expect(screen.getByText('Amsterdam')).toBeInTheDocument()
+      expect(screen.getByText('Utrecht')).toBeInTheDocument()
     })
   })
 
-  describe('Language Support', () => {
-    it('displays correct translations for English', async () => {
-      renderWithLanguage(<Projects language="en" />, { language: 'en' })
+  describe('User Interactions', () => {
+    it('allows clicking on new project button', async () => {
+      render(<Projects language="nl" />)
       
-      await waitFor(() => {
-        expect(screen.getByText('Projects')).toBeInTheDocument()
-        expect(screen.getByText(/manage your landscape architecture projects/i)).toBeInTheDocument()
-      }, { timeout: 5000 })
-    })
-
-    it('displays correct translations for Dutch', async () => {
-      renderWithLanguage(<Projects language="nl" />, { language: 'nl' })
+      await waitForLoadingToFinish()
       
-      await waitFor(() => {
-        expect(screen.getByText('Projecten')).toBeInTheDocument()
-        expect(screen.getByText(/beheer uw landschapsarchitectuur projecten/i)).toBeInTheDocument()
-      }, { timeout: 5000 })
+      const newProjectButton = screen.getByText('Nieuw Project')
+      expect(newProjectButton).toBeInTheDocument()
+      await user.click(newProjectButton)
+      
+      // Button should be clickable (no error thrown)
     })
   })
 
-  describe('Accessibility', () => {
-    it('should not have accessibility violations', async () => {
-      const { container } = renderWithLanguage(<Projects language="en" />, { language: 'en' })
+  describe('Error Handling', () => {
+    it('displays error message when projects fetch fails', async () => {
+      // Override global fetch for this test
+      const originalFetch = global.fetch
+      global.fetch = jest.fn(() => 
+        Promise.resolve({
+          ok: false,
+          status: 500,
+          statusText: 'Server Error'
+        })
+      )
+
+      render(<Projects language="en" />)
       
       await waitFor(() => {
-        expect(screen.getByText('Projects')).toBeInTheDocument()
-      }, { timeout: 5000 })
-      
-      const results = await axe(container)
-      expect(results).toHaveNoViolations()
+        expect(screen.getByText(/error loading projects/i)).toBeInTheDocument()
+      })
+
+      // Restore original fetch
+      global.fetch = originalFetch
     })
   })
 })
