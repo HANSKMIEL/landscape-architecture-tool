@@ -16,7 +16,7 @@ factory_boy==3.3.0
 faker==19.6.0
 
 # Code Coverage
-coverage>=7.0.0
+coverage==7.3.2
 
 # Environment Management
 python-dotenv>=1.0.0
