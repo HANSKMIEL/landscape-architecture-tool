@@ -2,14 +2,109 @@
 import { screen, waitFor } from '@testing-library/react'
 import { axe, toHaveNoViolations } from 'jest-axe'
 import { render } from '../../test/utils/render.jsx'
+import { createMockPlants, createMockSuppliers } from '../../test/utils/mockData.js'
 import Plants from '../Plants'
 
 expect.extend(toHaveNoViolations)
 
 describe('Plants Component', () => {
+  let originalFetch
+
   beforeEach(() => {
+    // Store original fetch
+    originalFetch = global.fetch
+    
     // Reset mocks before each test
     jest.clearAllMocks()
+
+    // Mock fetch for API calls
+    global.fetch = jest.fn((url) => {
+      if (url.includes('/api/plants')) {
+        // Mock plants data with realistic plant information
+        const mockPlants = createMockPlants(3, [
+          {
+            id: 1,
+            name: 'Rosa rugosa',
+            common_name: 'Garden Rose',
+            category: 'Heester',
+            height_min: 1.5,
+            height_max: 2.0,
+            sun_requirements: 'Volle zon',
+            bloom_time: 'Juni-September',
+            bloom_color: 'Roze',
+            price: 15.99,
+            availability: 'Voorradig',
+            supplier_id: 1
+          },
+          {
+            id: 2,
+            name: 'Acer platanoides',
+            common_name: 'Noorse esdoorn', 
+            category: 'Boom',
+            height_min: 15.0,
+            height_max: 25.0,
+            sun_requirements: 'Zon tot halfschaduw',
+            bloom_time: 'April-Mei',
+            bloom_color: 'Geel',
+            price: 89.99,
+            availability: 'Voorradig',
+            supplier_id: 2
+          },
+          {
+            id: 3,
+            name: 'Lavandula angustifolia',
+            common_name: 'Lavendel',
+            category: 'Vaste plant',
+            height_min: 0.3,
+            height_max: 0.6,
+            sun_requirements: 'Volle zon',
+            bloom_time: 'Juli-Augustus',
+            bloom_color: 'Paars',
+            price: 8.99,
+            availability: 'Voorradig',
+            supplier_id: 1
+          }
+        ])
+        
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: () => Promise.resolve(mockPlants)
+        })
+      }
+      
+      if (url.includes('/api/suppliers')) {
+        // Mock suppliers data
+        const mockSuppliers = createMockSuppliers(2, [
+          {
+            id: 1,
+            name: 'Groene Vingers Kwekerij',
+            contact_person: 'Jan de Boer',
+            email: 'jan@groenevingers.nl'
+          },
+          {
+            id: 2,
+            name: 'Boom & Plant Specialist',
+            contact_person: 'Maria van den Berg', 
+            email: 'maria@boomspecialist.nl'
+          }
+        ])
+        
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: () => Promise.resolve(mockSuppliers)
+        })
+      }
+      
+      // Default fallback for unhandled URLs
+      return Promise.reject(new Error(`Unhandled URL in mock: ${url}`))
+    })
+  })
+
+  afterEach(() => {
+    // Restore original fetch
+    global.fetch = originalFetch
   })
 
   describe('Basic Rendering', () => {
@@ -30,8 +125,14 @@ describe('Plants Component', () => {
       
       await waitFor(() => {
         // Look for plant names from mock data - check for common_name from mock
-        expect(screen.getByText(/Garden Rose/i) || screen.getByText(/plant/i)).toBeInTheDocument()
+        expect(screen.getByText(/Garden Rose/i)).toBeInTheDocument()
       }, { timeout: 10000 })
+      
+      // Verify other mock plants are displayed
+      await waitFor(() => {
+        expect(screen.getByText(/Noorse esdoorn/i)).toBeInTheDocument()
+        expect(screen.getByText(/Lavendel/i)).toBeInTheDocument()
+      })
     })
   })
 

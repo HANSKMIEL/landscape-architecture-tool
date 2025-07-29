@@ -2,14 +2,73 @@
 import { screen, waitFor } from '@testing-library/react'
 import { axe, toHaveNoViolations } from 'jest-axe'
 import { renderWithLanguage } from '../../test/utils/render.jsx'
+import { createMockProjects } from '../../test/utils/mockData.js'
 import Projects from '../Projects'
 
 expect.extend(toHaveNoViolations)
 
 describe('Projects Component', () => {
+  let originalFetch
+
   beforeEach(() => {
+    // Store original fetch
+    originalFetch = global.fetch
+    
     // Reset mocks before each test
     jest.clearAllMocks()
+
+    // Mock fetch for API calls
+    global.fetch = jest.fn((url) => {
+      if (url.includes('/api/projects')) {
+        // Mock projects data with realistic project information
+        const mockProjects = createMockProjects(3, [
+          {
+            id: 1,
+            name: 'Garden Redesign Project',
+            description: 'Complete residential garden transformation with native plants',
+            client_name: 'Family Johnson',
+            location: 'Amsterdam, Netherlands',
+            budget: 25000,
+            start_date: '2024-03-01',
+            status: 'Planning'
+          },
+          {
+            id: 2, 
+            name: 'Park Renovation',
+            description: 'Urban park landscape renovation with sustainable features',
+            client_name: 'City Council',
+            location: 'Utrecht, Netherlands',
+            budget: 150000,
+            start_date: '2024-04-15',
+            status: 'In Progress'
+          },
+          {
+            id: 3,
+            name: 'Corporate Landscape',
+            description: 'Office building exterior landscaping design',
+            client_name: 'TechCorp BV',
+            location: 'Rotterdam, Netherlands', 
+            budget: 75000,
+            start_date: '2024-02-01',
+            status: 'Completed'
+          }
+        ])
+        
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: () => Promise.resolve(mockProjects)
+        })
+      }
+      
+      // Default fallback for unhandled URLs
+      return Promise.reject(new Error(`Unhandled URL in mock: ${url}`))
+    })
+  })
+
+  afterEach(() => {
+    // Restore original fetch
+    global.fetch = originalFetch
   })
 
   describe('Basic Rendering', () => {
@@ -34,12 +93,14 @@ describe('Projects Component', () => {
       
       await waitFor(() => {
         // Look for project names from mock data
-        const hasProjectContent = screen.queryByText(/garden redesign/i) || 
-                                  screen.queryByText(/park renovation/i) ||
-                                  screen.queryByText(/projects/i) ||
-                                  screen.queryByText(/no projects/i);
-        expect(hasProjectContent).toBeInTheDocument()
+        expect(screen.getByText(/Garden Redesign Project/i)).toBeInTheDocument()
       }, { timeout: 10000 })
+      
+      // Verify other mock projects are displayed
+      await waitFor(() => {
+        expect(screen.getByText(/Park Renovation/i)).toBeInTheDocument()
+        expect(screen.getByText(/Corporate Landscape/i)).toBeInTheDocument()
+      })
     })
   })
 
