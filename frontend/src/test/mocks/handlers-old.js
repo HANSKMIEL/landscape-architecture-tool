@@ -15,7 +15,7 @@ import {
   createMockSuppliers,
   createMockRecentActivity,
   createApiResponse
-} from '../utils/mockData.js';
+} from '../utils/mockData';
 
 // Helper function to create handlers for both relative and absolute URLs
 const createHandler = (method, relativePath, handler) => [
@@ -267,5 +267,251 @@ export const handlers = [
     return new Promise(() => {
       // Never resolves, simulates timeout
     });
+  })
+];
+
+  ...createHandler('post', '/api/plants', async ({ request }) => {
+    const newPlant = await request.json();
+    return HttpResponse.json(
+      createMockPlant({ id: 999, ...newPlant }), 
+      { status: 201 }
+    );
+  }),
+
+  ...createHandler('put', '/api/plants/:id', async ({ params, request }) => {
+    const updates = await request.json();
+    const id = parseInt(params.id);
+    return HttpResponse.json(
+      createMockPlant({ id, ...updates })
+    );
+  }),
+
+  ...createHandler('delete', '/api/plants/:id', ({ params }) => {
+    const id = parseInt(params.id);
+    return HttpResponse.json({ 
+      message: `Plant ${id} deleted successfully` 
+    });
+  }),
+
+  // Plant recommendations endpoint
+  ...createHandler('post', '/api/plants/recommendations', async ({ request }) => {
+    const criteria = await request.json();
+    return HttpResponse.json({
+      recommendations: createMockArray(createMockRecommendation, 3),
+      criteria: criteria,
+      total: 3
+    });
+  }),
+
+  // Project endpoints
+  ...createHandler('get', '/api/projects', ({ request }) => {
+    const url = new URL(request.url);
+    const page = parseInt(url.searchParams.get('page') || '1');
+    const perPage = parseInt(url.searchParams.get('per_page') || '10');
+    
+    const projects = createMockArray(createMockProject, 8);
+    const total = projects.length;
+    const startIndex = (page - 1) * perPage;
+    const endIndex = startIndex + perPage;
+    const paginatedProjects = projects.slice(startIndex, endIndex);
+    
+    return HttpResponse.json({
+      projects: paginatedProjects,
+      total: total,
+      page: page,
+      per_page: perPage,
+      pages: Math.ceil(total / perPage)
+    });
+  }),
+
+  ...createHandler('get', '/api/projects/:id', ({ params }) => {
+    const id = parseInt(params.id);
+    const projects = createMockArray(createMockProject, 8);
+    const project = projects.find(p => p.id === id);
+    if (!project) {
+      return HttpResponse.json(
+        { error: "Project not found" },
+        { status: 404 }
+      );
+    }
+    return HttpResponse.json(project);
+  }),
+
+  ...createHandler('post', '/api/projects', async ({ request }) => {
+    const newProject = await request.json();
+    return HttpResponse.json(
+      createMockProject({ id: 999, ...newProject }), 
+      { status: 201 }
+    );
+  }),
+
+  ...createHandler('put', '/api/projects/:id', async ({ params, request }) => {
+    const updates = await request.json();
+    const id = parseInt(params.id);
+    return HttpResponse.json(
+      createMockProject({ id, ...updates })
+    );
+  }),
+
+  ...createHandler('delete', '/api/projects/:id', ({ params }) => {
+    const id = parseInt(params.id);
+    return HttpResponse.json({ 
+      message: `Project ${id} deleted successfully` 
+    });
+  }),
+
+  // Client endpoints
+  ...createHandler('get', '/api/clients', ({ request }) => {
+    const url = new URL(request.url);
+    const page = parseInt(url.searchParams.get('page') || '1');
+    const perPage = parseInt(url.searchParams.get('per_page') || '10');
+    
+    const clients = createMockArray(createMockClient, 12);
+    const total = clients.length;
+    const startIndex = (page - 1) * perPage;
+    const endIndex = startIndex + perPage;
+    const paginatedClients = clients.slice(startIndex, endIndex);
+    
+    return HttpResponse.json({
+      clients: paginatedClients,
+      total: total,
+      page: page,
+      per_page: perPage,
+      pages: Math.ceil(total / perPage)
+    });
+  }),
+
+  ...createHandler('get', '/api/clients/:id', ({ params }) => {
+    const id = parseInt(params.id);
+    const clients = createMockArray(createMockClient, 12); // Mock list of clients
+    const client = clients.find(client => client.id === id);
+    
+    if (!client) {
+      return HttpResponse.json(
+        { error: "Client not found" },
+        { status: 404 }
+      );
+    }
+    
+    return HttpResponse.json(client);
+  }),
+
+  ...createHandler('post', '/api/clients', async ({ request }) => {
+    const newClient = await request.json();
+    return HttpResponse.json(
+      createMockClient({ id: 999, ...newClient }), 
+      { status: 201 }
+    );
+  }),
+
+  // Supplier endpoints
+  ...createHandler('get', '/api/suppliers', ({ request }) => {
+    const url = new URL(request.url);
+    const page = parseInt(url.searchParams.get('page') || '1');
+    const perPage = parseInt(url.searchParams.get('per_page') || '10');
+    
+    const suppliers = createMockArray(createMockSupplier, 10);
+    const total = suppliers.length;
+    const startIndex = (page - 1) * perPage;
+    const endIndex = startIndex + perPage;
+    const paginatedSuppliers = suppliers.slice(startIndex, endIndex);
+    
+    return HttpResponse.json({
+      suppliers: paginatedSuppliers,
+      total: total,
+      page: page,
+      per_page: perPage,
+      pages: Math.ceil(total / perPage)
+    });
+  }),
+
+  ...createHandler('get', '/api/suppliers/:id', ({ params }) => {
+    const id = parseInt(params.id);
+    const suppliers = createMockArray(createMockSupplier, 10); // Mock list of suppliers
+    const supplier = suppliers.find(s => s.id === id);
+    if (!supplier) {
+      return HttpResponse.json({ error: 'Supplier not found' }, { status: 404 });
+    }
+    return HttpResponse.json(supplier);
+  }),
+
+  ...createHandler('post', '/api/suppliers', async ({ request }) => {
+    const newSupplier = await request.json();
+    return HttpResponse.json(
+      createMockSupplier({ id: 999, ...newSupplier }), 
+      { status: 201 }
+    );
+  }),
+
+  ...createHandler('put', '/api/suppliers/:id', async ({ params, request }) => {
+    const updates = await request.json();
+    const id = parseInt(params.id);
+    return HttpResponse.json(
+      createMockSupplier({ id, ...updates })
+    );
+  }),
+
+  ...createHandler('delete', '/api/suppliers/:id', ({ params }) => {
+    const id = parseInt(params.id);
+    return HttpResponse.json({ 
+      message: `Supplier ${id} deleted successfully` 
+    });
+  }),
+
+  // Dashboard endpoints
+  ...createHandler('get', '/api/dashboard/stats', () => {
+    return HttpResponse.json(createMockDashboardStats());
+  }),
+
+  ...createHandler('get', '/api/dashboard/recent-activity', () => {
+    const activities = createMockArray(createMockActivity, 8);
+    return HttpResponse.json({
+      activities: activities,
+      total: activities.length
+    });
+  }),
+
+  // Products endpoint (placeholder implementation)
+  ...createHandler('get', '/api/products', ({ request }) => {
+    const url = new URL(request.url);
+    const page = parseInt(url.searchParams.get('page') || '1');
+    const perPage = parseInt(url.searchParams.get('per_page') || '10');
+    
+    return HttpResponse.json({
+      products: [], // Empty for now as per API service
+      total: 0,
+      page: page,
+      per_page: perPage,
+      pages: 0
+    });
+  }),
+
+  // Error scenarios for testing
+  ...createHandler('get', '/api/plants/error', () => {
+    return HttpResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }),
+
+  ...createHandler('get', '/api/plants/not-found', () => {
+    return HttpResponse.json(
+      { error: 'Plant not found' },
+      { status: 404 }
+    );
+  }),
+
+  ...createHandler('get', '/api/projects/error', () => {
+    return HttpResponse.json(
+      { error: 'Failed to fetch projects' },
+      { status: 500 }
+    );
+  }),
+
+  ...createHandler('get', '/api/suppliers/error', () => {
+    return HttpResponse.json(
+      { error: 'Supplier service unavailable' },
+      { status: 503 }
+    );
   })
 ];

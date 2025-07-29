@@ -1,5 +1,5 @@
 import '@testing-library/jest-dom';
-import { server } from './mocks/server';
+import { server } from './mocks/server.js';
 import { beforeAll, afterEach, afterAll, vi } from 'vitest';
 
 // Mock window.matchMedia

@@ -146,3 +146,120 @@ export const createMockActivity = (overrides = {}) => {
     ...overrides,
   };
 };
+
+// === MAIN BRANCH COMPATIBILITY FUNCTIONS ===
+// These functions provide compatibility with the main branch format
+
+// Main branch plant factory
+export const createMockPlants = (count = 10) => {
+  return Array.from({ length: count }, (_, index) => ({
+    id: index + 1,
+    name: `Rosa rugosa ${index + 1}`,
+    common_name: `Beach Rose ${index + 1}`,
+    category: ['Shrub', 'Tree', 'Perennial', 'Annual'][index % 4],
+    height_min: 2 + index,
+    height_max: 5 + index,
+    width_min: 2 + index,
+    width_max: 4 + index,
+    sun_requirements: ['Full Sun', 'Partial Sun', 'Shade'][index % 3],
+    soil_type: ['Sandy', 'Clay', 'Loam'][index % 3],
+    water_needs: ['Low', 'Medium', 'High'][index % 3],
+    hardiness_zone: `${Math.floor(index % 8) + 1}-${Math.floor(index % 8) + 5}`,
+    bloom_time: ['Spring', 'Summer', 'Fall'][index % 3],
+    bloom_color: ['Pink', 'White', 'Red', 'Yellow'][index % 4],
+    foliage_color: 'Green',
+    native: index % 2 === 0,
+    supplier_id: (index % 3) + 1,
+    supplier_name: `Green Thumb Nursery ${(index % 3) + 1}`,
+    price: 25.99 + (index * 5),
+    availability: 'In Stock',
+    planting_season: 'Spring/Fall',
+    maintenance: ['Low', 'Medium', 'High'][index % 3],
+    notes: `Plant notes for item ${index + 1}`
+  }));
+};
+
+// Main branch project factory
+export const createMockProjects = (count = 10) => {
+  const statuses = ['Active', 'Planning', 'Completed', 'On Hold'];
+  return Array.from({ length: count }, (_, index) => ({
+    id: index + 1,
+    name: `Garden Project ${index + 1}`,
+    description: `Landscape project description ${index + 1}`,
+    client_id: (index % 5) + 1,
+    client_name: `Client ${(index % 5) + 1}`,
+    location: `Location ${index + 1}`,
+    budget: 50000 + (index * 10000),
+    start_date: '2024-01-15',
+    end_date: '2024-12-15',
+    status: statuses[index % statuses.length],
+    progress: Math.floor(Math.random() * 100),
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
+  }));
+};
+
+// Main branch client factory
+export const createMockClients = (count = 10) => {
+  return Array.from({ length: count }, (_, index) => ({
+    id: index + 1,
+    name: `Client ${index + 1}`,
+    email: `client${index + 1}@example.com`,
+    phone: `+1-555-${String(index + 1).padStart(4, '0')}`,
+    address: `${100 + index} Main St, City ${index + 1}`,
+    company: index % 2 === 0 ? `Company ${index + 1}` : null,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
+  }));
+};
+
+// Main branch supplier factory
+export const createMockSuppliers = (count = 10) => {
+  return Array.from({ length: count }, (_, index) => ({
+    id: index + 1,
+    name: `Supplier ${index + 1}`,
+    email: `supplier${index + 1}@example.com`,
+    phone: `+1-555-${String(index + 2000).padStart(4, '0')}`,
+    address: `${200 + index} Industrial Dr, City ${index + 1}`,
+    specialties: ['Plants', 'Tools', 'Materials', 'Services'][index % 4],
+    rating: 3 + (index % 3),
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
+  }));
+};
+
+// Main branch dashboard stats (compatible format)
+export const createMockDashboardStatsCompat = () => ({
+  suppliers: 5,
+  plants: 156,
+  products: 45,
+  clients: 8,
+  projects: 12,
+  active_projects: 3,
+  total_budget: 150000
+});
+
+// Main branch recent activity
+export const createMockRecentActivity = () => [
+  {
+    id: 1,
+    type: 'project',
+    action: 'created',
+    description: 'New project "Garden Redesign" created',
+    timestamp: new Date().toISOString()
+  },
+  {
+    id: 2,
+    type: 'plant',
+    action: 'updated',
+    description: 'Plant inventory updated',
+    timestamp: new Date(Date.now() - 3600000).toISOString()
+  }
+];
+
+// API response wrapper
+export const createApiResponse = (data, meta = {}) => ({
+  data,
+  meta,
+  success: true
+});
