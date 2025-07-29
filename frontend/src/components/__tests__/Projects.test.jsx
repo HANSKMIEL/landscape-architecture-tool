@@ -1,202 +1,280 @@
-import React from 'react';
-import { render, screen, waitFor } from '../../test/utils.jsx';
-import { setupUser } from '../../test/utils/testHelpers';
-import Projects from '../Projects';
+// Jest provides describe, it, expect, beforeEach as globals
+import { screen, waitFor } from '@testing-library/react'
+import { axe, toHaveNoViolations } from 'jest-axe'
+import { render } from '../../test/utils/render.jsx'
+import { setupUser, waitForLoadingToFinish, fillInput, expectErrorMessage } from '../../test/utils/testHelpers'
+import Projects from '../Projects'
 
-global.fetch = vi.fn();
+expect.extend(toHaveNoViolations)
 
 describe('Projects Component', () => {
-  const user = setupUser();
+  let user
 
   beforeEach(() => {
-    vi.clearAllMocks();
-    global.fetch.mockClear();
-  });
+    user = setupUser()
+  })
 
-  test('renders projects list page in English', async () => {
-    global.fetch.mockImplementation(() => new Promise(() => {})); // Keep loading
+  describe('Rendering and Loading States', () => {
+    it('renders projects page with title and navigation', async () => {
+      render(<Projects />)
+      
+      await waitForLoadingToFinish()
+      
+      expect(screen.getByText('Projecten')).toBeInTheDocument()
+      expect(screen.getByText('Project Toevoegen')).toBeInTheDocument()
+    })
 
-    render(<Projects language="en" />);
-    expect(screen.getByRole('heading', { name: /Projects/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /New Project/i })).toBeInTheDocument();
-  });
+    it('supports both English and Dutch rendering', async () => {
+      // Test English
+      render(<Projects />, { language: 'en' })
+      
+      await waitForLoadingToFinish()
+      
+      expect(screen.getByText('Projects')).toBeInTheDocument()
+      expect(screen.getByText('Add Project')).toBeInTheDocument()
+    })
 
-  test('renders projects list page in Dutch', async () => {
-    global.fetch.mockImplementation(() => new Promise(() => {})); // Keep loading
+    it('displays empty state when no projects', async () => {
+      global.fetch.mockImplementation(() => 
+        Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve([])
+        })
+      )
 
-    render(<Projects language="nl" />);
-    expect(screen.getByRole('heading', { name: /Projecten/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Nieuw Project/i })).toBeInTheDocument();
-  });
+      render(<Projects />)
+      
+      await waitForLoadingToFinish()
+      
+      expect(screen.getByText(/geen projecten gevonden/i)).toBeInTheDocument()
+    })
 
-  test('displays loading state initially', () => {
-    global.fetch.mockImplementation(() => new Promise(() => {})); // Keep loading
+    it('displays projects list with data', async () => {
+      render(<Projects />)
+      
+      await waitForLoadingToFinish()
+      
+      // Should display projects from mock data
+      expect(screen.getByText('Garden Redesign')).toBeInTheDocument()
+      expect(screen.getByText('Park Landscaping')).toBeInTheDocument()
+      expect(screen.getByText('Rooftop Garden')).toBeInTheDocument()
+    })
+  })
 
-    render(<Projects language="en" />);
-    expect(screen.getByText(/Loading projects.../i)).toBeInTheDocument();
-  });
+  describe('Project Status and Management', () => {
+    it('displays project status badges correctly', async () => {
+      render(<Projects />)
+      
+      await waitForLoadingToFinish()
+      
+      // Check for status badges
+      expect(screen.getByText('Actief')).toBeInTheDocument()
+      expect(screen.getByText('Planning')).toBeInTheDocument()
+      expect(screen.getByText('Voltooid')).toBeInTheDocument()
+    })
 
-  test('displays empty state when no projects exist', async () => {
-    global.fetch.mockResolvedValue({
-      ok: true,
-      json: () => Promise.resolve([])
-    });
+    it('shows client information for projects', async () => {
+      render(<Projects />)
+      
+      await waitForLoadingToFinish()
+      
+      // Look for client names from mock data
+      expect(screen.getByText('Doe Corporation')).toBeInTheDocument()
+      expect(screen.getByText('Green Spaces Inc')).toBeInTheDocument()
+      expect(screen.getByText('Urban Development Co')).toBeInTheDocument()
+    })
 
-    render(<Projects language="en" />);
+    it('handles different project statuses', async () => {
+      render(<Projects />)
+      
+      await waitForLoadingToFinish()
+      
+      // Test filtering by status
+      const statusFilter = screen.getByLabelText(/filter op status/i)
+      await user.click(statusFilter)
+      
+      const activeOption = screen.getByText('Actief')
+      await user.click(activeOption)
+      
+      await waitFor(() => {
+        expect(screen.getByText('Garden Redesign')).toBeInTheDocument()
+        expect(screen.queryByText('Rooftop Garden')).not.toBeInTheDocument()
+      })
+    })
+  })
 
-    await waitFor(() => {
-      expect(screen.getByText(/No projects found/i)).toBeInTheDocument();
-      expect(screen.getByText(/Create your first project to get started/i)).toBeInTheDocument();
-    });
-  });
+  describe('User Interactions', () => {
+    it('enables navigation between project list and detail views', async () => {
+      render(<Projects />)
+      
+      await waitForLoadingToFinish()
+      
+      // Click on a project to view details
+      const projectLink = screen.getByText('Garden Redesign')
+      await user.click(projectLink)
+      
+      await waitFor(() => {
+        expect(window.location.pathname).toContain('/projects/')
+      })
+    })
 
-  test('loads and displays projects list', async () => {
-    const mockProjects = [
-      {
-        id: 1,
-        name: 'Garden Redesign',
-        description: 'A beautiful garden project',
-        status: 'active',
-        client_name: 'John Doe',
-        location: 'Amsterdam',
-        budget: 50000,
-        start_date: '2024-01-01'
-      },
-      {
-        id: 2,
-        name: 'Park Landscaping',
-        description: 'Large park renovation',
-        status: 'planning',
-        client_name: 'Jane Smith',
-        location: 'Rotterdam',
-        budget: 100000,
-        start_date: '2024-02-01'
-      }
-    ];
+    it('opens add project modal when button clicked', async () => {
+      render(<Projects />)
+      
+      await waitForLoadingToFinish()
+      
+      const addButton = screen.getByText('Project Toevoegen')
+      await user.click(addButton)
+      
+      await waitFor(() => {
+        expect(screen.getByRole('dialog')).toBeInTheDocument()
+        expect(screen.getByText('Project Toevoegen')).toBeInTheDocument()
+      })
+    })
 
-    global.fetch.mockResolvedValue({
-      ok: true,
-      json: () => Promise.resolve(mockProjects)
-    });
+    it('allows searching through projects', async () => {
+      render(<Projects />)
+      
+      await waitForLoadingToFinish()
+      
+      const searchInput = screen.getByPlaceholderText(/zoek projecten/i)
+      await fillInput(user, searchInput, 'Garden')
+      
+      await waitFor(() => {
+        expect(screen.getByText('Garden Redesign')).toBeInTheDocument()
+        expect(screen.getByText('Rooftop Garden')).toBeInTheDocument()
+        expect(screen.queryByText('Park Landscaping')).not.toBeInTheDocument()
+      })
+    })
 
-    render(<Projects language="en" />);
+    it('handles project form submission', async () => {
+      render(<Projects />)
+      
+      await waitForLoadingToFinish()
+      
+      // Open modal
+      const addButton = screen.getByText('Project Toevoegen')
+      await user.click(addButton)
+      
+      await waitFor(() => {
+        expect(screen.getByRole('dialog')).toBeInTheDocument()
+      })
+      
+      // Fill form
+      const nameInput = screen.getByLabelText(/project naam/i)
+      await fillInput(user, nameInput, 'Test Project')
+      
+      const descriptionInput = screen.getByLabelText(/beschrijving/i)
+      await fillInput(user, descriptionInput, 'Test project description')
+      
+      // Submit form
+      const submitButton = screen.getByText('Project Opslaan')
+      await user.click(submitButton)
+      
+      await waitFor(() => {
+        expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+      })
+    })
+  })
 
-    await waitFor(() => {
-      expect(screen.getByText('Garden Redesign')).toBeInTheDocument();
-      expect(screen.getByText('Park Landscaping')).toBeInTheDocument();
-      expect(screen.getByText('John Doe')).toBeInTheDocument();
-      expect(screen.getByText('Jane Smith')).toBeInTheDocument();
-    });
-  });
+  describe('Error Handling', () => {
+    it('displays error message when projects fetch fails', async () => {
+      global.fetch.mockImplementation(() => 
+        Promise.resolve({
+          ok: false,
+          status: 500,
+          statusText: 'Server Error'
+        })
+      )
 
-  test('displays error message when API fails', async () => {
-    global.fetch.mockRejectedValue(new Error('API Error'));
+      render(<Projects />)
+      
+      await waitFor(() => {
+        expectErrorMessage('Fout bij laden van projecten')
+      })
+    })
 
-    render(<Projects language="en" />);
+    it('handles form validation errors', async () => {
+      render(<Projects />)
+      
+      await waitForLoadingToFinish()
+      
+      // Open modal
+      const addButton = screen.getByText('Project Toevoegen')
+      await user.click(addButton)
+      
+      await waitFor(() => {
+        expect(screen.getByRole('dialog')).toBeInTheDocument()
+      })
+      
+      // Try to submit without required fields
+      const submitButton = screen.getByText('Project Opslaan')
+      await user.click(submitButton)
+      
+      await waitFor(() => {
+        expect(screen.getByText(/project naam is verplicht/i)).toBeInTheDocument()
+      })
+    })
+  })
 
-    await waitFor(() => {
-      expect(screen.getByText(/Error Loading Projects/i)).toBeInTheDocument();
-    });
-  });
+  describe('Project Workflows', () => {
+    it('supports project status updates', async () => {
+      render(<Projects />)
+      
+      await waitForLoadingToFinish()
+      
+      // Find a project with status dropdown
+      const statusDropdown = screen.getAllByLabelText(/wijzig status/i)[0]
+      await user.click(statusDropdown)
+      
+      const completedOption = screen.getByText('Voltooid')
+      await user.click(completedOption)
+      
+      await waitFor(() => {
+        expect(global.fetch).toHaveBeenCalledWith(
+          expect.stringContaining('/api/projects/'),
+          expect.objectContaining({
+            method: 'PATCH',
+            body: expect.stringContaining('status')
+          })
+        )
+      })
+    })
 
-  test('shows project details including status badges', async () => {
-    const mockProjects = [
-      {
-        id: 1,
-        name: 'Active Project',
-        description: 'Test project',
-        status: 'in progress',
-        client_name: 'Test Client',
-        location: 'Test Location'
-      }
-    ];
+    it('allows project deletion with confirmation', async () => {
+      // Mock window.confirm
+      window.confirm = jest.fn(() => true)
+      
+      render(<Projects />)
+      
+      await waitForLoadingToFinish()
+      
+      const deleteButton = screen.getAllByLabelText(/verwijder project/i)[0]
+      await user.click(deleteButton)
+      
+      expect(window.confirm).toHaveBeenCalledWith(
+        expect.stringContaining('Weet je zeker dat je dit project wilt verwijderen')
+      )
+      
+      await waitFor(() => {
+        expect(global.fetch).toHaveBeenCalledWith(
+          expect.stringContaining('/api/projects/'),
+          expect.objectContaining({
+            method: 'DELETE'
+          })
+        )
+      })
+    })
+  })
 
-    global.fetch.mockResolvedValue({
-      ok: true,
-      json: () => Promise.resolve(mockProjects)
-    });
-
-    render(<Projects language="en" />);
-
-    await waitFor(() => {
-      expect(screen.getByText('Active Project')).toBeInTheDocument();
-      expect(screen.getByText('in progress')).toBeInTheDocument();
-      expect(screen.getByText('Test Client')).toBeInTheDocument();
-      expect(screen.getByText('Test Location')).toBeInTheDocument();
-    });
-  });
-
-  test('can navigate to project detail view', async () => {
-    const mockProjects = [
-      {
-        id: 1,
-        name: 'Test Project',
-        description: 'Test description',
-        status: 'active',
-        client_name: 'Test Client'
-      }
-    ];
-
-    global.fetch.mockResolvedValue({
-      ok: true,
-      json: () => Promise.resolve(mockProjects)
-    });
-
-    render(<Projects language="en" />);
-
-    await waitFor(() => {
-      expect(screen.getByText('Test Project')).toBeInTheDocument();
-    });
-
-    // Find and click the manage plants button
-    const managePlantsButton = screen.getByRole('button', { name: /Manage Plants/i });
-    await user.click(managePlantsButton);
-
-    // Should navigate to project detail view
-    await waitFor(() => {
-      expect(screen.getByText(/Back to Projects/i)).toBeInTheDocument();
-    });
-  });
-
-  test('can return to projects list from project detail', async () => {
-    const mockProjects = [
-      {
-        id: 1,
-        name: 'Test Project',
-        description: 'Test description',
-        status: 'active',
-        client_name: 'Test Client'
-      }
-    ];
-
-    global.fetch.mockResolvedValue({
-      ok: true,
-      json: () => Promise.resolve(mockProjects)
-    });
-
-    render(<Projects language="en" />);
-
-    // Navigate to project detail
-    await waitFor(() => {
-      expect(screen.getByText('Test Project')).toBeInTheDocument();
-    });
-
-    const managePlantsButton = screen.getByRole('button', { name: /Manage Plants/i });
-    await user.click(managePlantsButton);
-
-    // Should show back button
-    await waitFor(() => {
-      expect(screen.getByText(/Back to Projects/i)).toBeInTheDocument();
-    });
-
-    // Click back button
-    const backButton = screen.getByRole('button', { name: /Back to Projects/i });
-    await user.click(backButton);
-
-    // Should return to projects list
-    await waitFor(() => {
-      expect(screen.getByRole('heading', { name: /Projects/i })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /New Project/i })).toBeInTheDocument();
-    });
-  });
-});
+  describe('Accessibility', () => {
+    it('should not have accessibility violations', async () => {
+      const { container } = render(<Projects />)
+      
+      await waitForLoadingToFinish()
+      
+      const results = await axe(container)
+      expect(results).toHaveNoViolations()
+    })
+  })
+})

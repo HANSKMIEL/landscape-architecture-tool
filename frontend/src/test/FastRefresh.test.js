@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+// Jest provides describe, it, and expect globally
 
 // Test to validate Fast Refresh compatibility
 describe('Fast Refresh Compatibility', () => {

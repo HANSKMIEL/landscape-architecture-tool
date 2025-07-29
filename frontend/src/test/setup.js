@@ -1,14 +1,62 @@
-import '@testing-library/jest-dom'
+import '@testing-library/jest-dom';
+import 'jest-axe/extend-expect';
+import './mocks/server';
 
-// Setup global mocks
-global.fetch = vi.fn()
-global.ResizeObserver = vi.fn(() => ({
-  observe: vi.fn(),
-  disconnect: vi.fn(),
-  unobserve: vi.fn(),
-}))
+// Mock window.matchMedia
+Object.defineProperty(window, 'matchMedia', {
+  writable: true,
+  value: jest.fn().mockImplementation(query => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addListener: jest.fn(),
+    removeListener: jest.fn(),
+    addEventListener: jest.fn(),
+    removeEventListener: jest.fn(),
+    dispatchEvent: jest.fn(),
+  })),
+});
 
-// Reset mocks before each test
-beforeEach(() => {
-  global.fetch.mockClear()
-})
+// Mock IntersectionObserver
+global.IntersectionObserver = jest.fn().mockImplementation(() => ({
+  observe: jest.fn(),
+  unobserve: jest.fn(),
+  disconnect: jest.fn(),
+}));
+
+// Mock ResizeObserver
+global.ResizeObserver = jest.fn().mockImplementation(() => ({
+  observe: jest.fn(),
+  unobserve: jest.fn(),
+  disconnect: jest.fn(),
+}));
+
+// Mock console methods to reduce noise in tests
+global.console = {
+  ...console,
+  // Uncomment to silence console during tests
+  // log: jest.fn(),
+  // debug: jest.fn(),
+  // warn: jest.fn(),
+  error: jest.fn(),
+};
+
+// Mock Location/Navigation for jsdom
+delete window.location;
+window.location = {
+  href: 'http://localhost/',
+  origin: 'http://localhost',
+  protocol: 'http:',
+  host: 'localhost',
+  hostname: 'localhost',
+  port: '',
+  pathname: '/',
+  search: '',
+  hash: '',
+  assign: jest.fn(),
+  replace: jest.fn(),
+  reload: jest.fn(),
+};
+
+// Mock window.open
+window.open = jest.fn();

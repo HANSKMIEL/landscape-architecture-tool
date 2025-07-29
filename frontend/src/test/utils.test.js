@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+// Jest provides describe, it, and expect globally
 import { cn } from '../lib/utils'
 
 describe('Utility Functions', () => {
