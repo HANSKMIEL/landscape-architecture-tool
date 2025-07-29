@@ -105,6 +105,8 @@ For detailed manual setup instructions, see [SETUP_INSTRUCTIONS.md](./SETUP_INST
 ```bash
 # Backend
 pip install -r requirements.txt
+# For development and testing, also install dev dependencies:
+pip install -r requirements-dev.txt
 export PYTHONPATH=. && python src/main.py
 
 # Frontend (in new terminal)
@@ -209,6 +211,27 @@ The backend has been completely refactored from a monolithic structure to a modu
 5. **Validation**: Input validation prevents data corruption
 6. **Error Handling**: Consistent error responses across all endpoints
 7. **Migration Support**: Database schema changes are managed and versioned
+
+## 📦 Dependencies
+
+The project uses a structured approach to dependency management:
+
+- **`requirements.txt`** - Core production dependencies needed to run the application
+- **`requirements-dev.txt`** - Development and testing dependencies (pytest, linting tools, etc.)
+- **`requirements-azure.txt`** - Optional Azure integration dependencies for OneDrive features
+
+### Installing Dependencies
+
+```bash
+# Minimal installation (production only)
+pip install -r requirements.txt
+
+# Full development setup
+pip install -r requirements.txt -r requirements-dev.txt
+
+# With Azure integration
+pip install -r requirements.txt -r requirements-dev.txt -r requirements-azure.txt
+```
 
 ## 🔧 API Endpoints
 
@@ -371,6 +394,12 @@ Key configuration sections:
 # Install Python dependencies
 pip install -r requirements.txt
 
+# For development and testing, also install dev dependencies:
+pip install -r requirements-dev.txt
+
+# Optional: Install Azure integration dependencies for OneDrive features
+pip install -r requirements-azure.txt
+
 # Install frontend dependencies
 cd frontend
 npm install --legacy-peer-deps
@@ -387,6 +416,15 @@ python src/main.py
 # Run frontend development server (in another terminal)
 cd frontend
 npm run dev
+```
+
+**Note:** If you encounter issues installing dependencies via pip, some packages like pandas can be installed via system package manager:
+```bash
+# Ubuntu/Debian
+sudo apt install python3-pandas python3-dev
+
+# Alternative for other platforms
+conda install pandas
 ```
 
 #### Production Setup Checklist
