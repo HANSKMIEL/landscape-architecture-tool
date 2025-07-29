@@ -92,16 +92,14 @@ class PerformanceCache:
         except:
             return False
 
-# Global cache instance
-cache = PerformanceCache()
-
-def cached(timeout: int = 300, key_prefix: str = None):
+def cached(cache: PerformanceCache, timeout: int = 300, key_prefix: str = None):
     """
     Decorator for caching function results.
     
     Args:
-        timeout: Cache timeout in seconds (default: 5 minutes)
-        key_prefix: Optional prefix for cache keys
+        cache: Instance of PerformanceCache to use.
+       timeout: Cache timeout in seconds (default: 5 minutes)
+       key_prefix: Optional prefix for cache keys
     """
     def decorator(func: Callable) -> Callable:
         @functools.wraps(func)
