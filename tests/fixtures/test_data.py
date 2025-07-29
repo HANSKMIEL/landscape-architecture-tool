@@ -81,7 +81,7 @@ class PlantFactory(factory.alchemy.SQLAlchemyModelFactory):
     width_min = factory.Faker('random_int', min=10, max=100)  
     width_max = factory.Faker('random_int', min=100, max=300)
     hardiness_zone = factory.Faker('random_element', elements=['3a', '3b', '4a', '4b', '5a', '5b'])
-    sun_exposure = factory.Faker('random_element', elements=['full_sun', 'partial_shade', 'full_shade'])
+    sun_requirements = factory.Faker('random_element', elements=['full_sun', 'partial_shade', 'full_shade'])
     soil_type = factory.Faker('random_element', elements=['clay', 'sand', 'loam', 'silt'])
     soil_ph_min = factory.Faker('pyfloat', left_digits=1, right_digits=1, positive=True, min_value=4.0, max_value=6.0)
     soil_ph_max = factory.Faker('pyfloat', left_digits=1, right_digits=1, positive=True, min_value=7.0, max_value=9.0)
@@ -106,8 +106,7 @@ class ClientFactory(factory.alchemy.SQLAlchemyModelFactory):
         sqlalchemy_session = db.session
         sqlalchemy_session_persistence = "commit"
     
-    name = factory.Faker('name')
-    company = factory.Faker('company')
+    name = factory.Faker('company')  # For business/organization client names
     email = factory.Faker('email')
     phone = factory.Faker('phone_number')
     address = factory.Faker('street_address')
