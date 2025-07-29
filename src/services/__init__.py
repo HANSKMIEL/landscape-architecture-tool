@@ -207,6 +207,38 @@ class PlantService(BaseService):
     def __init__(self):
         super().__init__(Plant)
 
+    def update(self, entity_id: int, data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        """Update plant with business logic validation"""
+        try:
+            # Check height constraints
+            height_min = data.get("height_min")
+            height_max = data.get("height_max")
+            
+            # If both are provided, validate that min <= max
+            if height_min is not None and height_max is not None:
+                if height_min > height_max:
+                    raise ValueError("height_min cannot be greater than height_max")
+            
+            # If only one is provided, check against existing value
+            if entity_id:
+                existing_plant = Plant.query.get(entity_id)
+                if existing_plant:
+                    if height_min is not None and existing_plant.height_max is not None:
+                        if height_min > existing_plant.height_max:
+                            raise ValueError("height_min cannot be greater than existing height_max")
+                    if height_max is not None and existing_plant.height_min is not None:
+                        if height_max < existing_plant.height_min:
+                            raise ValueError("height_max cannot be less than existing height_min")
+            
+            # Use the parent update method
+            return super().update(entity_id, data)
+        except ValueError as e:
+            logger.error(f"Business validation error: {str(e)}")
+            raise
+        except Exception as e:
+            logger.error(f"Error updating plant: {str(e)}")
+            raise
+
     def get_all(
         self, search: str = None, page: int = 1, per_page: int = 50
     ) -> Dict[str, Any]:
