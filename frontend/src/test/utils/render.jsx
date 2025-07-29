@@ -1,20 +1,62 @@
 /* eslint-disable react-refresh/only-export-components */
-import React from 'react';
-import { render } from '@testing-library/react';
-import { BrowserRouter } from 'react-router-dom';
+import React from 'react'
+import { render } from '@testing-library/react'
+import { BrowserRouter } from 'react-router-dom'
+import { Toaster } from 'react-hot-toast'
 
-// Mock providers that wrap components during testing
-const TestWrapper = ({ children }) => {
+// Mock providers for testing
+const MockProviders = ({ children }) => {
   return (
     <BrowserRouter>
       {children}
+      <Toaster />
     </BrowserRouter>
-  );
-};
+  )
+}
 
-const customRender = (ui, options) =>
-  render(ui, { wrapper: TestWrapper, ...options });
+// Custom render function with providers
+const customRender = (ui, options = {}) => {
+  const {
+    initialEntries = ['/'],
+    ...renderOptions
+  } = options
 
-// Re-export everything
-export * from '@testing-library/react';
-export { customRender as render };
+  const Wrapper = ({ children }) => (
+    <MockProviders initialEntries={initialEntries}>
+      {children}
+    </MockProviders>
+  )
+
+  return render(ui, {
+    wrapper: Wrapper,
+    ...renderOptions
+  })
+}
+
+// Enhanced render with specific route
+export const renderWithRouter = (ui, { route = '/', ...options } = {}) => {
+  window.history.pushState({}, 'Test page', route)
+  return customRender(ui, options)
+}
+
+// Render with language context
+export const renderWithLanguage = (ui, { language = 'en', ...options } = {}) => {
+  const LanguageWrapper = ({ children }) => (
+    <MockProviders>
+      <div data-testid="language-context" data-language={language}>
+        {React.cloneElement(children, { language })}
+      </div>
+    </MockProviders>
+  )
+
+  return render(ui, {
+    wrapper: LanguageWrapper,
+    ...options
+  })
+}
+
+// Re-export everything from RTL
+export * from '@testing-library/react'
+
+// Override render method
+export { customRender as render }
