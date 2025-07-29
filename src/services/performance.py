@@ -5,6 +5,7 @@ Provides caching, query optimization, and performance monitoring capabilities.
 
 import time
 import functools
+import logging
 from typing import Any, Dict, Optional, Callable
 from flask import current_app, request, g
 import redis
@@ -262,6 +263,10 @@ def get_cache() -> PerformanceCache:
     if _cache_instance is None:
         _cache_instance = PerformanceCache()
     return _cache_instance
+
+# Expose cache instance at module level for imports
+cache = get_cache()
+
 # Utility functions for common caching patterns
 def cache_dashboard_stats(func):
     """Cache dashboard statistics for 2 minutes."""
