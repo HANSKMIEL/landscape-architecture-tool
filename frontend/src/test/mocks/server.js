@@ -46,6 +46,18 @@ global.fetch = jest.fn((url) => {
     });
   }
 
+  if (url.includes('/api/suppliers')) {
+    return Promise.resolve({
+      ok: true,
+      status: 200,
+      statusText: 'OK',
+      json: () => Promise.resolve([
+        { id: 1, name: 'Green Supplier Co', contact: 'John Green' },
+        { id: 2, name: 'Plant Paradise', contact: 'Jane Plant' }
+      ])
+    });
+  }
+
   if (url.includes('/api/plants')) {
     return Promise.resolve({
       ok: true,
@@ -67,7 +79,7 @@ global.fetch = jest.fn((url) => {
         {
           id: 1,
           name: 'Garden Redesign Project',
-          client: 'Green Spaces Inc.',
+          client: 'Green Spaces Inc',
           location: 'Amsterdam',
           budget: 50000,
           start_date: '2024-01-15',
