@@ -1,4 +1,9 @@
 # Multi-stage Dockerfile for Landscape Architecture Tool Backend
+# 
+# IMPORTANT: When making changes to cache/performance modules, 
+# it's recommended to build with --no-cache to ensure clean Python module imports:
+# docker build --no-cache -t landscape-architecture-tool .
+#
 # Stage 1: Build stage
 FROM python:3.11-slim as builder
 
