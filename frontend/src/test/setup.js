@@ -1,7 +1,6 @@
 import '@testing-library/jest-dom';
 import 'jest-axe/extend-expect';
-// import './mocks/server';  // Disabled until MSW import issue is resolved
-import 'whatwg-fetch';
+import './mocks/server';
 
 // Mock window.matchMedia
 Object.defineProperty(window, 'matchMedia', {
@@ -31,13 +30,6 @@ global.ResizeObserver = jest.fn().mockImplementation(() => ({
   unobserve: jest.fn(),
   disconnect: jest.fn(),
 }));
-
-// Add missing globals for React Router and modern web APIs
-if (typeof global.TextEncoder === 'undefined') {
-  const { TextEncoder, TextDecoder } = require('util');
-  global.TextEncoder = TextEncoder;
-  global.TextDecoder = TextDecoder;
-}
 
 // Mock console methods to reduce noise in tests
 global.console = {
