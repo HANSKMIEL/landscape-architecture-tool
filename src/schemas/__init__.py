@@ -1,5 +1,5 @@
 from typing import Optional
-import re
+# Removed the global import of `re` as it is now imported locally within methods.
 
 from pydantic import BaseModel, Field, EmailStr, field_validator, HttpUrl
 
