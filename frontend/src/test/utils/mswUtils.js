@@ -74,7 +74,7 @@ export const mockApiError = (method, url, status, message) => {
 
 // Reset all mocks
 export const resetApiMocks = () => {
-  if (global.fetch && global.fetch.mockClear) {
-    global.fetch.mockClear()
+  if (global.fetch && global.fetch.mockReset) {
+    global.fetch.mockReset()
   }
 }
