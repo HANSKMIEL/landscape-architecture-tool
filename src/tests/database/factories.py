@@ -142,7 +142,7 @@ def create_test_plant(
     plant = Plant(
         name=name,
         common_name=common_name,
-        category=plant_type,  # Map plant_type to category field
+        category=category,  # Use category directly
         sun_requirements=sun_requirements,
         soil_type=soil_type,
         height_min=height_min,
