@@ -18,7 +18,7 @@ A comprehensive web application for managing landscape architecture projects, su
 ### 🌐 Cloud-First Development
 - **GitHub Codespaces** - Instant cloud development environment
 - **VS Code Remote** - Consistent development with devcontainers
-- **OneDrive Integration** - Cloud storage and collaboration features
+- **OneDrive Integration** - Cloud storage and collaboration features (includes msal, msgraph-core, azure-identity, azure-storage-file-datalake)
 - **Container Orchestration** - Production-ready Docker Compose setup
 
 ### 🔐 Security & Compliance
@@ -103,8 +103,13 @@ For detailed manual setup instructions, see [SETUP_INSTRUCTIONS.md](./SETUP_INST
 
 **Quick Manual Setup:**
 ```bash
-# Backend
+# Backend (production dependencies only)
 pip install -r requirements.txt
+
+# For development with testing and additional tools
+pip install -r requirements-dev.txt
+
+# Start backend
 export PYTHONPATH=. && python src/main.py
 
 # Frontend (in new terminal)
@@ -367,10 +372,20 @@ Key configuration sections:
 
 #### Local Development Setup
 
+**Production Dependencies:**
 ```bash
-# Install Python dependencies
+# Install core application dependencies
 pip install -r requirements.txt
+```
 
+**Development Dependencies:**
+```bash
+# Install development and testing dependencies (includes production deps)
+pip install -r requirements-dev.txt
+```
+
+**Complete Setup:**
+```bash
 # Install frontend dependencies
 cd frontend
 npm install --legacy-peer-deps
@@ -407,6 +422,9 @@ npm run dev
 pip install --upgrade -r requirements.txt
 cd frontend && npm update
 
+# For development environments, update dev dependencies
+pip install --upgrade -r requirements-dev.txt
+
 # Run security audits
 pip install safety && safety check
 cd frontend && npm audit
@@ -421,6 +439,30 @@ bandit -r src/
 python -m pytest tests/ -v
 cd frontend && npm run test
 ```
+
+### Development vs Production Dependencies
+
+This project separates production and development dependencies for optimal deployment:
+
+- **`requirements.txt`** - Contains only production dependencies needed to run the application
+- **`requirements-dev.txt`** - Contains all development dependencies including testing tools, linters, and debugging utilities
+
+**For Production Deployment:**
+```bash
+pip install -r requirements.txt
+```
+
+**For Development Environment:**
+```bash
+pip install -r requirements-dev.txt  # Includes production dependencies via -r requirements.txt
+```
+
+The development requirements include:
+- Testing frameworks (pytest, factory_boy, faker)
+- Code quality tools (flake8, black, isort, bandit)
+- Development utilities (python-dotenv, debugpy, ipython)
+- Coverage reporting (coverage, pytest-cov)
+- Documentation tools (sphinx)
 
 ### Database Operations
 
