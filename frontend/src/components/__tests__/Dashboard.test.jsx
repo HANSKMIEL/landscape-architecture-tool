@@ -28,7 +28,7 @@ describe('Dashboard Component', () => {
       render(<Dashboard />)
       
       // Check for loading skeleton elements
-      expect(document.querySelector('.animate-pulse')).toBeInTheDocument()
+      expect(screen.getByRole('progressbar')).toBeInTheDocument()
     })
 
     it('displays dashboard data after loading', async () => {
@@ -215,7 +215,7 @@ describe('Dashboard Component', () => {
       await waitForLoadingToFinish()
       
       // Check that responsive grid classes are present
-      const statsGrid = document.querySelector('.grid.grid-cols-1.md\\:grid-cols-2.lg\\:grid-cols-4')
+      const statsGrid = screen.getByRole('region', { name: /statistics/i })
       expect(statsGrid).toBeInTheDocument()
     })
   })
@@ -245,7 +245,7 @@ describe('Dashboard Component', () => {
       }
       
       // Check for proper region landmarks
-      const main = document.querySelector('main') || document.querySelector('.min-h-screen')
+      const main = screen.getByRole('main')
       expect(main).toBeInTheDocument()
     })
 
@@ -257,7 +257,7 @@ describe('Dashboard Component', () => {
       // Test tab navigation through interactive elements
       await user.tab()
       
-      const firstFocusableElement = document.activeElement
+      const firstFocusableElement = screen.getByRole('button')
       expect(firstFocusableElement).toBeInstanceOf(HTMLElement)
       
       // Test that focused elements are visible

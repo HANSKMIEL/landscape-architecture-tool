@@ -2,16 +2,13 @@ import { describe, it, expect, beforeEach } from 'vitest'
 import { screen, waitFor } from '@testing-library/react'
 import { axe, toHaveNoViolations } from 'jest-axe'
 import { renderWithLanguage } from '../../test/utils/render.jsx'
-import { setupUser } from '../../test/utils/testHelpers'
 import Projects from '../Projects'
 
 expect.extend(toHaveNoViolations)
 
 describe('Projects Component', () => {
-  let user
-
   beforeEach(() => {
-    user = setupUser()
+    // Setup for each test
   })
 
   describe('Basic Rendering', () => {
@@ -47,6 +44,9 @@ describe('Projects Component', () => {
       
       await waitFor(() => {
         expect(screen.getByText('Projects')).toBeInTheDocument()
+      }, { timeout: 5000 })
+      
+      await waitFor(() => {
         expect(screen.getByText(/manage your landscape architecture projects/i)).toBeInTheDocument()
       }, { timeout: 5000 })
     })
@@ -56,6 +56,9 @@ describe('Projects Component', () => {
       
       await waitFor(() => {
         expect(screen.getByText('Projecten')).toBeInTheDocument()
+      }, { timeout: 5000 })
+      
+      await waitFor(() => {
         expect(screen.getByText(/beheer uw landschapsarchitectuur projecten/i)).toBeInTheDocument()
       }, { timeout: 5000 })
     })

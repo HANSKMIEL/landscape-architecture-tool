@@ -2,18 +2,13 @@ import { describe, it, expect, beforeEach } from 'vitest'
 import { screen, waitFor } from '@testing-library/react'
 import { axe, toHaveNoViolations } from 'jest-axe'
 import { render } from '../../test/utils/render.jsx'
-import { setupUser, waitForLoadingToFinish } from '../../test/utils/testHelpers'
-import { server } from '../../test/mocks/server'
-import { http, HttpResponse } from 'msw'
 import Plants from '../Plants'
 
 expect.extend(toHaveNoViolations)
 
 describe('Plants Component', () => {
-  let user
-
   beforeEach(() => {
-    user = setupUser()
+    // Setup for each test
   })
 
   describe('Basic Rendering', () => {
@@ -21,7 +16,7 @@ describe('Plants Component', () => {
       render(<Plants />)
       
       // Check for loading state first
-      expect(document.querySelector('.animate-spin')).toBeInTheDocument()
+      expect(screen.getByRole('progressbar')).toBeInTheDocument()
       
       // Wait for data to load
       await waitFor(() => {
@@ -55,7 +50,7 @@ describe('Plants Component', () => {
       const { container } = render(<Plants />)
       
       await waitFor(() => {
-        expect(document.querySelector('.animate-spin')).not.toBeInTheDocument()
+        expect(screen.queryByRole('progressbar')).not.toBeInTheDocument()
       }, { timeout: 5000 })
       
       const results = await axe(container)
