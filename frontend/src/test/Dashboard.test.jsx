@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+// Jest provides describe, it, and expect globally
 import { render, screen } from '@testing-library/react'
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card'
 

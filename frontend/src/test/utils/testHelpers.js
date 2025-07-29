@@ -1,6 +1,5 @@
 import { screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { expect } from 'vitest'
 
 // User event setup for each test
 export const setupUser = () => userEvent.setup()
