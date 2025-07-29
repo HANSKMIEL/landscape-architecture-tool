@@ -213,7 +213,7 @@ class TestRecommendationService:
         # Should return at least the shrubs we created
         shrub_names = [rec['plant']['name'] for rec in single_recommendations 
                       if rec['plant']['plant_type'] == 'shrub']
-        expected_shrubs = [p.name for p in test_plants if p.category == 'shrub']
+        expected_shrubs = [p.name for p in test_plants if p.plant_type == 'shrub']
         for shrub_name in expected_shrubs:
             assert shrub_name in shrub_names
     
