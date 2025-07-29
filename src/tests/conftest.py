@@ -80,3 +80,9 @@ def mock_pagination():
     pagination.has_next = False
     pagination.has_prev = False
     return pagination
+
+
+@pytest.fixture
+def db_session(app_context):
+    """Database session for testing"""
+    return db.session
