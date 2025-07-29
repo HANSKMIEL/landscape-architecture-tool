@@ -40,3 +40,23 @@ global.console = {
   // warn: jest.fn(),
   error: jest.fn(),
 };
+
+// Mock Location/Navigation for jsdom
+delete window.location;
+window.location = {
+  href: 'http://localhost/',
+  origin: 'http://localhost',
+  protocol: 'http:',
+  host: 'localhost',
+  hostname: 'localhost',
+  port: '',
+  pathname: '/',
+  search: '',
+  hash: '',
+  assign: jest.fn(),
+  replace: jest.fn(),
+  reload: jest.fn(),
+};
+
+// Mock window.open
+window.open = jest.fn();

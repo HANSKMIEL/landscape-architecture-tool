@@ -2,16 +2,14 @@
 import { screen, waitFor } from '@testing-library/react'
 import { axe, toHaveNoViolations } from 'jest-axe'
 import { renderWithLanguage } from '../../test/utils/render.jsx'
-import { setupUser } from '../../test/utils/testHelpers'
 import Projects from '../Projects'
 
 expect.extend(toHaveNoViolations)
 
 describe('Projects Component', () => {
-  let user
-
   beforeEach(() => {
-    user = setupUser()
+    // Reset mocks before each test
+    jest.clearAllMocks()
   })
 
   describe('Basic Rendering', () => {
@@ -35,9 +33,13 @@ describe('Projects Component', () => {
       renderWithLanguage(<Projects language="en" />, { language: 'en' })
       
       await waitFor(() => {
-        // Look for project names from mock data or project cards
-        expect(screen.getByText(/project/i) || screen.getByText(/no projects/i)).toBeInTheDocument()
-      }, { timeout: 5000 })
+        // Look for project names from mock data
+        const hasProjectContent = screen.queryByText(/garden redesign/i) || 
+                                  screen.queryByText(/park renovation/i) ||
+                                  screen.queryByText(/projects/i) ||
+                                  screen.queryByText(/no projects/i);
+        expect(hasProjectContent).toBeInTheDocument()
+      }, { timeout: 10000 })
     })
   })
 

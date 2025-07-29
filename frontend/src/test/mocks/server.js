@@ -16,6 +16,7 @@ global.fetch = jest.fn((url) => {
     return Promise.resolve({
       ok: true,
       status: 200,
+      statusText: 'OK',
       json: () => Promise.resolve({
         suppliers: 5,
         plants: 156,
@@ -32,6 +33,7 @@ global.fetch = jest.fn((url) => {
     return Promise.resolve({
       ok: true,
       status: 200,
+      statusText: 'OK',
       json: () => Promise.resolve([
         {
           id: 1,
@@ -48,9 +50,38 @@ global.fetch = jest.fn((url) => {
     return Promise.resolve({
       ok: true,
       status: 200,
+      statusText: 'OK',
       json: () => Promise.resolve([
         { id: 1, name: 'Rose', common_name: 'Garden Rose' },
         { id: 2, name: 'Tulip', common_name: 'Spring Tulip' }
+      ])
+    });
+  }
+
+  if (url.includes('/api/projects')) {
+    return Promise.resolve({
+      ok: true,
+      status: 200,
+      statusText: 'OK',
+      json: () => Promise.resolve([
+        {
+          id: 1,
+          name: 'Garden Redesign Project',
+          client: 'Green Spaces Inc.',
+          location: 'Amsterdam',
+          budget: 50000,
+          start_date: '2024-01-15',
+          status: 'active'
+        },
+        {
+          id: 2,
+          name: 'Park Renovation',
+          client: 'City Council',
+          location: 'Utrecht',
+          budget: 125000,
+          start_date: '2024-02-01',
+          status: 'planning'
+        }
       ])
     });
   }
@@ -59,6 +90,7 @@ global.fetch = jest.fn((url) => {
   return Promise.resolve({
     ok: true,
     status: 200,
+    statusText: 'OK',
     json: () => Promise.resolve({ success: true })
   });
 });
