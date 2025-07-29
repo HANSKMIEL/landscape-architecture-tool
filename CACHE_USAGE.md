@@ -24,8 +24,8 @@ from src.services.performance import cache
 # Set a value with default timeout (5 minutes)
 cache.set("my_key", {"data": "value"})
 
-# Set a value with custom timeout (in seconds)
-cache.set("my_key", {"data": "value"}, timeout=600)  # 10 minutes
+# Set a value with custom timeout (timeout is in seconds)
+cache.set("my_key", {"data": "value"}, timeout=600)  # timeout in seconds (10 minutes)
 
 # Get a value
 result = cache.get("my_key")
