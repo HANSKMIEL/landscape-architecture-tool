@@ -97,8 +97,11 @@ class TestAnalyticsService(DatabaseTestMixin):
         )
         
         # Add plant to both projects
-        ProjectPlant(project=old_project, plant=plant, quantity=10)
-        ProjectPlant(project=recent_project, plant=plant, quantity=5)
+        old_project_plant = ProjectPlant(project=old_project, plant=plant, quantity=10)
+        recent_project_plant = ProjectPlant(project=recent_project, plant=plant, quantity=5)
+        db.session.add(old_project_plant)
+        db.session.add(recent_project_plant)
+        db.session.commit()
         
         # Test with 30-day range (should only include recent project)
         start_date = (now - timedelta(days=30)).isoformat()
