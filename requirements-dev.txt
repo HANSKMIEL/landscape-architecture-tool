@@ -41,3 +41,6 @@ alembic>=1.12.0
 # Additional Development Utilities
 ipython>=8.0.0
 debugpy>=1.8.0
+
+# Database Testing Support
+psycopg2-binary>=2.9.0
