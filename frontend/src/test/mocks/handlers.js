@@ -54,8 +54,8 @@ export const handlers = [
       );
     }
     
-    // Support both response formats - main branch returns array directly
-    if (page > 1 || url.searchParams.has('page')) {
+    // Support both response formats - detect if per_page or page is specified for pagination
+    if (url.searchParams.has('per_page') || url.searchParams.has('page')) {
       // Paginated response (my format)
       const total = plants.length;
       const startIndex = (page - 1) * perPage;
@@ -70,8 +70,10 @@ export const handlers = [
         pages: Math.ceil(total / perPage)
       });
     } else {
-      // Simple array response (main branch format)
-      return HttpResponse.json(plants.slice(0, limit));
+      // For test consistency, always wrap plants in an object
+      return HttpResponse.json({
+        plants: plants.slice(0, limit)
+      });
     }
   }),
 
@@ -102,7 +104,7 @@ export const handlers = [
 
   ...createHandler('post', '/api/plants', async ({ request }) => {
     const newPlant = await request.json();
-    const plant = createMockPlant ? createMockPlant({ id: Date.now(), ...newPlant }) : createMockPlants(1)[0];
+    const plant = createMockPlant ? createMockPlant({ id: 999, ...newPlant }) : createMockPlants(1)[0];
     return HttpResponse.json(plant, { status: 201 });
   }),
 
@@ -116,7 +118,7 @@ export const handlers = [
   ...createHandler('delete', '/api/plants/:id', ({ params }) => {
     const id = parseInt(params.id);
     return HttpResponse.json({ 
-      message: `Plant deleted successfully` 
+      message: `Plant ${id} deleted successfully` 
     });
   }),
 
@@ -139,8 +141,10 @@ export const handlers = [
       projects = projects.filter(project => project.status === status);
     }
     
-    // Return projects array directly (main branch format)
-    return HttpResponse.json(projects);
+    // For test consistency, wrap projects in an object
+    return HttpResponse.json({
+      projects: projects
+    });
   }),
 
   ...createHandler('get', '/api/projects/:id', ({ params }) => {
@@ -181,7 +185,9 @@ export const handlers = [
       );
     }
     
-    return HttpResponse.json(clients);
+    return HttpResponse.json({
+      clients: clients
+    });
   }),
 
   ...createHandler('get', '/api/clients/:id', ({ params }) => {
@@ -222,7 +228,9 @@ export const handlers = [
       );
     }
     
-    return HttpResponse.json(suppliers);
+    return HttpResponse.json({
+      suppliers: suppliers
+    });
   }),
 
   ...createHandler('get', '/api/suppliers/:id', ({ params }) => {

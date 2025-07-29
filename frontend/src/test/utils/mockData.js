@@ -154,7 +154,8 @@ export const createMockActivity = (overrides = {}) => {
 export const createMockPlants = (count = 10) => {
   return Array.from({ length: count }, (_, index) => ({
     id: index + 1,
-    name: `Rosa rugosa ${index + 1}`,
+    name: `Mock Plant ${index + 1}`,
+    scientific_name: `Plantus mockensis ${index + 1}`,
     common_name: `Beach Rose ${index + 1}`,
     category: ['Shrub', 'Tree', 'Perennial', 'Annual'][index % 4],
     height_min: 2 + index,
@@ -184,7 +185,7 @@ export const createMockProjects = (count = 10) => {
   const statuses = ['Active', 'Planning', 'Completed', 'On Hold'];
   return Array.from({ length: count }, (_, index) => ({
     id: index + 1,
-    name: `Garden Project ${index + 1}`,
+    name: `Mock Project ${index + 1}`,
     description: `Landscape project description ${index + 1}`,
     client_id: (index % 5) + 1,
     client_name: `Client ${(index % 5) + 1}`,
