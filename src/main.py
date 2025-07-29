@@ -747,7 +747,8 @@ def create_app():
             error_messages = [error.get('msg', str(error)) for error in e.errors()]
             return jsonify({"error": "Validation failed", "validation_errors": error_messages}), 422
         except ValueError as e:
-            return jsonify({"error": str(e)}), 400
+            logger.error("ValueError occurred: %s", str(e), exc_info=True)
+            return jsonify({"error": "An internal error occurred"}), 400
 
     @app.route("/api/plants/<int:plant_id>", methods=["DELETE"])
     @handle_errors
