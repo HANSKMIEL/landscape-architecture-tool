@@ -186,7 +186,7 @@ class QueryPerformanceMonitor:
                             f"Slow query detected: {func.__name__} took {execution_time:.3f}s"
                         )
                     except RuntimeError:
-                        print(f"Slow query detected: {func.__name__} took {execution_time:.3f}s")
+                        logging.warning(f"Slow query detected: {func.__name__} took {execution_time:.3f}s")
                 
                 return result
             except Exception as e:
