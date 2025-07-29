@@ -55,7 +55,7 @@ reportlab==4.2.0
 tqdm==4.67.1
 
 # Production Server
-gunicorn==21.2.0
+gunicorn==23.0.0
 waitress==3.0.2
 
 # System Dependencies
