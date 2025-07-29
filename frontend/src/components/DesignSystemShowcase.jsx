@@ -112,7 +112,7 @@ export const Grid = ({
   ...props 
 }) => {
   const colsClasses = {
-    auto: 'grid-auto',
+    auto: 'grid-cols-auto',
     responsive: 'grid-responsive',
     1: 'grid-cols-1',
     2: 'grid-cols-2',
