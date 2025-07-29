@@ -29,7 +29,8 @@ class PerformanceCache:
             )
             # Test connection
             self.redis_client.ping()
-        except:
+        except redis.exceptions.ConnectionError as e:
+            current_app.logger.error(f"Redis connection failed: {e}")
             self.redis_client = None
     
     def get(self, key: str) -> Optional[Any]:
