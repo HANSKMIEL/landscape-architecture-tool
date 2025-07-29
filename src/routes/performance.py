@@ -125,10 +125,11 @@ def health_check():
             'timestamp': cache_stats.get('timestamp', 'unknown')
         })
     except Exception as e:
+        current_app.logger.exception("Health check failed")
         return jsonify({
             'status': 'unhealthy',
             'health_score': 0,
-            'error': str(e)
+            'error': 'Internal server error'
         }), 500
 
 @performance_bp.route('/metrics', methods=['GET'])
