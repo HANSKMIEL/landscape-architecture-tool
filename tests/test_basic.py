@@ -88,7 +88,10 @@ class TestSupplierEndpoints:
         response = client.get("/api/suppliers")
         assert response.status_code == 200
         data = response.get_json()
-        assert isinstance(data, list)
+        assert isinstance(data, dict)
+        assert "suppliers" in data
+        assert data["suppliers"] == []
+        assert data["total"] == 0
 
     def test_create_supplier_valid(self, client):
         """Test creating a valid supplier"""
@@ -126,7 +129,10 @@ class TestPlantEndpoints:
         response = client.get("/api/plants")
         assert response.status_code == 200
         data = response.get_json()
-        assert isinstance(data, list)
+        assert isinstance(data, dict)
+        assert "plants" in data
+        assert data["plants"] == []
+        assert data["total"] == 0
 
     def test_create_plant_valid(self, client):
         """Test creating a valid plant"""
