@@ -5,9 +5,7 @@ import {
   createMockProject, 
   createMockClient, 
   createMockSupplier,
-  createMockRecommendation,
   createMockDashboardStats,
-  createMockActivity,
   // Import additional mock data from main branch
   createMockPlants,
   createMockProjects,
