@@ -340,12 +340,29 @@ class DashboardService:
             Project.actual_completion_date.isnot(None)
         ).all()
         
-        total_duration = sum(
-            (project.actual_completion_date - project.start_date).days
-            for project in completed_with_dates
-        )
+        total_duration = 0
+        valid_projects = 0
+        for project in completed_with_dates:
+            try:
+                # Handle the fact that start_date is a string and actual_completion_date is a date
+                if isinstance(project.start_date, str):
+                    start_date = datetime.fromisoformat(project.start_date).date()
+                else:
+                    start_date = project.start_date
+                    
+                if isinstance(project.actual_completion_date, str):
+                    end_date = datetime.fromisoformat(project.actual_completion_date).date()
+                else:
+                    end_date = project.actual_completion_date
+                    
+                duration = (end_date - start_date).days
+                if duration > 0:
+                    total_duration += duration
+                    valid_projects += 1
+            except (ValueError, TypeError, AttributeError):
+                continue
         
-        avg_duration = (total_duration / len(completed_with_dates)) if completed_with_dates else 0
+        avg_duration = (total_duration / valid_projects) if valid_projects > 0 else 0
         
         # Plant utilization rate
         total_plants = Plant.query.count()

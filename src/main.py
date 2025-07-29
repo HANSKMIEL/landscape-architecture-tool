@@ -38,11 +38,11 @@ from src.schemas import (  # noqa: E402
 from src.services import PlantService  # noqa: E402
 from src.services import (  # noqa: E402
     ClientService,
-    DashboardService,
     ProductService,
     ProjectService,
     SupplierService,
 )
+from src.services.dashboard_service import DashboardService  # noqa: E402
 from src.services.analytics import AnalyticsService  # noqa: E402
 from src.utils.db_init import initialize_database, populate_sample_data  # noqa: E402
 from src.utils.error_handlers import handle_errors  # noqa: E402

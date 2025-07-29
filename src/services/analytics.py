@@ -191,10 +191,28 @@ class AnalyticsService:
             # Project timeline analysis
             timeline_stats = []
             for project in projects:
-                if project.start_date and project.end_date:
+                start_date_val = project.start_date
+                end_date_val = project.end_date or project.actual_completion_date
+                
+                if start_date_val and end_date_val:
                     try:
-                        start = datetime.fromisoformat(project.start_date)
-                        end = datetime.fromisoformat(project.end_date)
+                        # Handle different date formats
+                        if isinstance(start_date_val, str):
+                            start = datetime.fromisoformat(start_date_val)
+                        else:
+                            start = start_date_val
+                            
+                        if isinstance(end_date_val, str):
+                            end = datetime.fromisoformat(end_date_val)
+                        else:
+                            end = end_date_val
+                            
+                        # Convert to dates if they're datetimes
+                        if hasattr(start, 'date'):
+                            start = start.date() if hasattr(start, 'date') else start
+                        if hasattr(end, 'date'):
+                            end = end.date() if hasattr(end, 'date') else end
+                            
                         duration = (end - start).days
 
                         timeline_stats.append(
@@ -208,7 +226,7 @@ class AnalyticsService:
                                 ),
                             }
                         )
-                    except (ValueError, TypeError):
+                    except (ValueError, TypeError, AttributeError):
                         continue
 
             # Performance by project type
@@ -585,7 +603,9 @@ class AnalyticsService:
             "completion_rate": completion_rate,
             "average_duration": average_duration,
             "projects_by_status": status_dist,
-            "timeline_analysis": timeline_analysis
+            "timeline_analysis": timeline_analysis,
+            "total_budget": result.get("budget_analysis", {}).get("total_budget", 0),
+            "average_budget": result.get("budget_analysis", {}).get("avg_budget", 0)
         }
 
     def get_client_analytics(self) -> Dict:
