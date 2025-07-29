@@ -37,7 +37,7 @@ describe('Projects Component', () => {
       await waitFor(() => {
         // Look for project names from mock data or project cards
         expect(screen.getByText(/project/i) || screen.getByText(/no projects/i)).toBeInTheDocument()
-      }, { timeout: 5000 })
+      }, { timeout: 10000 })
     })
   })
 

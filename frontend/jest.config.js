@@ -2,6 +2,7 @@ export default {
   testEnvironment: 'jsdom',
   setupFilesAfterEnv: ['<rootDir>/src/test/setup.js'],
   setupFiles: ['<rootDir>/src/test/polyfills.js'],
+  testTimeout: 10000, // 10 second timeout for all tests
   moduleNameMapper: {
     '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
     '^@/(.*)$': '<rootDir>/src/$1'

@@ -29,3 +29,16 @@ if (typeof global.URL === 'undefined') {
 if (typeof global.URLSearchParams === 'undefined') {
   global.URLSearchParams = require('url').URLSearchParams;
 }
+
+// Mock BroadcastChannel for MSW
+if (typeof global.BroadcastChannel === 'undefined') {
+  global.BroadcastChannel = class BroadcastChannel {
+    constructor(name) {
+      this.name = name;
+    }
+    postMessage() {}
+    close() {}
+    addEventListener() {}
+    removeEventListener() {}
+  };
+}
