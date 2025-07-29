@@ -300,33 +300,41 @@ def create_app():
     def create_supplier():
         """Create new supplier"""
         from flask import request
+        from pydantic import ValidationError
 
         data = request.get_json()
 
-        # Validate input
-        schema = SupplierCreateSchema(**data)
-        validated_data = schema.model_dump(exclude_unset=True)
+        try:
+            # Validate input
+            schema = SupplierCreateSchema(**data)
+            validated_data = schema.model_dump(exclude_unset=True)
 
-        supplier = supplier_service.create(validated_data)
-        return jsonify(supplier), 201
+            supplier = supplier_service.create(validated_data)
+            return jsonify(supplier), 201
+        except ValidationError as e:
+            return jsonify({"error": "Validation failed", "details": e.errors()}), 422
 
     @app.route("/api/suppliers/<int:supplier_id>", methods=["PUT"])
     @handle_errors
     def update_supplier(supplier_id):
         """Update supplier"""
         from flask import request
+        from pydantic import ValidationError
 
         data = request.get_json()
 
-        # Validate input
-        schema = SupplierUpdateSchema(**data)
-        validated_data = schema.model_dump(exclude_unset=True)
+        try:
+            # Validate input
+            schema = SupplierUpdateSchema(**data)
+            validated_data = schema.model_dump(exclude_unset=True)
 
-        supplier = supplier_service.update(supplier_id, validated_data)
-        if not supplier:
-            return jsonify({"error": "Supplier not found"}), 404
+            supplier = supplier_service.update(supplier_id, validated_data)
+            if not supplier:
+                return jsonify({"error": "Supplier not found"}), 404
 
-        return jsonify(supplier)
+            return jsonify(supplier)
+        except ValidationError as e:
+            return jsonify({"error": "Validation failed", "details": e.errors()}), 422
 
     @app.route("/api/suppliers/<int:supplier_id>", methods=["DELETE"])
     @handle_errors
@@ -383,7 +391,9 @@ def create_app():
             "supplier_name": supplier.name,
             "product_count": product_count,
             "plant_count": plant_count,
-            "total_items": product_count + plant_count
+            "total_items": product_count + plant_count,
+            "total_products": product_count,  # For backward compatibility
+            "total_plants": plant_count       # For backward compatibility
         })
 
     @app.route("/api/suppliers/specializations", methods=["GET"])
@@ -397,7 +407,9 @@ def create_app():
             Supplier.specialization.isnot(None)
         ).all()
         
-        return jsonify([spec[0] for spec in specializations])
+        return jsonify({
+            "specializations": [spec[0] for spec in specializations]
+        })
 
     @app.route("/api/suppliers/top", methods=["GET"])
     @handle_errors
@@ -443,6 +455,10 @@ def create_app():
         supplier = Supplier.query.get(supplier_id)
         if not supplier:
             return jsonify({"error": "Supplier not found"}), 404
+        
+        # Build full address    
+        address_parts = [supplier.address, supplier.city, supplier.postal_code]
+        full_address = ", ".join([part for part in address_parts if part])
             
         return jsonify({
             "id": supplier.id,
@@ -453,7 +469,8 @@ def create_app():
             "address": supplier.address,
             "city": supplier.city,
             "postal_code": supplier.postal_code,
-            "website": supplier.website
+            "website": supplier.website,
+            "full_address": full_address  # Add the missing field
         })
 
     @app.route("/api/suppliers/export", methods=["GET"])
@@ -470,6 +487,43 @@ def create_app():
         else:
             return jsonify({"error": "Unsupported format"}), 400
 
+    @app.route("/api/suppliers/bulk-import", methods=["POST"])
+    @handle_errors
+    def bulk_import_suppliers():
+        """Bulk import suppliers"""
+        from flask import request
+        from pydantic import ValidationError
+
+        data = request.get_json()
+        
+        if not data or "suppliers" not in data:
+            return jsonify({"error": "Missing suppliers data"}), 400
+            
+        suppliers_data = data["suppliers"]
+        imported_suppliers = []
+        errors = []
+        
+        for i, supplier_data in enumerate(suppliers_data):
+            try:
+                schema = SupplierCreateSchema(**supplier_data)
+                validated_data = schema.model_dump(exclude_unset=True)
+                supplier = supplier_service.create(validated_data)
+                imported_suppliers.append(supplier)
+            except ValidationError as e:
+                errors.append({"index": i, "data": supplier_data, "errors": e.errors()})
+            except Exception as e:
+                errors.append({"index": i, "data": supplier_data, "error": str(e)})
+        
+        response_data = {
+            "imported": imported_suppliers,
+            "imported_count": len(imported_suppliers),
+            "errors": errors,
+            "error_count": len(errors)
+        }
+        
+        status_code = 201 if len(imported_suppliers) > 0 else 400
+        return jsonify(response_data), status_code
+
     # Plants endpoints
     @app.route("/api/plants", methods=["GET"])
     @handle_errors
@@ -478,23 +532,29 @@ def create_app():
         from flask import request
 
         search = request.args.get("search", "")
-        result = plant_service.get_all(search=search)
-        return jsonify(result["plants"] if "plants" in result else result["items"])
+        page = request.args.get("page", 1, type=int)
+        per_page = request.args.get("per_page", 50, type=int)
+        result = plant_service.get_all(search=search, page=page, per_page=per_page)
+        return jsonify(result)
 
     @app.route("/api/plants", methods=["POST"])
     @handle_errors
     def create_plant():
         """Create new plant"""
         from flask import request
+        from pydantic import ValidationError
 
         data = request.get_json()
 
-        # Validate input
-        schema = PlantCreateSchema(**data)
-        validated_data = schema.model_dump(exclude_unset=True)
+        try:
+            # Validate input
+            schema = PlantCreateSchema(**data)
+            validated_data = schema.model_dump(exclude_unset=True)
 
-        plant = plant_service.create(validated_data)
-        return jsonify(plant), 201
+            plant = plant_service.create(validated_data)
+            return jsonify(plant), 201
+        except ValidationError as e:
+            return jsonify({"error": "Validation failed", "details": e.errors()}), 422
 
     @app.route("/api/plants/<int:plant_id>", methods=["GET"])
     @handle_errors
@@ -513,18 +573,22 @@ def create_app():
     def update_plant(plant_id):
         """Update plant"""
         from flask import request
+        from pydantic import ValidationError
 
         data = request.get_json()
 
-        # Validate input
-        schema = PlantUpdateSchema(**data)
-        validated_data = schema.model_dump(exclude_unset=True)
+        try:
+            # Validate input
+            schema = PlantUpdateSchema(**data)
+            validated_data = schema.model_dump(exclude_unset=True)
 
-        plant = plant_service.update(plant_id, validated_data)
-        if not plant:
-            return jsonify({"error": "Plant not found"}), 404
+            plant = plant_service.update(plant_id, validated_data)
+            if not plant:
+                return jsonify({"error": "Plant not found"}), 404
 
-        return jsonify(plant)
+            return jsonify(plant)
+        except ValidationError as e:
+            return jsonify({"error": "Validation failed", "details": e.errors()}), 422
 
     @app.route("/api/plants/<int:plant_id>", methods=["DELETE"])
     @handle_errors
@@ -544,41 +608,51 @@ def create_app():
         from flask import request
 
         search = request.args.get("search", "")
-        result = product_service.get_all(search=search)
-        return jsonify(result["products"] if "products" in result else result["items"])
+        page = request.args.get("page", 1, type=int)
+        per_page = request.args.get("per_page", 50, type=int)
+        result = product_service.get_all(search=search, page=page, per_page=per_page)
+        return jsonify(result)
 
     @app.route("/api/products", methods=["POST"])
     @handle_errors
     def create_product():
         """Create new product"""
         from flask import request
+        from pydantic import ValidationError
 
         data = request.get_json()
 
-        # Validate input
-        schema = ProductCreateSchema(**data)
-        validated_data = schema.model_dump(exclude_unset=True)
+        try:
+            # Validate input
+            schema = ProductCreateSchema(**data)
+            validated_data = schema.model_dump(exclude_unset=True)
 
-        product = product_service.create(validated_data)
-        return jsonify(product), 201
+            product = product_service.create(validated_data)
+            return jsonify(product), 201
+        except ValidationError as e:
+            return jsonify({"error": "Validation failed", "details": e.errors()}), 422
 
     @app.route("/api/products/<int:product_id>", methods=["PUT"])
     @handle_errors
     def update_product(product_id):
         """Update product"""
         from flask import request
+        from pydantic import ValidationError
 
         data = request.get_json()
 
-        # Validate input
-        schema = ProductUpdateSchema(**data)
-        validated_data = schema.model_dump(exclude_unset=True)
+        try:
+            # Validate input
+            schema = ProductUpdateSchema(**data)
+            validated_data = schema.model_dump(exclude_unset=True)
 
-        product = product_service.update(product_id, validated_data)
-        if not product:
-            return jsonify({"error": "Product not found"}), 404
+            product = product_service.update(product_id, validated_data)
+            if not product:
+                return jsonify({"error": "Product not found"}), 404
 
-        return jsonify(product)
+            return jsonify(product)
+        except ValidationError as e:
+            return jsonify({"error": "Validation failed", "details": e.errors()}), 422
 
     @app.route("/api/products/<int:product_id>", methods=["DELETE"])
     @handle_errors
@@ -598,45 +672,55 @@ def create_app():
         from flask import request
 
         search = request.args.get("search", "")
-        result = client_service.get_all(search=search)
-        return jsonify(result["clients"] if "clients" in result else result["items"])
+        page = request.args.get("page", 1, type=int)
+        per_page = request.args.get("per_page", 50, type=int)
+        result = client_service.get_all(search=search, page=page, per_page=per_page)
+        return jsonify(result)
 
     @app.route("/api/clients", methods=["POST"])
     @handle_errors
     def create_client():
         """Create new client"""
         from flask import request
+        from pydantic import ValidationError
 
         data = request.get_json()
 
-        # Validate input
-        schema = ClientCreateSchema(**data)
-        validated_data = schema.model_dump(exclude_unset=True)
+        try:
+            # Validate input
+            schema = ClientCreateSchema(**data)
+            validated_data = schema.model_dump(exclude_unset=True)
 
-        # Add registration date if not provided
-        if "registration_date" not in validated_data:
-            validated_data["registration_date"] = datetime.now().strftime("%Y-%m-%d")
+            # Add registration date if not provided
+            if "registration_date" not in validated_data:
+                validated_data["registration_date"] = datetime.now().strftime("%Y-%m-%d")
 
-        client = client_service.create(validated_data)
-        return jsonify(client), 201
+            client = client_service.create(validated_data)
+            return jsonify(client), 201
+        except ValidationError as e:
+            return jsonify({"error": "Validation failed", "details": e.errors()}), 422
 
     @app.route("/api/clients/<int:client_id>", methods=["PUT"])
     @handle_errors
     def update_client(client_id):
         """Update client"""
         from flask import request
+        from pydantic import ValidationError
 
         data = request.get_json()
 
-        # Validate input
-        schema = ClientUpdateSchema(**data)
-        validated_data = schema.model_dump(exclude_unset=True)
+        try:
+            # Validate input
+            schema = ClientUpdateSchema(**data)
+            validated_data = schema.model_dump(exclude_unset=True)
 
-        client = client_service.update(client_id, validated_data)
-        if not client:
-            return jsonify({"error": "Client not found"}), 404
+            client = client_service.update(client_id, validated_data)
+            if not client:
+                return jsonify({"error": "Client not found"}), 404
 
-        return jsonify(client)
+            return jsonify(client)
+        except ValidationError as e:
+            return jsonify({"error": "Validation failed", "details": e.errors()}), 422
 
     @app.route("/api/clients/<int:client_id>", methods=["DELETE"])
     @handle_errors
@@ -657,43 +741,53 @@ def create_app():
 
         search = request.args.get("search", "")
         client_id = request.args.get("client_id")
+        page = request.args.get("page", 1, type=int)
+        per_page = request.args.get("per_page", 50, type=int)
         client_id = int(client_id) if client_id else None
 
-        result = project_service.get_all(search=search, client_id=client_id)
-        return jsonify(result["projects"] if "projects" in result else result["items"])
+        result = project_service.get_all(search=search, client_id=client_id, page=page, per_page=per_page)
+        return jsonify(result)
 
     @app.route("/api/projects", methods=["POST"])
     @handle_errors
     def create_project():
         """Create new project"""
         from flask import request
+        from pydantic import ValidationError
 
         data = request.get_json()
 
-        # Validate input
-        schema = ProjectCreateSchema(**data)
-        validated_data = schema.model_dump(exclude_unset=True)
+        try:
+            # Validate input
+            schema = ProjectCreateSchema(**data)
+            validated_data = schema.model_dump(exclude_unset=True)
 
-        project = project_service.create(validated_data)
-        return jsonify(project), 201
+            project = project_service.create(validated_data)
+            return jsonify(project), 201
+        except ValidationError as e:
+            return jsonify({"error": "Validation failed", "details": e.errors()}), 422
 
     @app.route("/api/projects/<int:project_id>", methods=["PUT"])
     @handle_errors
     def update_project(project_id):
         """Update project"""
         from flask import request
+        from pydantic import ValidationError
 
         data = request.get_json()
 
-        # Validate input
-        schema = ProjectUpdateSchema(**data)
-        validated_data = schema.model_dump(exclude_unset=True)
+        try:
+            # Validate input
+            schema = ProjectUpdateSchema(**data)
+            validated_data = schema.model_dump(exclude_unset=True)
 
-        project = project_service.update(project_id, validated_data)
-        if not project:
-            return jsonify({"error": "Project not found"}), 404
+            project = project_service.update(project_id, validated_data)
+            if not project:
+                return jsonify({"error": "Project not found"}), 404
 
-        return jsonify(project)
+            return jsonify(project)
+        except ValidationError as e:
+            return jsonify({"error": "Validation failed", "details": e.errors()}), 422
 
     @app.route("/api/projects/<int:project_id>", methods=["DELETE"])
     @handle_errors

@@ -626,9 +626,15 @@ class AnalyticsService:
             
             # Sort by project count for top_clients_by_projects
             top_by_projects = sorted(top_clients, key=lambda x: x["project_count"], reverse=True)[:10]
+            # Add client_name field for backward compatibility
+            for client in top_by_projects:
+                client["client_name"] = client["name"]
             
             # Sort by total value for top_clients_by_budget  
             top_by_budget = sorted(top_clients, key=lambda x: x["total_value"], reverse=True)[:10]
+            # Add client_name field for backward compatibility
+            for client in top_by_budget:
+                client["client_name"] = client["name"]
             
             return {
                 "total_clients": insights.get("total_clients", 0),
@@ -685,24 +691,34 @@ class AnalyticsService:
             # Projects by month
             projects_by_month = (
                 db.session.query(
-                    func.strftime("%Y-%m", Project.created_at).label("month"),
+                    func.strftime("%m", Project.created_at).label("month_num"),
                     func.count(Project.id).label("project_count")
                 )
-                .group_by(func.strftime("%Y-%m", Project.created_at))
-                .order_by(func.strftime("%Y-%m", Project.created_at))
+                .filter(Project.created_at.isnot(None))
+                .group_by(func.strftime("%m", Project.created_at))
+                .order_by(func.strftime("%m", Project.created_at))
                 .all()
             )
             
+            # Convert month numbers to month names
+            month_names = {
+                "01": "January", "02": "February", "03": "March", "04": "April",
+                "05": "May", "06": "June", "07": "July", "08": "August",
+                "09": "September", "10": "October", "11": "November", "12": "December"
+            }
+            
             monthly_data = [
-                {"month": month if month else "", "project_count": project_count}
-                for month, project_count in projects_by_month
+                {
+                    "month": month_names.get(month_num, month_num) if month_num else "",
+                    "count": project_count  # Use 'count' instead of 'project_count'
+                }
+                for month_num, project_count in projects_by_month
             ]
             
-            # Plant usage by season (based on bloom_time)
+            # Plant usage by season (based on bloom_time) - return as simple totals
             seasonal_usage = (
                 db.session.query(
                     Plant.bloom_time,
-                    func.count(ProjectPlant.id).label("usage_count"),
                     func.sum(ProjectPlant.quantity).label("total_quantity")
                 )
                 .join(ProjectPlant, Plant.id == ProjectPlant.plant_id)
@@ -712,15 +728,12 @@ class AnalyticsService:
             )
             
             plant_usage_by_season = {
-                bloom_time: {
-                    "usage_count": usage_count,
-                    "total_quantity": int(total_quantity) if total_quantity else 0
-                }
-                for bloom_time, usage_count, total_quantity in seasonal_usage
+                bloom_time: int(total_quantity) if total_quantity else 0
+                for bloom_time, total_quantity in seasonal_usage
             }
             
             # Identify peak seasons (months with most projects)
-            peak_seasons = sorted(monthly_data, key=lambda x: x["project_count"], reverse=True)[:3]
+            peak_seasons = sorted(monthly_data, key=lambda x: x["count"], reverse=True)[:3]
             
             return {
                 "projects_by_month": monthly_data,

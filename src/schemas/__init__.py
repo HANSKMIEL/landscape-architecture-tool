@@ -1,12 +1,12 @@
 from typing import Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, EmailStr
 
 
 class SupplierCreateSchema(BaseModel):
     name: str = Field(..., min_length=1, max_length=100)
     contact_person: Optional[str] = Field(None, max_length=100)
-    email: Optional[str] = Field(None, max_length=120)
+    email: Optional[EmailStr] = None
     phone: Optional[str] = Field(None, max_length=20)
     address: Optional[str] = None
     city: Optional[str] = Field(None, max_length=50)
@@ -19,7 +19,7 @@ class SupplierCreateSchema(BaseModel):
 class SupplierUpdateSchema(BaseModel):
     name: Optional[str] = Field(None, min_length=1, max_length=100)
     contact_person: Optional[str] = Field(None, max_length=100)
-    email: Optional[str] = Field(None, max_length=120)
+    email: Optional[EmailStr] = None
     phone: Optional[str] = Field(None, max_length=20)
     address: Optional[str] = None
     city: Optional[str] = Field(None, max_length=50)
@@ -108,7 +108,7 @@ class ProductUpdateSchema(BaseModel):
 class ClientCreateSchema(BaseModel):
     name: str = Field(..., min_length=1, max_length=100)
     contact_person: Optional[str] = Field(None, max_length=100)
-    email: Optional[str] = Field(None, max_length=120)
+    email: Optional[EmailStr] = None
     phone: Optional[str] = Field(None, max_length=20)
     address: Optional[str] = None
     city: Optional[str] = Field(None, max_length=50)
@@ -121,7 +121,7 @@ class ClientCreateSchema(BaseModel):
 class ClientUpdateSchema(BaseModel):
     name: Optional[str] = Field(None, min_length=1, max_length=100)
     contact_person: Optional[str] = Field(None, max_length=100)
-    email: Optional[str] = Field(None, max_length=120)
+    email: Optional[EmailStr] = None
     phone: Optional[str] = Field(None, max_length=20)
     address: Optional[str] = None
     city: Optional[str] = Field(None, max_length=50)

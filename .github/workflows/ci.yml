@@ -19,10 +19,10 @@ jobs:
         image: postgres:15
         env:
           POSTGRES_DB: landscape_test
-          POSTGRES_USER: test_user
-          POSTGRES_PASSWORD: test_password
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres_password
         options: >-
-          --health-cmd pg_isready
+          --health-cmd "pg_isready -U postgres"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
@@ -66,7 +66,7 @@ jobs:
         
     - name: Set up test environment
       env:
-        DATABASE_URL: postgresql://test_user:test_password@localhost:5432/landscape_test
+        DATABASE_URL: postgresql://postgres:postgres_password@localhost:5432/landscape_test
         REDIS_URL: redis://localhost:6379/1
         SECRET_KEY: test-secret-key-not-for-production
         FLASK_ENV: testing
@@ -81,7 +81,7 @@ jobs:
         # Test PostgreSQL connection
         for i in range(30):
             try:
-                conn = psycopg2.connect('postgresql://test_user:test_password@localhost:5432/landscape_test')
+                conn = psycopg2.connect('postgresql://postgres:postgres_password@localhost:5432/landscape_test')
                 conn.close()
                 print('PostgreSQL is ready')
                 break
@@ -101,7 +101,7 @@ jobs:
         
     - name: Run database migrations
       env:
-        DATABASE_URL: postgresql://test_user:test_password@localhost:5432/landscape_test
+        DATABASE_URL: postgresql://postgres:postgres_password@localhost:5432/landscape_test
         PYTHONPATH: .
       run: |
         flask --app src.main db upgrade
@@ -131,7 +131,7 @@ jobs:
         
     - name: Test backend with PostgreSQL
       env:
-        DATABASE_URL: postgresql://test_user:test_password@localhost:5432/landscape_test
+        DATABASE_URL: postgresql://postgres:postgres_password@localhost:5432/landscape_test
         REDIS_URL: redis://localhost:6379/1
         SECRET_KEY: test-secret-key-not-for-production
         PYTHONPATH: .
@@ -500,10 +500,10 @@ jobs:
         image: postgres:15
         env:
           POSTGRES_DB: landscape_integration_test
-          POSTGRES_USER: test_user
-          POSTGRES_PASSWORD: test_password
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres_password
         options: >-
-          --health-cmd pg_isready
+          --health-cmd "pg_isready -U postgres"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
@@ -553,7 +553,7 @@ jobs:
         
     - name: Start backend server
       env:
-        DATABASE_URL: postgresql://test_user:test_password@localhost:5432/landscape_integration_test
+        DATABASE_URL: postgresql://postgres:postgres_password@localhost:5432/landscape_integration_test
         REDIS_URL: redis://localhost:6379/1
         SECRET_KEY: integration-test-secret-key
         FLASK_ENV: testing
