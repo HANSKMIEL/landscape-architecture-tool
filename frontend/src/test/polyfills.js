@@ -42,3 +42,35 @@ if (typeof global.BroadcastChannel === 'undefined') {
     removeEventListener() {}
   };
 }
+
+// Polyfill for TransformStream (required by MSW v2)
+if (typeof global.TransformStream === 'undefined') {
+  global.TransformStream = class TransformStream {
+    readable = {
+      pipeThrough: jest.fn ? jest.fn().mockReturnThis() : () => this.readable,
+      pipeTo: jest.fn ? jest.fn() : () => {},
+      getReader: jest.fn ? jest.fn() : () => ({ read: () => ({}) })
+    };
+    writable = {
+      getWriter: jest.fn ? jest.fn() : () => ({ write: () => {} })
+    };
+    
+    constructor() {}
+  };
+}
+
+// Mock ReadableStream
+if (typeof global.ReadableStream === 'undefined') {
+  global.ReadableStream = class ReadableStream {
+    constructor() {}
+    getReader() { return { read: jest.fn ? jest.fn() : () => ({}) }; }
+  };
+}
+
+// Mock WritableStream  
+if (typeof global.WritableStream === 'undefined') {
+  global.WritableStream = class WritableStream {
+    constructor() {}
+    getWriter() { return { write: jest.fn ? jest.fn() : () => {} }; }
+  };
+}
