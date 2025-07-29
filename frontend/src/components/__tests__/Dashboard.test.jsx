@@ -3,8 +3,6 @@ import { screen, waitFor } from '@testing-library/react'
 import { axe, toHaveNoViolations } from 'jest-axe'
 import { render } from '../../test/utils/render.jsx'
 import { setupUser, waitForLoadingToFinish, expectErrorMessage } from '../../test/utils/testHelpers'
-import { server } from '../../test/mocks/server'
-// MSW http and HttpResponse are not available with simple mock, will be implemented later
 import Dashboard from '../Dashboard'
 
 expect.extend(toHaveNoViolations)
@@ -66,8 +64,8 @@ describe('Dashboard Component', () => {
 
   describe('Error Handling', () => {
     it('handles API error for dashboard stats', async () => {
-      // Mock API error for stats endpoint
-      global.fetch.mockImplementationOnce((url) => {
+      // Mock API error for stats endpoint only
+      global.fetch.mockImplementation((url) => {
         if (url.includes('/api/dashboard/stats')) {
           return Promise.resolve({
             ok: false,
@@ -76,7 +74,21 @@ describe('Dashboard Component', () => {
             json: () => Promise.resolve({ error: 'Server error' })
           });
         }
-        return global.fetch(url);
+        if (url.includes('/api/dashboard/recent-activity')) {
+          return Promise.resolve({
+            ok: true,
+            status: 200,
+            statusText: 'OK',
+            json: () => Promise.resolve([])
+          });
+        }
+        // Default for other endpoints
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          statusText: 'OK',
+          json: () => Promise.resolve({})
+        });
       });
 
       render(<Dashboard />)
@@ -87,8 +99,24 @@ describe('Dashboard Component', () => {
     })
 
     it('handles API error for recent activity', async () => {
-      // Mock API error for activity endpoint
-      global.fetch.mockImplementationOnce((url) => {
+      // Mock API error for activity endpoint only
+      global.fetch.mockImplementation((url) => {
+        if (url.includes('/api/dashboard/stats')) {
+          return Promise.resolve({
+            ok: true,
+            status: 200,
+            statusText: 'OK',
+            json: () => Promise.resolve({
+              suppliers: 5,
+              plants: 156,
+              products: 45,
+              clients: 8,
+              projects: 12,
+              active_projects: 3,
+              total_budget: 150000
+            })
+          });
+        }
         if (url.includes('/api/dashboard/recent-activity')) {
           return Promise.resolve({
             ok: false,
@@ -97,7 +125,13 @@ describe('Dashboard Component', () => {
             json: () => Promise.resolve({ error: 'Server error' })
           });
         }
-        return global.fetch(url);
+        // Default for other endpoints
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          statusText: 'OK',
+          json: () => Promise.resolve({})
+        });
       });
 
       render(<Dashboard />)
@@ -153,7 +187,7 @@ describe('Dashboard Component', () => {
       await waitForLoadingToFinish()
       expect(screen.getByText('Leveranciers')).toBeInTheDocument()
     })
-  }))
+  })
 
   describe('Data Display and Formatting', () => {
     it('displays active vs completed projects correctly', async () => {
@@ -348,7 +382,7 @@ describe('Dashboard Component', () => {
         expect(screen.getByText('200')).toBeInTheDocument() // Updated plants count
       })
     })
-  }))
+  })
 
   describe('Performance', () => {
     it('loads and renders within acceptable time', async () => {

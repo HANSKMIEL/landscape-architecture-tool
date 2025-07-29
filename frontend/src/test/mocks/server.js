@@ -10,9 +10,7 @@ const server = {
 };
 
 // Mock the global fetch for basic API mocking
-const originalFetch = global.fetch;
-
-global.fetch = jest.fn((url, options) => {
+global.fetch = jest.fn((url) => {
   // Simple mock responses for dashboard endpoints
   if (url.includes('/api/dashboard/stats')) {
     return Promise.resolve({

@@ -2,18 +2,14 @@
 import { screen, waitFor } from '@testing-library/react'
 import { axe, toHaveNoViolations } from 'jest-axe'
 import { render } from '../../test/utils/render.jsx'
-import { setupUser, waitForLoadingToFinish } from '../../test/utils/testHelpers'
-import { server } from '../../test/mocks/server'
-import { http, HttpResponse } from 'msw'
 import Plants from '../Plants'
 
 expect.extend(toHaveNoViolations)
 
 describe('Plants Component', () => {
-  let user
-
   beforeEach(() => {
-    user = setupUser()
+    // Reset mocks before each test
+    jest.clearAllMocks()
   })
 
   describe('Basic Rendering', () => {
