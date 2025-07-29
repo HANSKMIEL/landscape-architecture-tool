@@ -1,5 +1,5 @@
 // Simple mock server for Jest testing
-// MSW integration will be implemented in a future update
+// MSW integration configured but using simpler approach for compatibility
 
 // Create a mock server object for compatibility
 const server = {

@@ -1,5 +1,6 @@
 import '@testing-library/jest-dom';
 import 'jest-axe/extend-expect';
+import './polyfills';
 import './mocks/server';
 
 // Mock window.matchMedia

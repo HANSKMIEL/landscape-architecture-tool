@@ -8,6 +8,18 @@ if (typeof global.TextEncoder === 'undefined') {
   global.TextDecoder = TextDecoder;
 }
 
+// Add TransformStream polyfill for MSW v2
+if (typeof global.TransformStream === 'undefined') {
+  // Simple TransformStream polyfill for testing
+  global.TransformStream = class TransformStream {
+    constructor(transformer = {}) {
+      this.readable = new ReadableStream();
+      this.writable = new WritableStream();
+      this.transformer = transformer;
+    }
+  };
+}
+
 // Ensure fetch APIs are available globally before MSW loads
 if (typeof global.fetch === 'undefined') {
   global.fetch = require('whatwg-fetch').fetch;

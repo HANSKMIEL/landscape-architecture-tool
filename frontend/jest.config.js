@@ -20,8 +20,19 @@ export default {
   collectCoverageFrom: [
     'src/**/*.{js,jsx}',
     '!src/main.jsx',
-    '!src/**/*.stories.{js,jsx}'
+    '!src/**/*.stories.{js,jsx}',
+    '!src/test/**/*'
   ],
+  coverageReporters: ['text', 'json', 'html', 'lcov'],
+  coverageDirectory: './coverage',
+  coverageThreshold: {
+    global: {
+      branches: 10,
+      functions: 7,
+      lines: 13,
+      statements: 12
+    }
+  },
   // Force Jest to treat .js files as ES modules for MSW
   preset: undefined,
   moduleFileExtensions: ['js', 'jsx', 'json'],
