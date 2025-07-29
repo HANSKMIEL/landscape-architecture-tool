@@ -69,6 +69,7 @@ def configure_logging(app):
 
 
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.ERROR)
 
 
 def create_app():
@@ -316,7 +317,8 @@ def create_app():
             error_messages = [error.get('msg', str(error)) for error in e.errors()]
             return jsonify({"error": "Validation failed", "validation_errors": error_messages}), 422
         except ValueError as e:
-            return jsonify({"error": "Validation failed", "validation_errors": [str(e)]}), 422
+            logger.error("Validation error occurred: %s", str(e))
+            return jsonify({"error": "Validation failed", "validation_errors": ["An unexpected error occurred."]}), 422
 
     @app.route("/api/suppliers/<int:supplier_id>", methods=["PUT"])
     @handle_errors
