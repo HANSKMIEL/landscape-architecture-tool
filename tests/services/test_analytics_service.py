@@ -247,12 +247,9 @@ class TestAnalyticsService(DatabaseTestMixin):
         for i in range(5):
             request = PlantRecommendationRequest(
                 client_id=client.id,
-                criteria={
-                    'hardiness_zone': '5a',
-                    'sun_exposure': 'full_sun',
-                    'plant_type': 'tree'
-                },
-                results=[],
+                hardiness_zone='5a',
+                sun_exposure='full_sun',
+                project_type='tree',
                 feedback_rating=4 if i < 3 else None,  # 3 out of 5 have feedback
                 created_at=now - timedelta(days=i)
             )

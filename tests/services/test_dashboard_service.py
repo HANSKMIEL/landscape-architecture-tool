@@ -128,10 +128,12 @@ class TestDashboardService(DatabaseTestMixin):
         project2 = project_factory(client=client)
         
         # Add plants to projects with different quantities
-        ProjectPlant.objects.create(project=project1, plant=plant1, quantity=10)
-        ProjectPlant.objects.create(project=project1, plant=plant2, quantity=5)
-        ProjectPlant.objects.create(project=project2, plant=plant1, quantity=8)
-        ProjectPlant.objects.create(project=project2, plant=plant3, quantity=15)
+        pp1 = ProjectPlant(project=project1, plant=plant1, quantity=10)
+        pp2 = ProjectPlant(project=project1, plant=plant2, quantity=5)
+        pp3 = ProjectPlant(project=project2, plant=plant1, quantity=8)
+        pp4 = ProjectPlant(project=project2, plant=plant3, quantity=15)
+        db.session.add_all([pp1, pp2, pp3, pp4])
+        db.session.commit()
         
         analytics = DashboardService.get_plant_analytics()
         
@@ -303,8 +305,10 @@ class TestDashboardService(DatabaseTestMixin):
         ]
         
         # Add some plants to projects
-        ProjectPlant.objects.create(project=projects[0], plant=plants[0], quantity=5)
-        ProjectPlant.objects.create(project=projects[1], plant=plants[1], quantity=3)
+        pp1 = ProjectPlant(project=projects[0], plant=plants[0], quantity=5)
+        pp2 = ProjectPlant(project=projects[1], plant=plants[1], quantity=3)
+        db.session.add_all([pp1, pp2])
+        db.session.commit()
         
         metrics = DashboardService.get_performance_metrics()
         
@@ -394,10 +398,12 @@ class TestDashboardServiceIntegration(DatabaseTestMixin):
         ]
         
         # Project-Plant relationships
-        ProjectPlant.objects.create(project=projects[0], plant=plants[0], quantity=10, unit_price=50.0)
-        ProjectPlant.objects.create(project=projects[0], plant=plants[1], quantity=25, unit_price=20.0)
-        ProjectPlant.objects.create(project=projects[1], plant=plants[0], quantity=5, unit_price=50.0)
-        ProjectPlant.objects.create(project=projects[3], plant=plants[2], quantity=100, unit_price=5.0)
+        pp1 = ProjectPlant(project=projects[0], plant=plants[0], quantity=10, unit_cost=50.0)
+        pp2 = ProjectPlant(project=projects[0], plant=plants[1], quantity=25, unit_cost=20.0)
+        pp3 = ProjectPlant(project=projects[1], plant=plants[0], quantity=5, unit_cost=50.0)
+        pp4 = ProjectPlant(project=projects[3], plant=plants[2], quantity=100, unit_cost=5.0)
+        db.session.add_all([pp1, pp2, pp3, pp4])
+        db.session.commit()
         
         # Test dashboard summary
         summary = DashboardService.get_dashboard_summary()

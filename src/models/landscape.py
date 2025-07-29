@@ -280,6 +280,7 @@ class PlantRecommendationRequest(db.Model):
 
     # Request metadata
     user_id = db.Column(db.String(100))  # Optional user identifier
+    client_id = db.Column(db.Integer, db.ForeignKey("clients.id"))  # Optional client association
     session_id = db.Column(db.String(100))  # Session tracking
     ip_address = db.Column(db.String(45))  # For analytics
 
@@ -321,6 +322,7 @@ class PlantRecommendationRequest(db.Model):
             "groundcover_purpose": self.groundcover_purpose,
             "slope_planting": self.slope_planting,
             "user_id": self.user_id,
+            "client_id": self.client_id,
             "session_id": self.session_id,
             "recommended_plants": self.recommended_plants,
             "user_feedback": self.user_feedback,
