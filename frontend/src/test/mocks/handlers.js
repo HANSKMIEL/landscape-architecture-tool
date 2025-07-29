@@ -131,7 +131,15 @@ export const handlers = [
 
   ...createHandler('get', '/api/projects/:id', ({ params }) => {
     const id = parseInt(params.id);
-    return HttpResponse.json(createMockProject({ id }));
+    const projects = createMockArray(createMockProject, 8);
+    const project = projects.find(p => p.id === id);
+    if (!project) {
+      return HttpResponse.json(
+        { error: "Project not found" },
+        { status: 404 }
+      );
+    }
+    return HttpResponse.json(project);
   }),
 
   ...createHandler('post', '/api/projects', async ({ request }) => {
