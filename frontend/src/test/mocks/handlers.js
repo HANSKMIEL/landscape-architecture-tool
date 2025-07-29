@@ -61,7 +61,7 @@ export const handlers = [
     return HttpResponse.json(plant)
   }),
 
-  http.delete(`${API_BASE}/plants/:id`, ({ params }) => {
+  http.delete(`${API_BASE}/plants/:id`, () => {
     return HttpResponse.json({ message: 'Plant deleted successfully' })
   }),
 
@@ -72,7 +72,7 @@ export const handlers = [
   }),
 
   http.post(`${API_BASE}/plants/recommendations`, async ({ request }) => {
-    const criteria = await request.json()
+    const _criteria = await request.json()
     const plants = createMockPlants(5)
     return HttpResponse.json(createApiResponse(plants))
   }),
@@ -117,7 +117,7 @@ export const handlers = [
     return HttpResponse.json(project)
   }),
 
-  http.delete(`${API_BASE}/projects/:id`, ({ params }) => {
+  http.delete(`${API_BASE}/projects/:id`, () => {
     return HttpResponse.json({ message: 'Project deleted successfully' })
   }),
 
@@ -157,7 +157,7 @@ export const handlers = [
     return HttpResponse.json(client)
   }),
 
-  http.delete(`${API_BASE}/clients/:id`, ({ params }) => {
+  http.delete(`${API_BASE}/clients/:id`, () => {
     return HttpResponse.json({ message: 'Client deleted successfully' })
   }),
 
@@ -197,7 +197,7 @@ export const handlers = [
     return HttpResponse.json(supplier)
   }),
 
-  http.delete(`${API_BASE}/suppliers/:id`, ({ params }) => {
+  http.delete(`${API_BASE}/suppliers/:id`, () => {
     return HttpResponse.json({ message: 'Supplier deleted successfully' })
   }),
 

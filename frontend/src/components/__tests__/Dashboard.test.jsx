@@ -3,8 +3,6 @@ import { screen, waitFor } from '@testing-library/react'
 import { axe, toHaveNoViolations } from 'jest-axe'
 import { render } from '../../test/utils/render.jsx'
 import { setupUser, waitForLoadingToFinish, expectErrorMessage } from '../../test/utils/testHelpers'
-import { server } from '../../test/mocks/server'
-// MSW http and HttpResponse are not available with simple mock, will be implemented later
 import Dashboard from '../Dashboard'
 
 expect.extend(toHaveNoViolations)
@@ -17,8 +15,10 @@ describe('Dashboard Component', () => {
   })
 
   describe('Rendering and Loading States', () => {
-    it('renders dashboard title and subtitle', () => {
+    it('renders dashboard title and subtitle', async () => {
       render(<Dashboard />)
+      
+      await waitForLoadingToFinish()
       
       expect(screen.getByText('Dashboard')).toBeInTheDocument()
       expect(screen.getByText(/overzicht van uw landschapsarchitectuur projecten/i)).toBeInTheDocument()
@@ -64,15 +64,32 @@ describe('Dashboard Component', () => {
 
   describe('Error Handling', () => {
     it('handles API error for dashboard stats', async () => {
-      // Mock API error for stats endpoint
-      server.use(
-        http.get('http://127.0.0.1:5000/api/dashboard/stats', () => {
-          return HttpResponse.json(
-            { error: 'Server error' },
-            { status: 500 }
-          )
-        })
-      )
+      // Mock API error for stats endpoint only
+      global.fetch.mockImplementation((url) => {
+        if (url.includes('/api/dashboard/stats')) {
+          return Promise.resolve({
+            ok: false,
+            status: 500,
+            statusText: 'Server Error',
+            json: () => Promise.resolve({ error: 'Server error' })
+          });
+        }
+        if (url.includes('/api/dashboard/recent-activity')) {
+          return Promise.resolve({
+            ok: true,
+            status: 200,
+            statusText: 'OK',
+            json: () => Promise.resolve([])
+          });
+        }
+        // Default for other endpoints
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          statusText: 'OK',
+          json: () => Promise.resolve({})
+        });
+      });
 
       render(<Dashboard />)
       
@@ -82,15 +99,40 @@ describe('Dashboard Component', () => {
     })
 
     it('handles API error for recent activity', async () => {
-      // Mock API error for activity endpoint
-      server.use(
-        http.get('http://127.0.0.1:5000/api/dashboard/recent-activity', () => {
-          return HttpResponse.json(
-            { error: 'Server error' },
-            { status: 500 }
-          )
-        })
-      )
+      // Mock API error for activity endpoint only
+      global.fetch.mockImplementation((url) => {
+        if (url.includes('/api/dashboard/stats')) {
+          return Promise.resolve({
+            ok: true,
+            status: 200,
+            statusText: 'OK',
+            json: () => Promise.resolve({
+              suppliers: 5,
+              plants: 156,
+              products: 45,
+              clients: 8,
+              projects: 12,
+              active_projects: 3,
+              total_budget: 150000
+            })
+          });
+        }
+        if (url.includes('/api/dashboard/recent-activity')) {
+          return Promise.resolve({
+            ok: false,
+            status: 500,
+            statusText: 'Server Error',
+            json: () => Promise.resolve({ error: 'Server error' })
+          });
+        }
+        // Default for other endpoints
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          statusText: 'OK',
+          json: () => Promise.resolve({})
+        });
+      });
 
       render(<Dashboard />)
       
@@ -101,14 +143,35 @@ describe('Dashboard Component', () => {
 
     it('displays retry button on error and allows retry', async () => {
       // Mock initial error
-      server.use(
-        http.get('http://127.0.0.1:5000/api/dashboard/stats', () => {
-          return HttpResponse.json(
-            { error: 'Server error' },
-            { status: 500 }
-          )
-        })
-      )
+      let callCount = 0;
+      global.fetch.mockImplementation((url) => {
+        if (url.includes('/api/dashboard/stats')) {
+          callCount++;
+          if (callCount === 1) {
+            return Promise.resolve({
+              ok: false,
+              status: 500,
+              statusText: 'Server Error',
+              json: () => Promise.resolve({ error: 'Server error' })
+            });
+          }
+        }
+        // Use original mock for subsequent calls
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          statusText: 'OK',
+          json: () => Promise.resolve({
+            suppliers: 5,
+            plants: 156,
+            products: 45,
+            clients: 8,
+            projects: 12,
+            active_projects: 3,
+            total_budget: 150000
+          })
+        });
+      });
 
       render(<Dashboard />)
       
@@ -118,9 +181,6 @@ describe('Dashboard Component', () => {
 
       const retryButton = screen.getByRole('button', { name: /opnieuw proberen/i })
       expect(retryButton).toBeInTheDocument()
-
-      // Reset to successful response
-      server.resetHandlers()
 
       await user.click(retryButton)
       
@@ -271,27 +331,41 @@ describe('Dashboard Component', () => {
     it('refreshes data when retry is clicked after network recovery', async () => {
       let callCount = 0
       
-      // Mock unstable network
-      server.use(
-        http.get('http://127.0.0.1:5000/api/dashboard/stats', () => {
-          callCount++
+      // Mock unstable network with simple fetch
+      global.fetch.mockImplementation((url) => {
+        if (url.includes('/api/dashboard/stats')) {
+          callCount++;
           if (callCount === 1) {
-            return HttpResponse.json(
-              { error: 'Network error' },
-              { status: 500 }
-            )
+            return Promise.resolve({
+              ok: false,
+              status: 500,
+              statusText: 'Server Error',
+              json: () => Promise.resolve({ error: 'Network error' })
+            });
           }
-          return HttpResponse.json({
-            suppliers: 6, // Different value to verify refresh
-            plants: 200,
-            products: 50,
-            clients: 10,
-            projects: 15,
-            active_projects: 4,
-            total_budget: 200000
-          })
-        })
-      )
+          return Promise.resolve({
+            ok: true,
+            status: 200,
+            statusText: 'OK',
+            json: () => Promise.resolve({
+              suppliers: 6, // Different value to verify refresh
+              plants: 200,
+              products: 50,
+              clients: 10,
+              projects: 15,
+              active_projects: 4,
+              total_budget: 200000
+            })
+          });
+        }
+        // Default for other endpoints
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          statusText: 'OK',
+          json: () => Promise.resolve([])
+        });
+      });
 
       render(<Dashboard />)
       
