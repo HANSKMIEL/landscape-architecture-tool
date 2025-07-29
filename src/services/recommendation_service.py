@@ -182,7 +182,11 @@ class RecommendationService:
         """Check if soil types match"""
         if not plant_soil or not criteria_soil:
             return False
-        return criteria_soil.lower() in plant_soil.lower()
+        # Split soil types into sets of individual components
+        plant_soil_set = set(soil.strip().lower() for soil in plant_soil.split(','))
+        criteria_soil_set = set(soil.strip().lower() for soil in criteria_soil.split(','))
+        # Check for any intersection between the two sets
+        return not plant_soil_set.isdisjoint(criteria_soil_set)
     
     def _check_height_match(self, plant_min: float, plant_max: float, height_range: List) -> bool:
         """Check if height ranges overlap"""
