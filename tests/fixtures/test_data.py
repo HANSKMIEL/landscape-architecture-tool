@@ -93,6 +93,7 @@ class PlantFactory(factory.alchemy.SQLAlchemyModelFactory):
     price = factory.Faker('pyfloat', left_digits=2, right_digits=2, positive=True)
     notes = factory.Faker('text', max_nb_chars=200)
     native = factory.Faker('boolean')
+    wildlife_friendly = factory.Faker('boolean')
     pollinator_friendly = factory.Faker('boolean')
     deer_resistant = factory.Faker('boolean')
     supplier = factory.SubFactory(SupplierFactory)
