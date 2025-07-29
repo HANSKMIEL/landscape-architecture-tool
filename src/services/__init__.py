@@ -149,6 +149,29 @@ class SupplierService(BaseService):
             logger.error(f"Error updating supplier: {str(e)}")
             raise
 
+    def delete(self, entity_id: int) -> bool:
+        """Delete supplier with constraint checking"""
+        try:
+            supplier = Supplier.query.get(entity_id)
+            if not supplier:
+                return False
+
+            # Check for related products and plants
+            if supplier.products and len(supplier.products) > 0:
+                raise ValueError(f"Cannot delete supplier with {len(supplier.products)} associated products")
+            
+            if supplier.plants and len(supplier.plants) > 0:
+                raise ValueError(f"Cannot delete supplier with {len(supplier.plants)} associated plants")
+
+            # Use the parent delete method
+            return super().delete(entity_id)
+        except ValueError as e:
+            logger.error(f"Business validation error: {str(e)}")
+            raise
+        except Exception as e:
+            logger.error(f"Error deleting supplier: {str(e)}")
+            raise
+
     def get_all(
         self, search: str = None, page: int = 1, per_page: int = 50
     ) -> Dict[str, Any]:

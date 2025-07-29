@@ -348,11 +348,14 @@ def create_app():
     @handle_errors
     def delete_supplier(supplier_id):
         """Delete supplier"""
-        success = supplier_service.delete(supplier_id)
-        if not success:
-            return jsonify({"error": "Supplier not found"}), 404
+        try:
+            success = supplier_service.delete(supplier_id)
+            if not success:
+                return jsonify({"error": "Supplier not found"}), 404
 
-        return jsonify({"message": "Supplier deleted successfully"})
+            return jsonify({"message": "Supplier deleted successfully"})
+        except ValueError as e:
+            return jsonify({"error": str(e)}), 400
 
     # Additional supplier endpoints
     @app.route("/api/suppliers/<int:supplier_id>/products", methods=["GET"])
@@ -367,6 +370,36 @@ def create_app():
             
         products = Product.query.filter_by(supplier_id=supplier_id).all()
         return jsonify([product.to_dict() for product in products])
+
+    @app.route("/api/suppliers/<int:supplier_id>/products", methods=["POST"])
+    @handle_errors
+    def add_product_to_supplier(supplier_id):
+        """Add a product to a specific supplier"""
+        from flask import request
+        from pydantic import ValidationError
+        from src.models.landscape import Supplier
+        
+        # Check if supplier exists
+        supplier = Supplier.query.get(supplier_id)
+        if not supplier:
+            return jsonify({"error": "Supplier not found"}), 404
+            
+        data = request.get_json()
+        
+        try:
+            # Add supplier_id to the data
+            data["supplier_id"] = supplier_id
+            
+            # Validate input
+            schema = ProductCreateSchema(**data)
+            validated_data = schema.model_dump(exclude_unset=True)
+
+            product = product_service.create(validated_data)
+            return jsonify(product), 201
+        except ValidationError as e:
+            # Convert Pydantic errors to string format for consistency
+            error_messages = [error.get('msg', str(error)) for error in e.errors()]
+            return jsonify({"error": "Validation failed", "validation_errors": error_messages}), 422
 
     @app.route("/api/suppliers/<int:supplier_id>/plants", methods=["GET"])
     @handle_errors
@@ -465,8 +498,19 @@ def create_app():
             return jsonify({"error": "Supplier not found"}), 404
         
         # Build full address    
-        address_parts = [supplier.address, supplier.city, supplier.postal_code]
-        full_address = ", ".join([part for part in address_parts if part])
+        address_parts = []
+        if supplier.address:
+            address_parts.append(supplier.address)
+        if supplier.city:
+            address_parts.append(supplier.city)
+        if supplier.postal_code:
+            # Add postal code with just a space (no comma)
+            if address_parts:
+                address_parts[-1] = f"{address_parts[-1]} {supplier.postal_code}"
+            else:
+                address_parts.append(supplier.postal_code)
+                
+        full_address = ", ".join(address_parts)
             
         return jsonify({
             "id": supplier.id,
