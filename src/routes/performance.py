@@ -173,7 +173,7 @@ def get_performance_metrics():
         
         return jsonify(metrics)
     except Exception as e:
+        current_app.logger.exception("Failed to get performance metrics")
         return jsonify({
-            'error': 'Failed to get performance metrics',
-            'details': str(e)
+            'error': 'Failed to get performance metrics'
         }), 500
