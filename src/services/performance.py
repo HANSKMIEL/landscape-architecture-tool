@@ -251,9 +251,15 @@ def clear_cache_by_pattern(pattern: str) -> bool:
     except:
         return False
 
-# Global cache instance
-cache = PerformanceCache()
+# Global cache instance with lazy initialization
+_cache_instance = None
 
+def get_cache() -> PerformanceCache:
+    """Get or initialize the global PerformanceCache instance."""
+    global _cache_instance
+    if _cache_instance is None:
+        _cache_instance = PerformanceCache()
+    return _cache_instance
 # Utility functions for common caching patterns
 def cache_dashboard_stats(func):
     """Cache dashboard statistics for 2 minutes."""
