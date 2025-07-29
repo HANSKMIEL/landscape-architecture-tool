@@ -110,6 +110,45 @@ class SupplierService(BaseService):
     def __init__(self):
         super().__init__(Supplier)
 
+    def create(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        """Create new supplier with email uniqueness validation"""
+        try:
+            # Check for duplicate email if email is provided
+            if data.get("email"):
+                existing_supplier = Supplier.query.filter_by(email=data["email"]).first()
+                if existing_supplier:
+                    raise ValueError(f"Supplier with email '{data['email']}' already exists")
+            
+            # Use the parent create method
+            return super().create(data)
+        except ValueError as e:
+            logger.error(f"Business validation error: {str(e)}")
+            raise
+        except Exception as e:
+            logger.error(f"Error creating supplier: {str(e)}")
+            raise
+
+    def update(self, entity_id: int, data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        """Update supplier with email uniqueness validation"""
+        try:
+            # Check for duplicate email if email is being updated
+            if data.get("email"):
+                existing_supplier = Supplier.query.filter(
+                    Supplier.email == data["email"],
+                    Supplier.id != entity_id
+                ).first()
+                if existing_supplier:
+                    raise ValueError(f"Supplier with email '{data['email']}' already exists")
+            
+            # Use the parent update method
+            return super().update(entity_id, data)
+        except ValueError as e:
+            logger.error(f"Business validation error: {str(e)}")
+            raise
+        except Exception as e:
+            logger.error(f"Error updating supplier: {str(e)}")
+            raise
+
     def get_all(
         self, search: str = None, page: int = 1, per_page: int = 50
     ) -> Dict[str, Any]:

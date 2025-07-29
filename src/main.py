@@ -312,7 +312,11 @@ def create_app():
             supplier = supplier_service.create(validated_data)
             return jsonify(supplier), 201
         except ValidationError as e:
-            return jsonify({"error": "Validation failed", "details": e.errors()}), 422
+            # Convert Pydantic errors to string format for consistency
+            error_messages = [error.get('msg', str(error)) for error in e.errors()]
+            return jsonify({"error": "Validation failed", "validation_errors": error_messages}), 422
+        except ValueError as e:
+            return jsonify({"error": "Validation failed", "validation_errors": [str(e)]}), 422
 
     @app.route("/api/suppliers/<int:supplier_id>", methods=["PUT"])
     @handle_errors
@@ -334,7 +338,11 @@ def create_app():
 
             return jsonify(supplier)
         except ValidationError as e:
-            return jsonify({"error": "Validation failed", "details": e.errors()}), 422
+            # Convert Pydantic errors to string format for consistency
+            error_messages = [error.get('msg', str(error)) for error in e.errors()]
+            return jsonify({"error": "Validation failed", "validation_errors": error_messages}), 422
+        except ValueError as e:
+            return jsonify({"error": "Validation failed", "validation_errors": [str(e)]}), 422
 
     @app.route("/api/suppliers/<int:supplier_id>", methods=["DELETE"])
     @handle_errors
@@ -554,7 +562,9 @@ def create_app():
             plant = plant_service.create(validated_data)
             return jsonify(plant), 201
         except ValidationError as e:
-            return jsonify({"error": "Validation failed", "details": e.errors()}), 422
+            # Convert Pydantic errors to string format for consistency
+            error_messages = [error.get('msg', str(error)) for error in e.errors()]
+            return jsonify({"error": "Validation failed", "validation_errors": error_messages}), 422
 
     @app.route("/api/plants/<int:plant_id>", methods=["GET"])
     @handle_errors
@@ -588,7 +598,9 @@ def create_app():
 
             return jsonify(plant)
         except ValidationError as e:
-            return jsonify({"error": "Validation failed", "details": e.errors()}), 422
+            # Convert Pydantic errors to string format for consistency
+            error_messages = [error.get('msg', str(error)) for error in e.errors()]
+            return jsonify({"error": "Validation failed", "validation_errors": error_messages}), 422
 
     @app.route("/api/plants/<int:plant_id>", methods=["DELETE"])
     @handle_errors
@@ -630,7 +642,9 @@ def create_app():
             product = product_service.create(validated_data)
             return jsonify(product), 201
         except ValidationError as e:
-            return jsonify({"error": "Validation failed", "details": e.errors()}), 422
+            # Convert Pydantic errors to string format for consistency
+            error_messages = [error.get('msg', str(error)) for error in e.errors()]
+            return jsonify({"error": "Validation failed", "validation_errors": error_messages}), 422
 
     @app.route("/api/products/<int:product_id>", methods=["PUT"])
     @handle_errors
@@ -652,7 +666,9 @@ def create_app():
 
             return jsonify(product)
         except ValidationError as e:
-            return jsonify({"error": "Validation failed", "details": e.errors()}), 422
+            # Convert Pydantic errors to string format for consistency
+            error_messages = [error.get('msg', str(error)) for error in e.errors()]
+            return jsonify({"error": "Validation failed", "validation_errors": error_messages}), 422
 
     @app.route("/api/products/<int:product_id>", methods=["DELETE"])
     @handle_errors
@@ -698,7 +714,9 @@ def create_app():
             client = client_service.create(validated_data)
             return jsonify(client), 201
         except ValidationError as e:
-            return jsonify({"error": "Validation failed", "details": e.errors()}), 422
+            # Convert Pydantic errors to string format for consistency
+            error_messages = [error.get('msg', str(error)) for error in e.errors()]
+            return jsonify({"error": "Validation failed", "validation_errors": error_messages}), 422
 
     @app.route("/api/clients/<int:client_id>", methods=["PUT"])
     @handle_errors
@@ -720,7 +738,9 @@ def create_app():
 
             return jsonify(client)
         except ValidationError as e:
-            return jsonify({"error": "Validation failed", "details": e.errors()}), 422
+            # Convert Pydantic errors to string format for consistency
+            error_messages = [error.get('msg', str(error)) for error in e.errors()]
+            return jsonify({"error": "Validation failed", "validation_errors": error_messages}), 422
 
     @app.route("/api/clients/<int:client_id>", methods=["DELETE"])
     @handle_errors
@@ -765,7 +785,9 @@ def create_app():
             project = project_service.create(validated_data)
             return jsonify(project), 201
         except ValidationError as e:
-            return jsonify({"error": "Validation failed", "details": e.errors()}), 422
+            # Convert Pydantic errors to string format for consistency
+            error_messages = [error.get('msg', str(error)) for error in e.errors()]
+            return jsonify({"error": "Validation failed", "validation_errors": error_messages}), 422
 
     @app.route("/api/projects/<int:project_id>", methods=["PUT"])
     @handle_errors
@@ -787,7 +809,9 @@ def create_app():
 
             return jsonify(project)
         except ValidationError as e:
-            return jsonify({"error": "Validation failed", "details": e.errors()}), 422
+            # Convert Pydantic errors to string format for consistency
+            error_messages = [error.get('msg', str(error)) for error in e.errors()]
+            return jsonify({"error": "Validation failed", "validation_errors": error_messages}), 422
 
     @app.route("/api/projects/<int:project_id>", methods=["DELETE"])
     @handle_errors
