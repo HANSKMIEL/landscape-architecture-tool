@@ -30,7 +30,12 @@ class PerformanceCache:
             # Test connection
             self.redis_client.ping()
         except redis.exceptions.ConnectionError as e:
-            current_app.logger.error(f"Redis connection failed: {e}")
+            # Handle case when running outside Flask app context
+            try:
+                current_app.logger.error(f"Redis connection failed: {e}")
+            except RuntimeError:
+                # No Flask context available, use print for logging
+                print(f"Redis connection failed: {e}")
             self.redis_client = None
     
     def get(self, key: str) -> Optional[Any]:
@@ -169,18 +174,29 @@ class QueryPerformanceMonitor:
                 execution_time = time.time() - start_time
                 
                 # Log slow queries (configurable threshold)
-                slow_query_threshold = float(current_app.config.get('SLOW_QUERY_THRESHOLD', 0.1))
+                try:
+                    slow_query_threshold = float(current_app.config.get('SLOW_QUERY_THRESHOLD', 0.1))
+                except RuntimeError:
+                    # No Flask context, use default threshold
+                    slow_query_threshold = 0.1
+                    
                 if execution_time > slow_query_threshold:
-                    current_app.logger.warning(
-                        f"Slow query detected: {func.__name__} took {execution_time:.3f}s"
-                    )
+                    try:
+                        current_app.logger.warning(
+                            f"Slow query detected: {func.__name__} took {execution_time:.3f}s"
+                        )
+                    except RuntimeError:
+                        print(f"Slow query detected: {func.__name__} took {execution_time:.3f}s")
                 
                 return result
             except Exception as e:
                 execution_time = time.time() - start_time
-                current_app.logger.error(
-                    f"Query error in {func.__name__} after {execution_time:.3f}s: {str(e)}"
-                )
+                try:
+                    current_app.logger.error(
+                        f"Query error in {func.__name__} after {execution_time:.3f}s: {str(e)}"
+                    )
+                except RuntimeError:
+                    print(f"Query error in {func.__name__} after {execution_time:.3f}s: {str(e)}")
                 raise
         
         return wrapper
@@ -235,18 +251,21 @@ def clear_cache_by_pattern(pattern: str) -> bool:
     except:
         return False
 
+# Global cache instance
+cache = PerformanceCache()
+
 # Utility functions for common caching patterns
 def cache_dashboard_stats(func):
     """Cache dashboard statistics for 2 minutes."""
-    return cached(timeout=120, key_prefix="dashboard_stats")(func)
+    return cached(cache, timeout=120, key_prefix="dashboard_stats")(func)
 
 def cache_plant_data(func):
     """Cache plant data for 10 minutes."""
-    return cached(timeout=600, key_prefix="plants")(func)
+    return cached(cache, timeout=600, key_prefix="plants")(func)
 
 def cache_project_data(func):
     """Cache project data for 5 minutes."""
-    return cached(timeout=300, key_prefix="projects")(func)
+    return cached(cache, timeout=300, key_prefix="projects")(func)
 
 # Invalidation helpers
 def invalidate_dashboard_cache():
