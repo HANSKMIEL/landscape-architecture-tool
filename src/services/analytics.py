@@ -132,11 +132,17 @@ class AnalyticsService:
                 for month, plant_selections, total_quantity in usage_trends
             ]
 
+            # Total statistics
+            total_plants_used = db.session.query(func.sum(ProjectPlant.quantity)).filter(*date_filter).scalar() or 0
+            total_projects_with_plants = db.session.query(func.count(func.distinct(ProjectPlant.project_id))).filter(*date_filter).scalar() or 0
+
             return {
                 "most_used_plants": most_used_plants,
                 "category_distribution": category_distribution,
                 "usage_trends": trends,
                 "total_unique_plants": len(most_used_plants),
+                "total_plants_used": int(total_plants_used),
+                "total_projects_with_plants": int(total_projects_with_plants),
                 "analysis_period": date_range,
             }
 
@@ -146,6 +152,9 @@ class AnalyticsService:
                 "most_used_plants": [],
                 "category_distribution": [],
                 "usage_trends": [],
+                "total_unique_plants": 0,
+                "total_plants_used": 0,
+                "total_projects_with_plants": 0,
             }
 
     def get_project_performance_metrics(self, project_id: Optional[int] = None) -> Dict:

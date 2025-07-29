@@ -46,16 +46,21 @@ class TestAnalyticsService(DatabaseTestMixin):
         
         # Create project-plant relationships with different usage patterns
         # Rose Bush: used in 2 projects, total quantity 25
-        ProjectPlant.objects.create(project=projects[0], plant=plants[0], quantity=15)
-        ProjectPlant.objects.create(project=projects[1], plant=plants[0], quantity=10)
+        pp1 = ProjectPlant(project=projects[0], plant=plants[0], quantity=15)
+        pp2 = ProjectPlant(project=projects[1], plant=plants[0], quantity=10)
         
         # Oak Tree: used in 1 project, total quantity 5
-        ProjectPlant.objects.create(project=projects[0], plant=plants[1], quantity=5)
+        pp3 = ProjectPlant(project=projects[0], plant=plants[1], quantity=5)
         
         # Tulip: used in 3 projects, total quantity 50
-        ProjectPlant.objects.create(project=projects[0], plant=plants[2], quantity=20)
-        ProjectPlant.objects.create(project=projects[1], plant=plants[2], quantity=15)
-        ProjectPlant.objects.create(project=projects[2], plant=plants[2], quantity=15)
+        pp4 = ProjectPlant(project=projects[0], plant=plants[2], quantity=20)
+        pp5 = ProjectPlant(project=projects[1], plant=plants[2], quantity=15)
+        pp6 = ProjectPlant(project=projects[2], plant=plants[2], quantity=15)
+        
+        # Add to database
+        from src.models.user import db
+        db.session.add_all([pp1, pp2, pp3, pp4, pp5, pp6])
+        db.session.commit()
         
         result = analytics.get_plant_usage_analytics()
         
@@ -92,8 +97,11 @@ class TestAnalyticsService(DatabaseTestMixin):
         )
         
         # Add plant to both projects
-        ProjectPlant.objects.create(project=old_project, plant=plant, quantity=10)
-        ProjectPlant.objects.create(project=recent_project, plant=plant, quantity=5)
+        old_project_plant = ProjectPlant(project=old_project, plant=plant, quantity=10)
+        recent_project_plant = ProjectPlant(project=recent_project, plant=plant, quantity=5)
+        db.session.add(old_project_plant)
+        db.session.add(recent_project_plant)
+        db.session.commit()
         
         # Test with 30-day range (should only include recent project)
         start_date = (now - timedelta(days=30)).isoformat()
@@ -291,9 +299,10 @@ class TestAnalyticsService(DatabaseTestMixin):
         )
         
         # Add seasonal plants to projects
-        ProjectPlant.objects.create(project=spring_project, plant=spring_plant, quantity=10)
-        ProjectPlant.objects.create(project=summer_project, plant=summer_plant, quantity=15)
-        ProjectPlant.objects.create(project=summer_project, plant=fall_plant, quantity=5)
+        db.session.add(ProjectPlant(project=spring_project, plant=spring_plant, quantity=10))
+        db.session.add(ProjectPlant(project=summer_project, plant=summer_plant, quantity=15))
+        db.session.add(ProjectPlant(project=summer_project, plant=fall_plant, quantity=5))
+        db.session.commit()
         
         result = analytics.get_seasonal_analytics()
         
@@ -335,9 +344,14 @@ class TestAnalyticsService(DatabaseTestMixin):
         maple_tree = plant_factory(name="Maple Tree")
         
         # Add plants to projects
-        ProjectPlant.objects.create(project=projects[0], plant=oak_tree, quantity=5)
-        ProjectPlant.objects.create(project=projects[1], plant=maple_tree, quantity=3)
-        ProjectPlant.objects.create(project=projects[2], plant=oak_tree, quantity=8)
+        project_plant_1 = ProjectPlant(project=projects[0], plant=oak_tree, quantity=5)
+        project_plant_2 = ProjectPlant(project=projects[1], plant=maple_tree, quantity=3)
+        project_plant_3 = ProjectPlant(project=projects[2], plant=oak_tree, quantity=8)
+        
+        db.session.add(project_plant_1)
+        db.session.add(project_plant_2)
+        db.session.add(project_plant_3)
+        db.session.commit()
         
         result = analytics.get_geographic_analytics()
         
@@ -395,7 +409,7 @@ class TestAnalyticsServiceIntegration(DatabaseTestMixin):
         ]
         
         for project, plant, quantity in relationships:
-            ProjectPlant.objects.create(project=project, plant=plant, quantity=quantity)
+            ProjectPlant(project=project, plant=plant, quantity=quantity)
         
         # Test plant usage analytics
         plant_analytics = analytics.get_plant_usage_analytics()
@@ -455,8 +469,11 @@ class TestAnalyticsServiceIntegration(DatabaseTestMixin):
         )
         
         # Add plants to projects
-        ProjectPlant.objects.create(project=old_project, plant=plant, quantity=5)
-        ProjectPlant.objects.create(project=recent_project, plant=plant, quantity=10)
+        old_project_plant = ProjectPlant(project=old_project, plant=plant, quantity=5)
+        recent_project_plant = ProjectPlant(project=recent_project, plant=plant, quantity=10)
+        db.session.add(old_project_plant)
+        db.session.add(recent_project_plant)
+        db.session.commit()
         
         # Test different date ranges
         
@@ -490,7 +507,7 @@ class TestAnalyticsServiceIntegration(DatabaseTestMixin):
             num_plants = random.randint(1, 5)
             selected_plants = random.sample(plants, num_plants)
             for plant in selected_plants:
-                ProjectPlant.objects.create(
+                ProjectPlant(
                     project=project,
                     plant=plant,
                     quantity=random.randint(1, 20)

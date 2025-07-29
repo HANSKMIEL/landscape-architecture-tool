@@ -463,6 +463,7 @@ The development requirements include:
 - Development utilities (python-dotenv, debugpy, ipython)
 - Coverage reporting (coverage, pytest-cov)
 - Documentation tools (sphinx)
+- Database testing support (psycopg2-binary for PostgreSQL testing)
 
 ### Database Operations
 
