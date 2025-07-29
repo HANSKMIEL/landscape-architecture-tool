@@ -275,9 +275,9 @@ class TestAnalyticsService(DatabaseTestMixin):
         client = client_factory()
         
         # Create plants with different bloom seasons
-        spring_plant = plant_factory(name="Spring Flower", bloom_season="spring")
-        summer_plant = plant_factory(name="Summer Flower", bloom_season="summer")
-        fall_plant = plant_factory(name="Fall Flower", bloom_season="fall")
+        spring_plant = plant_factory(name="Spring Flower", bloom_time="spring")
+        summer_plant = plant_factory(name="Summer Flower", bloom_time="summer")
+        fall_plant = plant_factory(name="Fall Flower", bloom_time="fall")
         
         # Create projects in different months
         now = datetime.utcnow()
@@ -361,10 +361,10 @@ class TestAnalyticsServiceIntegration(DatabaseTestMixin):
         
         # Create plants with diverse characteristics
         plants = [
-            plant_factory(name="Red Oak", category="Tree", bloom_season="spring", native=True),
-            plant_factory(name="Rose Bush", category="Shrub", bloom_season="summer", native=False),
-            plant_factory(name="Tulip", category="Perennial", bloom_season="spring", native=False),
-            plant_factory(name="Maple Tree", category="Tree", bloom_season="fall", native=True),
+            plant_factory(name="Red Oak", category="Tree", bloom_time="spring", native=True),
+            plant_factory(name="Rose Bush", category="Shrub", bloom_time="summer", native=False),
+            plant_factory(name="Tulip", category="Perennial", bloom_time="spring", native=False),
+            plant_factory(name="Maple Tree", category="Tree", bloom_time="fall", native=True),
         ]
         
         # Create projects across different time periods

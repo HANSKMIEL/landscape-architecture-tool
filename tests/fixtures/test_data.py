@@ -147,7 +147,7 @@ class ProjectPlantFactory(factory.alchemy.SQLAlchemyModelFactory):
     project = factory.SubFactory(ProjectFactory)
     plant = factory.SubFactory(PlantFactory)
     quantity = factory.Faker('random_int', min=1, max=50)
-    unit_price = factory.Faker('pyfloat', left_digits=2, right_digits=2, positive=True)
+    unit_cost = factory.Faker('pyfloat', left_digits=2, right_digits=2, positive=True)
     notes = factory.Faker('text', max_nb_chars=100)
 
 
