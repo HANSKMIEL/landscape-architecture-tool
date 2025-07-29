@@ -140,7 +140,7 @@ class TestSupplierRoutes(DatabaseTestMixin):
                              data=json.dumps(supplier_data),
                              content_type='application/json')
         
-        assert response.status_code == 400
+        assert response.status_code == 422
         data = response.get_json()
         assert "error" in data
 

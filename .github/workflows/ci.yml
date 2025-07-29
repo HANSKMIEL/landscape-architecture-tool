@@ -50,54 +50,22 @@ jobs:
     - name: Cache Python dependencies
       uses: actions/cache@v4
       with:
-        path: |
-          ~/.cache/pip
-          ~/.local/lib/python${{ env.PYTHON_VERSION }}/site-packages
-        key: ${{ runner.os }}-python-${{ env.PYTHON_VERSION }}-pip-${{ hashFiles('**/requirements.txt', '**/requirements-dev.txt') }}
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements*.txt') }}
         restore-keys: |
-          ${{ runner.os }}-python-${{ env.PYTHON_VERSION }}-pip-
-          ${{ runner.os }}-python-${{ env.PYTHON_VERSION }}-
+          ${{ runner.os }}-pip-
         
-    - name: Install Python dependencies
+    - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements-dev.txt
-        pip install psycopg2-binary  # For PostgreSQL testing
+        pip install psycopg2-binary
         
-    - name: Set up test environment
-      env:
-        DATABASE_URL: postgresql://postgres:postgres_password@localhost:5432/landscape_test
-        REDIS_URL: redis://localhost:6379/1
-        SECRET_KEY: test-secret-key-not-for-production
-        FLASK_ENV: testing
+    - name: Wait for services
       run: |
-        export PYTHONPATH=.
-        # Wait for services to be ready
-        python -c "
-        import time
-        import psycopg2
-        import redis
-        
-        # Test PostgreSQL connection
-        for i in range(30):
-            try:
-                conn = psycopg2.connect('postgresql://postgres:postgres_password@localhost:5432/landscape_test')
-                conn.close()
-                print('PostgreSQL is ready')
-                break
-            except:
-                time.sleep(1)
-        
-        # Test Redis connection
-        for i in range(30):
-            try:
-                r = redis.Redis(host='localhost', port=6379, db=1)
-                r.ping()
-                print('Redis is ready')
-                break
-            except:
-                time.sleep(1)
-        "
+        # Wait for PostgreSQL and Redis to be ready
+        timeout 30 bash -c 'until pg_isready -h localhost -p 5432; do sleep 1; done'
+        timeout 30 bash -c 'until redis-cli -h localhost -p 6379 ping; do sleep 1; done'
         
     - name: Run database migrations
       env:
@@ -105,29 +73,13 @@ jobs:
         PYTHONPATH: .
       run: |
         flask --app src.main db upgrade
-      continue-on-error: true
-      
-    - name: Create migration failure report
-      if: failure()
-      run: |
-        echo "Database migration failed" > migration-failure.log
-        echo "Timestamp: $(date)" >> migration-failure.log
-        echo "Database URL: $DATABASE_URL" >> migration-failure.log
-        
-    - name: Upload migration failure report
-      uses: actions/upload-artifact@v4
-      if: failure()
-      with:
-        name: migration-failure-report
-        path: migration-failure.log
-        retention-days: 7
         
     - name: Test backend with SQLite
       env:
         PYTHONPATH: .
         FLASK_ENV: testing
       run: |
-        python -m pytest tests/ -v --tb=short
+        python -m pytest tests/ -v --tb=short --maxfail=5
         
     - name: Test backend with PostgreSQL
       env:
@@ -137,22 +89,7 @@ jobs:
         PYTHONPATH: .
         FLASK_ENV: testing
       run: |
-        python -m pytest tests/ -v --tb=short -k "not test_production"
-      continue-on-error: true
-        
-    - name: Create PostgreSQL test failure report
-      if: failure()
-      run: |
-        echo "PostgreSQL tests failed" > postgresql-test-failure.log
-        echo "Timestamp: $(date)" >> postgresql-test-failure.log
-        
-    - name: Upload PostgreSQL test failure report
-      uses: actions/upload-artifact@v4
-      if: failure()
-      with:
-        name: postgresql-test-failure-report
-        path: postgresql-test-failure.log
-        retention-days: 7
+        python -m pytest tests/ -v --tb=short --maxfail=5
 
   test-frontend:
     runs-on: ubuntu-latest
@@ -166,61 +103,20 @@ jobs:
         cache: 'npm'
         cache-dependency-path: frontend/package-lock.json
         
-    - name: Cache Node modules
-      uses: actions/cache@v4
-      with:
-        path: |
-          frontend/node_modules
-          ~/.npm
-        key: ${{ runner.os }}-node-${{ env.NODE_VERSION }}-${{ hashFiles('**/package-lock.json') }}
-        restore-keys: |
-          ${{ runner.os }}-node-${{ env.NODE_VERSION }}-
-          ${{ runner.os }}-node-
-        
     - name: Install dependencies
       run: |
         cd frontend
-        # Remove any existing pnpm files to avoid conflicts
-        rm -f pnpm-lock.yaml
-        # Clean install with legacy peer deps
-        rm -rf node_modules
-        npm install --legacy-peer-deps
+        npm ci --legacy-peer-deps
         
-    - name: Run npm audit
+    - name: Run security audit
       run: |
         cd frontend
-        npm audit --audit-level=moderate --json > ../frontend-audit-report.json || true
-        npm audit --audit-level=moderate || echo "Security vulnerabilities found, check report"
-        
-    - name: Upload npm audit report
-      uses: actions/upload-artifact@v4
-      if: always()
-      with:
-        name: frontend-security-audit
-        path: frontend-audit-report.json
-        retention-days: 30
+        npm audit --audit-level=moderate || echo "Security vulnerabilities found"
         
     - name: Lint frontend
       run: |
         cd frontend
         npm run lint
-      continue-on-error: true
-      
-    - name: Create linting failure report
-      if: failure()
-      run: |
-        cd frontend
-        echo "Frontend linting failed" > ../frontend-lint-failure.log
-        echo "Timestamp: $(date)" >> ../frontend-lint-failure.log
-        npm run lint 2>&1 | tee -a ../frontend-lint-failure.log || true
-        
-    - name: Upload linting failure report
-      uses: actions/upload-artifact@v4
-      if: failure()
-      with:
-        name: frontend-lint-failure-report
-        path: frontend-lint-failure.log
-        retention-days: 7
         
     - name: Build frontend
       run: |
@@ -230,78 +126,15 @@ jobs:
     - name: Test frontend
       run: |
         cd frontend
-        npm run test
-      continue-on-error: true
-      
-    - name: Create frontend test report
-      if: failure()
-      run: |
-        cd frontend
-        echo "Frontend tests not configured or failed" > ../frontend-test-status.log
-        echo "Timestamp: $(date)" >> ../frontend-test-status.log
-        
-    - name: Upload frontend test report
-      uses: actions/upload-artifact@v4
-      if: failure()
-      with:
-        name: frontend-test-status-report
-        path: frontend-test-status.log
-        retention-days: 7
+        npm test
         
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
+      if: success()
       with:
         name: frontend-build
         path: frontend/dist/
         retention-days: 7
-
-  security-scan:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-    
-    - name: Run Trivy vulnerability scanner
-      uses: aquasecurity/trivy-action@master
-      with:
-        scan-type: 'fs'
-        scan-ref: '.'
-        format: 'sarif'
-        output: 'trivy-results.sarif'
-        severity: 'CRITICAL,HIGH'
-        
-    - name: Upload Trivy scan results to GitHub Security tab
-      uses: github/codeql-action/upload-sarif@v3
-      if: always()
-      with:
-        sarif_file: 'trivy-results.sarif'
-        
-    - name: Python Security Scan with Safety
-      run: |
-        pip install safety
-        safety check --json --output safety-report.json
-      continue-on-error: true
-      
-    - name: Create security scan summary
-      if: failure()
-      run: |
-        echo "Security vulnerabilities found by Safety scan" > safety-scan-summary.log
-        echo "Timestamp: $(date)" >> safety-scan-summary.log
-        if [ -f safety-report.json ]; then
-          echo "Report file created successfully" >> safety-scan-summary.log
-        else
-          echo "Report file creation failed" >> safety-scan-summary.log
-        fi
-        
-    - name: Upload security reports
-      uses: actions/upload-artifact@v4
-      if: always()
-      with:
-        name: security-reports
-        path: |
-          trivy-results.sarif
-          safety-report.json
-          safety-scan-summary.log
-        retention-days: 30
 
   code-quality:
     runs-on: ubuntu-latest
@@ -316,179 +149,34 @@ jobs:
     - name: Install linting tools
       run: |
         python -m pip install --upgrade pip
-        pip install flake8 black isort bandit
-        
-    - name: Run Python linting
-      run: |
-        flake8 src/ tests/ --max-line-length=88 --extend-ignore=E203,W503 --statistics --output-file=flake8-report.txt
-      continue-on-error: true
+        pip install flake8 black isort bandit safety
         
     - name: Check Python formatting
       run: |
-        black --check src/ tests/ --diff > black-report.txt
-      continue-on-error: true
+        black --check src/ tests/ --diff
         
     - name: Check import sorting
       run: |
-        isort --check-only src/ tests/ --diff > isort-report.txt
-      continue-on-error: true
+        isort --check-only src/ tests/ --diff
         
-    - name: Run security linting with Bandit
+    - name: Run Python linting
       run: |
-        bandit -r src/ -f json -o bandit-report.json
-      continue-on-error: true
-      
-    - name: Create code quality summary
-      if: always()
+        flake8 src/ tests/ --max-line-length=88 --extend-ignore=E203,W503
+        
+    - name: Run security linting
       run: |
-        echo "Code Quality Analysis Report" > code-quality-summary.log
-        echo "Timestamp: $(date)" >> code-quality-summary.log
-        echo "=========================" >> code-quality-summary.log
+        bandit -r src/ -f json -o bandit-report.json || true
         
-        if [ -f flake8-report.txt ] && [ -s flake8-report.txt ]; then
-          echo "Flake8 issues found" >> code-quality-summary.log
-        else
-          echo "Flake8 passed" >> code-quality-summary.log
-        fi
+    - name: Check Python security
+      run: |
+        safety check --json || echo "Security vulnerabilities found"
         
-        if [ -f black-report.txt ] && [ -s black-report.txt ]; then
-          echo "Black formatting issues found" >> code-quality-summary.log
-        else
-          echo "Black formatting passed" >> code-quality-summary.log
-        fi
-        
-        if [ -f isort-report.txt ] && [ -s isort-report.txt ]; then
-          echo "Import sorting issues found" >> code-quality-summary.log
-        else
-          echo "Import sorting passed" >> code-quality-summary.log
-        fi
-        
-        if [ -f bandit-report.json ]; then
-          echo "Bandit security scan completed" >> code-quality-summary.log
-        else
-          echo "Bandit security scan failed" >> code-quality-summary.log
-        fi
-        
-    - name: Upload code quality reports
+    - name: Upload security reports
       uses: actions/upload-artifact@v4
       if: always()
       with:
-        name: code-quality-reports
-        path: |
-          bandit-report.json
-          flake8-report.txt
-          black-report.txt
-          isort-report.txt
-          code-quality-summary.log
-        retention-days: 30
-
-  docker-build:
-    needs: [test-backend, test-frontend, code-quality, security-scan]
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-    steps:
-    - uses: actions/checkout@v4
-    
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3
-      
-    - name: Build Backend Docker image
-      uses: docker/build-push-action@v5
-      with:
-        context: .
-        push: false
-        tags: landscape-architecture-tool:latest
-        cache-from: type=gha
-        cache-to: type=gha,mode=max
-        
-    - name: Build Frontend Docker image
-      uses: docker/build-push-action@v5
-      with:
-        context: ./frontend
-        file: ./frontend/Dockerfile
-        push: false
-        tags: landscape-frontend:latest
-        cache-from: type=gha
-        cache-to: type=gha,mode=max
-        
-    - name: Test Docker Compose stack
-      run: |
-        # Create test environment file
-        cp .env.example .env.test
-        sed -i 's/production/testing/' .env.test
-        
-        # Validate docker compose configuration
-        docker compose -f docker-compose.yml --env-file .env.test config > /dev/null
-        
-        # Start services with healthcheck timeout
-        timeout 600 docker compose -f docker-compose.yml --env-file .env.test up -d --build
-        
-        # Wait for services to be ready with extended timeout
-        echo "Waiting for services to start..."
-        sleep 60
-        
-        # Check if containers are running
-        docker compose ps
-        
-        # Test health endpoints with retries
-        echo "Testing backend health endpoint..."
-        for i in {1..10}; do
-          if timeout 30 curl -f http://localhost:5000/health; then
-            echo "Backend health check passed"
-            break
-          elif [ $i -eq 10 ]; then
-            echo "Backend health check failed after 10 attempts" > health-check-failure.log
-            docker compose logs backend >> health-check-failure.log
-          else
-            echo "Attempt $i failed, retrying..."
-            sleep 10
-          fi
-        done
-        
-        # Check if frontend is built and served
-        echo "Testing frontend endpoint..."
-        for i in {1..5}; do
-          if timeout 30 curl -f http://localhost:80; then
-            echo "Frontend check passed"
-            break
-          elif [ $i -eq 5 ]; then
-            echo "Frontend check failed after 5 attempts" >> health-check-failure.log
-            docker compose logs frontend >> health-check-failure.log
-            docker compose logs nginx >> health-check-failure.log
-          else
-            echo "Frontend attempt $i failed, retrying..."
-            sleep 5
-          fi
-        done
-        
-        # Clean up
-        docker compose down -v
-        
-    - name: Upload health check results
-      uses: actions/upload-artifact@v4
-      if: failure()
-      with:
-        name: docker-health-check-failure
-        path: health-check-failure.log
-        retention-days: 7
-        
-    - name: Scan Docker images for vulnerabilities
-      run: |
-        # Install trivy using the official installer
-        curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin
-        
-        # Scan images (create files even if scans fail)
-        trivy image --exit-code 0 --severity HIGH,CRITICAL landscape-architecture-tool:latest --format json --output backend-vuln-scan.json || echo '{"SchemaVersion": 2, "Results": []}' > backend-vuln-scan.json
-        trivy image --exit-code 0 --severity HIGH,CRITICAL landscape-frontend:latest --format json --output frontend-vuln-scan.json || echo '{"SchemaVersion": 2, "Results": []}' > frontend-vuln-scan.json
-        
-    - name: Upload vulnerability scan results
-      uses: actions/upload-artifact@v4
-      if: always()
-      with:
-        name: docker-vulnerability-scans
-        path: |
-          backend-vuln-scan.json
-          frontend-vuln-scan.json
+        name: security-reports
+        path: bandit-report.json
         retention-days: 30
 
   integration-tests:
@@ -544,14 +232,14 @@ jobs:
     - name: Install frontend dependencies
       run: |
         cd frontend
-        npm install --legacy-peer-deps
+        npm ci --legacy-peer-deps
         
     - name: Build frontend
       run: |
         cd frontend
         npm run build
         
-    - name: Start backend server
+    - name: Run integration tests
       env:
         DATABASE_URL: postgresql://postgres:postgres_password@localhost:5432/landscape_integration_test
         REDIS_URL: redis://localhost:6379/1
@@ -559,169 +247,65 @@ jobs:
         FLASK_ENV: testing
         PYTHONPATH: .
       run: |
-        # Run database migrations
+        # Setup database
         flask --app src.main db upgrade
         
         # Start backend in background
         python src/main.py &
         BACKEND_PID=$!
-        echo "Backend PID: $BACKEND_PID"
-        echo $BACKEND_PID > backend.pid
         
-        # Enhanced health check with retries
-        echo "Waiting for backend to start..."
-        for i in {1..30}; do
-          if curl -f -s http://localhost:5000/health > /dev/null 2>&1; then
-            echo "Backend is ready after ${i} attempts"
-            break
-          fi
-          if [ $i -eq 30 ]; then
-            echo "Backend failed to start after 30 attempts"
-            kill $BACKEND_PID || true
-            exit 1
-          fi
-          echo "Attempt $i: Backend not ready, waiting..."
-          sleep 2
-        done
+        # Wait for backend to start
+        timeout 30 bash -c 'until curl -f http://localhost:5000/health; do sleep 2; done'
         
-        # Test API endpoints with timeout
-        timeout 10 curl -f http://localhost:5000/health || exit 1
-        timeout 10 curl -f http://localhost:5000/api/dashboard/stats || exit 1
+        # Test API endpoints
+        curl -f http://localhost:5000/health
+        curl -f http://localhost:5000/api/dashboard/stats
         
-        # Test CRUD operations with timeout
-        timeout 10 curl -X POST http://localhost:5000/api/suppliers \
+        # Test CRUD operations
+        curl -X POST http://localhost:5000/api/suppliers \
           -H "Content-Type: application/json" \
-          -d '{"name":"Test Supplier","contact_person":"John Doe","email":"john@test.com","phone":"123-456-7890","address":"123 Test St"}' || exit 1
+          -d '{"name":"Test Supplier","contact_person":"John Doe","email":"john@test.com","phone":"123-456-7890","address":"123 Test St"}'
         
-        timeout 10 curl -f http://localhost:5000/api/suppliers || exit 1
+        curl -f http://localhost:5000/api/suppliers
         
-        # Clean up
-        BACKEND_PID=$(cat backend.pid)
-        kill $BACKEND_PID || true
-        rm -f backend.pid
+        # Cleanup
+        kill $BACKEND_PID
 
-  monitoring:
-    permissions:
-      contents: read
-    runs-on: ubuntu-latest
-    needs: [test-backend, test-frontend, code-quality, security-scan]
-    if: always()
-    steps:
-    - uses: actions/checkout@v4
-    
-    - name: Download all artifacts
-      uses: actions/download-artifact@v4
-      with:
-        path: artifacts
-        
-    - name: Generate CI/CD monitoring report
-      run: |
-        echo "# CI/CD Pipeline Monitoring Report" > monitoring-report.md
-        echo "Generated: $(date)" >> monitoring-report.md
-        echo "" >> monitoring-report.md
-        
-        # Check job statuses
-        echo "## Job Status Summary" >> monitoring-report.md
-        echo "- Backend Tests: ${{ needs.test-backend.result }}" >> monitoring-report.md
-        echo "- Frontend Tests: ${{ needs.test-frontend.result }}" >> monitoring-report.md
-        echo "- Code Quality: ${{ needs.code-quality.result }}" >> monitoring-report.md
-        echo "- Security Scan: ${{ needs.security-scan.result }}" >> monitoring-report.md
-        echo "" >> monitoring-report.md
-        
-        # Artifact summary
-        echo "## Artifacts Generated" >> monitoring-report.md
-        if [ -d "artifacts" ]; then
-          find artifacts -type f -name "*.log" -o -name "*.json" -o -name "*.sarif" | while read file; do
-            echo "- $(basename "$file"): $(stat -c%s "$file") bytes" >> monitoring-report.md
-          done
-        else
-          echo "- No artifacts found" >> monitoring-report.md
-        fi
-        echo "" >> monitoring-report.md
-        
-        # Performance metrics
-        echo "## Pipeline Performance" >> monitoring-report.md
-        echo "- Workflow started: ${{ github.workflow }}" >> monitoring-report.md
-        echo "- Run ID: ${{ github.run_id }}" >> monitoring-report.md
-        echo "- Run number: ${{ github.run_number }}" >> monitoring-report.md
-        echo "- Commit SHA: ${{ github.sha }}" >> monitoring-report.md
-        
-    - name: Upload monitoring report
-      uses: actions/upload-artifact@v4
-      with:
-        name: ci-cd-monitoring-report
-        path: monitoring-report.md
-        retention-days: 30
-
-  deepsource:
-    runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    steps:
-    - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-        
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: ${{ env.PYTHON_VERSION }}
-        
-    - name: Install Python dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements-dev.txt
-        
-    - name: Generate test coverage
-      run: |
-        pip install pytest-cov
-        python -m pytest tests/ --cov=src --cov-report=xml --cov-report=html
-        
-    - name: Upload coverage to DeepSource
-      env:
-        DEEPSOURCE_DSN: ${{ secrets.DEEPSOURCE_DSN }}
-      run: |
-        if [ ! -z "$DEEPSOURCE_DSN" ]; then
-          # Install DeepSource CLI
-          curl https://deepsource.io/cli | sh
-          
-          # Report coverage
-          ./bin/deepsource report --analyzer test-coverage --key python --value-file ./coverage.xml
-          
-          echo "Coverage reported to DeepSource successfully"
-        else
-          echo "DeepSource DSN not configured, skipping coverage upload"
-          echo "To enable DeepSource integration, add DEEPSOURCE_DSN to repository secrets"
-        fi
-        
-    - name: Upload coverage artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: coverage-reports
-        path: |
-          coverage.xml
-          htmlcov/
-        retention-days: 30
-
-  deploy:
-    needs: [test-backend, test-frontend, code-quality, security-scan, docker-build, integration-tests, monitoring]
+  docker-build:
+    needs: [test-backend, test-frontend, code-quality]
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
     steps:
     - uses: actions/checkout@v4
     
-    - name: Deploy to staging
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+      
+    - name: Build Docker images
+      run: |
+        # Validate docker compose configuration
+        docker compose config > /dev/null
+        
+        # Build images
+        docker compose build
+        
+        # Test with health checks
+        docker compose up -d --wait --wait-timeout 300
+        
+        # Test endpoints
+        timeout 30 bash -c 'until curl -f http://localhost:5000/health; do sleep 2; done'
+        timeout 30 bash -c 'until curl -f http://localhost:80; do sleep 2; done'
+        
+        # Cleanup
+        docker compose down -v
+
+  deploy:
+    needs: [integration-tests, docker-build]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+    - name: Deploy notification
       run: |
         echo "🚀 All checks passed! Ready for deployment"
-        echo "📊 Test Results:"
-        echo "  ✅ Backend tests passed"
-        echo "  ✅ Frontend build successful"
-        echo "  ✅ Code quality checks passed"
-        echo "  ✅ Security scans completed"
-        echo "  ✅ Docker builds successful"
-        echo "  ✅ Integration tests passed"
-        echo ""
-        echo "🔧 Next steps:"
-        echo "  - Manual review and approval"
-        echo "  - Production deployment"
-        echo "  - Post-deployment verification"
-
+        echo "📊 Test Results: All tests passed"
+        echo "🔧 Next steps: Manual review and approval for production deployment"

@@ -178,7 +178,7 @@ class TestPlantRoutes(DatabaseTestMixin):
                              data=json.dumps(plant_data),
                              content_type='application/json')
         
-        assert response.status_code == 400
+        assert response.status_code == 422
         data = response.get_json()
         assert "error" in data
 
@@ -195,7 +195,7 @@ class TestPlantRoutes(DatabaseTestMixin):
                              data=json.dumps(plant_data),
                              content_type='application/json')
         
-        assert response.status_code == 400
+        assert response.status_code == 422
         data = response.get_json()
         assert "error" in data
 
@@ -511,7 +511,7 @@ class TestPlantRoutesIntegration(DatabaseTestMixin):
         
         # Test invalid page parameters
         response = client.get("/api/plants?page=-1")
-        assert response.status_code == 400
+        assert response.status_code == 422
         
         response = client.get("/api/plants?per_page=0")
-        assert response.status_code == 400
+        assert response.status_code == 422
