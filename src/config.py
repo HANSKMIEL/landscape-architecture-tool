@@ -15,6 +15,10 @@ class Config:
     SQLALCHEMY_DATABASE_URI = (
         os.environ.get("DATABASE_URL") or "sqlite:///landscape_architecture.db"
     )
+    
+    # Database connection pool settings for performance
+    # SQLite doesn't support connection pooling parameters
+    SQLALCHEMY_ENGINE_OPTIONS = {}
 
     # Security configurations
     SESSION_COOKIE_SECURE = True
@@ -48,10 +52,22 @@ class ProductionConfig(Config):
     DEBUG = False
     SECRET_KEY = os.environ.get("SECRET_KEY")
 
-    # Production database - use SQLite for demo, PostgreSQL in real production
+    # Production database - use PostgreSQL with connection pooling
     SQLALCHEMY_DATABASE_URI = (
         os.environ.get("DATABASE_URL") or "sqlite:///landscape_architecture_prod.db"
     )
+    
+    # Connection pooling for production (only for non-SQLite)
+    def __init__(self):
+        super().__init__()
+        if not self.SQLALCHEMY_DATABASE_URI.startswith('sqlite'):
+            self.SQLALCHEMY_ENGINE_OPTIONS = {
+                'pool_timeout': 20,
+                'pool_recycle': 3600,
+                'pool_pre_ping': True,
+                'pool_size': 10,
+                'max_overflow': 20
+            }
 
     # Enhanced security for production
     SESSION_COOKIE_SECURE = True

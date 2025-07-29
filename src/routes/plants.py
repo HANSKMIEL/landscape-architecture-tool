@@ -9,39 +9,42 @@ plants_bp = Blueprint("plants", __name__)
 
 @plants_bp.route("/", methods=["GET"])
 def get_plants():
-    """Get all plants with optional filtering"""
+    """Get all plants with optional filtering - optimized with indexes"""
     try:
         # Get query parameters
         search = request.args.get("search", "")
         category = request.args.get("category", "")
         sun_requirements = request.args.get("sun_requirements", "")
-        water_requirements = request.args.get("water_requirements", "")
+        water_needs = request.args.get("water_needs", "")
         native_only = request.args.get("native_only", "").lower() == "true"
         page = int(request.args.get("page", 1))
-        per_page = int(request.args.get("per_page", 50))
+        per_page = min(int(request.args.get("per_page", 50)), 100)  # Limit max per_page
 
+        # Start with base query - using indexed columns first for better performance
         query = Plant.query
 
-        # Apply filters
-        if search:
-            query = query.filter(
-                Plant.name.contains(search)
-                | Plant.scientific_name.contains(search)
-                | Plant.common_name.contains(search)
-            )
-
+        # Apply most selective filters first (indexed columns)
+        if native_only:
+            query = query.filter(Plant.native.is_(True))
+            
         if category:
             query = query.filter(Plant.category == category)
 
         if sun_requirements:
             query = query.filter(Plant.sun_requirements == sun_requirements)
 
-        if water_requirements:
-            query = query.filter(Plant.water_requirements == water_requirements)
+        if water_needs:
+            query = query.filter(Plant.water_needs == water_needs)
 
-        if native_only:
-            query = query.filter(Plant.native_to_netherlands.is_(True))
+        # Apply text search last (less selective)
+        if search:
+            search_term = f"%{search.lower()}%"
+            query = query.filter(
+                Plant.name.ilike(search_term) |
+                Plant.common_name.ilike(search_term)
+            )
 
+        # Order by indexed column and use efficient pagination
         plants = query.order_by(Plant.name).paginate(
             page=page, per_page=per_page, error_out=False
         )
@@ -52,6 +55,7 @@ def get_plants():
                 "total": plants.total,
                 "pages": plants.pages,
                 "current_page": page,
+                "per_page": per_page,
             }
         )
     except Exception as e:
@@ -85,14 +89,40 @@ def get_plant_recommendations():
         - Deer Resistant: {preferences.get('deer_resistant', False)}
         """
 
-        # Get available plants from database
-        available_plants = Plant.query.all()
+        # Get available plants from database with optimized query
+        # Use indexed columns for efficient filtering and limit early
+        base_query = Plant.query
+        
+        # Pre-filter based on site conditions to reduce dataset size
+        if site_conditions.get("sun_exposure"):
+            sun_exposure = site_conditions.get("sun_exposure")
+            if sun_exposure == "Full Sun":
+                base_query = base_query.filter(
+                    Plant.sun_requirements.in_(["Full Sun", "Full Sun to Partial Sun"])
+                )
+            elif sun_exposure == "Partial Sun":
+                base_query = base_query.filter(
+                    Plant.sun_requirements.in_(["Partial Sun", "Full Sun to Partial Sun", "Partial Sun to Shade"])
+                )
+            elif sun_exposure == "Shade":
+                base_query = base_query.filter(
+                    Plant.sun_requirements.in_(["Shade", "Partial Sun to Shade"])
+                )
+        
+        # Filter by preferences if specified
+        if preferences.get("native_preferred"):
+            base_query = base_query.filter(Plant.native.is_(True))
+            
+        # Limit to reasonable number for AI processing, order by name for consistency
+        available_plants = base_query.order_by(Plant.name).limit(20).all()
+        
         plant_list = []
-        for plant in available_plants[:20]:  # Limit for AI processing
+        for plant in available_plants:
             plant_info = (
-                f"{plant.name} ({plant.scientific_name}) - "
+                f"{plant.name}"
+                f"{f' ({plant.common_name})' if plant.common_name else ''} - "
                 f"{plant.category}, {plant.sun_requirements}, "
-                f"{plant.water_requirements}"
+                f"{plant.water_needs if plant.water_needs else 'Medium water'}"
             )
             plant_list.append(plant_info)
 
@@ -168,20 +198,21 @@ def get_plant_recommendations():
             fallback_plants = []
             query = Plant.query
 
-            # Apply basic filtering based on conditions
+            # Apply basic filtering based on conditions using indexed columns
+            if preferences.get("native_preferred"):
+                query = query.filter(Plant.native.is_(True))
+                
             if site_conditions.get("sun_exposure") == "Full Sun":
                 query = query.filter(
-                    Plant.sun_requirements.in_(["Full Sun", "Partial Sun"])
+                    Plant.sun_requirements.in_(["Full Sun", "Full Sun to Partial Sun"])
                 )
             elif site_conditions.get("sun_exposure") == "Shade":
                 query = query.filter(
-                    Plant.sun_requirements.in_(["Shade", "Partial Sun"])
+                    Plant.sun_requirements.in_(["Shade", "Partial Sun to Shade"])
                 )
 
-            if preferences.get("native_preferred"):
-                query = query.filter(Plant.native_to_netherlands.is_(True))
-
-            fallback_plants = query.limit(8).all()
+            # Order by name and limit results
+            fallback_plants = query.order_by(Plant.name).limit(8).all()
 
             return jsonify(
                 {

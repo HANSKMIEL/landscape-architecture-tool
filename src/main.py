@@ -44,6 +44,7 @@ from src.services import (  # noqa: E402
     SupplierService,
 )
 from src.services.analytics import AnalyticsService  # noqa: E402
+from src.services.cache_service import init_cache_service, cache_response, invalidate_cache_for_model, get_cache_timeout  # noqa: E402
 from src.utils.db_init import initialize_database, populate_sample_data  # noqa: E402
 from src.utils.error_handlers import handle_errors  # noqa: E402
 from src.utils.error_handlers import register_error_handlers  # noqa: E402
@@ -95,6 +96,9 @@ def create_app():
         default_limits=[app.config["RATELIMIT_DEFAULT"]],
     )
     limiter.init_app(app)
+    
+    # Initialize caching service
+    init_cache_service(app)
 
     # Register error handlers
     register_error_handlers(app)
@@ -161,6 +165,7 @@ def create_app():
     # Dashboard endpoints
     @app.route("/api/dashboard/stats", methods=["GET"])
     @handle_errors
+    @cache_response(timeout=get_cache_timeout('dashboard'))
     def get_dashboard_stats():
         """Get dashboard statistics"""
         stats = dashboard_service.get_stats()
@@ -168,6 +173,7 @@ def create_app():
 
     @app.route("/api/dashboard/recent-activity", methods=["GET"])
     @handle_errors
+    @cache_response(timeout=get_cache_timeout('dashboard'))
     def get_recent_activity():
         """Get recent activity for dashboard"""
         activities = dashboard_service.get_recent_activity()
@@ -176,6 +182,7 @@ def create_app():
     # Analytics endpoints
     @app.route("/api/analytics/plant-usage", methods=["GET"])
     @handle_errors
+    @cache_response(timeout=get_cache_timeout('analytics'))
     def get_plant_usage_analytics():
         """Get plant usage analytics"""
         from flask import request
@@ -235,6 +242,7 @@ def create_app():
     # Suppliers endpoints
     @app.route("/api/suppliers", methods=["GET"])
     @handle_errors
+    @cache_response(timeout=get_cache_timeout('suppliers'))
     def get_suppliers():
         """Get all suppliers"""
         from flask import request
@@ -258,6 +266,11 @@ def create_app():
         validated_data = schema.model_dump(exclude_unset=True)
 
         supplier = supplier_service.create(validated_data)
+        
+        # Invalidate related caches
+        invalidate_cache_for_model('suppliers')
+        invalidate_cache_for_model('dashboard')
+        
         return jsonify(supplier), 201
 
     @app.route("/api/suppliers/<int:supplier_id>", methods=["PUT"])
@@ -291,6 +304,7 @@ def create_app():
     # Plants endpoints
     @app.route("/api/plants", methods=["GET"])
     @handle_errors
+    @cache_response(timeout=get_cache_timeout('plants'))
     def get_plants():
         """Get all plants"""
         from flask import request
@@ -312,6 +326,11 @@ def create_app():
         validated_data = schema.model_dump(exclude_unset=True)
 
         plant = plant_service.create(validated_data)
+        
+        # Invalidate related caches
+        invalidate_cache_for_model('plants')
+        invalidate_cache_for_model('dashboard')
+        
         return jsonify(plant), 201
 
     @app.route("/api/plants/<int:plant_id>", methods=["PUT"])

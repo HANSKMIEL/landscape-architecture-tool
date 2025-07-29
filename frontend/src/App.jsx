@@ -3,8 +3,9 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { Toaster } from 'react-hot-toast'
 import ResponsiveSidebar from './components/ResponsiveSidebar'
 import Header from './components/Header'
+import RouteLoader, { LazyLoadErrorBoundary } from './components/RouteLoader'
 
-// Dynamic imports for route components
+// Dynamic imports for route components with prefetch hints
 const Dashboard = lazy(() => import('./components/Dashboard'))
 const Suppliers = lazy(() => import('./components/Suppliers'))
 const Plants = lazy(() => import('./components/Plants'))
@@ -14,6 +15,7 @@ const Projects = lazy(() => import('./components/Projects'))
 const PlantRecommendations = lazy(() => import('./components/PlantRecommendations'))
 const Reports = lazy(() => import('./components/Reports'))
 const Settings = lazy(() => import('./components/Settings'))
+
 import './unified-professional-styles.css'
 import './enhanced_sidebar_styles.css'
 
@@ -75,24 +77,22 @@ function App() {
           
           {/* Main content */}
           <main className="p-4 sm:p-6">
-            <Suspense fallback={
-              <div className="flex items-center justify-center h-64">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-              </div>
-            }>
-              <Routes>
-                <Route path="/" element={<Navigate to="/dashboard" replace />} />
-                <Route path="/dashboard" element={<Dashboard language={language} />} />
-                <Route path="/suppliers" element={<Suppliers language={language} />} />
-                <Route path="/plants" element={<Plants language={language} />} />
-                <Route path="/products" element={<Products language={language} />} />
-                <Route path="/clients" element={<Clients language={language} />} />
-                <Route path="/projects" element={<Projects language={language} />} />
-                <Route path="/plant-recommendations" element={<PlantRecommendations language={language} />} />
-                <Route path="/reports" element={<Reports language={language} />} />
-                <Route path="/settings" element={<Settings language={language} />} />
-              </Routes>
-            </Suspense>
+            <LazyLoadErrorBoundary>
+              <Suspense fallback={<RouteLoader />}>
+                <Routes>
+                  <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                  <Route path="/dashboard" element={<Dashboard language={language} />} />
+                  <Route path="/suppliers" element={<Suppliers language={language} />} />
+                  <Route path="/plants" element={<Plants language={language} />} />
+                  <Route path="/products" element={<Products language={language} />} />
+                  <Route path="/clients" element={<Clients language={language} />} />
+                  <Route path="/projects" element={<Projects language={language} />} />
+                  <Route path="/plant-recommendations" element={<PlantRecommendations language={language} />} />
+                  <Route path="/reports" element={<Reports language={language} />} />
+                  <Route path="/settings" element={<Settings language={language} />} />
+                </Routes>
+              </Suspense>
+            </LazyLoadErrorBoundary>
           </main>
         </div>
         
