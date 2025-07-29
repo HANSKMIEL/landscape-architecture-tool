@@ -344,9 +344,14 @@ class TestAnalyticsService(DatabaseTestMixin):
         maple_tree = plant_factory(name="Maple Tree")
         
         # Add plants to projects
-        ProjectPlant(project=projects[0], plant=oak_tree, quantity=5)
-        ProjectPlant(project=projects[1], plant=maple_tree, quantity=3)
-        ProjectPlant(project=projects[2], plant=oak_tree, quantity=8)
+        project_plant_1 = ProjectPlant(project=projects[0], plant=oak_tree, quantity=5)
+        project_plant_2 = ProjectPlant(project=projects[1], plant=maple_tree, quantity=3)
+        project_plant_3 = ProjectPlant(project=projects[2], plant=oak_tree, quantity=8)
+        
+        db.session.add(project_plant_1)
+        db.session.add(project_plant_2)
+        db.session.add(project_plant_3)
+        db.session.commit()
         
         result = analytics.get_geographic_analytics()
         
