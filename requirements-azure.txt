@@ -1,0 +1,7 @@
+# Optional Azure integration dependencies
+# Install with: pip install -r requirements-azure.txt
+
+msal==1.28.0
+msgraph-core==1.0.0
+azure-identity==1.15.0
+azure-storage-file-datalake==12.17.0
