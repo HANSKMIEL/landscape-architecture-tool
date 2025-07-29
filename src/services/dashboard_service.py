@@ -2,6 +2,7 @@
 Dashboard Service
 
 Handles dashboard analytics and summary information.
+Enhanced with performance caching for improved response times.
 """
 
 from datetime import datetime, timedelta
@@ -10,12 +11,15 @@ from sqlalchemy import func, desc
 
 from src.models.landscape import Client, Plant, Project, ProjectPlant, Supplier, Product
 from src.models.user import db
+from src.services.performance import cache_dashboard_stats, monitor_db_performance
 
 
 class DashboardService:
     """Service class for dashboard operations and analytics"""
 
     @staticmethod
+    @cache_dashboard_stats
+    @monitor_db_performance
     def get_dashboard_summary() -> Dict:
         """Get main dashboard summary statistics"""
         # Count totals
@@ -270,6 +274,8 @@ class DashboardService:
         }
 
     @staticmethod
+    @cache_dashboard_stats
+    @monitor_db_performance
     def get_recent_activity(limit: int = 10) -> Dict:
         """Get recent activity across the system"""
         # Recent projects

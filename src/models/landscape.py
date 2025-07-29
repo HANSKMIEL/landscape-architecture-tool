@@ -459,3 +459,47 @@ class ProjectPlant(db.Model):
             "created_at": (self.created_at.isoformat() if self.created_at else None),
             "updated_at": (self.updated_at.isoformat() if self.updated_at else None),
         }
+
+
+# Database Performance Optimization - Indexes for frequently queried fields
+# These indexes significantly improve query performance for large datasets
+
+# Plant indexes for search and filtering
+plant_name_idx = db.Index('idx_plant_name', Plant.name)
+plant_category_idx = db.Index('idx_plant_category', Plant.category)
+plant_sun_requirements_idx = db.Index('idx_plant_sun_requirements', Plant.sun_requirements)
+plant_water_needs_idx = db.Index('idx_plant_water_needs', Plant.water_needs)
+plant_hardiness_zone_idx = db.Index('idx_plant_hardiness_zone', Plant.hardiness_zone)
+plant_native_idx = db.Index('idx_plant_native', Plant.native)
+plant_supplier_idx = db.Index('idx_plant_supplier_id', Plant.supplier_id)
+plant_price_idx = db.Index('idx_plant_price', Plant.price)
+
+# Composite indexes for common query patterns
+plant_category_sun_idx = db.Index('idx_plant_category_sun', Plant.category, Plant.sun_requirements)
+plant_native_category_idx = db.Index('idx_plant_native_category', Plant.native, Plant.category)
+
+# Project indexes for filtering and search
+project_client_idx = db.Index('idx_project_client_id', Project.client_id)
+project_status_idx = db.Index('idx_project_status', Project.status)
+project_type_idx = db.Index('idx_project_project_type', Project.project_type)
+project_start_date_idx = db.Index('idx_project_start_date', Project.start_date)
+project_budget_idx = db.Index('idx_project_budget', Project.budget)
+
+# Composite indexes for project queries
+project_status_client_idx = db.Index('idx_project_status_client', Project.status, Project.client_id)
+project_type_status_idx = db.Index('idx_project_type_status', Project.project_type, Project.status)
+
+# Supplier indexes
+supplier_name_idx = db.Index('idx_supplier_name', Supplier.name)
+supplier_city_idx = db.Index('idx_supplier_city', Supplier.city)
+supplier_specialization_idx = db.Index('idx_supplier_specialization', Supplier.specialization)
+
+# Client indexes
+client_name_idx = db.Index('idx_client_name', Client.name)
+client_city_idx = db.Index('idx_client_city', Client.city)
+client_type_idx = db.Index('idx_client_type', Client.client_type)
+
+# ProjectPlant indexes for relationships
+project_plant_project_idx = db.Index('idx_project_plant_project', ProjectPlant.project_id)
+project_plant_plant_idx = db.Index('idx_project_plant_plant', ProjectPlant.plant_id)
+project_plant_status_idx = db.Index('idx_project_plant_status', ProjectPlant.status)

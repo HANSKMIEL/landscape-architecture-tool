@@ -1,0 +1,106 @@
+/* Landscape Architecture Design System - Tailwind CSS v3 */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom base styles */
+@layer base {
+  /* Base typography using Inter font */
+  html {
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+
+  body {
+    @apply bg-white text-slate-900;
+  }
+
+  /* Focus-visible styles for accessibility */
+  *:focus-visible {
+    @apply outline-none ring-2 ring-primary-500 ring-offset-2;
+  }
+}
+
+/* Component styles */
+@layer components {
+  /* Button variants with landscape themes */
+  .btn {
+    @apply inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none px-4 py-2;
+  }
+
+  .btn-primary {
+    @apply bg-primary-500 text-white hover:bg-primary-600 active:bg-primary-700;
+  }
+
+  .btn-secondary {
+    @apply bg-secondary-500 text-white hover:bg-secondary-600 active:bg-secondary-700;
+  }
+
+  .btn-nature {
+    @apply bg-nature-500 text-white hover:bg-nature-600 active:bg-nature-700;
+  }
+
+  .btn-earth {
+    @apply bg-earth-500 text-white hover:bg-earth-600 active:bg-earth-700;
+  }
+
+  .btn-water {
+    @apply bg-water-500 text-white hover:bg-water-600 active:bg-water-700;
+  }
+
+  .btn-outline {
+    @apply border border-slate-300 bg-transparent hover:bg-slate-50 text-slate-700;
+  }
+
+  /* Card variants */
+  .card {
+    @apply rounded-lg border border-slate-200 bg-white shadow-sm p-6;
+  }
+
+  .card-landscape {
+    @apply bg-gradient-to-br from-green-50 to-emerald-50 border-green-200;
+  }
+
+  .card-water {
+    @apply bg-gradient-to-br from-blue-50 to-cyan-50 border-blue-200;
+  }
+
+  .card-earth {
+    @apply bg-gradient-to-br from-amber-50 to-orange-50 border-amber-200;
+  }
+
+  .card-interactive {
+    @apply cursor-pointer transition-transform hover:scale-105 hover:shadow-lg;
+  }
+
+  /* Layout utilities */
+  .stack > * + * {
+    @apply mt-4;
+  }
+
+  .stack-sm > * + * {
+    @apply mt-2;
+  }
+
+  .stack-lg > * + * {
+    @apply mt-6;
+  }
+}
+
+/* Utility styles */
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .shadow-landscape {
+    box-shadow: 0 4px 16px rgba(34, 197, 94, 0.15);
+  }
+
+  .shadow-water {
+    box-shadow: 0 4px 16px rgba(6, 182, 212, 0.15);
+  }
+
+  .shadow-earth {
+    box-shadow: 0 4px 16px rgba(120, 113, 108, 0.15);
+  }
+}

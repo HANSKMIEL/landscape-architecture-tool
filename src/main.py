@@ -103,6 +103,10 @@ def create_app():
     app.register_blueprint(plant_recommendations_bp)
     app.register_blueprint(project_plants_bp)
     app.register_blueprint(reports_bp)
+    
+    # Register performance monitoring blueprint
+    from src.routes.performance import performance_bp
+    app.register_blueprint(performance_bp)
 
     # Initialize services
     supplier_service = SupplierService()
