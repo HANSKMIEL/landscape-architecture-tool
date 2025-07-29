@@ -222,7 +222,7 @@ landscape-architecture-tool/
 2. **Install backend dependencies**
    ```bash
    pip install -r requirements.txt
-   pip install -r requirements-test.txt  # For testing
+   pip install -r requirements-dev.txt   # For development and testing
    ```
 
 3. **Install frontend dependencies**
