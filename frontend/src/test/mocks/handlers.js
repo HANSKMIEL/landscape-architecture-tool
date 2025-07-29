@@ -222,7 +222,12 @@ export const handlers = [
 
   ...createHandler('get', '/api/suppliers/:id', ({ params }) => {
     const id = parseInt(params.id);
-    return HttpResponse.json(createMockSupplier({ id }));
+    const suppliers = createMockArray(createMockSupplier, 10); // Mock list of suppliers
+    const supplier = suppliers.find(s => s.id === id);
+    if (!supplier) {
+      return HttpResponse.json({ error: 'Supplier not found' }, { status: 404 });
+    }
+    return HttpResponse.json(supplier);
   }),
 
   ...createHandler('post', '/api/suppliers', async ({ request }) => {
