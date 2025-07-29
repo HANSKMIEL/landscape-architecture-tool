@@ -3,7 +3,7 @@ Performance monitoring and optimization routes.
 Provides endpoints for monitoring cache performance and system health.
 """
 
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, current_app
 from src.services.performance import (
     get_cache_stats, 
     cache, 
@@ -25,9 +25,9 @@ def get_performance_stats():
         }
         return jsonify(stats)
     except Exception as e:
+        current_app.logger.exception("Failed to get performance stats")
         return jsonify({
-            'error': 'Failed to get performance stats',
-            'details': str(e)
+            'error': 'Failed to get performance stats'
         }), 500
 
 @performance_bp.route('/cache/stats', methods=['GET'])
@@ -36,9 +36,9 @@ def get_cache_statistics():
     try:
         return jsonify(get_cache_stats())
     except Exception as e:
+        current_app.logger.exception("Failed to get cache stats")
         return jsonify({
-            'error': 'Failed to get cache stats',
-            'details': str(e)
+            'error': 'Failed to get cache stats'
         }), 500
 
 @performance_bp.route('/cache/clear', methods=['POST'])
@@ -57,9 +57,9 @@ def clear_cache():
                 'success': False
             }), 500
     except Exception as e:
+        current_app.logger.exception("Failed to clear cache")
         return jsonify({
-            'error': 'Failed to clear cache',
-            'details': str(e)
+            'error': 'Failed to clear cache'
         }), 500
 
 @performance_bp.route('/cache/invalidate', methods=['POST'])
@@ -93,9 +93,9 @@ def invalidate_cache():
             'success': True
         })
     except Exception as e:
+        current_app.logger.exception("Failed to invalidate cache")
         return jsonify({
-            'error': 'Failed to invalidate cache',
-            'details': str(e)
+            'error': 'Failed to invalidate cache'
         }), 500
 
 @performance_bp.route('/health', methods=['GET'])
