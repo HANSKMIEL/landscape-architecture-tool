@@ -680,9 +680,7 @@ def create_app():
             "current_page": page,
         }
         
-        # Return empty list if no plants, otherwise return full structure
-        if result["total"] == 0:
-            return jsonify([])
+        # Always return structured response for consistency
         return jsonify(result)
 
     @app.route("/api/plants", methods=["POST"])

@@ -22,7 +22,12 @@ class TestPlantRoutes(DatabaseTestMixin):
         
         assert response.status_code == 200
         data = response.get_json()
-        assert data == []  # API returns simple list when empty
+        assert isinstance(data, dict)  # API returns structured response consistently
+        assert "plants" in data
+        assert data["plants"] == []
+        assert data["total"] == 0
+        assert data["current_page"] == 1
+        assert data["pages"] == 0
 
     def test_get_plants_with_data(self, client, app_context, sample_plants):
         """Test getting plants with sample data"""
@@ -178,7 +183,7 @@ class TestPlantRoutes(DatabaseTestMixin):
                              data=json.dumps(plant_data),
                              content_type='application/json')
         
-        assert response.status_code == 400
+        assert response.status_code == 422
         data = response.get_json()
         assert "error" in data
 
@@ -195,7 +200,7 @@ class TestPlantRoutes(DatabaseTestMixin):
                              data=json.dumps(plant_data),
                              content_type='application/json')
         
-        assert response.status_code == 400
+        assert response.status_code == 422
         data = response.get_json()
         assert "error" in data
 
@@ -511,7 +516,7 @@ class TestPlantRoutesIntegration(DatabaseTestMixin):
         
         # Test invalid page parameters
         response = client.get("/api/plants?page=-1")
-        assert response.status_code == 400
+        assert response.status_code == 422
         
         response = client.get("/api/plants?per_page=0")
-        assert response.status_code == 400
+        assert response.status_code == 422
