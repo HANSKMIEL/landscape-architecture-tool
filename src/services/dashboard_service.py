@@ -54,7 +54,7 @@ class DashboardService:
         # Total budget across all projects
         total_budget = db.session.query(func.sum(Project.budget)).scalar() or 0
 
-        return {
+        result = {
             "totals": {
                 "clients": total_clients,
                 "projects": total_projects,
@@ -69,6 +69,12 @@ class DashboardService:
             },
             "financial": {"total_budget": total_budget},
         }
+        
+        # Ensure all expected keys are present
+        result.setdefault('totals', {})
+        result.setdefault('recent_activity', {})
+        
+        return result
 
     @staticmethod
     def get_project_analytics(days: int = 30) -> Dict:
@@ -103,7 +109,7 @@ class DashboardService:
             .all()
         )
 
-        return {
+        result = {
             "projects_over_time": [
                 {"date": str(date), "count": count} for date, count in projects_by_date
             ],
@@ -116,6 +122,13 @@ class DashboardService:
                 {"name": name, "project_count": count} for name, count in top_clients
             ],
         }
+        
+        # Ensure all expected keys are present with appropriate defaults
+        result.setdefault('projects_over_time', [])
+        result.setdefault('projects_by_status', [])
+        result.setdefault('top_clients', [])
+        
+        return result
 
     @staticmethod
     def get_plant_analytics() -> Dict:
@@ -153,7 +166,7 @@ class DashboardService:
         native_count = Plant.query.filter_by(native=True).count()
         non_native_count = Plant.query.filter_by(native=False).count()
 
-        return {
+        result = {
             "most_used_plants": [
                 {
                     "name": name,
@@ -178,6 +191,14 @@ class DashboardService:
                 "non_native": non_native_count,
             },
         }
+        
+        # Ensure all expected keys are present with appropriate defaults
+        result.setdefault('most_used_plants', [])
+        result.setdefault('plants_by_category', [])
+        result.setdefault('plants_by_sun_exposure', [])
+        result.setdefault('native_distribution', {"native": 0, "non_native": 0})
+        
+        return result
 
     @staticmethod
     def get_financial_analytics() -> Dict:
@@ -220,7 +241,7 @@ class DashboardService:
             .all()
         )
 
-        return {
+        result = {
             "total_project_value": total_project_value,
             "average_project_value": avg_project_value,
             "values_by_status": [
@@ -243,6 +264,13 @@ class DashboardService:
                 for month, total_value in monthly_values
             ],
         }
+        
+        # Ensure all expected keys are present with appropriate defaults
+        result.setdefault('values_by_status', [])
+        result.setdefault('top_projects', [])
+        result.setdefault('monthly_trends', [])
+        
+        return result
 
     @staticmethod
     def get_supplier_analytics() -> Dict:
@@ -273,7 +301,7 @@ class DashboardService:
             .all()
         )
 
-        return {
+        result = {
             "total_suppliers": total_suppliers,
             "top_suppliers": [
                 {
@@ -290,6 +318,12 @@ class DashboardService:
                 if spec
             ],
         }
+        
+        # Ensure all expected keys are present with appropriate defaults
+        result.setdefault('top_suppliers', [])
+        result.setdefault('specializations', [])
+        
+        return result
 
     @staticmethod
     @cache_dashboard_stats
@@ -309,7 +343,7 @@ class DashboardService:
         # Recent plants
         recent_plants = Plant.query.order_by(desc(Plant.created_at)).limit(limit).all()
 
-        return {
+        result = {
             "recent_projects": [
                 {
                     "id": project.id,
@@ -346,6 +380,13 @@ class DashboardService:
                 for plant in recent_plants
             ],
         }
+        
+        # Ensure all expected keys are present with appropriate defaults
+        result.setdefault('recent_projects', [])
+        result.setdefault('recent_clients', [])
+        result.setdefault('recent_plants', [])
+        
+        return result
 
     @staticmethod
     def get_performance_metrics() -> Dict:
@@ -398,7 +439,7 @@ class DashboardService:
             (used_plants / total_plants * 100) if total_plants > 0 else 0
         )
 
-        return {
+        result = {
             "project_completion_rate": completion_rate,
             "average_project_duration_days": avg_duration,
             "plant_utilization_rate": plant_utilization,
@@ -409,6 +450,11 @@ class DashboardService:
                 "suppliers": Supplier.query.count(),
             },
         }
+        
+        # Ensure all expected keys are present with appropriate defaults
+        result.setdefault('total_entities', {})
+        
+        return result
 
     @staticmethod
     def get_stats() -> Dict:
