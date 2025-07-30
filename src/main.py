@@ -42,8 +42,8 @@ from src.services import (  # noqa: E402
     ProjectService,
     SupplierService,
 )
-from src.services.dashboard_service import DashboardService  # noqa: E402
 from src.services.analytics import AnalyticsService  # noqa: E402
+from src.services.dashboard_service import DashboardService  # noqa: E402
 from src.utils.db_init import initialize_database, populate_sample_data  # noqa: E402
 from src.utils.error_handlers import handle_errors  # noqa: E402
 from src.utils.error_handlers import register_error_handlers  # noqa: E402
@@ -104,9 +104,10 @@ def create_app():
     app.register_blueprint(plant_recommendations_bp)
     app.register_blueprint(project_plants_bp)
     app.register_blueprint(reports_bp)
-    
+
     # Register performance monitoring blueprint
     from src.routes.performance import performance_bp
+
     app.register_blueprint(performance_bp)
 
     # Initialize services
@@ -248,13 +249,14 @@ def create_app():
         specialization = request.args.get("specialization", "")
         page = request.args.get("page", 1, type=int)
         per_page = request.args.get("per_page", 50, type=int)
-        
+
         # Handle specialization filter
         if specialization:
             # Filter suppliers by specialization manually for now
-            from src.models.landscape import Supplier
             from sqlalchemy import or_
-            
+
+            from src.models.landscape import Supplier
+
             query = Supplier.query
             if search:
                 search_term = f"%{search}%"
@@ -263,16 +265,16 @@ def create_app():
                         Supplier.name.ilike(search_term),
                         Supplier.contact_person.ilike(search_term),
                         Supplier.email.ilike(search_term),
-                        Supplier.city.ilike(search_term)
+                        Supplier.city.ilike(search_term),
                     )
                 )
-            
+
             query = query.filter(Supplier.specialization.ilike(f"%{specialization}%"))
-            
+
             paginated = query.order_by(Supplier.name).paginate(
                 page=page, per_page=per_page, error_out=False
             )
-            
+
             result = {
                 "suppliers": [supplier.to_dict() for supplier in paginated.items],
                 "total": paginated.total,
@@ -280,8 +282,10 @@ def create_app():
                 "current_page": page,
             }
         else:
-            result = supplier_service.get_all(search=search, page=page, per_page=per_page)
-        
+            result = supplier_service.get_all(
+                search=search, page=page, per_page=per_page
+            )
+
         return jsonify(result)
 
     @app.route("/api/suppliers/<int:supplier_id>", methods=["GET"])
@@ -289,11 +293,11 @@ def create_app():
     def get_supplier(supplier_id):
         """Get specific supplier by ID"""
         from src.models.landscape import Supplier
-        
+
         supplier = Supplier.query.get(supplier_id)
         if not supplier:
             return jsonify({"error": "Supplier not found"}), 404
-            
+
         return jsonify(supplier.to_dict())
 
     @app.route("/api/suppliers", methods=["POST"])
@@ -314,11 +318,19 @@ def create_app():
             return jsonify(supplier), 201
         except ValidationError as e:
             # Convert Pydantic errors to string format for consistency
-            error_messages = [error.get('msg', str(error)) for error in e.errors()]
-            return jsonify({"error": "Validation failed", "validation_errors": error_messages}), 422
+            error_messages = [error.get("msg", str(error)) for error in e.errors()]
+            return (
+                jsonify(
+                    {"error": "Validation failed", "validation_errors": error_messages}
+                ),
+                422,
+            )
         except ValueError as e:
             logger.error("Validation error occurred: %s", str(e))
-            return jsonify({"error": "Validation failed", "validation_errors": [str(e)]}), 422
+            return (
+                jsonify({"error": "Validation failed", "validation_errors": [str(e)]}),
+                422,
+            )
 
     @app.route("/api/suppliers/<int:supplier_id>", methods=["PUT"])
     @handle_errors
@@ -341,10 +353,18 @@ def create_app():
             return jsonify(supplier)
         except ValidationError as e:
             # Convert Pydantic errors to string format for consistency
-            error_messages = [error.get('msg', str(error)) for error in e.errors()]
-            return jsonify({"error": "Validation failed", "validation_errors": error_messages}), 422
+            error_messages = [error.get("msg", str(error)) for error in e.errors()]
+            return (
+                jsonify(
+                    {"error": "Validation failed", "validation_errors": error_messages}
+                ),
+                422,
+            )
         except ValueError as e:
-            return jsonify({"error": "Validation failed", "validation_errors": [str(e)]}), 422
+            return (
+                jsonify({"error": "Validation failed", "validation_errors": [str(e)]}),
+                422,
+            )
 
     @app.route("/api/suppliers/<int:supplier_id>", methods=["DELETE"])
     @handle_errors
@@ -364,12 +384,12 @@ def create_app():
     @handle_errors
     def get_supplier_products(supplier_id):
         """Get products for a specific supplier"""
-        from src.models.landscape import Supplier, Product
-        
+        from src.models.landscape import Product, Supplier
+
         supplier = Supplier.query.get(supplier_id)
         if not supplier:
             return jsonify({"error": "Supplier not found"}), 404
-            
+
         products = Product.query.filter_by(supplier_id=supplier_id).all()
         return jsonify({"products": [product.to_dict() for product in products]})
 
@@ -379,19 +399,20 @@ def create_app():
         """Add a product to a specific supplier"""
         from flask import request
         from pydantic import ValidationError
+
         from src.models.landscape import Supplier
-        
+
         # Check if supplier exists
         supplier = Supplier.query.get(supplier_id)
         if not supplier:
             return jsonify({"error": "Supplier not found"}), 404
-            
+
         data = request.get_json()
-        
+
         try:
             # Add supplier_id to the data
             data["supplier_id"] = supplier_id
-            
+
             # Validate input
             schema = ProductCreateSchema(**data)
             validated_data = schema.model_dump(exclude_unset=True)
@@ -400,19 +421,24 @@ def create_app():
             return jsonify(product), 201
         except ValidationError as e:
             # Convert Pydantic errors to string format for consistency
-            error_messages = [error.get('msg', str(error)) for error in e.errors()]
-            return jsonify({"error": "Validation failed", "validation_errors": error_messages}), 422
+            error_messages = [error.get("msg", str(error)) for error in e.errors()]
+            return (
+                jsonify(
+                    {"error": "Validation failed", "validation_errors": error_messages}
+                ),
+                422,
+            )
 
     @app.route("/api/suppliers/<int:supplier_id>/plants", methods=["GET"])
     @handle_errors
     def get_supplier_plants(supplier_id):
         """Get plants for a specific supplier"""
-        from src.models.landscape import Supplier, Plant
-        
+        from src.models.landscape import Plant, Supplier
+
         supplier = Supplier.query.get(supplier_id)
         if not supplier:
             return jsonify({"error": "Supplier not found"}), 404
-            
+
         plants = Plant.query.filter_by(supplier_id=supplier_id).all()
         return jsonify({"plants": [plant.to_dict() for plant in plants]})
 
@@ -420,119 +446,129 @@ def create_app():
     @handle_errors
     def get_supplier_statistics(supplier_id):
         """Get statistics for a specific supplier"""
-        from src.models.landscape import Supplier, Product, Plant
         from sqlalchemy import func
-        
+
+        from src.models.landscape import Plant, Product, Supplier
+
         supplier = Supplier.query.get(supplier_id)
         if not supplier:
             return jsonify({"error": "Supplier not found"}), 404
-            
+
         # Count products and plants
         product_count = Product.query.filter_by(supplier_id=supplier_id).count()
         plant_count = Plant.query.filter_by(supplier_id=supplier_id).count()
-        
+
         # Calculate inventory value (products only, since they have stock_quantity)
         products = Product.query.filter_by(supplier_id=supplier_id).all()
         total_inventory_value = sum(
-            (product.price or 0) * (product.stock_quantity or 0) 
-            for product in products
+            (product.price or 0) * (product.stock_quantity or 0) for product in products
         )
-        
+
         # Calculate average prices
         product_prices = [product.price for product in products if product.price]
-        average_product_price = sum(product_prices) / len(product_prices) if product_prices else 0
-        
+        average_product_price = (
+            sum(product_prices) / len(product_prices) if product_prices else 0
+        )
+
         plants = Plant.query.filter_by(supplier_id=supplier_id).all()
         plant_prices = [plant.price for plant in plants if plant.price]
-        average_plant_price = sum(plant_prices) / len(plant_prices) if plant_prices else 0
-        
-        return jsonify({
-            "supplier_id": supplier_id,
-            "supplier_name": supplier.name,
-            "product_count": product_count,
-            "plant_count": plant_count,
-            "total_items": product_count + plant_count,
-            "total_products": product_count,  # For backward compatibility
-            "total_plants": plant_count,      # For backward compatibility
-            "total_inventory_value": total_inventory_value,
-            "average_product_price": average_product_price,
-            "average_plant_price": average_plant_price
-        })
+        average_plant_price = (
+            sum(plant_prices) / len(plant_prices) if plant_prices else 0
+        )
+
+        return jsonify(
+            {
+                "supplier_id": supplier_id,
+                "supplier_name": supplier.name,
+                "product_count": product_count,
+                "plant_count": plant_count,
+                "total_items": product_count + plant_count,
+                "total_products": product_count,  # For backward compatibility
+                "total_plants": plant_count,  # For backward compatibility
+                "total_inventory_value": total_inventory_value,
+                "average_product_price": average_product_price,
+                "average_plant_price": average_plant_price,
+            }
+        )
 
     @app.route("/api/suppliers/specializations", methods=["GET"])
     @handle_errors
     def get_supplier_specializations():
         """Get all unique supplier specializations"""
+        from sqlalchemy import distinct, func
+
         from src.models.landscape import Supplier
-        from sqlalchemy import func, distinct
-        
-        specializations = db.session.query(distinct(Supplier.specialization)).filter(
-            Supplier.specialization.isnot(None)
-        ).all()
-        
-        return jsonify({
-            "specializations": [spec[0] for spec in specializations]
-        })
+
+        specializations = (
+            db.session.query(distinct(Supplier.specialization))
+            .filter(Supplier.specialization.isnot(None))
+            .all()
+        )
+
+        return jsonify({"specializations": [spec[0] for spec in specializations]})
 
     @app.route("/api/suppliers/top", methods=["GET"])
     @handle_errors
     def get_top_suppliers():
         """Get top suppliers by product/plant count"""
         from flask import request
-        from src.models.landscape import Supplier, Product, Plant
         from sqlalchemy import func
-        
+
+        from src.models.landscape import Plant, Product, Supplier
+
         limit = request.args.get("limit", 10, type=int)
-        
+
         # Get suppliers with their item counts using subqueries
         from sqlalchemy import select
-        
+
         # Subquery for product counts
         product_counts = (
             db.session.query(
-                Product.supplier_id,
-                func.count(Product.id).label("product_count")
+                Product.supplier_id, func.count(Product.id).label("product_count")
             )
             .group_by(Product.supplier_id)
             .subquery()
         )
-        
+
         # Subquery for plant counts
         plant_counts = (
             db.session.query(
-                Plant.supplier_id,
-                func.count(Plant.id).label("plant_count")
+                Plant.supplier_id, func.count(Plant.id).label("plant_count")
             )
             .group_by(Plant.supplier_id)
             .subquery()
         )
-        
+
         # Main query
         top_suppliers = (
             db.session.query(
                 Supplier,
                 func.coalesce(product_counts.c.product_count, 0).label("product_count"),
-                func.coalesce(plant_counts.c.plant_count, 0).label("plant_count")
+                func.coalesce(plant_counts.c.plant_count, 0).label("plant_count"),
             )
             .outerjoin(product_counts, Supplier.id == product_counts.c.supplier_id)
             .outerjoin(plant_counts, Supplier.id == plant_counts.c.supplier_id)
-            .order_by((
-                func.coalesce(product_counts.c.product_count, 0) + 
-                func.coalesce(plant_counts.c.plant_count, 0)
-            ).desc())
+            .order_by(
+                (
+                    func.coalesce(product_counts.c.product_count, 0)
+                    + func.coalesce(plant_counts.c.plant_count, 0)
+                ).desc()
+            )
             .limit(limit)
             .all()
         )
-        
+
         suppliers_list = []
         for supplier, product_count, plant_count in top_suppliers:
-            suppliers_list.append({
-                "supplier": supplier.to_dict(),
-                "product_count": product_count,
-                "plant_count": plant_count,
-                "total_items": product_count + plant_count
-            })
-            
+            suppliers_list.append(
+                {
+                    "supplier": supplier.to_dict(),
+                    "product_count": product_count,
+                    "plant_count": plant_count,
+                    "total_items": product_count + plant_count,
+                }
+            )
+
         return jsonify({"suppliers": suppliers_list})
 
     @app.route("/api/suppliers/<int:supplier_id>/contact", methods=["GET"])
@@ -540,12 +576,12 @@ def create_app():
     def get_supplier_contact(supplier_id):
         """Get contact information for a specific supplier"""
         from src.models.landscape import Supplier
-        
+
         supplier = Supplier.query.get(supplier_id)
         if not supplier:
             return jsonify({"error": "Supplier not found"}), 404
-        
-        # Build full address    
+
+        # Build full address
         address_parts = []
         if supplier.address:
             address_parts.append(supplier.address)
@@ -557,31 +593,33 @@ def create_app():
                 address_parts[-1] = f"{address_parts[-1]} {supplier.postal_code}"
             else:
                 address_parts.append(supplier.postal_code)
-                
+
         full_address = ", ".join(address_parts)
-            
-        return jsonify({
-            "id": supplier.id,
-            "name": supplier.name,
-            "contact_person": supplier.contact_person,
-            "email": supplier.email,
-            "phone": supplier.phone,
-            "address": supplier.address,
-            "city": supplier.city,
-            "postal_code": supplier.postal_code,
-            "website": supplier.website,
-            "full_address": full_address  # Add the missing field
-        })
+
+        return jsonify(
+            {
+                "id": supplier.id,
+                "name": supplier.name,
+                "contact_person": supplier.contact_person,
+                "email": supplier.email,
+                "phone": supplier.phone,
+                "address": supplier.address,
+                "city": supplier.city,
+                "postal_code": supplier.postal_code,
+                "website": supplier.website,
+                "full_address": full_address,  # Add the missing field
+            }
+        )
 
     @app.route("/api/suppliers/export", methods=["GET"])
     @handle_errors
     def export_suppliers():
         """Export suppliers data"""
         from flask import request
-        
+
         format_type = request.args.get("format", "json").lower()
         suppliers = supplier_service.get_all()
-        
+
         if format_type == "json":
             return jsonify(suppliers)
         else:
@@ -595,14 +633,14 @@ def create_app():
         from pydantic import ValidationError
 
         data = request.get_json()
-        
+
         if not data or "suppliers" not in data:
             return jsonify({"error": "Missing suppliers data"}), 422
-            
+
         suppliers_data = data["suppliers"]
         imported_suppliers = []
         errors = []
-        
+
         for i, supplier_data in enumerate(suppliers_data):
             try:
                 schema = SupplierCreateSchema(**supplier_data)
@@ -613,14 +651,14 @@ def create_app():
                 errors.append({"index": i, "data": supplier_data, "errors": e.errors()})
             except Exception as e:
                 errors.append({"index": i, "data": supplier_data, "error": str(e)})
-        
+
         response_data = {
             "imported": imported_suppliers,
             "imported_count": len(imported_suppliers),
             "errors": errors,
-            "error_count": len(errors)
+            "error_count": len(errors),
         }
-        
+
         status_code = 201 if len(imported_suppliers) > 0 else 400
         return jsonify(response_data), status_code
 
@@ -630,8 +668,9 @@ def create_app():
     def get_plants():
         """Get all plants"""
         from flask import request
-        from src.models.landscape import Plant
         from sqlalchemy import and_
+
+        from src.models.landscape import Plant
 
         search = request.args.get("search", "")
         category = request.args.get("category", "")
@@ -639,14 +678,14 @@ def create_app():
         native_only = request.args.get("native_only", "").lower() == "true"
         page = request.args.get("page", 1, type=int)
         per_page = request.args.get("per_page", 50, type=int)
-        
+
         # Validate pagination parameters
         if page < 1 or per_page < 1:
             return jsonify({"error": "Invalid pagination parameters"}), 422
-        
+
         # Build query with filters
         query = Plant.query
-        
+
         # Apply filters
         filters = []
         if search:
@@ -655,31 +694,31 @@ def create_app():
                 | Plant.common_name.contains(search)
                 | Plant.category.contains(search)
             )
-        
+
         if category:
             filters.append(Plant.category == category)
-            
+
         if sun_exposure:
             filters.append(Plant.sun_exposure == sun_exposure)
-            
+
         if native_only:
             filters.append(Plant.native == True)
-        
+
         if filters:
             query = query.filter(and_(*filters))
-        
+
         # Apply pagination
         paginated = query.order_by(Plant.name).paginate(
             page=page, per_page=per_page, error_out=False
         )
-        
+
         result = {
             "plants": [plant.to_dict() for plant in paginated.items],
             "total": paginated.total,
             "pages": paginated.pages,
             "current_page": page,
         }
-        
+
         # Always return structured response for consistency
         return jsonify(result)
 
@@ -693,7 +732,10 @@ def create_app():
         try:
             data = request.get_json()
             if data is None:
-                return jsonify({"error": "Invalid JSON or missing content-type header"}), 422
+                return (
+                    jsonify({"error": "Invalid JSON or missing content-type header"}),
+                    422,
+                )
         except Exception:
             return jsonify({"error": "Invalid JSON format"}), 400
 
@@ -706,19 +748,24 @@ def create_app():
             return jsonify(plant), 201
         except ValidationError as e:
             # Convert Pydantic errors to string format for consistency
-            error_messages = [error.get('msg', str(error)) for error in e.errors()]
-            return jsonify({"error": "Validation failed", "validation_errors": error_messages}), 422
+            error_messages = [error.get("msg", str(error)) for error in e.errors()]
+            return (
+                jsonify(
+                    {"error": "Validation failed", "validation_errors": error_messages}
+                ),
+                422,
+            )
 
     @app.route("/api/plants/<int:plant_id>", methods=["GET"])
     @handle_errors
     def get_plant(plant_id):
         """Get specific plant by ID"""
         from src.models.landscape import Plant
-        
+
         plant = Plant.query.get(plant_id)
         if not plant:
             return jsonify({"error": "Plant not found"}), 404
-            
+
         return jsonify(plant.to_dict())
 
     @app.route("/api/plants/<int:plant_id>", methods=["PUT"])
@@ -742,8 +789,13 @@ def create_app():
             return jsonify(plant)
         except ValidationError as e:
             # Convert Pydantic errors to string format for consistency
-            error_messages = [error.get('msg', str(error)) for error in e.errors()]
-            return jsonify({"error": "Validation failed", "validation_errors": error_messages}), 422
+            error_messages = [error.get("msg", str(error)) for error in e.errors()]
+            return (
+                jsonify(
+                    {"error": "Validation failed", "validation_errors": error_messages}
+                ),
+                422,
+            )
         except ValueError as e:
             logger.error("ValueError occurred: %s", str(e), exc_info=True)
             return jsonify({"error": "An internal error occurred"}), 400
@@ -763,47 +815,53 @@ def create_app():
     @handle_errors
     def get_plant_categories():
         """Get unique plant categories"""
-        from src.models.landscape import Plant
         from sqlalchemy import distinct
-        
-        categories = db.session.query(distinct(Plant.category)).filter(
-            Plant.category.isnot(None)
-        ).all()
-        
-        return jsonify({
-            "categories": [cat[0] for cat in categories]
-        })
+
+        from src.models.landscape import Plant
+
+        categories = (
+            db.session.query(distinct(Plant.category))
+            .filter(Plant.category.isnot(None))
+            .all()
+        )
+
+        return jsonify({"categories": [cat[0] for cat in categories]})
 
     @app.route("/api/plants/search-suggestions", methods=["GET"])
     @handle_errors
     def plant_search_suggestions():
         """Get plant search suggestions"""
         from flask import request
-        from src.models.landscape import Plant
         from sqlalchemy import or_
-        
+
+        from src.models.landscape import Plant
+
         query = request.args.get("q", "")
         if not query:
             return jsonify({"suggestions": []})
-        
+
         # Search in name and common_name with limit
-        plants = Plant.query.filter(
-            or_(
-                Plant.name.ilike(f"%{query}%"),
-                Plant.common_name.ilike(f"%{query}%")
+        plants = (
+            Plant.query.filter(
+                or_(
+                    Plant.name.ilike(f"%{query}%"),
+                    Plant.common_name.ilike(f"%{query}%"),
+                )
             )
-        ).limit(10).all()
-        
+            .limit(10)
+            .all()
+        )
+
         suggestions = [
             {
                 "id": plant.id,
                 "name": plant.name,
                 "common_name": plant.common_name,
-                "category": plant.category
+                "category": plant.category,
             }
             for plant in plants
         ]
-        
+
         return jsonify({"suggestions": suggestions})
 
     @app.route("/api/plants/export", methods=["GET"])
@@ -811,10 +869,10 @@ def create_app():
     def export_plants():
         """Export plants data"""
         from flask import request
-        
+
         format_type = request.args.get("format", "json").lower()
         plants = plant_service.get_all(per_page=1000)  # Get all plants
-        
+
         if format_type == "json":
             return jsonify({"plants": plants["plants"]})
         else:
@@ -828,14 +886,14 @@ def create_app():
         from pydantic import ValidationError
 
         data = request.get_json()
-        
+
         if not data or "plants" not in data:
             return jsonify({"error": "Missing plants data"}), 422
-            
+
         plants_data = data["plants"]
         imported_plants = []
         errors = []
-        
+
         for i, plant_data in enumerate(plants_data):
             try:
                 schema = PlantCreateSchema(**plant_data)
@@ -846,14 +904,14 @@ def create_app():
                 errors.append({"index": i, "data": plant_data, "errors": e.errors()})
             except Exception as e:
                 errors.append({"index": i, "data": plant_data, "error": str(e)})
-        
+
         response_data = {
             "imported": imported_plants,
             "imported_count": len(imported_plants),
             "errors": errors,
-            "error_count": len(errors)
+            "error_count": len(errors),
         }
-        
+
         status_code = 201 if len(imported_plants) > 0 else 400
         return jsonify(response_data), status_code
 
@@ -888,8 +946,13 @@ def create_app():
             return jsonify(product), 201
         except ValidationError as e:
             # Convert Pydantic errors to string format for consistency
-            error_messages = [error.get('msg', str(error)) for error in e.errors()]
-            return jsonify({"error": "Validation failed", "validation_errors": error_messages}), 422
+            error_messages = [error.get("msg", str(error)) for error in e.errors()]
+            return (
+                jsonify(
+                    {"error": "Validation failed", "validation_errors": error_messages}
+                ),
+                422,
+            )
 
     @app.route("/api/products/<int:product_id>", methods=["PUT"])
     @handle_errors
@@ -912,8 +975,13 @@ def create_app():
             return jsonify(product)
         except ValidationError as e:
             # Convert Pydantic errors to string format for consistency
-            error_messages = [error.get('msg', str(error)) for error in e.errors()]
-            return jsonify({"error": "Validation failed", "validation_errors": error_messages}), 422
+            error_messages = [error.get("msg", str(error)) for error in e.errors()]
+            return (
+                jsonify(
+                    {"error": "Validation failed", "validation_errors": error_messages}
+                ),
+                422,
+            )
 
     @app.route("/api/products/<int:product_id>", methods=["DELETE"])
     @handle_errors
@@ -954,14 +1022,21 @@ def create_app():
 
             # Add registration date if not provided
             if "registration_date" not in validated_data:
-                validated_data["registration_date"] = datetime.now().strftime("%Y-%m-%d")
+                validated_data["registration_date"] = datetime.now().strftime(
+                    "%Y-%m-%d"
+                )
 
             client = client_service.create(validated_data)
             return jsonify(client), 201
         except ValidationError as e:
             # Convert Pydantic errors to string format for consistency
-            error_messages = [error.get('msg', str(error)) for error in e.errors()]
-            return jsonify({"error": "Validation failed", "validation_errors": error_messages}), 422
+            error_messages = [error.get("msg", str(error)) for error in e.errors()]
+            return (
+                jsonify(
+                    {"error": "Validation failed", "validation_errors": error_messages}
+                ),
+                422,
+            )
 
     @app.route("/api/clients/<int:client_id>", methods=["PUT"])
     @handle_errors
@@ -984,8 +1059,13 @@ def create_app():
             return jsonify(client)
         except ValidationError as e:
             # Convert Pydantic errors to string format for consistency
-            error_messages = [error.get('msg', str(error)) for error in e.errors()]
-            return jsonify({"error": "Validation failed", "validation_errors": error_messages}), 422
+            error_messages = [error.get("msg", str(error)) for error in e.errors()]
+            return (
+                jsonify(
+                    {"error": "Validation failed", "validation_errors": error_messages}
+                ),
+                422,
+            )
 
     @app.route("/api/clients/<int:client_id>", methods=["DELETE"])
     @handle_errors
@@ -1010,7 +1090,9 @@ def create_app():
         per_page = request.args.get("per_page", 50, type=int)
         client_id = int(client_id) if client_id else None
 
-        result = project_service.get_all(search=search, client_id=client_id, page=page, per_page=per_page)
+        result = project_service.get_all(
+            search=search, client_id=client_id, page=page, per_page=per_page
+        )
         return jsonify(result)
 
     @app.route("/api/projects", methods=["POST"])
@@ -1031,8 +1113,13 @@ def create_app():
             return jsonify(project), 201
         except ValidationError as e:
             # Convert Pydantic errors to string format for consistency
-            error_messages = [error.get('msg', str(error)) for error in e.errors()]
-            return jsonify({"error": "Validation failed", "validation_errors": error_messages}), 422
+            error_messages = [error.get("msg", str(error)) for error in e.errors()]
+            return (
+                jsonify(
+                    {"error": "Validation failed", "validation_errors": error_messages}
+                ),
+                422,
+            )
 
     @app.route("/api/projects/<int:project_id>", methods=["PUT"])
     @handle_errors
@@ -1055,8 +1142,13 @@ def create_app():
             return jsonify(project)
         except ValidationError as e:
             # Convert Pydantic errors to string format for consistency
-            error_messages = [error.get('msg', str(error)) for error in e.errors()]
-            return jsonify({"error": "Validation failed", "validation_errors": error_messages}), 422
+            error_messages = [error.get("msg", str(error)) for error in e.errors()]
+            return (
+                jsonify(
+                    {"error": "Validation failed", "validation_errors": error_messages}
+                ),
+                422,
+            )
 
     @app.route("/api/projects/<int:project_id>", methods=["DELETE"])
     @handle_errors
@@ -1121,7 +1213,9 @@ def main():
         # For testing, disable reloader to avoid issues in CI
         debug_mode = flask_env == "development"
         use_reloader = flask_env == "development"
-        app.run(host="127.0.0.1", port=port, debug=debug_mode, use_reloader=use_reloader)
+        app.run(
+            host="127.0.0.1", port=port, debug=debug_mode, use_reloader=use_reloader
+        )
     else:
         logger.warning(
             "Use a production WSGI server (like Gunicorn) instead of Flask dev server"
