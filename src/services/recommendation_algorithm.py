@@ -3,7 +3,7 @@ Recommendation Algorithm
 Core algorithm logic for scoring and ranking plant recommendations
 """
 
-from typing import Dict, List, Optional
+from typing import Dict
 
 
 class RecommendationAlgorithm:

@@ -4,7 +4,7 @@ Supplier Service
 Handles all supplier-related business logic and database operations.
 """
 
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Dict, List, Optional
 
 from sqlalchemy import or_
@@ -75,7 +75,7 @@ class SupplierService:
             if hasattr(supplier, key):
                 setattr(supplier, key, value)
 
-        supplier.updated_at = datetime.utcnow()
+        supplier.updated_at = datetime.now(UTC)
         db.session.commit()
         return supplier
 
