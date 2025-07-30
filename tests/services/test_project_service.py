@@ -217,7 +217,7 @@ class TestProjectService(DatabaseTestMixin):
     def test_add_plant_to_project_existing_plant(
         self, app_context, sample_project, sample_plant
     ):
-        """Test adding a plant that already exists in project 
+        """Test adding a plant that already exists in project
         (should increase quantity)"""
         # Add plant first time
         ProjectService.add_plant_to_project(

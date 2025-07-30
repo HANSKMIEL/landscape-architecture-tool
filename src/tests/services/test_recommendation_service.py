@@ -286,7 +286,7 @@ class TestRecommendationService:
         assert isinstance(recommendations, list)
         # Should return empty list or plants with low scores
         # The actual scoring algorithm may give some score due to missing
-        # criteria handling so we'll just verify we get a list back 
+        # criteria handling so we'll just verify we get a list back
         # (behavior is correct)
 
     def test_recommendation_performance(self, recommendation_service, db_session):

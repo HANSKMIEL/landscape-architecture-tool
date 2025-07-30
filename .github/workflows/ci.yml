@@ -486,3 +486,48 @@ jobs:
         echo "🚀 All checks passed! Ready for deployment"
         echo "📊 Test Results: All tests passed"
         echo "🔧 Next steps: Manual review and approval for production deployment"
+
+  monitoring:
+    runs-on: ubuntu-latest
+    needs: [test-backend, test-frontend, code-quality, integration-tests]
+    if: always()
+    steps:
+    - name: Pipeline status monitoring
+      run: |
+        echo "=== CI/CD Pipeline Status Summary ==="
+        echo "Timestamp: $(date)"
+        echo "Repository: ${{ github.repository }}"
+        echo "Branch: ${{ github.ref_name }}"
+        echo "Commit: ${{ github.sha }}"
+        echo ""
+        echo "Job Results:"
+        echo "  test-backend: ${{ needs.test-backend.result }}"
+        echo "  test-frontend: ${{ needs.test-frontend.result }}"
+        echo "  code-quality: ${{ needs.code-quality.result }}"
+        echo "  integration-tests: ${{ needs.integration-tests.result }}"
+        echo ""
+        
+        # Calculate success rate
+        TOTAL=4
+        SUCCESS=0
+        [[ "${{ needs.test-backend.result }}" == "success" ]] && ((SUCCESS++))
+        [[ "${{ needs.test-frontend.result }}" == "success" ]] && ((SUCCESS++))
+        [[ "${{ needs.code-quality.result }}" == "success" ]] && ((SUCCESS++))
+        [[ "${{ needs.integration-tests.result }}" == "success" ]] && ((SUCCESS++))
+        
+        SUCCESS_RATE=$((SUCCESS * 100 / TOTAL))
+        echo "Success Rate: ${SUCCESS_RATE}% (${SUCCESS}/${TOTAL})"
+        echo ""
+        
+        if [ $SUCCESS_RATE -eq 100 ]; then
+          echo "✅ All pipeline jobs completed successfully!"
+        elif [ $SUCCESS_RATE -ge 75 ]; then
+          echo "⚠️ Pipeline mostly successful with some issues"
+        else
+          echo "❌ Pipeline has significant failures"
+        fi
+        
+        # Export metrics for potential future use
+        echo "success_rate=${SUCCESS_RATE}" >> $GITHUB_OUTPUT
+        echo "total_jobs=${TOTAL}" >> $GITHUB_OUTPUT
+        echo "successful_jobs=${SUCCESS}" >> $GITHUB_OUTPUT
