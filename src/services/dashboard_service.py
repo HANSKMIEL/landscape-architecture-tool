@@ -56,7 +56,7 @@ class DashboardService:
         # Total budget across all projects
         total_budget = db.session.query(func.sum(Project.budget)).scalar() or 0
 
-        return {
+        result = {
             "totals": {
                 "clients": total_clients,
                 "projects": total_projects,
@@ -71,6 +71,12 @@ class DashboardService:
             },
             "financial": {"total_budget": total_budget},
         }
+        
+        # Ensure required keys are always present
+        result.setdefault('totals', {})
+        result.setdefault('recent_activity', {})
+        
+        return result
 
     @staticmethod
     def get_project_analytics(days: int = 30) -> Dict:
@@ -252,17 +258,38 @@ class DashboardService:
         # Total suppliers
         total_suppliers = Supplier.query.count()
 
-        # Suppliers with most products
-        suppliers_by_products = (
+        # Get product counts per supplier
+        product_counts = (
             db.session.query(
+                Supplier.id,
                 Supplier.name,
-                func.count(Product.id).label("product_count"),
-                func.count(Plant.id).label("plant_count"),
+                func.count(Product.id).label("product_count")
             )
             .outerjoin(Product)
-            .outerjoin(Plant)
             .group_by(Supplier.id, Supplier.name)
-            .order_by(desc(func.count(Product.id) + func.count(Plant.id)))
+            .subquery()
+        )
+
+        # Get plant counts per supplier
+        plant_counts = (
+            db.session.query(
+                Supplier.id,
+                func.count(Plant.id).label("plant_count")
+            )
+            .outerjoin(Plant)
+            .group_by(Supplier.id)
+            .subquery()
+        )
+
+        # Combine counts and get top suppliers
+        suppliers_by_products = (
+            db.session.query(
+                product_counts.c.name,
+                product_counts.c.product_count,
+                func.coalesce(plant_counts.c.plant_count, 0).label("plant_count"),
+            )
+            .outerjoin(plant_counts, product_counts.c.id == plant_counts.c.id)
+            .order_by(desc(product_counts.c.product_count + func.coalesce(plant_counts.c.plant_count, 0)))
             .limit(5)
             .all()
         )
@@ -275,7 +302,7 @@ class DashboardService:
             .all()
         )
 
-        return {
+        result = {
             "total_suppliers": total_suppliers,
             "top_suppliers": [
                 {
@@ -292,6 +319,13 @@ class DashboardService:
                 if spec
             ],
         }
+        
+        # Ensure required keys are always present
+        result.setdefault('total_suppliers', 0)
+        result.setdefault('top_suppliers', [])
+        result.setdefault('specializations', [])
+        
+        return result
 
     @staticmethod
     @cache_dashboard_stats
@@ -311,7 +345,7 @@ class DashboardService:
         # Recent plants
         recent_plants = Plant.query.order_by(desc(Plant.created_at)).limit(limit).all()
 
-        return {
+        result = {
             "recent_projects": [
                 {
                     "id": project.id,
@@ -348,6 +382,13 @@ class DashboardService:
                 for plant in recent_plants
             ],
         }
+        
+        # Ensure required keys are always present
+        result.setdefault('recent_projects', [])
+        result.setdefault('recent_clients', [])
+        result.setdefault('recent_plants', [])
+        
+        return result
 
     @staticmethod
     def get_performance_metrics() -> Dict:
