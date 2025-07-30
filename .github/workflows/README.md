@@ -15,9 +15,12 @@ This directory contains the CI/CD workflows for the landscape architecture tool.
 ## Backup Files
 
 - **ci-enhanced.yml.backup**: Enhanced version with additional monitoring and security features
-  - Contains duplicate jobs and needs cleanup before activation
-  - Includes advanced reporting, vulnerability scanning, monitoring
-  - Can be used as reference for future improvements
+  - Contains duplicate jobs that need to be resolved before activation:
+    - Remove or consolidate duplicate testing jobs for SQLite and PostgreSQL.
+    - Ensure that frontend build and test steps are not repeated.
+    - Verify that integration tests are not duplicated across workflows.
+  - Includes advanced reporting, vulnerability scanning, and monitoring
+  - Can be used as a reference for future improvements
 
 ## Recent Changes
 
