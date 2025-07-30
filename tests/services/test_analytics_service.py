@@ -8,13 +8,8 @@ from datetime import datetime, timedelta
 
 import pytest
 
-from src.models.landscape import (
-    Client,
-    Plant,
-    PlantRecommendationRequest,
-    Project,
-    ProjectPlant,
-)
+from src.models.landscape import (Client, Plant, PlantRecommendationRequest,
+                                  Project, ProjectPlant)
 from src.models.user import db
 from src.services.analytics import AnalyticsService
 from tests.fixtures.database import DatabaseTestMixin

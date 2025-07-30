@@ -4,7 +4,7 @@ Client Service
 Handles all client-related business logic and database operations.
 """
 
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Dict, List, Optional
 
 from sqlalchemy import or_
@@ -82,7 +82,7 @@ class ClientService:
             if hasattr(client, key):
                 setattr(client, key, value)
 
-        client.updated_at = datetime.utcnow()
+        client.updated_at = datetime.now(UTC)
         db.session.commit()
         return client
 

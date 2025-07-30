@@ -8,7 +8,8 @@ from datetime import datetime, timedelta
 
 import pytest
 
-from src.models.landscape import Client, Plant, Product, Project, ProjectPlant, Supplier
+from src.models.landscape import (Client, Plant, Product, Project,
+                                  ProjectPlant, Supplier)
 from src.models.user import db
 from src.services.dashboard_service import DashboardService
 from tests.fixtures.database import DatabaseTestMixin
@@ -41,6 +42,10 @@ class TestDashboardService(DatabaseTestMixin):
         supplier_factory,
     ):
         """Test getting dashboard summary with sample data"""
+        # Clear cache to ensure fresh data
+        from src.services.performance import cache
+        cache.clear()
+        
         # Create test data
         clients = [client_factory() for _ in range(3)]
         suppliers = [supplier_factory() for _ in range(2)]
@@ -270,6 +275,10 @@ class TestDashboardService(DatabaseTestMixin):
         self, app_context, supplier_factory, product_factory, plant_factory
     ):
         """Test getting supplier analytics with sample data"""
+        # Clear cache to ensure fresh data
+        from src.services.performance import cache
+        cache.clear()
+        
         # Create suppliers with different specializations
         supplier1 = supplier_factory(
             name="Alpha Nursery", specialization="Native Plants"

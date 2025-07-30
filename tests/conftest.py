@@ -71,6 +71,5 @@ def clean_db(app_context):
 
 
 from tests.fixtures.database import *
-
 # Import factory fixtures
 from tests.fixtures.test_data import *

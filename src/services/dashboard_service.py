@@ -5,14 +5,16 @@ Handles dashboard analytics and summary information.
 Enhanced with performance caching for improved response times.
 """
 
-from datetime import datetime, timedelta
-from typing import Dict, List
+from datetime import UTC, datetime, timedelta
+from typing import Dict
 
 from sqlalchemy import desc, func
 
-from src.models.landscape import Client, Plant, Product, Project, ProjectPlant, Supplier
+from src.models.landscape import (Client, Plant, Product, Project,
+                                  ProjectPlant, Supplier)
 from src.models.user import db
-from src.services.performance import cache_dashboard_stats, monitor_db_performance
+from src.services.performance import (cache_dashboard_stats,
+                                      monitor_db_performance)
 
 
 class DashboardService:
@@ -42,7 +44,7 @@ class DashboardService:
         status_counts = {status: count for status, count in projects_by_status}
 
         # Recent activity (last 30 days)
-        thirty_days_ago = datetime.utcnow() - timedelta(days=30)
+        thirty_days_ago = datetime.now(UTC) - timedelta(days=30)
         recent_projects = Project.query.filter(
             Project.created_at >= thirty_days_ago
         ).count()
@@ -73,7 +75,7 @@ class DashboardService:
     @staticmethod
     def get_project_analytics(days: int = 30) -> Dict:
         """Get project analytics for the specified number of days"""
-        cutoff_date = datetime.utcnow() - timedelta(days=days)
+        cutoff_date = datetime.now(UTC) - timedelta(days=days)
 
         # Projects created over time
         projects_by_date = (
@@ -208,7 +210,7 @@ class DashboardService:
         )
 
         # Monthly project value trends (last 12 months)
-        twelve_months_ago = datetime.utcnow() - timedelta(days=365)
+        twelve_months_ago = datetime.now(UTC) - timedelta(days=365)
         monthly_values = (
             db.session.query(
                 func.strftime("%Y-%m", Project.created_at).label("month"),
