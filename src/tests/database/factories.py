@@ -10,6 +10,7 @@ from src.models.landscape import Plant
 def create_test_plant(
     name=None,
     common_name=None,
+    category=None,
     plant_type=None,
     sun_requirements=None,
     soil_type=None,
@@ -53,6 +54,9 @@ def create_test_plant(
 
     if plant_type is None:
         plant_type = random.choice(["tree", "shrub", "perennial", "annual"])
+
+    if category is None:
+        category = random.choice(["tree", "shrub", "perennial", "annual"])
 
     if sun_requirements is None:
         sun_requirements = random.choice(["full_sun", "partial_shade", "full_shade"])

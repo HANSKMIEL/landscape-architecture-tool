@@ -1,4 +1,3 @@
-from datetime import datetime
 from unittest.mock import Mock, patch
 
 import pytest
@@ -349,7 +348,7 @@ class TestProjectService:
 
         with patch("src.models.landscape.Project.query") as mock_query, patch(
             "src.models.user.db.session"
-        ) as mock_session:
+        ) as _:
 
             mock_query.get.return_value = mock_project
 
@@ -364,7 +363,7 @@ class TestProjectService:
 
         with patch("src.models.landscape.Project.query") as mock_query, patch(
             "src.models.user.db.session"
-        ) as mock_session:
+        ) as _:
 
             mock_query.get.return_value = mock_project
 

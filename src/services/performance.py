@@ -115,7 +115,8 @@ def cached(cache: PerformanceCache, timeout: int = 300, key_prefix: str = None):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
             # Generate cache key
-            cache_key = f"{key_prefix or func.__name__}:{hash(str(args) + str(sorted(kwargs.items())))}"
+            args_str = str(args) + str(sorted(kwargs.items()))
+            cache_key = f"{key_prefix or func.__name__}:{hash(args_str)}"
 
             # Try to get from cache
             cached_result = cache.get(cache_key)
@@ -200,11 +201,13 @@ class QueryPerformanceMonitor:
                 if execution_time > slow_query_threshold:
                     try:
                         current_app.logger.warning(
-                            f"Slow query detected: {func.__name__} took {execution_time:.3f}s"
+                            f"Slow query detected: {func.__name__} took "
+                            f"{execution_time:.3f}s"
                         )
                     except RuntimeError:
                         logging.warning(
-                            f"Slow query detected: {func.__name__} took {execution_time:.3f}s"
+                            f"Slow query detected: {func.__name__} took "
+                            f"{execution_time:.3f}s"
                         )
 
                 return result
@@ -212,11 +215,13 @@ class QueryPerformanceMonitor:
                 execution_time = time.time() - start_time
                 try:
                     current_app.logger.error(
-                        f"Query error in {func.__name__} after {execution_time:.3f}s: {str(e)}"
+                        f"Query error in {func.__name__} after "
+                        f"{execution_time:.3f}s: {str(e)}"
                     )
                 except RuntimeError:
                     logging.getLogger(__name__).error(
-                        f"Query error in {func.__name__} after {execution_time:.3f}s: {str(e)}"
+                        f"Query error in {func.__name__} after "
+                        f"{execution_time:.3f}s: {str(e)}"
                     )
                 raise
 

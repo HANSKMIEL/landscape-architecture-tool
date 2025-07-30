@@ -7,7 +7,6 @@ from flask import Blueprint, current_app, jsonify, request
 
 from src.services.performance import (
     cache,
-    clear_cache_by_pattern,
     get_cache_stats,
     invalidate_dashboard_cache,
     invalidate_plant_cache,
@@ -23,7 +22,7 @@ def get_performance_stats():
     try:
         stats = {"cache": get_cache_stats(), "status": "healthy"}
         return jsonify(stats)
-    except Exception as e:
+    except Exception:
         current_app.logger.exception("Failed to get performance stats")
         return jsonify({"error": "Failed to get performance stats"}), 500
 
@@ -33,7 +32,7 @@ def get_cache_statistics():
     """Get detailed cache statistics."""
     try:
         return jsonify(get_cache_stats())
-    except Exception as e:
+    except Exception:
         current_app.logger.exception("Failed to get cache stats")
         return jsonify({"error": "Failed to get cache stats"}), 500
 
@@ -47,7 +46,7 @@ def clear_cache():
             return jsonify({"message": "Cache cleared successfully", "success": True})
         else:
             return jsonify({"error": "Failed to clear cache", "success": False}), 500
-    except Exception as e:
+    except Exception:
         current_app.logger.exception("Failed to clear cache")
         return jsonify({"error": "Failed to clear cache"}), 500
 
@@ -77,14 +76,17 @@ def invalidate_cache():
             return (
                 jsonify(
                     {
-                        "error": "Invalid cache type. Use: dashboard, plants, projects, or all"
+                        "error": (
+                            "Invalid cache type. Use: dashboard, plants, "
+                            "projects, or all"
+                        )
                     }
                 ),
                 400,
             )
 
         return jsonify({"message": message, "success": True})
-    except Exception as e:
+    except Exception:
         current_app.logger.exception("Failed to invalidate cache")
         return jsonify({"error": "Failed to invalidate cache"}), 500
 
@@ -121,7 +123,7 @@ def health_check():
                 "timestamp": cache_stats.get("timestamp", "unknown"),
             }
         )
-    except Exception as e:
+    except Exception:
         current_app.logger.exception("Health check failed")
         return (
             jsonify(
@@ -181,6 +183,6 @@ def get_performance_metrics():
             )
 
         return jsonify(metrics)
-    except Exception as e:
+    except Exception:
         current_app.logger.exception("Failed to get performance metrics")
         return jsonify({"error": "Failed to get performance metrics"}), 500

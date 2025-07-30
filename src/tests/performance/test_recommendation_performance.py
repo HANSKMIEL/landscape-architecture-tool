@@ -84,8 +84,8 @@ class TestRecommendationPerformance:
 
     def test_concurrent_recommendation_requests(self, large_plant_dataset):
         """Test handling of concurrent recommendation requests"""
-        # Note: Testing true concurrent database access is complex with Flask's app context
-        # This test verifies that multiple sequential calls work correctly
+        # Note: Testing true concurrent database access is complex with Flask's
+        # app context. This test verifies that multiple sequential calls work correctly
 
         service = RecommendationService()
         criteria = {"sun_requirements": "full_sun", "plant_type": "shrub"}
