@@ -1,4 +1,4 @@
-name: CI/CD Pipeline
+name: Enhanced CI/CD Pipeline
 permissions:
   contents: read
 
@@ -138,49 +138,6 @@ jobs:
         path: frontend/dist/
         retention-days: 7
 
-  code-quality:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-    
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: ${{ env.PYTHON_VERSION }}
-        
-    - name: Install linting tools
-      run: |
-        python -m pip install --upgrade pip
-        pip install flake8 black isort bandit safety
-        
-    - name: Check Python formatting
-      run: |
-        black --check src/ tests/ --diff
-        
-    - name: Check import sorting
-      run: |
-        isort --check-only src/ tests/ --diff
-        
-    - name: Run Python linting
-      run: |
-        flake8 src/ tests/ --max-line-length=88 --extend-ignore=E203,W503
-        
-    - name: Run security linting
-      run: |
-        bandit -r src/ -f json -o bandit-report.json || true
-        
-    - name: Check Python security
-      run: |
-        safety check --json || echo "Security vulnerabilities found"
-        
-    - name: Upload security reports
-      uses: actions/upload-artifact@v4
-      if: always()
-      with:
-        name: security-reports
-        path: bandit-report.json
-        retention-days: 30
-
   integration-tests:
     needs: [test-backend, test-frontend]
     runs-on: ubuntu-latest
@@ -311,107 +268,6 @@ jobs:
         echo "🚀 All checks passed! Ready for deployment"
         echo "📊 Test Results: All tests passed"
         echo "🔧 Next steps: Manual review and approval for production deployment"
-
-  test-frontend:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-    
-    - name: Set up Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: ${{ env.NODE_VERSION }}
-        cache: 'npm'
-        cache-dependency-path: frontend/package-lock.json
-        
-    - name: Cache Node modules
-      uses: actions/cache@v4
-      with:
-        path: |
-          frontend/node_modules
-          ~/.npm
-        key: ${{ runner.os }}-node-${{ env.NODE_VERSION }}-${{ hashFiles('**/package-lock.json') }}
-        restore-keys: |
-          ${{ runner.os }}-node-${{ env.NODE_VERSION }}-
-          ${{ runner.os }}-node-
-        
-    - name: Install dependencies
-      run: |
-        cd frontend
-        # Remove any existing pnpm files to avoid conflicts
-        rm -f pnpm-lock.yaml
-        # Clean install with legacy peer deps
-        rm -rf node_modules
-        npm install --legacy-peer-deps
-        
-    - name: Run npm audit
-      run: |
-        cd frontend
-        npm audit --audit-level=moderate --json > ../frontend-audit-report.json || true
-        npm audit --audit-level=moderate || echo "Security vulnerabilities found, check report"
-        
-    - name: Upload npm audit report
-      uses: actions/upload-artifact@v4
-      if: always()
-      with:
-        name: frontend-security-audit
-        path: frontend-audit-report.json
-        retention-days: 30
-        
-    - name: Lint frontend
-      run: |
-        cd frontend
-        npm run lint
-      continue-on-error: true
-      
-    - name: Create linting failure report
-      if: failure()
-      run: |
-        cd frontend
-        echo "Frontend linting failed" > ../frontend-lint-failure.log
-        echo "Timestamp: $(date)" >> ../frontend-lint-failure.log
-        npm run lint 2>&1 | tee -a ../frontend-lint-failure.log || true
-        
-    - name: Upload linting failure report
-      uses: actions/upload-artifact@v4
-      if: failure()
-      with:
-        name: frontend-lint-failure-report
-        path: frontend-lint-failure.log
-        retention-days: 7
-        
-    - name: Build frontend
-      run: |
-        cd frontend
-        npm run build
-        
-    - name: Test frontend
-      run: |
-        cd frontend
-        npm run test
-      continue-on-error: true
-      
-    - name: Create frontend test report
-      if: failure()
-      run: |
-        cd frontend
-        echo "Frontend tests not configured or failed" > ../frontend-test-status.log
-        echo "Timestamp: $(date)" >> ../frontend-test-status.log
-        
-    - name: Upload frontend test report
-      uses: actions/upload-artifact@v4
-      if: failure()
-      with:
-        name: frontend-test-status-report
-        path: frontend-test-status.log
-        retention-days: 7
-        
-    - name: Upload build artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: frontend-build
-        path: frontend/dist/
-        retention-days: 7
 
   security-scan:
     runs-on: ubuntu-latest

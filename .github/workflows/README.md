@@ -1,0 +1,26 @@
+# GitHub Workflows
+
+This directory contains the CI/CD workflows for the landscape architecture tool.
+
+## Active Workflows
+
+- **ci.yml**: Main CI/CD pipeline that runs on push/PR to main and develop branches
+  - Backend testing with SQLite and PostgreSQL
+  - Frontend building and testing 
+  - Code quality checks (linting, formatting, security)
+  - Integration tests
+  - Docker builds
+  - Deployment notifications
+
+## Backup Files
+
+- **ci-enhanced.yml.backup**: Enhanced version with additional monitoring and security features
+  - Contains duplicate jobs and needs cleanup before activation
+  - Includes advanced reporting, vulnerability scanning, monitoring
+  - Can be used as reference for future improvements
+
+## Recent Changes
+
+- Fixed missing redis-cli installation in ci.yml
+- Resolved duplicate CI workflow names that were causing conflicts
+- Moved enhanced version to backup to prevent conflicts
