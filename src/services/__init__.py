@@ -115,10 +115,14 @@ class SupplierService(BaseService):
         try:
             # Check for duplicate email if email is provided
             if data.get("email"):
-                existing_supplier = Supplier.query.filter_by(email=data["email"]).first()
+                existing_supplier = Supplier.query.filter_by(
+                    email=data["email"]
+                ).first()
                 if existing_supplier:
-                    raise ValueError(f"Supplier with email '{data['email']}' already exists")
-            
+                    raise ValueError(
+                        f"Supplier with email '{data['email']}' already exists"
+                    )
+
             # Use the parent create method
             return super().create(data)
         except ValueError as e:
@@ -134,12 +138,13 @@ class SupplierService(BaseService):
             # Check for duplicate email if email is being updated
             if data.get("email"):
                 existing_supplier = Supplier.query.filter(
-                    Supplier.email == data["email"],
-                    Supplier.id != entity_id
+                    Supplier.email == data["email"], Supplier.id != entity_id
                 ).first()
                 if existing_supplier:
-                    raise ValueError(f"Supplier with email '{data['email']}' already exists")
-            
+                    raise ValueError(
+                        f"Supplier with email '{data['email']}' already exists"
+                    )
+
             # Use the parent update method
             return super().update(entity_id, data)
         except ValueError as e:
@@ -158,10 +163,14 @@ class SupplierService(BaseService):
 
             # Check for related products and plants
             if supplier.products and len(supplier.products) > 0:
-                raise ValueError(f"Cannot delete supplier with {len(supplier.products)} associated products")
-            
+                raise ValueError(
+                    f"Cannot delete supplier with {len(supplier.products)} associated products"
+                )
+
             if supplier.plants and len(supplier.plants) > 0:
-                raise ValueError(f"Cannot delete supplier with {len(supplier.plants)} associated plants")
+                raise ValueError(
+                    f"Cannot delete supplier with {len(supplier.plants)} associated plants"
+                )
 
             # Use the parent delete method
             return super().delete(entity_id)
@@ -213,23 +222,27 @@ class PlantService(BaseService):
             # Check height constraints
             height_min = data.get("height_min")
             height_max = data.get("height_max")
-            
+
             # If both are provided, validate that min <= max
             if height_min is not None and height_max is not None:
                 if height_min > height_max:
                     raise ValueError("height_min cannot be greater than height_max")
-            
+
             # If only one is provided, check against existing value
             if entity_id:
                 existing_plant = Plant.query.get(entity_id)
                 if existing_plant:
                     if height_min is not None and existing_plant.height_max is not None:
                         if height_min > existing_plant.height_max:
-                            raise ValueError("height_min cannot be greater than existing height_max")
+                            raise ValueError(
+                                "height_min cannot be greater than existing height_max"
+                            )
                     if height_max is not None and existing_plant.height_min is not None:
                         if height_max < existing_plant.height_min:
-                            raise ValueError("height_max cannot be less than existing height_min")
-            
+                            raise ValueError(
+                                "height_max cannot be less than existing height_min"
+                            )
+
             # Use the parent update method
             return super().update(entity_id, data)
         except ValueError as e:

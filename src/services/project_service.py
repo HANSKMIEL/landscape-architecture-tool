@@ -6,9 +6,10 @@ Handles all project-related business logic and database operations.
 
 from datetime import datetime
 from typing import Dict, List, Optional
+
 from sqlalchemy import or_
 
-from src.models.landscape import Project, Client, ProjectPlant, Plant
+from src.models.landscape import Client, Plant, Project, ProjectPlant
 from src.models.user import db
 
 
@@ -21,7 +22,7 @@ class ProjectService:
         status: str = "",
         client_id: int = None,
         page: int = 1,
-        per_page: int = 50
+        per_page: int = 50,
     ) -> Dict:
         """Get all projects with optional filtering and pagination"""
         query = Project.query.join(Client)
@@ -34,7 +35,7 @@ class ProjectService:
                     Project.name.ilike(search_term),
                     Project.description.ilike(search_term),
                     Project.location.ilike(search_term),
-                    Client.name.ilike(search_term)
+                    Client.name.ilike(search_term),
                 )
             )
 
@@ -99,26 +100,35 @@ class ProjectService:
     @staticmethod
     def get_projects_by_client(client_id: int) -> List[Project]:
         """Get all projects for a specific client"""
-        return Project.query.filter_by(client_id=client_id).order_by(Project.created_at.desc()).all()
+        return (
+            Project.query.filter_by(client_id=client_id)
+            .order_by(Project.created_at.desc())
+            .all()
+        )
 
     @staticmethod
     def get_projects_by_status(status: str) -> List[Project]:
         """Get all projects with a specific status"""
-        return Project.query.filter_by(status=status).order_by(Project.created_at.desc()).all()
+        return (
+            Project.query.filter_by(status=status)
+            .order_by(Project.created_at.desc())
+            .all()
+        )
 
     @staticmethod
-    def add_plant_to_project(project_id: int, plant_id: int, quantity: int, unit_cost: float = None) -> bool:
+    def add_plant_to_project(
+        project_id: int, plant_id: int, quantity: int, unit_cost: float = None
+    ) -> bool:
         """Add a plant to a project"""
         project = Project.query.get(project_id)
         plant = Plant.query.get(plant_id)
-        
+
         if not project or not plant:
             return False
 
         # Check if plant already exists in project
         existing = ProjectPlant.query.filter_by(
-            project_id=project_id, 
-            plant_id=plant_id
+            project_id=project_id, plant_id=plant_id
         ).first()
 
         if existing:
@@ -128,7 +138,7 @@ class ProjectService:
                 project_id=project_id,
                 plant_id=plant_id,
                 quantity=quantity,
-                unit_cost=unit_cost or plant.price
+                unit_cost=unit_cost or plant.price,
             )
             db.session.add(project_plant)
 
@@ -139,8 +149,7 @@ class ProjectService:
     def remove_plant_from_project(project_id: int, plant_id: int) -> bool:
         """Remove a plant from a project"""
         project_plant = ProjectPlant.query.filter_by(
-            project_id=project_id, 
-            plant_id=plant_id
+            project_id=project_id, plant_id=plant_id
         ).first()
 
         if not project_plant:
@@ -155,43 +164,48 @@ class ProjectService:
         """Get all plants associated with a project"""
         project_plants = ProjectPlant.query.filter_by(project_id=project_id).all()
         result = []
-        
+
         for project_plant in project_plants:
             plant_data = project_plant.plant.to_dict()
-            plant_data.update({
-                'quantity': project_plant.quantity,
-                'unit_cost': project_plant.unit_cost,
-                'total_price': project_plant.quantity * (project_plant.unit_cost or 0),
-                'notes': project_plant.notes
-            })
+            plant_data.update(
+                {
+                    "quantity": project_plant.quantity,
+                    "unit_cost": project_plant.unit_cost,
+                    "total_price": project_plant.quantity
+                    * (project_plant.unit_cost or 0),
+                    "notes": project_plant.notes,
+                }
+            )
             result.append(plant_data)
-            
+
         return result
 
     @staticmethod
     def calculate_project_cost(project_id: int) -> Dict:
         """Calculate total cost for a project"""
         project_plants = ProjectPlant.query.filter_by(project_id=project_id).all()
-        
+
         total_cost = 0
         plant_costs = []
-        
+
         for project_plant in project_plants:
             unit_cost = project_plant.unit_cost or 0
             line_total = project_plant.quantity * unit_cost
             total_cost += line_total
-            
-            plant_costs.append({
-                'plant_name': project_plant.plant.name,
-                'quantity': project_plant.quantity,
-                'unit_cost': unit_cost,
-                'line_total': line_total
-            })
-        
+
+            plant_costs.append(
+                {
+                    "plant_name": project_plant.plant.name,
+                    "quantity": project_plant.quantity,
+                    "unit_cost": unit_cost,
+                    "line_total": line_total,
+                }
+            )
+
         return {
-            'total_cost': total_cost,
-            'plant_costs': plant_costs,
-            'plant_count': len(plant_costs)
+            "total_cost": total_cost,
+            "plant_costs": plant_costs,
+            "plant_count": len(plant_costs),
         }
 
     @staticmethod
@@ -203,9 +217,9 @@ class ProjectService:
 
         project.status = status
         project.updated_at = datetime.utcnow()
-        
+
         # Set completion date if status is completed
-        if status == 'completed':
+        if status == "completed":
             project.actual_completion_date = datetime.utcnow()
 
         db.session.commit()
@@ -217,19 +231,19 @@ class ProjectService:
         errors = []
 
         # Required fields
-        required_fields = ['name', 'client_id']
+        required_fields = ["name", "client_id"]
         for field in required_fields:
             if not project_data.get(field):
                 errors.append(f"{field} is required")
 
         # Check if client exists
-        if project_data.get('client_id'):
-            client = Client.query.get(project_data['client_id'])
+        if project_data.get("client_id"):
+            client = Client.query.get(project_data["client_id"])
             if not client:
                 errors.append("Invalid client_id")
 
         # Numeric field validation
-        numeric_fields = ['area_size', 'budget']
+        numeric_fields = ["area_size", "budget"]
         for field in numeric_fields:
             value = project_data.get(field)
             if value is not None:
@@ -241,7 +255,7 @@ class ProjectService:
                     errors.append(f"{field} must be a valid number")
 
         # Date validation
-        date_fields = ['start_date', 'target_completion_date']
+        date_fields = ["start_date", "target_completion_date"]
         for field in date_fields:
             value = project_data.get(field)
             if value:
@@ -252,8 +266,8 @@ class ProjectService:
                     errors.append(f"{field} must be a valid ISO date")
 
         # Status validation
-        valid_statuses = ['planning', 'active', 'completed', 'on_hold', 'cancelled']
-        if project_data.get('status') and project_data['status'] not in valid_statuses:
+        valid_statuses = ["planning", "active", "completed", "on_hold", "cancelled"]
+        if project_data.get("status") and project_data["status"] not in valid_statuses:
             errors.append(f"status must be one of: {', '.join(valid_statuses)}")
 
         return errors

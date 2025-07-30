@@ -6,6 +6,7 @@ Handles all client-related business logic and database operations.
 
 from datetime import datetime
 from typing import Dict, List, Optional
+
 from sqlalchemy import or_
 
 from src.models.landscape import Client, Project
@@ -16,11 +17,7 @@ class ClientService:
     """Service class for client operations"""
 
     @staticmethod
-    def get_all_clients(
-        search: str = "",
-        page: int = 1,
-        per_page: int = 50
-    ) -> Dict:
+    def get_all_clients(search: str = "", page: int = 1, per_page: int = 50) -> Dict:
         """Get all clients with optional filtering and pagination"""
         query = Client.query
 
@@ -32,7 +29,7 @@ class ClientService:
                     Client.name.ilike(search_term),
                     Client.email.ilike(search_term),
                     Client.company.ilike(search_term),
-                    Client.phone.ilike(search_term)
+                    Client.phone.ilike(search_term),
                 )
             )
 
@@ -45,10 +42,11 @@ class ClientService:
         clients_data = []
         for client in clients.items:
             client_dict = client.to_dict()
-            client_dict['project_count'] = Project.query.filter_by(client_id=client.id).count()
-            client_dict['active_projects'] = Project.query.filter_by(
-                client_id=client.id, 
-                status='active'
+            client_dict["project_count"] = Project.query.filter_by(
+                client_id=client.id
+            ).count()
+            client_dict["active_projects"] = Project.query.filter_by(
+                client_id=client.id, status="active"
             ).count()
             clients_data.append(client_dict)
 
@@ -97,10 +95,9 @@ class ClientService:
 
         # Check if client has active projects
         active_projects = Project.query.filter_by(
-            client_id=client_id, 
-            status='active'
+            client_id=client_id, status="active"
         ).count()
-        
+
         if active_projects > 0:
             return False  # Cannot delete client with active projects
 
@@ -111,7 +108,11 @@ class ClientService:
     @staticmethod
     def get_client_projects(client_id: int) -> List[Project]:
         """Get all projects for a specific client"""
-        return Project.query.filter_by(client_id=client_id).order_by(Project.created_at.desc()).all()
+        return (
+            Project.query.filter_by(client_id=client_id)
+            .order_by(Project.created_at.desc())
+            .all()
+        )
 
     @staticmethod
     def get_client_statistics(client_id: int) -> Dict:
@@ -121,37 +122,43 @@ class ClientService:
             return {}
 
         projects = Project.query.filter_by(client_id=client_id).all()
-        
+
         total_projects = len(projects)
-        active_projects = len([p for p in projects if p.status == 'active'])
-        completed_projects = len([p for p in projects if p.status == 'completed'])
-        
+        active_projects = len([p for p in projects if p.status == "active"])
+        completed_projects = len([p for p in projects if p.status == "completed"])
+
         total_budget = sum(p.budget or 0 for p in projects)
         total_area = sum(p.area_size or 0 for p in projects)
-        
+
         return {
-            'client_id': client_id,
-            'client_name': client.name,
-            'total_projects': total_projects,
-            'active_projects': active_projects,
-            'completed_projects': completed_projects,
-            'total_budget': total_budget,
-            'total_area': total_area,
-            'average_project_budget': total_budget / total_projects if total_projects > 0 else 0
+            "client_id": client_id,
+            "client_name": client.name,
+            "total_projects": total_projects,
+            "active_projects": active_projects,
+            "completed_projects": completed_projects,
+            "total_budget": total_budget,
+            "total_area": total_area,
+            "average_project_budget": (
+                total_budget / total_projects if total_projects > 0 else 0
+            ),
         }
 
     @staticmethod
     def search_clients(search_term: str) -> List[Client]:
         """Search clients by name, email, company, or phone"""
         search_term = f"%{search_term}%"
-        return Client.query.filter(
-            or_(
-                Client.name.ilike(search_term),
-                Client.email.ilike(search_term),
-                Client.company.ilike(search_term),
-                Client.phone.ilike(search_term)
+        return (
+            Client.query.filter(
+                or_(
+                    Client.name.ilike(search_term),
+                    Client.email.ilike(search_term),
+                    Client.company.ilike(search_term),
+                    Client.phone.ilike(search_term),
+                )
             )
-        ).order_by(Client.name).all()
+            .order_by(Client.name)
+            .all()
+        )
 
     @staticmethod
     def validate_client_data(client_data: Dict) -> List[str]:
@@ -159,26 +166,32 @@ class ClientService:
         errors = []
 
         # Required fields
-        required_fields = ['name']
+        required_fields = ["name"]
         for field in required_fields:
             if not client_data.get(field):
                 errors.append(f"{field} is required")
 
         # Email validation
-        if client_data.get('email'):
-            email = client_data['email']
-            if '@' not in email or '.' not in email:
+        if client_data.get("email"):
+            email = client_data["email"]
+            if "@" not in email or "." not in email:
                 errors.append("Invalid email format")
-            
+
             # Check for duplicate email
             existing_client = Client.query.filter_by(email=email).first()
-            if existing_client and existing_client.id != client_data.get('id'):
+            if existing_client and existing_client.id != client_data.get("id"):
                 errors.append("Email already exists")
 
         # Phone validation
-        if client_data.get('phone'):
-            phone = client_data['phone'].replace(' ', '').replace('-', '').replace('(', '').replace(')', '')
-            if not phone.replace('+', '').isdigit():
+        if client_data.get("phone"):
+            phone = (
+                client_data["phone"]
+                .replace(" ", "")
+                .replace("-", "")
+                .replace("(", "")
+                .replace(")", "")
+            )
+            if not phone.replace("+", "").isdigit():
                 errors.append("Invalid phone number format")
 
         return errors
@@ -193,17 +206,16 @@ class ClientService:
         """Get top clients by number of projects"""
         clients = Client.query.all()
         client_stats = []
-        
+
         for client in clients:
             project_count = Project.query.filter_by(client_id=client.id).count()
             if project_count > 0:
-                client_stats.append({
-                    'client': client.to_dict(),
-                    'project_count': project_count
-                })
-        
+                client_stats.append(
+                    {"client": client.to_dict(), "project_count": project_count}
+                )
+
         # Sort by project count and limit
-        client_stats.sort(key=lambda x: x['project_count'], reverse=True)
+        client_stats.sort(key=lambda x: x["project_count"], reverse=True)
         return client_stats[:limit]
 
     @staticmethod
@@ -211,18 +223,20 @@ class ClientService:
         """Get top clients by total project budget"""
         clients = Client.query.all()
         client_stats = []
-        
+
         for client in clients:
             projects = Project.query.filter_by(client_id=client.id).all()
             total_budget = sum(p.budget or 0 for p in projects)
-            
+
             if total_budget > 0:
-                client_stats.append({
-                    'client': client.to_dict(),
-                    'total_budget': total_budget,
-                    'project_count': len(projects)
-                })
-        
+                client_stats.append(
+                    {
+                        "client": client.to_dict(),
+                        "total_budget": total_budget,
+                        "project_count": len(projects),
+                    }
+                )
+
         # Sort by total budget and limit
-        client_stats.sort(key=lambda x: x['total_budget'], reverse=True)
+        client_stats.sort(key=lambda x: x["total_budget"], reverse=True)
         return client_stats[:limit]

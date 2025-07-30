@@ -1,10 +1,13 @@
-import pytest
-from unittest.mock import Mock
 import os
 import sys
+from unittest.mock import Mock
+
+import pytest
 
 # Add project root to Python path
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+sys.path.insert(
+    0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+)
 
 from src.main import create_app
 from src.models.user import db
@@ -15,15 +18,17 @@ def app():
     """Create application for testing"""
     # Set testing environment
     os.environ["FLASK_ENV"] = "testing"
-    
+
     app = create_app()
-    app.config.update({
-        "TESTING": True,
-        "SQLALCHEMY_DATABASE_URI": "sqlite:///:memory:",
-        "SESSION_COOKIE_SECURE": False,
-        "RATELIMIT_ENABLED": False,
-    })
-    
+    app.config.update(
+        {
+            "TESTING": True,
+            "SQLALCHEMY_DATABASE_URI": "sqlite:///:memory:",
+            "SESSION_COOKIE_SECURE": False,
+            "RATELIMIT_ENABLED": False,
+        }
+    )
+
     with app.app_context():
         db.create_all()
         yield app

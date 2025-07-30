@@ -6,9 +6,10 @@ Handles all supplier-related business logic and database operations.
 
 from datetime import datetime
 from typing import Dict, List, Optional
+
 from sqlalchemy import or_
 
-from src.models.landscape import Supplier, Product, Plant
+from src.models.landscape import Plant, Product, Supplier
 from src.models.user import db
 
 
@@ -17,10 +18,7 @@ class SupplierService:
 
     @staticmethod
     def get_all_suppliers(
-        search: str = "",
-        specialization: str = "",
-        page: int = 1,
-        per_page: int = 50
+        search: str = "", specialization: str = "", page: int = 1, per_page: int = 50
     ) -> Dict:
         """Get all suppliers with optional filtering and pagination"""
         query = Supplier.query
@@ -33,7 +31,7 @@ class SupplierService:
                     Supplier.name.ilike(search_term),
                     Supplier.contact_person.ilike(search_term),
                     Supplier.email.ilike(search_term),
-                    Supplier.city.ilike(search_term)
+                    Supplier.city.ilike(search_term),
                 )
             )
 
@@ -91,7 +89,7 @@ class SupplierService:
         # Check if supplier has products or plants
         product_count = Product.query.filter_by(supplier_id=supplier_id).count()
         plant_count = Plant.query.filter_by(supplier_id=supplier_id).count()
-        
+
         if product_count > 0 or plant_count > 0:
             return False  # Cannot delete supplier with associated products/plants
 
@@ -102,7 +100,11 @@ class SupplierService:
     @staticmethod
     def get_supplier_products(supplier_id: int) -> List[Product]:
         """Get all products for a specific supplier"""
-        return Product.query.filter_by(supplier_id=supplier_id).order_by(Product.name).all()
+        return (
+            Product.query.filter_by(supplier_id=supplier_id)
+            .order_by(Product.name)
+            .all()
+        )
 
     @staticmethod
     def get_supplier_plants(supplier_id: int) -> List[Plant]:
@@ -118,45 +120,57 @@ class SupplierService:
 
         products = Product.query.filter_by(supplier_id=supplier_id).all()
         plants = Plant.query.filter_by(supplier_id=supplier_id).all()
-        
+
         total_products = len(products)
         total_plants = len(plants)
         total_inventory_value = sum(
             (p.price or 0) * (p.stock_quantity or 0) for p in products
         )
-        
-        average_product_price = sum(p.price or 0 for p in products) / total_products if total_products > 0 else 0
-        average_plant_price = sum(p.price or 0 for p in plants) / total_plants if total_plants > 0 else 0
-        
+
+        average_product_price = (
+            sum(p.price or 0 for p in products) / total_products
+            if total_products > 0
+            else 0
+        )
+        average_plant_price = (
+            sum(p.price or 0 for p in plants) / total_plants if total_plants > 0 else 0
+        )
+
         return {
-            'supplier_id': supplier_id,
-            'supplier_name': supplier.name,
-            'total_products': total_products,
-            'total_plants': total_plants,
-            'total_inventory_value': total_inventory_value,
-            'average_product_price': average_product_price,
-            'average_plant_price': average_plant_price
+            "supplier_id": supplier_id,
+            "supplier_name": supplier.name,
+            "total_products": total_products,
+            "total_plants": total_plants,
+            "total_inventory_value": total_inventory_value,
+            "average_product_price": average_product_price,
+            "average_plant_price": average_plant_price,
         }
 
     @staticmethod
     def search_suppliers(search_term: str) -> List[Supplier]:
         """Search suppliers by name, contact person, email, or city"""
         search_term = f"%{search_term}%"
-        return Supplier.query.filter(
-            or_(
-                Supplier.name.ilike(search_term),
-                Supplier.contact_person.ilike(search_term),
-                Supplier.email.ilike(search_term),
-                Supplier.city.ilike(search_term)
+        return (
+            Supplier.query.filter(
+                or_(
+                    Supplier.name.ilike(search_term),
+                    Supplier.contact_person.ilike(search_term),
+                    Supplier.email.ilike(search_term),
+                    Supplier.city.ilike(search_term),
+                )
             )
-        ).order_by(Supplier.name).all()
+            .order_by(Supplier.name)
+            .all()
+        )
 
     @staticmethod
     def get_suppliers_by_specialization(specialization: str) -> List[Supplier]:
         """Get suppliers by specialization"""
-        return Supplier.query.filter(
-            Supplier.specialization.ilike(f"%{specialization}%")
-        ).order_by(Supplier.name).all()
+        return (
+            Supplier.query.filter(Supplier.specialization.ilike(f"%{specialization}%"))
+            .order_by(Supplier.name)
+            .all()
+        )
 
     @staticmethod
     def get_supplier_specializations() -> List[str]:
@@ -170,44 +184,52 @@ class SupplierService:
         errors = []
 
         # Required fields
-        required_fields = ['name']
+        required_fields = ["name"]
         for field in required_fields:
             if not supplier_data.get(field):
                 errors.append(f"{field} is required")
 
         # Email validation
-        if supplier_data.get('email'):
-            email = supplier_data['email']
-            if '@' not in email or '.' not in email:
+        if supplier_data.get("email"):
+            email = supplier_data["email"]
+            if "@" not in email or "." not in email:
                 errors.append("Invalid email format")
-            
+
             # Check for duplicate email
             existing_supplier = Supplier.query.filter_by(email=email).first()
-            if existing_supplier and existing_supplier.id != supplier_data.get('id'):
+            if existing_supplier and existing_supplier.id != supplier_data.get("id"):
                 errors.append("Email already exists")
 
         # Phone validation
-        if supplier_data.get('phone'):
-            phone = supplier_data['phone'].replace(' ', '').replace('-', '').replace('(', '').replace(')', '')
-            if not phone.replace('+', '').isdigit():
+        if supplier_data.get("phone"):
+            phone = (
+                supplier_data["phone"]
+                .replace(" ", "")
+                .replace("-", "")
+                .replace("(", "")
+                .replace(")", "")
+            )
+            if not phone.replace("+", "").isdigit():
                 errors.append("Invalid phone number format")
 
         # Website validation
-        if supplier_data.get('website'):
-            website = supplier_data['website']
-            if not (website.startswith('http://') or website.startswith('https://')):
+        if supplier_data.get("website"):
+            website = supplier_data["website"]
+            if not (website.startswith("http://") or website.startswith("https://")):
                 errors.append("Website must start with http:// or https://")
 
         return errors
 
     @staticmethod
-    def add_product_to_supplier(supplier_id: int, product_data: Dict) -> Optional[Product]:
+    def add_product_to_supplier(
+        supplier_id: int, product_data: Dict
+    ) -> Optional[Product]:
         """Add a product to a supplier"""
         supplier = Supplier.query.get(supplier_id)
         if not supplier:
             return None
 
-        product_data['supplier_id'] = supplier_id
+        product_data["supplier_id"] = supplier_id
         product = Product(**product_data)
         db.session.add(product)
         db.session.commit()
@@ -218,22 +240,24 @@ class SupplierService:
         """Get top suppliers by number of products"""
         suppliers = Supplier.query.all()
         supplier_stats = []
-        
+
         for supplier in suppliers:
             product_count = Product.query.filter_by(supplier_id=supplier.id).count()
             plant_count = Plant.query.filter_by(supplier_id=supplier.id).count()
             total_items = product_count + plant_count
-            
+
             if total_items > 0:
-                supplier_stats.append({
-                    'supplier': supplier.to_dict(),
-                    'product_count': product_count,
-                    'plant_count': plant_count,
-                    'total_items': total_items
-                })
-        
+                supplier_stats.append(
+                    {
+                        "supplier": supplier.to_dict(),
+                        "product_count": product_count,
+                        "plant_count": plant_count,
+                        "total_items": total_items,
+                    }
+                )
+
         # Sort by total items and limit
-        supplier_stats.sort(key=lambda x: x['total_items'], reverse=True)
+        supplier_stats.sort(key=lambda x: x["total_items"], reverse=True)
         return supplier_stats[:limit]
 
     @staticmethod
@@ -242,15 +266,19 @@ class SupplierService:
         supplier = Supplier.query.get(supplier_id)
         if not supplier:
             return {}
-        
+
         return {
-            'name': supplier.name,
-            'contact_person': supplier.contact_person,
-            'email': supplier.email,
-            'phone': supplier.phone,
-            'address': supplier.address,
-            'city': supplier.city,
-            'postal_code': supplier.postal_code,
-            'website': supplier.website,
-            'full_address': f"{supplier.address}, {supplier.city} {supplier.postal_code}" if supplier.address else None
+            "name": supplier.name,
+            "contact_person": supplier.contact_person,
+            "email": supplier.email,
+            "phone": supplier.phone,
+            "address": supplier.address,
+            "city": supplier.city,
+            "postal_code": supplier.postal_code,
+            "website": supplier.website,
+            "full_address": (
+                f"{supplier.address}, {supplier.city} {supplier.postal_code}"
+                if supplier.address
+                else None
+            ),
         }

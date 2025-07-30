@@ -5,6 +5,7 @@ Handles all plant-related business logic and database operations.
 """
 
 from typing import Dict, List, Optional
+
 from sqlalchemy import or_
 
 from src.models.landscape import Plant
@@ -22,7 +23,7 @@ class PlantService:
         moisture_level: str = "",
         native_only: bool = False,
         page: int = 1,
-        per_page: int = 50
+        per_page: int = 50,
     ) -> Dict:
         """Get all plants with optional filtering and pagination"""
         query = Plant.query
@@ -31,10 +32,7 @@ class PlantService:
         if search:
             search_term = f"%{search}%"
             query = query.filter(
-                or_(
-                    Plant.name.ilike(search_term),
-                    Plant.common_name.ilike(search_term)
-                )
+                or_(Plant.name.ilike(search_term), Plant.common_name.ilike(search_term))
             )
 
         if category:
@@ -109,12 +107,13 @@ class PlantService:
     def search_plants(search_term: str) -> List[Plant]:
         """Search plants by name or common name"""
         search_term = f"%{search_term}%"
-        return Plant.query.filter(
-            or_(
-                Plant.name.ilike(search_term),
-                Plant.common_name.ilike(search_term)
+        return (
+            Plant.query.filter(
+                or_(Plant.name.ilike(search_term), Plant.common_name.ilike(search_term))
             )
-        ).order_by(Plant.name).all()
+            .order_by(Plant.name)
+            .all()
+        )
 
     @staticmethod
     def get_plant_categories() -> List[str]:
@@ -128,13 +127,13 @@ class PlantService:
         errors = []
 
         # Required fields
-        required_fields = ['name', 'category']
+        required_fields = ["name", "category"]
         for field in required_fields:
             if not plant_data.get(field):
                 errors.append(f"{field} is required")
 
         # Numeric field validation
-        numeric_fields = ['height_min', 'height_max', 'width_min', 'width_max', 'price']
+        numeric_fields = ["height_min", "height_max", "width_min", "width_max", "price"]
         for field in numeric_fields:
             value = plant_data.get(field)
             if value is not None:
@@ -146,18 +145,24 @@ class PlantService:
                     errors.append(f"{field} must be a valid number")
 
         # Height/width validation
-        if (plant_data.get('height_min') and plant_data.get('height_max') and 
-            plant_data['height_min'] > plant_data['height_max']):
+        if (
+            plant_data.get("height_min")
+            and plant_data.get("height_max")
+            and plant_data["height_min"] > plant_data["height_max"]
+        ):
             errors.append("height_min cannot be greater than height_max")
 
-        if (plant_data.get('width_min') and plant_data.get('width_max') and 
-            plant_data['width_min'] > plant_data['width_max']):
+        if (
+            plant_data.get("width_min")
+            and plant_data.get("width_max")
+            and plant_data["width_min"] > plant_data["width_max"]
+        ):
             errors.append("width_min cannot be greater than width_max")
 
         # pH validation
-        if plant_data.get('soil_ph_min') and plant_data.get('soil_ph_max'):
-            ph_min = plant_data['soil_ph_min']
-            ph_max = plant_data['soil_ph_max']
+        if plant_data.get("soil_ph_min") and plant_data.get("soil_ph_max"):
+            ph_min = plant_data["soil_ph_min"]
+            ph_max = plant_data["soil_ph_max"]
             if ph_min > ph_max:
                 errors.append("soil_ph_min cannot be greater than soil_ph_max")
             if ph_min < 0 or ph_min > 14 or ph_max < 0 or ph_max > 14:

@@ -3,6 +3,7 @@ Database testing fixtures and utilities
 """
 
 import pytest
+
 from src.models.user import db
 
 
@@ -11,17 +12,15 @@ def db_session(app_context):
     """Provide a database session with automatic rollback"""
     connection = db.engine.connect()
     transaction = connection.begin()
-    
+
     # Configure session to use this connection
-    session = db.create_scoped_session(
-        options={"bind": connection, "binds": {}}
-    )
-    
+    session = db.create_scoped_session(options={"bind": connection, "binds": {}})
+
     # Make this the current session
     db.session = session
-    
+
     yield session
-    
+
     # Rollback and cleanup
     transaction.rollback()
     connection.close()
@@ -32,23 +31,27 @@ def sample_data(db_session):
     """Provide sample data for testing"""
     # This will be populated by factory fixtures
     yield
-    
+
 
 class DatabaseTestMixin:
     """Mixin class for database testing utilities"""
-    
+
     def assert_record_count(self, model, expected_count):
         """Assert the number of records for a model"""
         actual_count = db.session.query(model).count()
-        assert actual_count == expected_count, f"Expected {expected_count} {model.__name__} records, got {actual_count}"
-    
+        assert (
+            actual_count == expected_count
+        ), f"Expected {expected_count} {model.__name__} records, got {actual_count}"
+
     def assert_record_exists(self, model, **kwargs):
         """Assert that a record exists with given attributes"""
         record = db.session.query(model).filter_by(**kwargs).first()
         assert record is not None, f"No {model.__name__} record found with {kwargs}"
         return record
-    
+
     def assert_record_not_exists(self, model, **kwargs):
         """Assert that a record does not exist with given attributes"""
         record = db.session.query(model).filter_by(**kwargs).first()
-        assert record is None, f"{model.__name__} record found with {kwargs} when none expected"
+        assert (
+            record is None
+        ), f"{model.__name__} record found with {kwargs} when none expected"

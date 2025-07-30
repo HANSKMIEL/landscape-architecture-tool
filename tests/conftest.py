@@ -23,17 +23,19 @@ def app():
     """Create and configure a test app for the entire test session"""
     # Set testing environment
     os.environ["FLASK_ENV"] = "testing"
-    
+
     app = create_app()
-    app.config.update({
-        "TESTING": True,
-        "SQLALCHEMY_DATABASE_URI": "sqlite:///:memory:",
-        "SESSION_COOKIE_SECURE": False,
-        "RATELIMIT_ENABLED": False,
-        "WTF_CSRF_ENABLED": False,
-        "SECRET_KEY": "test-secret-key",
-    })
-    
+    app.config.update(
+        {
+            "TESTING": True,
+            "SQLALCHEMY_DATABASE_URI": "sqlite:///:memory:",
+            "SESSION_COOKIE_SECURE": False,
+            "RATELIMIT_ENABLED": False,
+            "WTF_CSRF_ENABLED": False,
+            "SECRET_KEY": "test-secret-key",
+        }
+    )
+
     return app
 
 
@@ -68,6 +70,7 @@ def clean_db(app_context):
     db.session.close()
 
 
+from tests.fixtures.database import *
+
 # Import factory fixtures
 from tests.fixtures.test_data import *
-from tests.fixtures.database import *
