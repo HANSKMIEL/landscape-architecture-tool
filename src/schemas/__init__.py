@@ -1,7 +1,7 @@
+import re
 from typing import Optional
-# Removed the global import of `re` as it is now imported locally within methods.
 
-from pydantic import BaseModel, Field, EmailStr, field_validator, HttpUrl
+from pydantic import BaseModel, EmailStr, Field, HttpUrl, field_validator
 
 
 class SupplierCreateSchema(BaseModel):
@@ -16,14 +16,24 @@ class SupplierCreateSchema(BaseModel):
     website: Optional[HttpUrl] = Field(None, max_length=200)
     notes: Optional[str] = None
 
-    @field_validator('phone')
+    @field_validator("phone")
     @classmethod
     def validate_phone(cls, v):
         if v is not None and v.strip():
             # Basic phone validation: at least contains some digits and valid characters
-            phone_pattern = r'^[\d\s\-\+\(\)\.]+$'
+            phone_pattern = r"^[\d\s\-\+\(\)\.]+$"
             if not re.match(phone_pattern, v) or not any(char.isdigit() for char in v):
-                raise ValueError('Phone number must contain digits and only valid phone characters (digits, spaces, hyphens, parentheses, plus sign, periods)')
+                raise ValueError(
+                    "Phone number must contain digits and valid characters only"
+                )
+        return v
+
+    @field_validator("website")
+    @classmethod
+    def validate_website(cls, v):
+        # Convert HttpUrl to string for database compatibility
+        if v is not None:
+            return str(v)
         return v
 
 
@@ -39,14 +49,24 @@ class SupplierUpdateSchema(BaseModel):
     website: Optional[HttpUrl] = Field(None, max_length=200)
     notes: Optional[str] = None
 
-    @field_validator('phone')
+    @field_validator("phone")
     @classmethod
     def validate_phone(cls, v):
         if v is not None and v.strip():
             # Basic phone validation: at least contains some digits and valid characters
-            phone_pattern = r'^[\d\s\-\+\(\)\.]+$'
+            phone_pattern = r"^[\d\s\-\+\(\)\.]+$"
             if not re.match(phone_pattern, v) or not any(char.isdigit() for char in v):
-                raise ValueError('Phone number must contain digits and only valid phone characters (digits, spaces, hyphens, parentheses, plus sign)')
+                raise ValueError(
+                    "Phone number must contain digits and valid characters only"
+                )
+        return v
+
+    @field_validator("website")
+    @classmethod
+    def validate_website(cls, v):
+        # Convert HttpUrl to string for database compatibility
+        if v is not None:
+            return str(v)
         return v
 
 
