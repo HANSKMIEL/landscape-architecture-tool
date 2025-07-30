@@ -1,5 +1,5 @@
+import re
 from typing import Optional
-# Removed the global import of `re` as it is now imported locally within methods.
 
 from pydantic import BaseModel, Field, EmailStr, field_validator, HttpUrl
 
@@ -26,6 +26,14 @@ class SupplierCreateSchema(BaseModel):
                 raise ValueError('Phone number must contain digits and only valid phone characters (digits, spaces, hyphens, parentheses, plus sign, periods)')
         return v
 
+    @field_validator('website')
+    @classmethod
+    def validate_website(cls, v):
+        # Convert HttpUrl to string for database compatibility
+        if v is not None:
+            return str(v)
+        return v
+
 
 class SupplierUpdateSchema(BaseModel):
     name: Optional[str] = Field(None, min_length=1, max_length=100)
@@ -47,6 +55,14 @@ class SupplierUpdateSchema(BaseModel):
             phone_pattern = r'^[\d\s\-\+\(\)\.]+$'
             if not re.match(phone_pattern, v) or not any(char.isdigit() for char in v):
                 raise ValueError('Phone number must contain digits and only valid phone characters (digits, spaces, hyphens, parentheses, plus sign)')
+        return v
+
+    @field_validator('website')
+    @classmethod
+    def validate_website(cls, v):
+        # Convert HttpUrl to string for database compatibility
+        if v is not None:
+            return str(v)
         return v
 
 
