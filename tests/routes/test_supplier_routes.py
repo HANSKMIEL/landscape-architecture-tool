@@ -514,7 +514,7 @@ class TestSupplierRoutesIntegration(DatabaseTestMixin):
             "name": "Workflow Test Supplier",
             "contact_person": "Test Contact",
             "email": "workflow@supplier.com",
-            "phone": "555-WORKFLOW",
+            "phone": "555-123-4567",
             "specialization": "Testing Equipment",
         }
 

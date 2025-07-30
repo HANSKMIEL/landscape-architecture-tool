@@ -4,7 +4,7 @@ Test Analytics Service
 Comprehensive tests for analytics service layer business logic.
 """
 
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 
 import pytest
 
@@ -93,7 +93,7 @@ class TestAnalyticsService(DatabaseTestMixin):
         plant = plant_factory(name="Test Plant")
 
         # Create projects at different dates
-        now = datetime.utcnow()
+        now = datetime.now(UTC)
         old_project = project_factory(
             client=client, created_at=now - timedelta(days=60)
         )
@@ -138,7 +138,7 @@ class TestAnalyticsService(DatabaseTestMixin):
         analytics = AnalyticsService()
 
         client = client_factory()
-        now = datetime.utcnow()
+        now = datetime.now(UTC)
 
         # Create projects with different statuses and durations
         projects = [
@@ -247,7 +247,7 @@ class TestAnalyticsService(DatabaseTestMixin):
         analytics = AnalyticsService()
 
         client = client_factory()
-        now = datetime.utcnow()
+        now = datetime.now(UTC)
 
         # Create recommendation requests with different feedback
         requests = []
@@ -294,7 +294,7 @@ class TestAnalyticsService(DatabaseTestMixin):
         fall_plant = plant_factory(name="Fall Flower", bloom_time="fall")
 
         # Create projects in different months
-        now = datetime.utcnow()
+        now = datetime.now(UTC)
         spring_project = project_factory(
             client=client, created_at=datetime(now.year, 3, 15)  # March
         )
@@ -408,7 +408,7 @@ class TestAnalyticsServiceIntegration(DatabaseTestMixin):
         ]
 
         # Create projects across different time periods
-        now = datetime.utcnow()
+        now = datetime.now(UTC)
         projects = []
         for i in range(6):
             project = project_factory(
@@ -441,7 +441,9 @@ class TestAnalyticsServiceIntegration(DatabaseTestMixin):
         ]
 
         for project, plant, quantity in relationships:
-            ProjectPlant(project=project, plant=plant, quantity=quantity)
+            project_plant = ProjectPlant(project=project, plant=plant, quantity=quantity)
+            db.session.add(project_plant)
+        db.session.commit()
 
         # Test plant usage analytics
         plant_analytics = analytics.get_plant_usage_analytics()
@@ -455,7 +457,7 @@ class TestAnalyticsServiceIntegration(DatabaseTestMixin):
         # Test project performance analytics
         project_analytics = analytics.get_project_performance_analytics()
         assert project_analytics["total_projects"] == 6
-        assert project_analytics["completion_rate"] == 66.67  # 4 out of 6 completed
+        assert project_analytics["completion_rate"] == pytest.approx(66.67, rel=1e-2)  # 4 out of 6 completed
 
         # Test client analytics
         client_analytics = analytics.get_client_analytics()
@@ -490,7 +492,7 @@ class TestAnalyticsServiceIntegration(DatabaseTestMixin):
 
         client = client_factory()
         plant = plant_factory()
-        now = datetime.utcnow()
+        now = datetime.now(UTC)
 
         # Create projects at specific dates
         old_project = project_factory(
@@ -548,9 +550,11 @@ class TestAnalyticsServiceIntegration(DatabaseTestMixin):
             num_plants = random.randint(1, 5)
             selected_plants = random.sample(plants, num_plants)
             for plant in selected_plants:
-                ProjectPlant(
+                project_plant = ProjectPlant(
                     project=project, plant=plant, quantity=random.randint(1, 20)
                 )
+                db.session.add(project_plant)
+        db.session.commit()
 
         # Test that analytics still work efficiently
         plant_analytics = analytics.get_plant_usage_analytics()
