@@ -71,7 +71,8 @@ class TestPerformanceCacheImports:
 
     def test_cache_instance_consistency(self):
         """Test that cache instance is consistent across imports."""
-        from src.services.performance import cache as cache1, cache as cache2
+        from src.services.performance import cache as cache1
+        from src.services.performance import cache as cache2
 
         # Should be the same instance
         assert cache1 is cache2

@@ -446,7 +446,7 @@ def create_app():
     @handle_errors
     def get_supplier_statistics(supplier_id):
         """Get statistics for a specific supplier"""
-        from sqlalchemy import func
+        from sqlalchemy import func  # noqa: F401
 
         from src.models.landscape import Plant, Product, Supplier
 
@@ -512,14 +512,13 @@ def create_app():
     def get_top_suppliers():
         """Get top suppliers by product/plant count"""
         from flask import request
-        from sqlalchemy import func
+        from sqlalchemy import func  # noqa: F401
 
         from src.models.landscape import Plant, Product, Supplier
 
         limit = request.args.get("limit", 10, type=int)
 
         # Get suppliers with their item counts using subqueries
-        from sqlalchemy import select
 
         # Subquery for product counts
         product_counts = (
@@ -702,7 +701,7 @@ def create_app():
             filters.append(Plant.sun_exposure == sun_exposure)
 
         if native_only:
-            filters.append(Plant.native == True)
+            filters.append(Plant.native.is_(True))
 
         if filters:
             query = query.filter(and_(*filters))

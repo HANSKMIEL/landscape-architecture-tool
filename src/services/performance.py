@@ -10,7 +10,7 @@ import time
 from typing import Any, Callable, Dict, Optional
 
 import redis
-from flask import current_app, g, request
+from flask import current_app, request
 
 # Simple in-memory cache as fallback
 _memory_cache = {}
@@ -49,7 +49,7 @@ class PerformanceCache:
                 value = self.redis_client.get(key)
                 if value:
                     return json.loads(value)
-            except:
+            except (redis.RedisError, json.JSONDecodeError, TypeError):
                 pass
 
         # Fallback to memory cache
@@ -63,13 +63,13 @@ class PerformanceCache:
                 try:
                     self.redis_client.setex(key, timeout, json.dumps(value))
                     return True
-                except:
+                except (redis.RedisError, json.JSONEncodeError, TypeError):
                     pass
 
             # Fallback to memory cache (no timeout support in simple implementation)
             _memory_cache[key] = value
             return True
-        except:
+        except Exception:
             return False
 
     def delete(self, key: str) -> bool:
@@ -78,12 +78,12 @@ class PerformanceCache:
             if self.redis_client:
                 try:
                     self.redis_client.delete(key)
-                except:
+                except Exception:
                     pass
 
             _memory_cache.pop(key, None)
             return True
-        except:
+        except Exception:
             return False
 
     def clear(self) -> bool:
@@ -92,12 +92,12 @@ class PerformanceCache:
             if self.redis_client:
                 try:
                     self.redis_client.flushdb()
-                except:
+                except Exception:
                     pass
 
             _memory_cache.clear()
             return True
-        except:
+        except Exception:
             return False
 
 
@@ -256,7 +256,7 @@ def get_cache_stats() -> Dict[str, Any]:
             misses = stats["redis_keyspace_misses"]
             if hits + misses > 0:
                 stats["cache_hit_rate"] = round(hits / (hits + misses) * 100, 2)
-        except:
+        except Exception:
             pass
 
     return stats
@@ -270,7 +270,7 @@ def clear_cache_by_pattern(pattern: str) -> bool:
                 keys = cache.redis_client.keys(pattern)
                 if keys:
                     cache.redis_client.delete(*keys)
-            except:
+            except Exception:
                 pass
 
         # Clear memory cache entries (simple pattern matching)
@@ -281,7 +281,7 @@ def clear_cache_by_pattern(pattern: str) -> bool:
             del _memory_cache[key]
 
         return True
-    except:
+    except Exception:
         return False
 
 
