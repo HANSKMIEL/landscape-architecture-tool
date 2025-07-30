@@ -42,9 +42,13 @@ class TestProjectService(DatabaseTestMixin):
     ):
         """Test getting projects with search filter"""
         client = client_factory(name="Test Client")
-        project1 = project_factory(name="Garden Renovation", client=client)
-        project2 = project_factory(name="Landscape Design", client=client)
-        project3 = project_factory(name="Pool Installation", client=client)
+        project1 = project_factory(  # noqa: F841
+            name="Garden Renovation", client=client
+        )  # noqa: F841
+        project2 = project_factory(name="Landscape Design", client=client)  # noqa: F841
+        project3 = project_factory(  # noqa: F841
+            name="Pool Installation", client=client
+        )  # noqa: F841
 
         # Search by project name
         result = ProjectService.get_all_projects(search="Garden")
@@ -60,9 +64,9 @@ class TestProjectService(DatabaseTestMixin):
     ):
         """Test getting projects with status filter"""
         client = client_factory()
-        project1 = project_factory(status="active", client=client)
-        project2 = project_factory(status="completed", client=client)
-        project3 = project_factory(status="active", client=client)
+        project1 = project_factory(status="active", client=client)  # noqa: F841
+        project2 = project_factory(status="completed", client=client)  # noqa: F841
+        project3 = project_factory(status="active", client=client)  # noqa: F841
 
         result = ProjectService.get_all_projects(status="active")
         assert len(result["projects"]) == 2
@@ -74,9 +78,9 @@ class TestProjectService(DatabaseTestMixin):
         """Test getting projects with client filter"""
         client1 = client_factory(name="Client 1")
         client2 = client_factory(name="Client 2")
-        project1 = project_factory(client=client1)
-        project2 = project_factory(client=client1)
-        project3 = project_factory(client=client2)
+        project1 = project_factory(client=client1)  # noqa: F841
+        project2 = project_factory(client=client1)  # noqa: F841
+        project3 = project_factory(client=client2)  # noqa: F841
 
         result = ProjectService.get_all_projects(client_id=client1.id)
         assert len(result["projects"]) == 2
@@ -172,9 +176,9 @@ class TestProjectService(DatabaseTestMixin):
         client1 = client_factory()
         client2 = client_factory()
 
-        project1 = project_factory(client=client1)
-        project2 = project_factory(client=client1)
-        project3 = project_factory(client=client2)
+        project1 = project_factory(client=client1)  # noqa: F841
+        project2 = project_factory(client=client1)  # noqa: F841
+        project3 = project_factory(client=client2)  # noqa: F841
 
         client1_projects = ProjectService.get_projects_by_client(client1.id)
         assert len(client1_projects) == 2
@@ -183,9 +187,9 @@ class TestProjectService(DatabaseTestMixin):
     def test_get_projects_by_status(self, app_context, project_factory, client_factory):
         """Test getting projects by status"""
         client = client_factory()
-        project1 = project_factory(status="active", client=client)
-        project2 = project_factory(status="completed", client=client)
-        project3 = project_factory(status="active", client=client)
+        project1 = project_factory(status="active", client=client)  # noqa: F841
+        project2 = project_factory(status="completed", client=client)  # noqa: F841
+        project3 = project_factory(status="active", client=client)  # noqa: F841
 
         active_projects = ProjectService.get_projects_by_status("active")
         assert len(active_projects) == 2
@@ -213,7 +217,8 @@ class TestProjectService(DatabaseTestMixin):
     def test_add_plant_to_project_existing_plant(
         self, app_context, sample_project, sample_plant
     ):
-        """Test adding a plant that already exists in project (should increase quantity)"""
+        """Test adding a plant that already exists in project
+        (should increase quantity)"""
         # Add plant first time
         ProjectService.add_plant_to_project(
             sample_project.id, sample_plant.id, quantity=3
@@ -325,7 +330,7 @@ class TestProjectService(DatabaseTestMixin):
 
     def test_update_project_status(self, app_context, sample_project):
         """Test updating project status"""
-        original_status = sample_project.status
+        original_status = sample_project.status  # noqa: F841
 
         updated_project = ProjectService.update_project_status(
             sample_project.id, "completed"
@@ -490,19 +495,19 @@ class TestProjectServiceIntegration(DatabaseTestMixin):
         client2 = client_factory(name="Beta LLC")
 
         # Create projects
-        project1 = project_factory(
+        project1 = project_factory(  # noqa: F841
             name="Garden Design Alpha",
             status="active",
             client=client1,
             description="Beautiful garden design",
         )
-        project2 = project_factory(
+        project2 = project_factory(  # noqa: F841
             name="Landscape Beta",
             status="completed",
             client=client1,
             description="Complete landscape renovation",
         )
-        project3 = project_factory(
+        project3 = project_factory(  # noqa: F841
             name="Pool Installation",
             status="active",
             client=client2,

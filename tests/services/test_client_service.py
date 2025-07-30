@@ -30,7 +30,7 @@ class TestClientService(DatabaseTestMixin):
     ):
         """Test getting clients with sample data including project counts"""
         client1 = client_factory(name="Client One")
-        client2 = client_factory(name="Client Two")
+        client2 = client_factory(name="Client Two")  # noqa: F841
 
         # Add projects to client1
         project_factory(client=client1, status="active")
@@ -49,9 +49,11 @@ class TestClientService(DatabaseTestMixin):
 
     def test_get_all_clients_with_search(self, app_context, client_factory):
         """Test getting clients with search filter"""
-        client1 = client_factory(name="Alpha Corp", email="contact@alpha.com")
-        client2 = client_factory(name="Beta LLC", email="info@beta.com")
-        client3 = client_factory(name="Gamma Inc", phone="555-123-4567")
+        client1 = client_factory(  # noqa: F841
+            name="Alpha Corp", email="contact@alpha.com"
+        )  # noqa: F841
+        client2 = client_factory(name="Beta LLC", email="info@beta.com")  # noqa: F841
+        client3 = client_factory(name="Gamma Inc", phone="555-123-4567")  # noqa: F841
 
         # Search by name
         result = ClientService.get_all_clients(search="Alpha")
@@ -196,10 +198,10 @@ class TestClientService(DatabaseTestMixin):
 
     def test_get_client_projects(self, app_context, sample_client, project_factory):
         """Test getting projects for a client"""
-        project1 = project_factory(client=sample_client, name="Project 1")
-        project2 = project_factory(client=sample_client, name="Project 2")
+        project1 = project_factory(client=sample_client, name="Project 1")  # noqa: F841
+        project2 = project_factory(client=sample_client, name="Project 2")  # noqa: F841
         other_client = project_factory().client
-        project3 = project_factory(client=other_client, name="Project 3")
+        project3 = project_factory(client=other_client, name="Project 3")  # noqa: F841
 
         client_projects = ClientService.get_client_projects(sample_client.id)
 
@@ -247,9 +249,13 @@ class TestClientService(DatabaseTestMixin):
 
     def test_search_clients(self, app_context, client_factory):
         """Test searching clients"""
-        client1 = client_factory(name="Alpha Corp", email="alpha@test.com")
-        client2 = client_factory(name="Beta LLC", company="Beta Solutions")
-        client3 = client_factory(name="Gamma Inc", phone="555-GAMMA")
+        client1 = client_factory(  # noqa: F841
+            name="Alpha Corp", email="alpha@test.com"
+        )  # noqa: F841
+        client2 = client_factory(  # noqa: F841
+            name="Beta LLC", company="Beta Solutions"
+        )  # noqa: F841
+        client3 = client_factory(name="Gamma Inc", phone="555-GAMMA")  # noqa: F841
 
         # Search by name
         results = ClientService.search_clients("Alpha")
@@ -307,9 +313,9 @@ class TestClientService(DatabaseTestMixin):
 
     def test_get_clients_by_company(self, app_context, client_factory):
         """Test getting clients by company"""
-        client1 = client_factory(company="ABC Corp")
-        client2 = client_factory(company="ABC Corp")
-        client3 = client_factory(company="XYZ Inc")
+        client1 = client_factory(company="ABC Corp")  # noqa: F841
+        client2 = client_factory(company="ABC Corp")  # noqa: F841
+        client3 = client_factory(company="XYZ Inc")  # noqa: F841
 
         abc_clients = ClientService.get_clients_by_company("ABC Corp")
         assert len(abc_clients) == 2
@@ -378,8 +384,12 @@ class TestClientServiceIntegration(DatabaseTestMixin):
         assert client.id is not None
 
         # Add projects to client
-        project1 = project_factory(client=client, status="completed", budget=5000.0)
-        project2 = project_factory(client=client, status="completed", budget=8000.0)
+        project1 = project_factory(  # noqa: F841
+            client=client, status="completed", budget=5000.0
+        )  # noqa: F841
+        project2 = project_factory(  # noqa: F841
+            client=client, status="completed", budget=8000.0
+        )  # noqa: F841
 
         # Get client statistics
         stats = ClientService.get_client_statistics(client.id)
@@ -412,10 +422,10 @@ class TestClientServiceIntegration(DatabaseTestMixin):
 
         # Create projects with different statuses
         active_project = project_factory(client=client, status="active", budget=10000.0)
-        completed_project = project_factory(
+        completed_project = project_factory(  # noqa: F841
             client=client, status="completed", budget=15000.0
         )
-        planning_project = project_factory(
+        planning_project = project_factory(  # noqa: F841
             client=client, status="planning", budget=5000.0
         )
 

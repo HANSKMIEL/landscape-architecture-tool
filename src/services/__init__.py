@@ -164,12 +164,14 @@ class SupplierService(BaseService):
             # Check for related products and plants
             if supplier.products and len(supplier.products) > 0:
                 raise ValueError(
-                    f"Cannot delete supplier with {len(supplier.products)} associated products"
+                    f"Cannot delete supplier with "
+                    f"{len(supplier.products)} associated products"
                 )
 
             if supplier.plants and len(supplier.plants) > 0:
                 raise ValueError(
-                    f"Cannot delete supplier with {len(supplier.plants)} associated plants"
+                    f"Cannot delete supplier with "
+                    f"{len(supplier.plants)} associated plants"
                 )
 
             # Use the parent delete method

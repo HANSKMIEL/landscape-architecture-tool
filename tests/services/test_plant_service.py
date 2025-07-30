@@ -39,9 +39,9 @@ class TestPlantService(DatabaseTestMixin):
     def test_get_all_plants_with_search(self, app_context, plant_factory):
         """Test getting plants with search filter"""
         # Create plants with specific names
-        plant1 = plant_factory(name="Rose Garden", common_name="Red Rose")
-        plant2 = plant_factory(name="Lily Pond", common_name="Water Lily")
-        plant3 = plant_factory(name="Oak Tree", common_name="White Oak")
+        plant1 = plant_factory(name="Rose Garden", common_name="Red Rose")  # noqa: F841
+        plant2 = plant_factory(name="Lily Pond", common_name="Water Lily")  # noqa: F841
+        plant3 = plant_factory(name="Oak Tree", common_name="White Oak")  # noqa: F841
 
         # Search by name
         result = PlantService.get_all_plants(search="Rose")
@@ -55,9 +55,9 @@ class TestPlantService(DatabaseTestMixin):
 
     def test_get_all_plants_with_category_filter(self, app_context, plant_factory):
         """Test getting plants with category filter"""
-        plant1 = plant_factory(category="Tree")
-        plant2 = plant_factory(category="Shrub")
-        plant3 = plant_factory(category="Tree")
+        plant1 = plant_factory(category="Tree")  # noqa: F841
+        plant2 = plant_factory(category="Shrub")  # noqa: F841
+        plant3 = plant_factory(category="Tree")  # noqa: F841
 
         result = PlantService.get_all_plants(category="Tree")
         assert len(result["plants"]) == 2
@@ -65,8 +65,8 @@ class TestPlantService(DatabaseTestMixin):
 
     def test_get_all_plants_with_native_filter(self, app_context, plant_factory):
         """Test getting plants with native filter"""
-        native_plant = plant_factory(native=True)
-        non_native_plant = plant_factory(native=False)
+        native_plant = plant_factory(native=True)  # noqa: F841
+        non_native_plant = plant_factory(native=False)  # noqa: F841
 
         result = PlantService.get_all_plants(native_only=True)
         assert len(result["plants"]) == 1
@@ -171,9 +171,9 @@ class TestPlantService(DatabaseTestMixin):
 
     def test_get_plants_by_category(self, app_context, plant_factory):
         """Test getting plants by category"""
-        tree1 = plant_factory(category="Tree")
-        tree2 = plant_factory(category="Tree")
-        shrub = plant_factory(category="Shrub")
+        tree1 = plant_factory(category="Tree")  # noqa: F841
+        tree2 = plant_factory(category="Tree")  # noqa: F841
+        shrub = plant_factory(category="Shrub")  # noqa: F841
 
         trees = PlantService.get_plants_by_category("Tree")
         assert len(trees) == 2
@@ -181,9 +181,9 @@ class TestPlantService(DatabaseTestMixin):
 
     def test_search_plants(self, app_context, plant_factory):
         """Test searching plants"""
-        plant1 = plant_factory(name="Rose Garden", common_name="Red Rose")
-        plant2 = plant_factory(name="Lily Pond", common_name="Water Lily")
-        plant3 = plant_factory(name="Oak Tree", common_name="White Oak")
+        plant1 = plant_factory(name="Rose Garden", common_name="Red Rose")  # noqa: F841
+        plant2 = plant_factory(name="Lily Pond", common_name="Water Lily")  # noqa: F841
+        plant3 = plant_factory(name="Oak Tree", common_name="White Oak")  # noqa: F841
 
         # Search for "Rose"
         results = PlantService.search_plants("Rose")
@@ -341,16 +341,16 @@ class TestPlantServiceIntegration(DatabaseTestMixin):
     def test_complex_filtering_scenario(self, app_context, plant_factory):
         """Test complex filtering scenarios"""
         # Create diverse plants
-        tree1 = plant_factory(
+        tree1 = plant_factory(  # noqa: F841
             name="Oak Tree", category="Tree", sun_exposure="full_sun", native=True
         )
-        tree2 = plant_factory(
+        tree2 = plant_factory(  # noqa: F841
             name="Maple Tree",
             category="Tree",
             sun_exposure="partial_shade",
             native=False,
         )
-        shrub1 = plant_factory(
+        shrub1 = plant_factory(  # noqa: F841
             name="Rose Bush", category="Shrub", sun_exposure="full_sun", native=True
         )
 

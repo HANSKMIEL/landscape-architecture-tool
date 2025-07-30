@@ -8,8 +8,13 @@ from datetime import UTC, datetime, timedelta
 
 import pytest
 
-from src.models.landscape import (Client, Plant, PlantRecommendationRequest,
-                                  Project, ProjectPlant)
+from src.models.landscape import (
+    Client,
+    Plant,
+    PlantRecommendationRequest,
+    Project,
+    ProjectPlant,
+)
 from src.models.user import db
 from src.services.analytics import AnalyticsService
 from tests.fixtures.database import DatabaseTestMixin
@@ -141,7 +146,7 @@ class TestAnalyticsService(DatabaseTestMixin):
         now = datetime.now(UTC)
 
         # Create projects with different statuses and durations
-        projects = [
+        projects = [  # noqa: F841
             project_factory(
                 client=client,
                 status="completed",
@@ -441,7 +446,9 @@ class TestAnalyticsServiceIntegration(DatabaseTestMixin):
         ]
 
         for project, plant, quantity in relationships:
-            project_plant = ProjectPlant(project=project, plant=plant, quantity=quantity)
+            project_plant = ProjectPlant(
+                project=project, plant=plant, quantity=quantity
+            )
             db.session.add(project_plant)
         db.session.commit()
 
@@ -457,7 +464,9 @@ class TestAnalyticsServiceIntegration(DatabaseTestMixin):
         # Test project performance analytics
         project_analytics = analytics.get_project_performance_analytics()
         assert project_analytics["total_projects"] == 6
-        assert project_analytics["completion_rate"] == pytest.approx(66.67, rel=1e-2)  # 4 out of 6 completed
+        assert project_analytics["completion_rate"] == pytest.approx(
+            66.67, rel=1e-2
+        )  # 4 out of 6 completed
 
         # Test client analytics
         client_analytics = analytics.get_client_analytics()

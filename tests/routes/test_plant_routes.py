@@ -43,9 +43,9 @@ class TestPlantRoutes(DatabaseTestMixin):
 
     def test_get_plants_with_search(self, client, app_context, plant_factory):
         """Test getting plants with search parameter"""
-        plant1 = plant_factory(name="Rose Garden", common_name="Red Rose")
-        plant2 = plant_factory(name="Lily Pond", common_name="Water Lily")
-        plant3 = plant_factory(name="Oak Tree", common_name="White Oak")
+        plant1 = plant_factory(name="Rose Garden", common_name="Red Rose")  # noqa: F841
+        plant2 = plant_factory(name="Lily Pond", common_name="Water Lily")  # noqa: F841
+        plant3 = plant_factory(name="Oak Tree", common_name="White Oak")  # noqa: F841
 
         # Search by name
         response = client.get("/api/plants?search=Rose")
@@ -63,9 +63,9 @@ class TestPlantRoutes(DatabaseTestMixin):
 
     def test_get_plants_with_category_filter(self, client, app_context, plant_factory):
         """Test getting plants with category filter"""
-        plant1 = plant_factory(category="Tree")
-        plant2 = plant_factory(category="Shrub")
-        plant3 = plant_factory(category="Tree")
+        plant1 = plant_factory(category="Tree")  # noqa: F841
+        plant2 = plant_factory(category="Shrub")  # noqa: F841
+        plant3 = plant_factory(category="Tree")  # noqa: F841
 
         response = client.get("/api/plants?category=Tree")
         assert response.status_code == 200
@@ -77,9 +77,9 @@ class TestPlantRoutes(DatabaseTestMixin):
         self, client, app_context, plant_factory
     ):
         """Test getting plants with sun requirements filter"""
-        plant1 = plant_factory(sun_exposure="full_sun")
-        plant2 = plant_factory(sun_exposure="partial_shade")
-        plant3 = plant_factory(sun_exposure="full_sun")
+        plant1 = plant_factory(sun_exposure="full_sun")  # noqa: F841
+        plant2 = plant_factory(sun_exposure="partial_shade")  # noqa: F841
+        plant3 = plant_factory(sun_exposure="full_sun")  # noqa: F841
 
         response = client.get("/api/plants?sun_exposure=full_sun")
         assert response.status_code == 200
@@ -89,8 +89,8 @@ class TestPlantRoutes(DatabaseTestMixin):
 
     def test_get_plants_with_native_filter(self, client, app_context, plant_factory):
         """Test getting plants with native filter"""
-        native_plant = plant_factory(native=True)
-        non_native_plant = plant_factory(native=False)
+        native_plant = plant_factory(native=True)  # noqa: F841
+        non_native_plant = plant_factory(native=False)  # noqa: F841
 
         response = client.get("/api/plants?native_only=true")
         assert response.status_code == 200
@@ -122,13 +122,13 @@ class TestPlantRoutes(DatabaseTestMixin):
 
     def test_get_plants_combined_filters(self, client, app_context, plant_factory):
         """Test getting plants with multiple filters combined"""
-        plant1 = plant_factory(
+        plant1 = plant_factory(  # noqa: F841
             name="Native Oak", category="Tree", native=True, sun_exposure="full_sun"
         )
-        plant2 = plant_factory(
+        plant2 = plant_factory(  # noqa: F841
             name="Import Rose", category="Shrub", native=False, sun_exposure="full_sun"
         )
-        plant3 = plant_factory(
+        plant3 = plant_factory(  # noqa: F841
             name="Native Pine",
             category="Tree",
             native=True,
@@ -304,7 +304,7 @@ class TestPlantRoutes(DatabaseTestMixin):
     ):
         """Test deleting plant that has project associations"""
         client_obj = client_factory()
-        project = project_factory(client=client_obj)
+        project = project_factory(client=client_obj)  # noqa: F841
 
         # Add plant to project (would need to create ProjectPlant relationship)
         # This test verifies business logic constraints
@@ -486,7 +486,7 @@ class TestPlantRoutesIntegration(DatabaseTestMixin):
     def test_plant_filtering_combinations(self, client, app_context, plant_factory):
         """Test various combinations of plant filters"""
         # Create diverse plants
-        plants = [
+        plants = [  # noqa: F841
             plant_factory(
                 name="Native Oak", category="Tree", native=True, sun_exposure="full_sun"
             ),
