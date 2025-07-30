@@ -28,7 +28,7 @@ class TestSupplierRoutes(DatabaseTestMixin):
 
     def test_get_suppliers_with_data(self, client, app_context, supplier_factory):
         """Test getting suppliers with sample data"""
-        suppliers = [supplier_factory() for _ in range(3)]
+        suppliers = [supplier_factory() for _ in range(3)]  # noqa: F841
 
         response = client.get("/api/suppliers")
 
@@ -41,9 +41,15 @@ class TestSupplierRoutes(DatabaseTestMixin):
 
     def test_get_suppliers_with_search(self, client, app_context, supplier_factory):
         """Test getting suppliers with search parameter"""
-        supplier1 = supplier_factory(name="Alpha Nursery", contact_person="John Alpha")
-        supplier2 = supplier_factory(name="Beta Plants", city="Springfield")
-        supplier3 = supplier_factory(name="Gamma Gardens", email="info@gamma.com")
+        supplier1 = supplier_factory(  # noqa: F841
+            name="Alpha Nursery", contact_person="John Alpha"
+        )  # noqa: F841
+        supplier2 = supplier_factory(  # noqa: F841
+            name="Beta Plants", city="Springfield"
+        )  # noqa: F841
+        supplier3 = supplier_factory(  # noqa: F841
+            name="Gamma Gardens", email="info@gamma.com"
+        )  # noqa: F841
 
         # Search by name
         response = client.get("/api/suppliers?search=Alpha")
@@ -298,10 +304,16 @@ class TestSupplierRoutes(DatabaseTestMixin):
         self, client, app_context, sample_supplier, product_factory
     ):
         """Test getting products for a specific supplier"""
-        product1 = product_factory(supplier=sample_supplier, name="Product 1")
-        product2 = product_factory(supplier=sample_supplier, name="Product 2")
+        product1 = product_factory(  # noqa: F841
+            supplier=sample_supplier, name="Product 1"
+        )  # noqa: F841
+        product2 = product_factory(  # noqa: F841
+            supplier=sample_supplier, name="Product 2"
+        )  # noqa: F841
         other_supplier = product_factory().supplier
-        product3 = product_factory(supplier=other_supplier, name="Product 3")
+        product3 = product_factory(  # noqa: F841
+            supplier=other_supplier, name="Product 3"
+        )  # noqa: F841
 
         response = client.get(f"/api/suppliers/{sample_supplier.id}/products")
 
@@ -317,10 +329,10 @@ class TestSupplierRoutes(DatabaseTestMixin):
         self, client, app_context, sample_supplier, plant_factory
     ):
         """Test getting plants for a specific supplier"""
-        plant1 = plant_factory(supplier=sample_supplier, name="Plant 1")
-        plant2 = plant_factory(supplier=sample_supplier, name="Plant 2")
+        plant1 = plant_factory(supplier=sample_supplier, name="Plant 1")  # noqa: F841
+        plant2 = plant_factory(supplier=sample_supplier, name="Plant 2")  # noqa: F841
         other_supplier = plant_factory().supplier
-        plant3 = plant_factory(supplier=other_supplier, name="Plant 3")
+        plant3 = plant_factory(supplier=other_supplier, name="Plant 3")  # noqa: F841
 
         response = client.get(f"/api/suppliers/{sample_supplier.id}/plants")
 
@@ -414,9 +426,11 @@ class TestSupplierRoutes(DatabaseTestMixin):
         self, client, app_context, supplier_factory
     ):
         """Test searching suppliers by specialization"""
-        supplier1 = supplier_factory(specialization="Native Plants")
-        supplier2 = supplier_factory(specialization="Garden Tools")
-        supplier3 = supplier_factory(specialization="Native Plants and Trees")
+        supplier1 = supplier_factory(specialization="Native Plants")  # noqa: F841
+        supplier2 = supplier_factory(specialization="Garden Tools")  # noqa: F841
+        supplier3 = supplier_factory(  # noqa: F841
+            specialization="Native Plants and Trees"
+        )  # noqa: F841
 
         response = client.get("/api/suppliers?specialization=Native Plants")
 
@@ -493,7 +507,7 @@ class TestSupplierRoutes(DatabaseTestMixin):
 
     def test_suppliers_export(self, client, app_context, supplier_factory):
         """Test exporting suppliers data"""
-        suppliers = [supplier_factory() for _ in range(3)]
+        suppliers = [supplier_factory() for _ in range(3)]  # noqa: F841
 
         response = client.get("/api/suppliers/export?format=json")
 
@@ -579,7 +593,7 @@ class TestSupplierRoutesIntegration(DatabaseTestMixin):
     ):
         """Test various combinations of supplier filters and search"""
         # Create diverse suppliers
-        suppliers = [
+        suppliers = [  # noqa: F841
             supplier_factory(
                 name="Alpha Native Plants",
                 specialization="Native Plants",
@@ -640,7 +654,9 @@ class TestSupplierRoutesIntegration(DatabaseTestMixin):
             assert response.status_code == 201
 
         # Add plants directly via factory (as there might not be an API endpoint)
-        plants = [plant_factory(supplier=supplier, name=f"Plant {i}") for i in range(2)]
+        plants = [  # noqa: F841
+            plant_factory(supplier=supplier, name=f"Plant {i}") for i in range(2)
+        ]  # noqa: F841
 
         # Get supplier products
         response = client.get(f"/api/suppliers/{supplier.id}/products")

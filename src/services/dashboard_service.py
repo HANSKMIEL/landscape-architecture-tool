@@ -10,11 +10,9 @@ from typing import Dict
 
 from sqlalchemy import desc, func
 
-from src.models.landscape import (Client, Plant, Product, Project,
-                                  ProjectPlant, Supplier)
+from src.models.landscape import Client, Plant, Product, Project, ProjectPlant, Supplier
 from src.models.user import db
-from src.services.performance import (cache_dashboard_stats,
-                                      monitor_db_performance)
+from src.services.performance import cache_dashboard_stats, monitor_db_performance
 
 
 class DashboardService:
@@ -370,7 +368,8 @@ class DashboardService:
         valid_projects = 0
         for project in completed_with_dates:
             try:
-                # Handle the fact that start_date is a string and actual_completion_date is a date
+                # Handle the fact that start_date is a string and
+                # actual_completion_date is a date
                 if isinstance(project.start_date, str):
                     start_date = datetime.fromisoformat(project.start_date).date()
                 else:

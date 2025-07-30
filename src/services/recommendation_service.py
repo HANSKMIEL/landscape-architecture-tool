@@ -5,8 +5,10 @@ Wrapper service for plant recommendations that provides a simplified interface
 
 from typing import Dict, List
 
-from src.services.plant_recommendation import (PlantRecommendationEngine,
-                                               RecommendationCriteria)
+from src.services.plant_recommendation import (
+    PlantRecommendationEngine,
+    RecommendationCriteria,
+)
 
 
 class RecommendationService:
@@ -31,7 +33,8 @@ class RecommendationService:
             min_score: Minimum score threshold
 
         Returns:
-            List of recommendation dictionaries with plant, score, reasons, and criteria_match
+            List of recommendation dictionaries with plant, score,
+            reasons, and criteria_match
         """
         # Check cache first
         cache_key = self._create_cache_key(criteria, max_results, min_score)

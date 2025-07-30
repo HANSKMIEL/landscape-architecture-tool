@@ -27,8 +27,8 @@ class TestSupplierService(DatabaseTestMixin):
 
     def test_get_all_suppliers_with_data(self, app_context, supplier_factory):
         """Test getting suppliers with sample data"""
-        supplier1 = supplier_factory(name="Supplier One")
-        supplier2 = supplier_factory(name="Supplier Two")
+        supplier1 = supplier_factory(name="Supplier One")  # noqa: F841
+        supplier2 = supplier_factory(name="Supplier Two")  # noqa: F841
 
         result = SupplierService.get_all_suppliers()
 
@@ -40,13 +40,13 @@ class TestSupplierService(DatabaseTestMixin):
 
     def test_get_all_suppliers_with_search(self, app_context, supplier_factory):
         """Test getting suppliers with search filter"""
-        supplier1 = supplier_factory(
+        supplier1 = supplier_factory(  # noqa: F841
             name="Alpha Nursery",
             contact_person="John Doe",
             email="contact@alpha.com",
             city="Springfield",
         )
-        supplier2 = supplier_factory(
+        supplier2 = supplier_factory(  # noqa: F841
             name="Beta Plants",
             contact_person="Jane Smith",
             email="info@beta.com",
@@ -77,9 +77,9 @@ class TestSupplierService(DatabaseTestMixin):
         self, app_context, supplier_factory
     ):
         """Test getting suppliers with specialization filter"""
-        supplier1 = supplier_factory(specialization="Native Plants")
-        supplier2 = supplier_factory(specialization="Garden Tools")
-        supplier3 = supplier_factory(specialization="Native Plants")
+        supplier1 = supplier_factory(specialization="Native Plants")  # noqa: F841
+        supplier2 = supplier_factory(specialization="Garden Tools")  # noqa: F841
+        supplier3 = supplier_factory(specialization="Native Plants")  # noqa: F841
 
         result = SupplierService.get_all_suppliers(specialization="Native Plants")
         assert len(result["suppliers"]) == 2
@@ -222,10 +222,16 @@ class TestSupplierService(DatabaseTestMixin):
 
     def test_get_supplier_products(self, app_context, sample_supplier, product_factory):
         """Test getting products for a supplier"""
-        product1 = product_factory(supplier=sample_supplier, name="Product 1")
-        product2 = product_factory(supplier=sample_supplier, name="Product 2")
+        product1 = product_factory(  # noqa: F841
+            supplier=sample_supplier, name="Product 1"
+        )  # noqa: F841
+        product2 = product_factory(  # noqa: F841
+            supplier=sample_supplier, name="Product 2"
+        )  # noqa: F841
         other_supplier = product_factory().supplier
-        product3 = product_factory(supplier=other_supplier, name="Product 3")
+        product3 = product_factory(  # noqa: F841
+            supplier=other_supplier, name="Product 3"
+        )  # noqa: F841
 
         supplier_products = SupplierService.get_supplier_products(sample_supplier.id)
 
@@ -237,10 +243,10 @@ class TestSupplierService(DatabaseTestMixin):
 
     def test_get_supplier_plants(self, app_context, sample_supplier, plant_factory):
         """Test getting plants for a supplier"""
-        plant1 = plant_factory(supplier=sample_supplier, name="Plant 1")
-        plant2 = plant_factory(supplier=sample_supplier, name="Plant 2")
+        plant1 = plant_factory(supplier=sample_supplier, name="Plant 1")  # noqa: F841
+        plant2 = plant_factory(supplier=sample_supplier, name="Plant 2")  # noqa: F841
         other_supplier = plant_factory().supplier
-        plant3 = plant_factory(supplier=other_supplier, name="Plant 3")
+        plant3 = plant_factory(supplier=other_supplier, name="Plant 3")  # noqa: F841
 
         supplier_plants = SupplierService.get_supplier_plants(sample_supplier.id)
 
@@ -286,9 +292,15 @@ class TestSupplierService(DatabaseTestMixin):
 
     def test_search_suppliers(self, app_context, supplier_factory):
         """Test searching suppliers"""
-        supplier1 = supplier_factory(name="Alpha Nursery", contact_person="John Alpha")
-        supplier2 = supplier_factory(name="Beta Plants", email="beta@test.com")
-        supplier3 = supplier_factory(name="Gamma Gardens", city="Springfield")
+        supplier1 = supplier_factory(  # noqa: F841
+            name="Alpha Nursery", contact_person="John Alpha"
+        )  # noqa: F841
+        supplier2 = supplier_factory(  # noqa: F841
+            name="Beta Plants", email="beta@test.com"
+        )  # noqa: F841
+        supplier3 = supplier_factory(  # noqa: F841
+            name="Gamma Gardens", city="Springfield"
+        )  # noqa: F841
 
         # Search by name
         results = SupplierService.search_suppliers("Alpha")
@@ -307,9 +319,11 @@ class TestSupplierService(DatabaseTestMixin):
 
     def test_get_suppliers_by_specialization(self, app_context, supplier_factory):
         """Test getting suppliers by specialization"""
-        supplier1 = supplier_factory(specialization="Native Plants")
-        supplier2 = supplier_factory(specialization="Garden Tools")
-        supplier3 = supplier_factory(specialization="Native Plants and Trees")
+        supplier1 = supplier_factory(specialization="Native Plants")  # noqa: F841
+        supplier2 = supplier_factory(specialization="Garden Tools")  # noqa: F841
+        supplier3 = supplier_factory(  # noqa: F841
+            specialization="Native Plants and Trees"
+        )  # noqa: F841
 
         native_suppliers = SupplierService.get_suppliers_by_specialization(
             "Native Plants"
@@ -525,7 +539,7 @@ class TestSupplierServiceIntegration(DatabaseTestMixin):
         supplier = supplier_factory(name="Management Test Supplier")
 
         # Add diverse products
-        products = [
+        products = [  # noqa: F841
             product_factory(
                 supplier=supplier,
                 name=f"Product {i}",
@@ -536,7 +550,7 @@ class TestSupplierServiceIntegration(DatabaseTestMixin):
         ]
 
         # Add diverse plants
-        plants = [
+        plants = [  # noqa: F841
             plant_factory(supplier=supplier, name=f"Plant {i}", price=float(i * 5))
             for i in range(1, 3)
         ]

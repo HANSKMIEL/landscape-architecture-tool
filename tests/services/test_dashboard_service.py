@@ -8,8 +8,7 @@ from datetime import datetime, timedelta
 
 import pytest
 
-from src.models.landscape import (Client, Plant, Product, Project,
-                                  ProjectPlant, Supplier)
+from src.models.landscape import Client, Plant, Product, Project, ProjectPlant, Supplier
 from src.models.user import db
 from src.services.dashboard_service import DashboardService
 from tests.fixtures.database import DatabaseTestMixin
@@ -44,15 +43,16 @@ class TestDashboardService(DatabaseTestMixin):
         """Test getting dashboard summary with sample data"""
         # Clear cache to ensure fresh data
         from src.services.performance import cache
+
         cache.clear()
-        
+
         # Create test data
         clients = [client_factory() for _ in range(3)]
-        suppliers = [supplier_factory() for _ in range(2)]
-        plants = [plant_factory() for _ in range(5)]
+        suppliers = [supplier_factory() for _ in range(2)]  # noqa: F841
+        plants = [plant_factory() for _ in range(5)]  # noqa: F841
 
         # Create projects with different statuses
-        projects = [
+        projects = [  # noqa: F841
             project_factory(client=clients[0], status="active", budget=5000.0),
             project_factory(client=clients[1], status="completed", budget=8000.0),
             project_factory(client=clients[2], status="planning", budget=3000.0),
@@ -91,11 +91,11 @@ class TestDashboardService(DatabaseTestMixin):
         # Create clients
         client1 = client_factory(name="Alpha Corp")
         client2 = client_factory(name="Beta LLC")
-        client3 = client_factory(name="Gamma Inc")
+        client3 = client_factory(name="Gamma Inc")  # noqa: F841
 
         # Create projects with different dates and budgets
         now = datetime.utcnow()
-        projects = [
+        projects = [  # noqa: F841
             project_factory(
                 client=client1,
                 status="active",
@@ -165,7 +165,7 @@ class TestDashboardService(DatabaseTestMixin):
         plant3 = plant_factory(
             name="Tulip", category="Perennial", sun_exposure="full_sun", native=False
         )
-        plant4 = plant_factory(
+        plant4 = plant_factory(  # noqa: F841
             name="Maple Tree",
             category="Tree",
             sun_exposure="partial_shade",
@@ -226,7 +226,7 @@ class TestDashboardService(DatabaseTestMixin):
         client2 = client_factory(name="Beta LLC")
 
         # Create projects with different budgets and statuses
-        projects = [
+        projects = [  # noqa: F841
             project_factory(
                 client=client1, name="Project Alpha", status="active", budget=10000.0
             ),
@@ -277,8 +277,9 @@ class TestDashboardService(DatabaseTestMixin):
         """Test getting supplier analytics with sample data"""
         # Clear cache to ensure fresh data
         from src.services.performance import cache
+
         cache.clear()
-        
+
         # Create suppliers with different specializations
         supplier1 = supplier_factory(
             name="Alpha Nursery", specialization="Native Plants"
@@ -336,8 +337,8 @@ class TestDashboardService(DatabaseTestMixin):
         """Test getting recent activity with sample data"""
         # Create recent entities
         clients = [client_factory(name=f"Client {i}") for i in range(3)]
-        plants = [plant_factory(name=f"Plant {i}") for i in range(3)]
-        projects = [
+        plants = [plant_factory(name=f"Plant {i}") for i in range(3)]  # noqa: F841
+        projects = [  # noqa: F841
             project_factory(client=clients[i], name=f"Project {i}", status="active")
             for i in range(3)
         ]
@@ -459,7 +460,7 @@ class TestDashboardServiceIntegration(DatabaseTestMixin):
         ]
 
         # Products
-        products = [
+        products = [  # noqa: F841
             product_factory(
                 name="Shovel", supplier=suppliers[1], price=25.0, stock_quantity=10
             ),
@@ -582,13 +583,13 @@ class TestDashboardServiceIntegration(DatabaseTestMixin):
         now = datetime.utcnow()
 
         # Create projects at different times
-        old_project = project_factory(
+        old_project = project_factory(  # noqa: F841
             client=client, created_at=now - timedelta(days=100), budget=5000.0
         )
-        recent_project = project_factory(
+        recent_project = project_factory(  # noqa: F841
             client=client, created_at=now - timedelta(days=10), budget=8000.0
         )
-        very_recent_project = project_factory(
+        very_recent_project = project_factory(  # noqa: F841
             client=client, created_at=now - timedelta(days=2), budget=3000.0
         )
 
@@ -614,15 +615,19 @@ class TestDashboardServiceIntegration(DatabaseTestMixin):
         """Test dashboard service edge cases and error handling"""
         # Test with projects having null budgets
         client = client_factory()
-        project_with_budget = project_factory(client=client, budget=5000.0)
-        project_without_budget = project_factory(client=client, budget=None)
+        project_with_budget = project_factory(  # noqa: F841
+            client=client, budget=5000.0
+        )  # noqa: F841
+        project_without_budget = project_factory(  # noqa: F841
+            client=client, budget=None
+        )  # noqa: F841
 
         financial_analytics = DashboardService.get_financial_analytics()
         assert financial_analytics["total_project_value"] == 5000.0
         assert financial_analytics["average_project_value"] == 5000.0
 
         # Test with plants not used in any projects
-        unused_plant = plant_factory()
+        unused_plant = plant_factory()  # noqa: F841
 
         plant_analytics = DashboardService.get_plant_analytics()
         assert (
@@ -633,7 +638,7 @@ class TestDashboardServiceIntegration(DatabaseTestMixin):
         assert performance["plant_utilization_rate"] == 0.0  # No plants used
 
         # Test with completed projects missing dates
-        completed_project = project_factory(
+        completed_project = project_factory(  # noqa: F841
             client=client,
             status="completed",
             start_date=None,
