@@ -5,6 +5,7 @@ Handles dashboard analytics and summary information.
 Enhanced with performance caching for improved response times.
 """
 
+import logging
 from datetime import UTC, datetime, timedelta
 from typing import Dict
 
@@ -13,8 +14,14 @@ from sqlalchemy import desc, func
 from src.models.landscape import (Client, Plant, Product, Project,
                                   ProjectPlant, Supplier)
 from src.models.user import db
-from src.services.performance import (cache_dashboard_stats,
+from src.services.performance import (cache, cache_dashboard_stats,
                                       monitor_db_performance)
+
+# Cache key constants
+CACHE_KEY_DASHBOARD_SUMMARY = "dashboard_summary"
+
+# Setup logger
+logger = logging.getLogger(__name__)
 
 
 class DashboardService:
