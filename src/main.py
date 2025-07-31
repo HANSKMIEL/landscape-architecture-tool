@@ -87,11 +87,35 @@ def create_app():
     # CORS configuration
     CORS(app, origins=app.config["CORS_ORIGINS"])
 
-    # Rate limiting
-    limiter = Limiter(
-        key_func=get_remote_address,
-        default_limits=[app.config["RATELIMIT_DEFAULT"]],
-    )
+    # Rate limiting - configure properly based on storage type
+    storage_url = app.config.get("RATELIMIT_STORAGE_URL", "memory://")
+    
+    if storage_url.startswith("redis://"):
+        # Try Redis connection, fall back to memory if Redis unavailable
+        try:
+            import redis
+            # Test Redis connection
+            r = redis.from_url(storage_url)
+            r.ping()
+            limiter = Limiter(
+                key_func=get_remote_address,
+                default_limits=[app.config["RATELIMIT_DEFAULT"]],
+            )
+        except (ImportError, redis.ConnectionError, redis.RedisError):
+            logger.info("Redis unavailable, using in-memory rate limiting")
+            limiter = Limiter(
+                key_func=get_remote_address,
+                default_limits=[app.config["RATELIMIT_DEFAULT"]],
+                storage_uri="memory://",
+            )
+    else:
+        # Use memory storage without warnings
+        limiter = Limiter(
+            key_func=get_remote_address,
+            default_limits=[app.config["RATELIMIT_DEFAULT"]],
+            storage_uri="memory://",
+        )
+    
     limiter.init_app(app)
 
     # Register error handlers
@@ -291,7 +315,7 @@ def create_app():
         """Get specific supplier by ID"""
         from src.models.landscape import Supplier
 
-        supplier = Supplier.query.get(supplier_id)
+        supplier = db.session.get(Supplier, supplier_id)
         if not supplier:
             return jsonify({"error": "Supplier not found"}), 404
 
@@ -383,7 +407,7 @@ def create_app():
         """Get products for a specific supplier"""
         from src.models.landscape import Product, Supplier
 
-        supplier = Supplier.query.get(supplier_id)
+        supplier = db.session.get(Supplier, supplier_id)
         if not supplier:
             return jsonify({"error": "Supplier not found"}), 404
 
@@ -400,7 +424,7 @@ def create_app():
         from src.models.landscape import Supplier
 
         # Check if supplier exists
-        supplier = Supplier.query.get(supplier_id)
+        supplier = db.session.get(Supplier, supplier_id)
         if not supplier:
             return jsonify({"error": "Supplier not found"}), 404
 
@@ -432,7 +456,7 @@ def create_app():
         """Get plants for a specific supplier"""
         from src.models.landscape import Plant, Supplier
 
-        supplier = Supplier.query.get(supplier_id)
+        supplier = db.session.get(Supplier, supplier_id)
         if not supplier:
             return jsonify({"error": "Supplier not found"}), 404
 
@@ -447,7 +471,7 @@ def create_app():
 
         from src.models.landscape import Plant, Product, Supplier
 
-        supplier = Supplier.query.get(supplier_id)
+        supplier = db.session.get(Supplier, supplier_id)
         if not supplier:
             return jsonify({"error": "Supplier not found"}), 404
 
@@ -573,7 +597,7 @@ def create_app():
         """Get contact information for a specific supplier"""
         from src.models.landscape import Supplier
 
-        supplier = Supplier.query.get(supplier_id)
+        supplier = db.session.get(Supplier, supplier_id)
         if not supplier:
             return jsonify({"error": "Supplier not found"}), 404
 
@@ -758,7 +782,7 @@ def create_app():
         """Get specific plant by ID"""
         from src.models.landscape import Plant
 
-        plant = Plant.query.get(plant_id)
+        plant = db.session.get(Plant, plant_id)
         if not plant:
             return jsonify({"error": "Plant not found"}), 404
 

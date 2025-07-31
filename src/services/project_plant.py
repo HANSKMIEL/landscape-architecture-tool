@@ -30,11 +30,11 @@ class ProjectPlantService:
         """Add a plant to a project with quantity and cost"""
         try:
             # Validate project and plant exist
-            project = Project.query.get(project_id)
+            project = db.session.get(Project, project_id)
             if not project:
                 raise ValueError(f"Project with ID {project_id} not found")
 
-            plant = Plant.query.get(plant_id)
+            plant = db.session.get(Plant, plant_id)
             if not plant:
                 raise ValueError(f"Plant with ID {plant_id} not found")
 
@@ -148,7 +148,7 @@ class ProjectPlantService:
     def get_project_plant_list(self, project_id: int) -> List[Dict]:
         """Get complete plant list for a project"""
         try:
-            project = Project.query.get(project_id)
+            project = db.session.get(Project, project_id)
             if not project:
                 raise ValueError(f"Project with ID {project_id} not found")
 
@@ -163,7 +163,7 @@ class ProjectPlantService:
     def calculate_project_cost(self, project_id: int) -> Dict:
         """Calculate total project cost breakdown"""
         try:
-            project = Project.query.get(project_id)
+            project = db.session.get(Project, project_id)
             if not project:
                 raise ValueError(f"Project with ID {project_id} not found")
 
@@ -224,7 +224,7 @@ class ProjectPlantService:
     def generate_plant_order_list(self, project_id: int) -> List[Dict]:
         """Generate plant order list for suppliers"""
         try:
-            project = Project.query.get(project_id)
+            project = db.session.get(Project, project_id)
             if not project:
                 raise ValueError(f"Project with ID {project_id} not found")
 

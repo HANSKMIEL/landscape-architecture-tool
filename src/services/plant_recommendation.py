@@ -733,7 +733,7 @@ class PlantRecommendationEngine:
             True if feedback was saved successfully
         """
         try:
-            request = PlantRecommendationRequest.query.get(request_id)
+            request = db.session.get(PlantRecommendationRequest, request_id)
             if request:
                 request.user_feedback = feedback
                 if rating is not None:

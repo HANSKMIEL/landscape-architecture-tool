@@ -339,7 +339,7 @@ def export_recommendations():
             return jsonify({"error": "Only CSV format is currently supported"}), 400
 
         # Get recommendation request
-        req = PlantRecommendationRequest.query.get(request_id)
+        req = db.session.get(PlantRecommendationRequest, request_id)
         if not req or not req.recommended_plants:
             return (
                 jsonify(
@@ -375,7 +375,7 @@ def export_recommendations():
         # Write recommendation data
         for rec_data in req.recommended_plants:
             plant_id = rec_data.get("plant_id")
-            plant = Plant.query.get(plant_id)
+            plant = db.session.get(Plant, plant_id)
 
             if plant:
                 height_range = (
