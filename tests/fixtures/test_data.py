@@ -6,8 +6,7 @@ import factory
 import pytest
 from faker import Faker
 
-from src.models.landscape import (Client, Plant, Product, Project,
-                                  ProjectPlant, Supplier)
+from src.models.landscape import Client, Plant, Product, Project, ProjectPlant, Supplier
 from src.models.user import User, db
 
 fake = Faker()
