@@ -94,9 +94,9 @@ class DashboardService:
         # Cache the valid result
         try:
             cache.set(cache_key, result, timeout=120)
-        except Exception:
+        except (ConnectionError, TimeoutError) as e:
             # Cache error, continue without caching
-            pass
+            logger.warning(f"Failed to set cache for key {cache_key}: {e}")
 
         return result
 
