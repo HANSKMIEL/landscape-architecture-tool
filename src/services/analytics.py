@@ -10,8 +10,13 @@ from typing import Dict, Optional
 
 from sqlalchemy import func
 
-from src.models.landscape import (Client, Plant, PlantRecommendationRequest,
-                                  Project, ProjectPlant)
+from src.models.landscape import (
+    Client,
+    Plant,
+    PlantRecommendationRequest,
+    Project,
+    ProjectPlant,
+)
 from src.models.user import db
 
 

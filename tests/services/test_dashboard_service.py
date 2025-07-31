@@ -8,8 +8,7 @@ from datetime import datetime, timedelta
 
 import pytest
 
-from src.models.landscape import (Client, Plant, Product, Project,
-                                  ProjectPlant, Supplier)
+from src.models.landscape import Client, Plant, Product, Project, ProjectPlant, Supplier
 from src.models.user import db
 from src.services.dashboard_service import DashboardService
 from tests.fixtures.database import DatabaseTestMixin
@@ -23,15 +22,16 @@ class TestDashboardService(DatabaseTestMixin):
         """Test getting dashboard summary with empty database"""
         # Clear cache to ensure fresh data
         from src.services.performance import cache
+
         cache.clear()
-        
+
         # Ensure the database is empty
         db.session.query(Client).delete()
         db.session.query(Project).delete()
         db.session.query(Plant).delete()
         db.session.query(Supplier).delete()
         db.session.commit()
-        
+
         summary = DashboardService.get_dashboard_summary()
 
         assert summary["totals"]["clients"] == 0

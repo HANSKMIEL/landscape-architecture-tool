@@ -5,8 +5,10 @@ Wrapper service for plant recommendations that provides a simplified interface
 
 from typing import Dict, List
 
-from src.services.plant_recommendation import (PlantRecommendationEngine,
-                                               RecommendationCriteria)
+from src.services.plant_recommendation import (
+    PlantRecommendationEngine,
+    RecommendationCriteria,
+)
 
 
 class RecommendationService:

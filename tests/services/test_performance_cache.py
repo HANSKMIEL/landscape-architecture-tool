@@ -25,9 +25,12 @@ class TestPerformanceCacheImports:
 
     def test_cache_import_with_other_functions(self):
         """Test importing cache along with other performance functions."""
-        from src.services.performance import (cache, clear_cache_by_pattern,
-                                              get_cache_stats,
-                                              invalidate_dashboard_cache)
+        from src.services.performance import (
+            cache,
+            clear_cache_by_pattern,
+            get_cache_stats,
+            invalidate_dashboard_cache,
+        )
 
         assert cache is not None
         assert callable(get_cache_stats)
@@ -83,12 +86,14 @@ class TestPerformanceCacheImports:
         """Test that cache import works in the context of routes module."""
         # Simulate importing cache in routes context
         try:
-            from src.services.performance import (cache,
-                                                  clear_cache_by_pattern,
-                                                  get_cache_stats,
-                                                  invalidate_dashboard_cache,
-                                                  invalidate_plant_cache,
-                                                  invalidate_project_cache)
+            from src.services.performance import (
+                cache,
+                clear_cache_by_pattern,
+                get_cache_stats,
+                invalidate_dashboard_cache,
+                invalidate_plant_cache,
+                invalidate_project_cache,
+            )
 
             # All imports should succeed
             assert cache is not None
@@ -149,9 +154,11 @@ class TestPerformanceCacheImports:
 
     def test_cache_decorators_import(self):
         """Test that cache decorator functions can be imported."""
-        from src.services.performance import (cache_dashboard_stats,
-                                              cache_plant_data,
-                                              cache_project_data)
+        from src.services.performance import (
+            cache_dashboard_stats,
+            cache_plant_data,
+            cache_project_data,
+        )
 
         assert callable(cache_dashboard_stats)
         assert callable(cache_plant_data)

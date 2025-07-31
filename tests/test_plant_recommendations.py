@@ -12,8 +12,10 @@ import pytest
 from src.main import create_app
 from src.models.landscape import Plant, PlantRecommendationRequest
 from src.models.user import db
-from src.services.plant_recommendation import (PlantRecommendationEngine,
-                                               RecommendationCriteria)
+from src.services.plant_recommendation import (
+    PlantRecommendationEngine,
+    RecommendationCriteria,
+)
 
 
 @pytest.fixture
