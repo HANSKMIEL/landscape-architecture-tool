@@ -20,21 +20,16 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from src.config import get_config  # noqa: E402
 from src.models.user import db  # noqa: E402
-from src.routes.plant_recommendations import plant_recommendations_bp  # noqa: E402
+from src.routes.plant_recommendations import \
+    plant_recommendations_bp  # noqa: E402
 from src.routes.project_plants import project_plants_bp  # noqa: E402
 from src.routes.reports import reports_bp  # noqa: E402
 from src.schemas import ClientCreateSchema  # noqa: E402
 from src.schemas import ClientUpdateSchema  # noqa: E402
-from src.schemas import (
-    PlantCreateSchema,
-    PlantUpdateSchema,
-    ProductCreateSchema,
-    ProductUpdateSchema,
-    ProjectCreateSchema,
-    ProjectUpdateSchema,
-    SupplierCreateSchema,
-    SupplierUpdateSchema,
-)
+from src.schemas import (PlantCreateSchema, PlantUpdateSchema,
+                         ProductCreateSchema, ProductUpdateSchema,
+                         ProjectCreateSchema, ProjectUpdateSchema,
+                         SupplierCreateSchema, SupplierUpdateSchema)
 from src.services import ClientService  # noqa: E402
 from src.services import PlantService  # noqa: E402
 from src.services import ProductService, ProjectService, SupplierService
@@ -89,11 +84,12 @@ def create_app():
 
     # Rate limiting - configure properly based on storage type
     storage_url = app.config.get("RATELIMIT_STORAGE_URL", "memory://")
-    
+
     if storage_url.startswith("redis://"):
         # Try Redis connection, fall back to memory if Redis unavailable
         try:
             import redis
+
             # Test Redis connection
             r = redis.from_url(storage_url)
             r.ping()
@@ -115,7 +111,7 @@ def create_app():
             default_limits=[app.config["RATELIMIT_DEFAULT"]],
             storage_uri="memory://",
         )
-    
+
     limiter.init_app(app)
 
     # Register error handlers
