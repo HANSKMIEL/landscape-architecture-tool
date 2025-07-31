@@ -25,7 +25,6 @@ class DashboardService:
     def get_dashboard_summary() -> Dict:
         """Get main dashboard summary statistics"""
         # Try to get cached result first
-        from src.services.performance import cache
 
         cache_key = "dashboard_stats:summary"
 
