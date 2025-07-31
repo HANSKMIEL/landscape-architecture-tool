@@ -45,10 +45,10 @@ class TestSupplierRoutes(DatabaseTestMixin):
             name="Alpha Nursery", contact_person="John Alpha"
         )  # noqa: F841
         supplier2 = supplier_factory(  # noqa: F841
-            name="Beta Plants", city="Springfield"
+            name="Beta Plants", city="Springfield", contact_person="Bob Springfield"
         )  # noqa: F841
         supplier3 = supplier_factory(  # noqa: F841
-            name="Gamma Gardens", email="info@gamma.com"
+            name="Gamma Gardens", email="info@gamma.com", contact_person="Charlie Gamma"
         )  # noqa: F841
 
         # Search by name
