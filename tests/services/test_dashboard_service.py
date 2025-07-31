@@ -8,7 +8,8 @@ from datetime import datetime, timedelta
 
 import pytest
 
-from src.models.landscape import Client, Plant, Product, Project, ProjectPlant, Supplier
+from src.models.landscape import (Client, Plant, Product, Project,
+                                  ProjectPlant, Supplier)
 from src.models.user import db
 from src.services.dashboard_service import DashboardService
 from tests.fixtures.database import DatabaseTestMixin
@@ -429,6 +430,11 @@ class TestDashboardServiceIntegration(DatabaseTestMixin):
         product_factory,
     ):
         """Test comprehensive dashboard scenario with all data types"""
+        # Clear cache to ensure fresh data
+        from src.services.performance import cache
+
+        cache.clear()
+
         # Create a realistic dataset
 
         # Clients

@@ -10,19 +10,36 @@ from typing import Dict
 
 from sqlalchemy import desc, func
 
-from src.models.landscape import Client, Plant, Product, Project, ProjectPlant, Supplier
+from src.models.landscape import (Client, Plant, Product, Project,
+                                  ProjectPlant, Supplier)
 from src.models.user import db
-from src.services.performance import cache_dashboard_stats, monitor_db_performance
+from src.services.performance import (cache_dashboard_stats,
+                                      monitor_db_performance)
 
 
 class DashboardService:
     """Service class for dashboard operations and analytics"""
 
     @staticmethod
-    @cache_dashboard_stats
     @monitor_db_performance
     def get_dashboard_summary() -> Dict:
         """Get main dashboard summary statistics"""
+        # Try to get cached result first
+
+        cache_key = CACHE_KEY_DASHBOARD_SUMMARY
+
+        try:
+            cached_result = cache.get(cache_key)
+            if (
+                cached_result
+                and isinstance(cached_result, dict)
+                and "totals" in cached_result
+            ):
+                return cached_result
+        except Exception:
+            # Cache error, proceed to generate fresh data
+            pass
+
         # Count totals
         total_clients = Client.query.count()
         total_projects = Project.query.count()
@@ -73,6 +90,13 @@ class DashboardService:
         # Ensure all expected keys are present
         result.setdefault("totals", {})
         result.setdefault("recent_activity", {})
+
+        # Cache the valid result
+        try:
+            cache.set(cache_key, result, timeout=120)
+        except (ConnectionError, TimeoutError) as e:
+            # Cache error, continue without caching
+            logger.warning(f"Failed to set cache for key {cache_key}: {e}")
 
         return result
 
