@@ -319,7 +319,6 @@ class DashboardService:
         }
         
         # Ensure required keys are always present
-        result.setdefault('total_suppliers', 0)
         result.setdefault('top_suppliers', [])
         result.setdefault('specializations', [])
         
