@@ -73,7 +73,6 @@ class DashboardService:
         }
         
         # Ensure required keys are always present
-        result.setdefault('totals', {})
         result.setdefault('recent_activity', {})
         
         return result
