@@ -26,7 +26,7 @@ class DashboardService:
         """Get main dashboard summary statistics"""
         # Try to get cached result first
 
-        cache_key = "dashboard_stats:summary"
+        cache_key = CACHE_KEY_DASHBOARD_SUMMARY
 
         try:
             cached_result = cache.get(cache_key)
