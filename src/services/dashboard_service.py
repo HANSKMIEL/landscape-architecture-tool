@@ -69,11 +69,11 @@ class DashboardService:
             },
             "financial": {"total_budget": total_budget},
         }
-        
+
         # Ensure all expected keys are present
-        result.setdefault('totals', {})
-        result.setdefault('recent_activity', {})
-        
+        result.setdefault("totals", {})
+        result.setdefault("recent_activity", {})
+
         return result
 
     @staticmethod
@@ -122,12 +122,12 @@ class DashboardService:
                 {"name": name, "project_count": count} for name, count in top_clients
             ],
         }
-        
+
         # Ensure all expected keys are present with appropriate defaults
-        result.setdefault('projects_over_time', [])
-        result.setdefault('projects_by_status', [])
-        result.setdefault('top_clients', [])
-        
+        result.setdefault("projects_over_time", [])
+        result.setdefault("projects_by_status", [])
+        result.setdefault("top_clients", [])
+
         return result
 
     @staticmethod
@@ -191,13 +191,13 @@ class DashboardService:
                 "non_native": non_native_count,
             },
         }
-        
+
         # Ensure all expected keys are present with appropriate defaults
-        result.setdefault('most_used_plants', [])
-        result.setdefault('plants_by_category', [])
-        result.setdefault('plants_by_sun_exposure', [])
-        result.setdefault('native_distribution', {"native": 0, "non_native": 0})
-        
+        result.setdefault("most_used_plants", [])
+        result.setdefault("plants_by_category", [])
+        result.setdefault("plants_by_sun_exposure", [])
+        result.setdefault("native_distribution", {"native": 0, "non_native": 0})
+
         return result
 
     @staticmethod
@@ -264,12 +264,12 @@ class DashboardService:
                 for month, total_value in monthly_values
             ],
         }
-        
+
         # Ensure all expected keys are present with appropriate defaults
-        result.setdefault('values_by_status', [])
-        result.setdefault('top_projects', [])
-        result.setdefault('monthly_trends', [])
-        
+        result.setdefault("values_by_status", [])
+        result.setdefault("top_projects", [])
+        result.setdefault("monthly_trends", [])
+
         return result
 
     @staticmethod
@@ -278,17 +278,44 @@ class DashboardService:
         # Total suppliers
         total_suppliers = Supplier.query.count()
 
-        # Suppliers with most products
+        # Use separate subqueries to avoid Cartesian product
+        # Product counts subquery
+        product_counts = (
+            db.session.query(
+                Supplier.id.label("supplier_id"),
+                func.count(Product.id).label("product_count"),
+            )
+            .outerjoin(Product)
+            .group_by(Supplier.id)
+            .subquery()
+        )
+
+        # Plant counts subquery
+        plant_counts = (
+            db.session.query(
+                Supplier.id.label("supplier_id"),
+                func.count(Plant.id).label("plant_count"),
+            )
+            .outerjoin(Plant)
+            .group_by(Supplier.id)
+            .subquery()
+        )
+
+        # Main query combining both counts
         suppliers_by_products = (
             db.session.query(
                 Supplier.name,
-                func.count(Product.id).label("product_count"),
-                func.count(Plant.id).label("plant_count"),
+                func.coalesce(product_counts.c.product_count, 0).label("product_count"),
+                func.coalesce(plant_counts.c.plant_count, 0).label("plant_count"),
             )
-            .outerjoin(Product)
-            .outerjoin(Plant)
-            .group_by(Supplier.id, Supplier.name)
-            .order_by(desc(func.count(Product.id) + func.count(Plant.id)))
+            .outerjoin(product_counts, Supplier.id == product_counts.c.supplier_id)
+            .outerjoin(plant_counts, Supplier.id == plant_counts.c.supplier_id)
+            .order_by(
+                desc(
+                    func.coalesce(product_counts.c.product_count, 0)
+                    + func.coalesce(plant_counts.c.plant_count, 0)
+                )
+            )
             .limit(5)
             .all()
         )
@@ -318,11 +345,11 @@ class DashboardService:
                 if spec
             ],
         }
-        
+
         # Ensure all expected keys are present with appropriate defaults
-        result.setdefault('top_suppliers', [])
-        result.setdefault('specializations', [])
-        
+        result.setdefault("top_suppliers", [])
+        result.setdefault("specializations", [])
+
         return result
 
     @staticmethod
@@ -380,12 +407,12 @@ class DashboardService:
                 for plant in recent_plants
             ],
         }
-        
+
         # Ensure all expected keys are present with appropriate defaults
-        result.setdefault('recent_projects', [])
-        result.setdefault('recent_clients', [])
-        result.setdefault('recent_plants', [])
-        
+        result.setdefault("recent_projects", [])
+        result.setdefault("recent_clients", [])
+        result.setdefault("recent_plants", [])
+
         return result
 
     @staticmethod
@@ -450,10 +477,10 @@ class DashboardService:
                 "suppliers": Supplier.query.count(),
             },
         }
-        
+
         # Ensure all expected keys are present with appropriate defaults
-        result.setdefault('total_entities', {})
-        
+        result.setdefault("total_entities", {})
+
         return result
 
     @staticmethod
