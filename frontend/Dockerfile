@@ -1,6 +1,6 @@
 # Multi-stage Dockerfile for Landscape Architecture Tool Frontend
 # Stage 1: Build stage
-FROM node:20-alpine as builder
+FROM node:24-alpine as builder
 
 WORKDIR /app
 
