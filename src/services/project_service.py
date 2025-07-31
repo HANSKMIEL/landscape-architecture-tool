@@ -61,7 +61,7 @@ class ProjectService:
     @staticmethod
     def get_project_by_id(project_id: int) -> Optional[Project]:
         """Get a project by ID"""
-        return Project.query.get(project_id)
+        return db.session.get(Project, project_id)
 
     @staticmethod
     def create_project(project_data: Dict) -> Project:
@@ -74,7 +74,7 @@ class ProjectService:
     @staticmethod
     def update_project(project_id: int, project_data: Dict) -> Optional[Project]:
         """Update an existing project"""
-        project = Project.query.get(project_id)
+        project = db.session.get(Project, project_id)
         if not project:
             return None
 
@@ -89,7 +89,7 @@ class ProjectService:
     @staticmethod
     def delete_project(project_id: int) -> bool:
         """Delete a project"""
-        project = Project.query.get(project_id)
+        project = db.session.get(Project, project_id)
         if not project:
             return False
 
@@ -120,8 +120,8 @@ class ProjectService:
         project_id: int, plant_id: int, quantity: int, unit_cost: float = None
     ) -> bool:
         """Add a plant to a project"""
-        project = Project.query.get(project_id)
-        plant = Plant.query.get(plant_id)
+        project = db.session.get(Project, project_id)
+        plant = db.session.get(Plant, plant_id)
 
         if not project or not plant:
             return False
@@ -211,7 +211,7 @@ class ProjectService:
     @staticmethod
     def update_project_status(project_id: int, status: str) -> Optional[Project]:
         """Update project status"""
-        project = Project.query.get(project_id)
+        project = db.session.get(Project, project_id)
         if not project:
             return None
 
@@ -238,7 +238,7 @@ class ProjectService:
 
         # Check if client exists
         if project_data.get("client_id"):
-            client = Client.query.get(project_data["client_id"])
+            client = db.session.get(Client, project_data["client_id"])
             if not client:
                 errors.append("Invalid client_id")
 

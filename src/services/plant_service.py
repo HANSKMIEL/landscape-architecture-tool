@@ -63,7 +63,7 @@ class PlantService:
     @staticmethod
     def get_plant_by_id(plant_id: int) -> Optional[Plant]:
         """Get a plant by ID"""
-        return Plant.query.get(plant_id)
+        return db.session.get(Plant, plant_id)
 
     @staticmethod
     def create_plant(plant_data: Dict) -> Plant:
@@ -76,7 +76,7 @@ class PlantService:
     @staticmethod
     def update_plant(plant_id: int, plant_data: Dict) -> Optional[Plant]:
         """Update an existing plant"""
-        plant = Plant.query.get(plant_id)
+        plant = db.session.get(Plant, plant_id)
         if not plant:
             return None
 
@@ -90,7 +90,7 @@ class PlantService:
     @staticmethod
     def delete_plant(plant_id: int) -> bool:
         """Delete a plant"""
-        plant = Plant.query.get(plant_id)
+        plant = db.session.get(Plant, plant_id)
         if not plant:
             return False
 

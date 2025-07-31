@@ -146,7 +146,7 @@ def create_project():
             return jsonify({"error": "Client is required"}), 400
 
         # Verify client exists
-        client = Client.query.get(int(data["client_id"]))
+        client = db.session.get(Client, int(data["client_id"]))
         if not client:
             return jsonify({"error": "Client not found"}), 404
 
@@ -181,14 +181,14 @@ def create_project():
         # Add plants if provided
         if data.get("selected_plants"):
             for plant_id in data["selected_plants"]:
-                plant = Plant.query.get(int(plant_id))
+                plant = db.session.get(Plant, int(plant_id))
                 if plant:
                     project.plants.append(plant)
 
         # Add products if provided
         if data.get("selected_products"):
             for product_id in data["selected_products"]:
-                product = Product.query.get(int(product_id))
+                product = db.session.get(Product, int(product_id))
                 if product:
                     project.products.append(product)
 
@@ -345,7 +345,7 @@ def update_project(project_id):
             project.plants.clear()
             # Add new plants
             for plant_id in data["selected_plants"]:
-                plant = Plant.query.get(int(plant_id))
+                plant = db.session.get(Plant, int(plant_id))
                 if plant:
                     project.plants.append(plant)
 
@@ -355,7 +355,7 @@ def update_project(project_id):
             project.products.clear()
             # Add new products
             for product_id in data["selected_products"]:
-                product = Product.query.get(int(product_id))
+                product = db.session.get(Product, int(product_id))
                 if product:
                     project.products.append(product)
 

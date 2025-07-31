@@ -54,7 +54,7 @@ class SupplierService:
     @staticmethod
     def get_supplier_by_id(supplier_id: int) -> Optional[Supplier]:
         """Get a supplier by ID"""
-        return Supplier.query.get(supplier_id)
+        return db.session.get(Supplier, supplier_id)
 
     @staticmethod
     def create_supplier(supplier_data: Dict) -> Supplier:
@@ -67,7 +67,7 @@ class SupplierService:
     @staticmethod
     def update_supplier(supplier_id: int, supplier_data: Dict) -> Optional[Supplier]:
         """Update an existing supplier"""
-        supplier = Supplier.query.get(supplier_id)
+        supplier = db.session.get(Supplier, supplier_id)
         if not supplier:
             return None
 
@@ -82,7 +82,7 @@ class SupplierService:
     @staticmethod
     def delete_supplier(supplier_id: int) -> bool:
         """Delete a supplier"""
-        supplier = Supplier.query.get(supplier_id)
+        supplier = db.session.get(Supplier, supplier_id)
         if not supplier:
             return False
 
@@ -114,7 +114,7 @@ class SupplierService:
     @staticmethod
     def get_supplier_statistics(supplier_id: int) -> Dict:
         """Get statistical information for a supplier"""
-        supplier = Supplier.query.get(supplier_id)
+        supplier = db.session.get(Supplier, supplier_id)
         if not supplier:
             return {}
 
@@ -225,7 +225,7 @@ class SupplierService:
         supplier_id: int, product_data: Dict
     ) -> Optional[Product]:
         """Add a product to a supplier"""
-        supplier = Supplier.query.get(supplier_id)
+        supplier = db.session.get(Supplier, supplier_id)
         if not supplier:
             return None
 
@@ -263,7 +263,7 @@ class SupplierService:
     @staticmethod
     def get_supplier_contact_info(supplier_id: int) -> Dict:
         """Get formatted contact information for a supplier"""
-        supplier = Supplier.query.get(supplier_id)
+        supplier = db.session.get(Supplier, supplier_id)
         if not supplier:
             return {}
 

@@ -25,6 +25,8 @@ class Config:
     # Rate limiting
     RATELIMIT_STORAGE_URL = os.environ.get("REDIS_URL") or "memory://"
     RATELIMIT_DEFAULT = "100 per hour"
+    RATELIMIT_STORAGE_OPTIONS = {"host": "localhost", "port": 6379, "db": 0}
+    RATELIMIT_STRATEGY = "moving-window"
 
     # CORS settings
     CORS_ORIGINS = os.environ.get(

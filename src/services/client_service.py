@@ -61,7 +61,7 @@ class ClientService:
     @staticmethod
     def get_client_by_id(client_id: int) -> Optional[Client]:
         """Get a client by ID"""
-        return Client.query.get(client_id)
+        return db.session.get(Client, client_id)
 
     @staticmethod
     def create_client(client_data: Dict) -> Client:
@@ -74,7 +74,7 @@ class ClientService:
     @staticmethod
     def update_client(client_id: int, client_data: Dict) -> Optional[Client]:
         """Update an existing client"""
-        client = Client.query.get(client_id)
+        client = db.session.get(Client, client_id)
         if not client:
             return None
 
@@ -89,7 +89,7 @@ class ClientService:
     @staticmethod
     def delete_client(client_id: int) -> bool:
         """Delete a client"""
-        client = Client.query.get(client_id)
+        client = db.session.get(Client, client_id)
         if not client:
             return False
 
@@ -117,7 +117,7 @@ class ClientService:
     @staticmethod
     def get_client_statistics(client_id: int) -> Dict:
         """Get statistical information for a client"""
-        client = Client.query.get(client_id)
+        client = db.session.get(Client, client_id)
         if not client:
             return {}
 

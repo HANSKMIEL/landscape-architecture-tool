@@ -43,7 +43,7 @@ class BaseService:
     def get_by_id(self, entity_id: int) -> Optional[Any]:
         """Get entity by ID"""
         try:
-            entity = self.model_class.query.get(entity_id)
+            entity = db.session.get(self.model_class, entity_id)
             return entity.to_dict() if entity else None
         except Exception as e:
             logger.error(
@@ -67,7 +67,7 @@ class BaseService:
     def update(self, entity_id: int, data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         """Update entity"""
         try:
-            entity = self.model_class.query.get(entity_id)
+            entity = db.session.get(self.model_class, entity_id)
             if not entity:
                 return None
 
@@ -88,7 +88,7 @@ class BaseService:
     def delete(self, entity_id: int) -> bool:
         """Delete entity"""
         try:
-            entity = self.model_class.query.get(entity_id)
+            entity = db.session.get(self.model_class, entity_id)
             if not entity:
                 return False
 
@@ -98,6 +98,10 @@ class BaseService:
             return True
         except Exception as e:
             db.session.rollback()
+            logger.error(
+                f"Error deleting {self.model_class.__name__} {entity_id}: {str(e)}"
+            )
+            raise
             logger.error(
                 f"Error deleting {self.model_class.__name__} {entity_id}: {str(e)}"
             )
@@ -157,7 +161,7 @@ class SupplierService(BaseService):
     def delete(self, entity_id: int) -> bool:
         """Delete supplier with constraint checking"""
         try:
-            supplier = Supplier.query.get(entity_id)
+            supplier = db.session.get(Supplier, entity_id)
             if not supplier:
                 return False
 
@@ -232,7 +236,7 @@ class PlantService(BaseService):
 
             # If only one is provided, check against existing value
             if entity_id:
-                existing_plant = Plant.query.get(entity_id)
+                existing_plant = db.session.get(Plant, entity_id)
                 if existing_plant:
                     if height_min is not None and existing_plant.height_max is not None:
                         if height_min > existing_plant.height_max:

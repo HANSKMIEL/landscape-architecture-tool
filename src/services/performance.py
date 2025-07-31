@@ -6,6 +6,7 @@ Provides caching, query optimization, and performance monitoring capabilities.
 import functools
 import json
 import logging
+import os
 import time
 from typing import Any, Callable, Dict, Optional
 
@@ -21,25 +22,23 @@ class PerformanceCache:
 
     def __init__(self):
         self.redis_client = None
-        try:
-            # Try to connect to Redis if available
-            self.redis_client = redis.Redis(
-                host="localhost",
-                port=6379,
-                db=1,
-                decode_responses=True,
-                socket_connect_timeout=1,
-            )
-            # Test connection
-            self.redis_client.ping()
-        except redis.exceptions.ConnectionError as e:
-            # Handle case when running outside Flask app context
+        # Only try Redis if explicitly configured
+        redis_url = os.environ.get("REDIS_URL")
+        if redis_url and not redis_url.startswith("memory://"):
             try:
-                current_app.logger.error(f"Redis connection failed: {e}")
-            except RuntimeError:
-                # No Flask context available, use logging for fallback
-                logging.error(f"Redis connection failed: {e}")
-            self.redis_client = None
+                # Try to connect to Redis if available
+                self.redis_client = redis.Redis(
+                    host="localhost",
+                    port=6379,
+                    db=1,
+                    decode_responses=True,
+                    socket_connect_timeout=1,
+                )
+                # Test connection
+                self.redis_client.ping()
+            except redis.exceptions.ConnectionError:
+                # Silently fall back to memory cache in development
+                self.redis_client = None
 
     def get(self, key: str) -> Optional[Any]:
         """Get value from cache."""
