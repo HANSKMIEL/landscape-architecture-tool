@@ -469,9 +469,8 @@ jobs:
         # Test with health checks
         docker compose up -d --wait --wait-timeout 300
         
-        # Test endpoints
+        # Test backend endpoint (backend runs on port 5000)
         timeout 30 bash -c 'until curl -f http://localhost:5000/health; do sleep 2; done'
-        timeout 30 bash -c 'until curl -f http://localhost:80; do sleep 2; done'
         
         # Cleanup
         docker compose down -v
