@@ -5,13 +5,10 @@ Provides endpoints for monitoring cache performance and system health.
 
 from flask import Blueprint, current_app, jsonify, request
 
-from src.services.performance import (
-    cache,
-    get_cache_stats,
-    invalidate_dashboard_cache,
-    invalidate_plant_cache,
-    invalidate_project_cache,
-)
+from src.services.performance import (cache, get_cache_stats,
+                                      invalidate_dashboard_cache,
+                                      invalidate_plant_cache,
+                                      invalidate_project_cache)
 
 performance_bp = Blueprint("performance", __name__, url_prefix="/api/performance")
 
