@@ -448,12 +448,8 @@ def generate_project_report(project_id):
                 "spent": 0,  # No spent field in current model
                 "location": project.location,
                 "area_size": (float(project.area_size) if project.area_size else 0),
-                "start_date": (
-                    project.start_date.isoformat() if project.start_date else None
-                ),
-                "end_date": (
-                    project.end_date.isoformat() if project.end_date else None
-                ),
+                "start_date": project.start_date,  # Already a string in ISO format
+                "end_date": project.end_date,  # Already a string in ISO format
                 "notes": project.notes,
                 "created_at": (
                     project.created_at.isoformat() if project.created_at else None
@@ -779,12 +775,13 @@ def generate_supplier_performance_report():
                 Supplier.name,
                 Supplier.contact_person,
                 Supplier.email,
-                db.func.count(Product.id).label("product_count"),
+                db.func.count(db.distinct(Product.id)).label("product_count"),
                 db.func.count(db.distinct(Project.id)).label("project_count"),
             )
-            .outerjoin(Product)
-            .outerjoin(Project.products)
-            .outerjoin(Project)
+            .outerjoin(Product, Supplier.id == Product.supplier_id)
+            .outerjoin(Plant, Supplier.id == Plant.supplier_id)
+            .outerjoin(ProjectPlant, Plant.id == ProjectPlant.plant_id)
+            .outerjoin(Project, ProjectPlant.project_id == Project.id)
             .group_by(
                 Supplier.id,
                 Supplier.name,
