@@ -82,7 +82,7 @@ def app_context(app):
         try:
             # Dispose of engine connections
             db.engine.dispose()
-        except Exception:
+        except SQLAlchemyError:
             pass
 
 
