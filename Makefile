@@ -18,6 +18,10 @@ help:
 	@echo "  make clean     - Clean build artifacts"
 	@echo "  make check     - Check development environment"
 	@echo ""
+	@echo "Pipeline Management:"
+	@echo "  make pipeline-health  - Analyze pipeline health status"
+	@echo "  make troubleshoot     - Show troubleshooting guide"
+	@echo ""
 	@echo "Component-specific Commands:"
 	@echo "  make frontend-install  - Install frontend dependencies"
 	@echo "  make frontend-build    - Build frontend only"
@@ -118,3 +122,22 @@ check:
 	@python -c "import flask; print('✅ Flask available')" 2>/dev/null || echo "⚠️ Flask not available"
 	@python -c "import pytest; print('✅ pytest available')" 2>/dev/null || echo "⚠️ pytest not available"
 	@echo "✅ Environment check complete"
+
+# Pipeline health monitoring (bonus command)
+pipeline-health:
+	@echo "Running pipeline health analysis..."
+	@python scripts/pipeline_monitor.py
+	@echo "✅ Pipeline health check complete"
+
+# Pipeline troubleshooting guide (bonus command)
+troubleshoot:
+	@echo "📋 Pipeline Troubleshooting Guide"
+	@echo "See PIPELINE_TROUBLESHOOTING.md for comprehensive troubleshooting procedures"
+	@echo ""
+	@echo "Quick diagnostics:"
+	@echo "  make check          - Check development environment"
+	@echo "  make pipeline-health - Analyze pipeline health"
+	@echo "  make lint           - Check code quality issues"
+	@echo "  make test           - Run test suite"
+	@echo ""
+	@echo "For detailed troubleshooting, see: PIPELINE_TROUBLESHOOTING.md"

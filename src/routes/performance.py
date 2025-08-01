@@ -55,7 +55,11 @@ def clear_cache():
 def invalidate_cache():
     """Invalidate specific cache patterns."""
     try:
-        data = request.get_json() or {}
+        # Handle both JSON and form data requests
+        if request.is_json:
+            data = request.get_json() or {}
+        else:
+            data = request.form.to_dict() or {}
         cache_type = data.get("type", "all")
 
         if cache_type == "dashboard":
