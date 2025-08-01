@@ -10,6 +10,7 @@ from unittest.mock import patch
 
 import pytest
 from flask import Flask
+from sqlalchemy.exc import SQLAlchemyError
 
 # Add project root to Python path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -51,18 +52,24 @@ def app_context(app):
             db.session.rollback()
         except Exception:
             pass
-        
+
         try:
             # Clear all data from all tables (more reliable than drop_all/create_all)
+            from src.models.landscape import (
+                Client,
+                Plant,
+                PlantRecommendationRequest,
+                Product,
+                Project,
+                ProjectPlant,
+                Supplier,
+            )
             from src.models.user import User
-            
+
             # Delete in order to respect foreign key constraints
-            # Imports moved to module level
-            
-            # Delete in order to respect foreign key constraints
-            db.session.query(ProjectPlant).delete()
             db.session.query(ProjectPlant).delete()
             db.session.query(Project).delete()
+            db.session.query(PlantRecommendationRequest).delete()
             db.session.query(Plant).delete()
             db.session.query(Product).delete()
             db.session.query(Client).delete()
@@ -71,14 +78,14 @@ def app_context(app):
             db.session.commit()
         except Exception:
             db.session.rollback()
-        
+
         try:
             # Close and remove the session
             db.session.close()
             db.session.remove()
         except Exception:
             pass
-        
+
         try:
             # Dispose of engine connections
             db.engine.dispose()
