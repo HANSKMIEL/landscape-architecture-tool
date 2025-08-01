@@ -341,10 +341,11 @@ class TestReportsRoutes(DatabaseTestMixin):
 class TestReportsPDFGeneration(DatabaseTestMixin):
     """Test class for PDF generation functionality"""
 
+    @patch("src.routes.reports.send_file")
     @patch("src.routes.reports.SimpleDocTemplate")
     @patch("src.routes.reports.getSampleStyleSheet")
     def test_business_summary_pdf_structure(
-        self, mock_styles, mock_doc, client, app_context
+        self, mock_styles, mock_doc, mock_send_file, client, app_context
     ):
         """Test business summary PDF generation structure"""
         # Mock the PDF components
@@ -355,12 +356,15 @@ class TestReportsPDFGeneration(DatabaseTestMixin):
             "Heading2": MagicMock(),
             "Normal": MagicMock(),
         }
+        mock_send_file.return_value = MagicMock()
 
-        client.get("/api/reports/business-summary", query_string={"format": "pdf"})
+        response = client.get("/api/reports/business-summary", query_string={"format": "pdf"})
 
         # Should attempt to create PDF
         mock_doc.assert_called()
         mock_doc_instance.build.assert_called()
+        # Should send file
+        mock_send_file.assert_called()
 
     @patch("src.routes.reports.SimpleDocTemplate")
     def test_project_report_pdf_structure(self, mock_doc, client, app_context):

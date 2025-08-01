@@ -154,7 +154,7 @@ class TestPopulateSampleData:
             "Error populating sample data: Database error"
         )
 
-    def test_populate_sample_data_supplier_data_structure(self):
+    def test_populate_sample_data_supplier_data_structure(self, app_context):
         """Test that supplier data has expected structure"""
         # This tests the actual data structure without mocking
         with patch("src.utils.db_init.Supplier.query") as mock_query:
@@ -197,7 +197,7 @@ class TestPopulateSampleData:
                     assert first_supplier["city"] == "Boskoop"
                     assert first_supplier["specialization"] == "Bomen en heesters"
 
-    def test_populate_sample_data_plant_data_structure(self):
+    def test_populate_sample_data_plant_data_structure(self, app_context):
         """Test that plant data has expected structure"""
         with patch("src.utils.db_init.Supplier.query") as mock_query:
             mock_query.count.return_value = 0
@@ -244,7 +244,7 @@ class TestPopulateSampleData:
                         assert first_plant["native"] is True
                         assert first_plant["supplier_id"] == 1  # First supplier's ID
 
-    def test_populate_sample_data_project_data_structure(self):
+    def test_populate_sample_data_project_data_structure(self, app_context):
         """Test that project data has expected structure"""
         with patch("src.utils.db_init.Supplier.query") as mock_query:
             mock_query.count.return_value = 0
@@ -296,7 +296,7 @@ class TestPopulateSampleData:
                             assert first_project["project_manager"] == "Hans Kmiel"
 
     @patch("src.utils.db_init.logger")
-    def test_populate_sample_data_logging(self, mock_logger):
+    def test_populate_sample_data_logging(self, mock_logger, app_context):
         """Test that appropriate logging messages are generated"""
         with patch("src.utils.db_init.Supplier.query") as mock_query:
             mock_query.count.return_value = 5  # Data exists
