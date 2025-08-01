@@ -157,34 +157,36 @@ class TestPopulateSampleData:
     def test_populate_sample_data_supplier_data_structure(self, app_context):
         """Test that supplier data has expected structure"""
         # This tests the actual data structure without mocking
-        with patch("src.utils.db_init.Supplier.query") as mock_query:
-            mock_query.count.return_value = 0
+        with patch("src.utils.db_init.db.session") as mock_session:
+            mock_session.add = Mock()
+            mock_session.flush = Mock()
+            mock_session.commit = Mock()
 
-            with patch("src.utils.db_init.db.session") as mock_session:
-                mock_session.add = Mock()
-                mock_session.flush = Mock()
-                mock_session.commit = Mock()
+            with patch("src.utils.db_init.Supplier") as mock_supplier:
+                # Set up query mock on the Supplier class
+                mock_query = Mock()
+                mock_query.count.return_value = 0
+                mock_supplier.query = mock_query
 
-                with patch("src.utils.db_init.Supplier") as mock_supplier:
-                    mock_supplier_instances = [Mock(id=1), Mock(id=2), Mock(id=3)]
-                    created_suppliers = []
+                mock_supplier_instances = [Mock(id=1), Mock(id=2), Mock(id=3)]
+                created_suppliers = []
 
-                    def capture_supplier(*args, **kwargs):
-                        supplier = Mock()
-                        supplier.configure_mock(**kwargs)
-                        created_suppliers.append(kwargs)
-                        return mock_supplier_instances[len(created_suppliers) - 1]
+                def capture_supplier(*args, **kwargs):
+                    supplier = Mock()
+                    supplier.configure_mock(**kwargs)
+                    created_suppliers.append(kwargs)
+                    return mock_supplier_instances[len(created_suppliers) - 1]
 
-                    mock_supplier.side_effect = capture_supplier
+                mock_supplier.side_effect = capture_supplier
 
-                    # Mock other model classes
-                    with patch("src.utils.db_init.Plant"), patch(
-                        "src.utils.db_init.Product"
-                    ), patch("src.utils.db_init.Client"), patch(
-                        "src.utils.db_init.Project"
-                    ):
+                # Mock other model classes
+                with patch("src.utils.db_init.Plant"), patch(
+                    "src.utils.db_init.Product"
+                ), patch("src.utils.db_init.Client"), patch(
+                    "src.utils.db_init.Project"
+                ):
 
-                        populate_sample_data()
+                    populate_sample_data()
 
                     # Verify supplier data structure
                     assert len(created_suppliers) == 3
@@ -199,36 +201,38 @@ class TestPopulateSampleData:
 
     def test_populate_sample_data_plant_data_structure(self, app_context):
         """Test that plant data has expected structure"""
-        with patch("src.utils.db_init.Supplier.query") as mock_query:
-            mock_query.count.return_value = 0
+        with patch("src.utils.db_init.db.session") as mock_session:
+            mock_session.add = Mock()
+            mock_session.flush = Mock()
+            mock_session.commit = Mock()
 
-            with patch("src.utils.db_init.db.session") as mock_session:
-                mock_session.add = Mock()
-                mock_session.flush = Mock()
-                mock_session.commit = Mock()
+            with patch("src.utils.db_init.Supplier") as mock_supplier:
+                # Set up query mock on the Supplier class
+                mock_query = Mock()
+                mock_query.count.return_value = 0
+                mock_supplier.query = mock_query
 
-                with patch("src.utils.db_init.Supplier") as mock_supplier:
-                    # Mock supplier instances with IDs
-                    mock_supplier_instances = [Mock(id=1), Mock(id=2), Mock(id=3)]
-                    mock_supplier.side_effect = mock_supplier_instances
+                # Mock supplier instances with IDs
+                mock_supplier_instances = [Mock(id=1), Mock(id=2), Mock(id=3)]
+                mock_supplier.side_effect = mock_supplier_instances
 
-                    with patch("src.utils.db_init.Plant") as mock_plant:
-                        created_plants = []
+                with patch("src.utils.db_init.Plant") as mock_plant:
+                    created_plants = []
 
-                        def capture_plant(*args, **kwargs):
-                            plant = Mock()
-                            plant.configure_mock(**kwargs)
-                            created_plants.append(kwargs)
-                            return Mock()
+                    def capture_plant(*args, **kwargs):
+                        plant = Mock()
+                        plant.configure_mock(**kwargs)
+                        created_plants.append(kwargs)
+                        return Mock()
 
-                        mock_plant.side_effect = capture_plant
+                    mock_plant.side_effect = capture_plant
 
-                        # Mock other model classes
-                        with patch("src.utils.db_init.Product"), patch(
-                            "src.utils.db_init.Client"
-                        ), patch("src.utils.db_init.Project"):
+                    # Mock other model classes
+                    with patch("src.utils.db_init.Product"), patch(
+                        "src.utils.db_init.Client"
+                    ), patch("src.utils.db_init.Project"):
 
-                            populate_sample_data()
+                        populate_sample_data()
 
                         # Verify plant data structure
                         assert len(created_plants) == 3
@@ -246,39 +250,41 @@ class TestPopulateSampleData:
 
     def test_populate_sample_data_project_data_structure(self, app_context):
         """Test that project data has expected structure"""
-        with patch("src.utils.db_init.Supplier.query") as mock_query:
-            mock_query.count.return_value = 0
+        with patch("src.utils.db_init.db.session") as mock_session:
+            mock_session.add = Mock()
+            mock_session.flush = Mock()
+            mock_session.commit = Mock()
 
-            with patch("src.utils.db_init.db.session") as mock_session:
-                mock_session.add = Mock()
-                mock_session.flush = Mock()
-                mock_session.commit = Mock()
+            with patch("src.utils.db_init.Supplier") as mock_supplier:
+                # Set up query mock on the Supplier class
+                mock_query = Mock()
+                mock_query.count.return_value = 0
+                mock_supplier.query = mock_query
 
-                with patch("src.utils.db_init.Supplier") as mock_supplier:
-                    mock_supplier_instances = [Mock(id=1), Mock(id=2), Mock(id=3)]
-                    mock_supplier.side_effect = mock_supplier_instances
+                mock_supplier_instances = [Mock(id=1), Mock(id=2), Mock(id=3)]
+                mock_supplier.side_effect = mock_supplier_instances
 
-                    with patch("src.utils.db_init.Client") as mock_client:
-                        mock_client_instances = [Mock(id=1), Mock(id=2), Mock(id=3)]
-                        mock_client.side_effect = mock_client_instances
+                with patch("src.utils.db_init.Client") as mock_client:
+                    mock_client_instances = [Mock(id=1), Mock(id=2), Mock(id=3)]
+                    mock_client.side_effect = mock_client_instances
 
-                        with patch("src.utils.db_init.Project") as mock_project:
-                            created_projects = []
+                    with patch("src.utils.db_init.Project") as mock_project:
+                        created_projects = []
 
-                            def capture_project(*args, **kwargs):
-                                project = Mock()
-                                project.configure_mock(**kwargs)
-                                created_projects.append(kwargs)
-                                return Mock()
+                        def capture_project(*args, **kwargs):
+                            project = Mock()
+                            project.configure_mock(**kwargs)
+                            created_projects.append(kwargs)
+                            return Mock()
 
-                            mock_project.side_effect = capture_project
+                        mock_project.side_effect = capture_project
 
-                            # Mock other model classes
-                            with patch("src.utils.db_init.Plant"), patch(
-                                "src.utils.db_init.Product"
-                            ):
+                        # Mock other model classes
+                        with patch("src.utils.db_init.Plant"), patch(
+                            "src.utils.db_init.Product"
+                        ):
 
-                                populate_sample_data()
+                            populate_sample_data()
 
                             # Verify project data structure
                             assert len(created_projects) == 3

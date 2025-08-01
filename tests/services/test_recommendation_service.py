@@ -265,10 +265,14 @@ class TestRecommendationService:
             for rec in single_recommendations
             if rec["plant"]["plant_type"] == "shrub"
         ]
-        
+
         # Both Perfect Rose and Good Lavender are shrubs, so both should be found
-        assert "Perfect Rose" in shrub_names, f"'Perfect Rose' not found in {shrub_names}"
-        assert "Good Lavender" in shrub_names, f"'Good Lavender' not found in {shrub_names}"
+        assert (
+            "Perfect Rose" in shrub_names
+        ), f"'Perfect Rose' not found in {shrub_names}"
+        assert (
+            "Good Lavender" in shrub_names
+        ), f"'Good Lavender' not found in {shrub_names}"
 
     def test_no_matching_plants(self, recommendation_service, app_context):
         """Test behavior when no plants match criteria"""
