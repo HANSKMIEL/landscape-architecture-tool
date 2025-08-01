@@ -43,13 +43,22 @@ class TestProjectService(DatabaseTestMixin):
         """Test getting projects with search filter"""
         client = client_factory(name="Regular Client")
         project1 = project_factory(  # noqa: F841
-            name="Garden Renovation", description="Project description", location="City A", client=client
+            name="Garden Renovation",
+            description="Project description",
+            location="City A",
+            client=client,
         )  # noqa: F841
         _project2 = project_factory(
-            name="Landscape Design", description="Different description", location="City B", client=client
+            name="Landscape Design",
+            description="Different description",
+            location="City B",
+            client=client,
         )
         project3 = project_factory(  # noqa: F841
-            name="Pool Installation", description="Another description", location="City C", client=client
+            name="Pool Installation",
+            description="Another description",
+            location="City C",
+            client=client,
         )  # noqa: F841
 
         # Search by project name - should find one project
@@ -502,21 +511,21 @@ class TestProjectServiceIntegration(DatabaseTestMixin):
             status="active",
             client=client1,
             description="Unique garden project",
-            location="Location A"
+            location="Location A",
         )
         project2 = project_factory(  # noqa: F841
             name="Landscape Beta",
             status="completed",
             client=client1,
             description="Landscape renovation project",
-            location="Location B"
+            location="Location B",
         )
         project3 = project_factory(  # noqa: F841
             name="Pool Installation",
             status="active",
             client=client2,
             description="Swimming pool construction",
-            location="Location C"
+            location="Location C",
         )
 
         # Test status filtering
