@@ -45,8 +45,12 @@ def app_context(app):
     with app.app_context():
         db.create_all()
         yield app
+        # Ensure proper cleanup of all database state
+        db.session.close()
         db.session.remove()
         db.drop_all()
+        # Recreate the engine to ensure clean state
+        db.engine.dispose()
 
 
 @pytest.fixture
