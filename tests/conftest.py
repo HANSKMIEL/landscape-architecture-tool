@@ -123,7 +123,5 @@ def clean_db(app_context):
     db.session.close()
 
 
-from tests.fixtures.database import *
-
 # Import factory fixtures
 from tests.fixtures.test_data import *
