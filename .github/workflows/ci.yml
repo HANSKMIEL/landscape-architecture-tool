@@ -18,27 +18,28 @@ jobs:
     
     services:
       postgres:
-        image: postgres:15
+        image: postgres:15-alpine  # Smaller image for faster startup
         env:
           POSTGRES_DB: landscape_test
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres_password
+          POSTGRES_INITDB_ARGS: "--auth-host=trust"  # Faster initialization for CI
         options: >-
           --health-cmd "pg_isready -U postgres"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 10
-          --health-start-period 30s
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 5
+          --health-start-period 15s
         ports:
           - 5432:5432
       
       redis:
-        image: redis:7
+        image: redis:7-alpine  # Smaller image for faster startup
         options: >-
           --health-cmd "redis-cli ping"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 10
+          --health-interval 3s
+          --health-timeout 2s
+          --health-retries 3
         ports:
           - 6379:6379
     
@@ -240,6 +241,14 @@ jobs:
           requirements.txt
           requirements-dev.txt
         
+    - name: Cache linting tools
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-linting-tools-v1
+        restore-keys: |
+          ${{ runner.os }}-linting-tools-
+        
     - name: Install linting tools
       run: |
         python -m pip install --upgrade pip
@@ -279,27 +288,28 @@ jobs:
     
     services:
       postgres:
-        image: postgres:15
+        image: postgres:15-alpine  # Smaller image for faster startup
         env:
           POSTGRES_DB: landscape_integration_test
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres_password
+          POSTGRES_INITDB_ARGS: "--auth-host=trust"  # Faster initialization for CI
         options: >-
           --health-cmd "pg_isready -U postgres"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 10
-          --health-start-period 30s
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 5
+          --health-start-period 15s
         ports:
           - 5432:5432
           
       redis:
-        image: redis:7
+        image: redis:7-alpine  # Smaller image for faster startup
         options: >-
           --health-cmd "redis-cli ping"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 10
+          --health-interval 3s
+          --health-timeout 2s
+          --health-retries 3
         ports:
           - 6379:6379
     
@@ -421,8 +431,14 @@ jobs:
         
         echo "✅ All integration tests passed"
         
+        # Collect application metrics
+        echo "Backend application metrics:" >> integration-artifacts/summary.txt
+        curl -s http://localhost:5000/health >> integration-artifacts/summary.txt 2>&1 || echo "Health endpoint not available" >> integration-artifacts/summary.txt
+        
         # Cleanup
+        echo "Stopping backend application..."
         kill $BACKEND_PID || true
+        wait $BACKEND_PID 2>/dev/null || true
         
     - name: Collect integration test artifacts
       if: always()
@@ -433,12 +449,28 @@ jobs:
         # Copy backend log if it exists
         if [ -f backend.log ]; then
           cp backend.log integration-artifacts/
+          echo "Backend log file size: $(wc -l < backend.log) lines" >> integration-artifacts/summary.txt
+        else
+          echo "No backend log file found" >> integration-artifacts/summary.txt
         fi
         
-        # Create test summary
+        # Create comprehensive test summary
         echo "Integration Test Summary" > integration-artifacts/summary.txt
         echo "Timestamp: $(date)" >> integration-artifacts/summary.txt
-        echo "Backend PID: $BACKEND_PID" >> integration-artifacts/summary.txt
+        echo "Workflow: ${{ github.workflow }}" >> integration-artifacts/summary.txt
+        echo "Run ID: ${{ github.run_id }}" >> integration-artifacts/summary.txt
+        echo "Backend PID: ${BACKEND_PID:-unknown}" >> integration-artifacts/summary.txt
+        echo "Exit Status: ${?}" >> integration-artifacts/summary.txt
+        
+        # Collect system information
+        echo "" >> integration-artifacts/summary.txt
+        echo "System Information:" >> integration-artifacts/summary.txt
+        echo "Disk usage:" >> integration-artifacts/summary.txt
+        df -h >> integration-artifacts/summary.txt 2>&1 || true
+        echo "Memory usage:" >> integration-artifacts/summary.txt
+        free -h >> integration-artifacts/summary.txt 2>&1 || true
+        echo "Process count:" >> integration-artifacts/summary.txt
+        ps aux | wc -l >> integration-artifacts/summary.txt 2>&1 || true
         
     - name: Upload integration test artifacts
       uses: actions/upload-artifact@v4
@@ -566,14 +598,18 @@ jobs:
     needs: [test-backend, test-frontend, code-quality, integration-tests, deepsource]
     if: always()
     steps:
-    - name: Pipeline status monitoring
+    - name: Pipeline status monitoring and analytics
       run: |
         echo "=== CI/CD Pipeline Status Summary ==="
         echo "Timestamp: $(date)"
         echo "Repository: ${{ github.repository }}"
         echo "Branch: ${{ github.ref_name }}"
         echo "Commit: ${{ github.sha }}"
+        echo "Workflow: ${{ github.workflow }}"
+        echo "Run ID: ${{ github.run_id }}"
+        echo "Run Number: ${{ github.run_number }}"
         echo ""
+        
         echo "Job Results:"
         echo "  test-backend: ${{ needs.test-backend.result }}"
         echo "  test-frontend: ${{ needs.test-frontend.result }}"
@@ -585,33 +621,81 @@ jobs:
         # Calculate success rate with safer arithmetic
         TOTAL=5
         SUCCESS=0
-        [[ "${{ needs.test-backend.result }}" == "success" ]] && SUCCESS=$((SUCCESS + 1)) || true
-        [[ "${{ needs.test-frontend.result }}" == "success" ]] && SUCCESS=$((SUCCESS + 1)) || true
-        [[ "${{ needs.code-quality.result }}" == "success" ]] && SUCCESS=$((SUCCESS + 1)) || true
-        [[ "${{ needs.integration-tests.result }}" == "success" ]] && SUCCESS=$((SUCCESS + 1)) || true
-        [[ "${{ needs.deepsource.result }}" == "success" ]] && SUCCESS=$((SUCCESS + 1)) || true
+        FAILED_JOBS=""
+        
+        if [[ "${{ needs.test-backend.result }}" == "success" ]]; then
+          SUCCESS=$((SUCCESS + 1))
+        else
+          FAILED_JOBS="${FAILED_JOBS} test-backend(${{ needs.test-backend.result }})"
+        fi
+        
+        if [[ "${{ needs.test-frontend.result }}" == "success" ]]; then
+          SUCCESS=$((SUCCESS + 1))
+        else
+          FAILED_JOBS="${FAILED_JOBS} test-frontend(${{ needs.test-frontend.result }})"
+        fi
+        
+        if [[ "${{ needs.code-quality.result }}" == "success" ]]; then
+          SUCCESS=$((SUCCESS + 1))
+        else
+          FAILED_JOBS="${FAILED_JOBS} code-quality(${{ needs.code-quality.result }})"
+        fi
+        
+        if [[ "${{ needs.integration-tests.result }}" == "success" ]]; then
+          SUCCESS=$((SUCCESS + 1))
+        else
+          FAILED_JOBS="${FAILED_JOBS} integration-tests(${{ needs.integration-tests.result }})"
+        fi
+        
+        if [[ "${{ needs.deepsource.result }}" == "success" ]]; then
+          SUCCESS=$((SUCCESS + 1))
+        else
+          FAILED_JOBS="${FAILED_JOBS} deepsource(${{ needs.deepsource.result }})"
+        fi
         
         SUCCESS_RATE=$((SUCCESS * 100 / TOTAL))
         echo "Success Rate: ${SUCCESS_RATE}% (${SUCCESS}/${TOTAL})"
+        
+        if [[ -n "$FAILED_JOBS" ]]; then
+          echo "Failed Jobs:${FAILED_JOBS}"
+        fi
         echo ""
         
+        # Pipeline health assessment
         if [ $SUCCESS_RATE -eq 100 ]; then
           echo "✅ All core pipeline jobs completed successfully!"
           echo "🚀 Pipeline ready for deployment"
+          echo "📈 Pipeline Health: EXCELLENT"
         elif [ $SUCCESS_RATE -ge 80 ]; then
           echo "⚠️ Pipeline mostly successful with some issues"
           echo "📊 Review failed jobs before deployment"
+          echo "📈 Pipeline Health: GOOD"
+        elif [ $SUCCESS_RATE -ge 60 ]; then
+          echo "⚠️ Pipeline has moderate failures"
+          echo "🔍 Investigation required for failed jobs"
+          echo "📈 Pipeline Health: FAIR"
         else
           echo "❌ Pipeline has significant failures"
           echo "🔧 Address failing jobs before proceeding"
+          echo "📈 Pipeline Health: POOR"
         fi
         
-        # Export metrics for potential future use
+        # Performance and reliability metrics
+        echo ""
+        echo "=== Pipeline Metrics ==="
+        echo "Trigger: ${{ github.event_name }}"
+        echo "Actor: ${{ github.actor }}"
+        echo "Ref Type: ${{ github.ref_type }}"
+        
+        # Export comprehensive metrics for potential future use
         echo "success_rate=${SUCCESS_RATE}" >> $GITHUB_OUTPUT
         echo "total_jobs=${TOTAL}" >> $GITHUB_OUTPUT
         echo "successful_jobs=${SUCCESS}" >> $GITHUB_OUTPUT
+        echo "failed_jobs=$((TOTAL - SUCCESS))" >> $GITHUB_OUTPUT
+        echo "pipeline_health=$(if [ $SUCCESS_RATE -eq 100 ]; then echo 'EXCELLENT'; elif [ $SUCCESS_RATE -ge 80 ]; then echo 'GOOD'; elif [ $SUCCESS_RATE -ge 60 ]; then echo 'FAIR'; else echo 'POOR'; fi)" >> $GITHUB_OUTPUT
         
         # Always exit successfully - monitoring is informational only
         echo ""
         echo "📈 Monitoring completed successfully"
+        echo "📊 Metrics exported to GitHub outputs for trend analysis"
         exit 0
