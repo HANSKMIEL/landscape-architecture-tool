@@ -57,6 +57,10 @@ def app_context(app):
             from src.models.user import User
             
             # Delete in order to respect foreign key constraints
+            # Imports moved to module level
+            
+            # Delete in order to respect foreign key constraints
+            db.session.query(ProjectPlant).delete()
             db.session.query(ProjectPlant).delete()
             db.session.query(Project).delete()
             db.session.query(Plant).delete()
