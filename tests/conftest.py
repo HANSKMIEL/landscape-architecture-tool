@@ -54,7 +54,6 @@ def app_context(app):
         
         try:
             # Clear all data from all tables (more reliable than drop_all/create_all)
-            from src.models.landscape import ProjectPlant, Project, Plant, Product, Client, Supplier
             from src.models.user import User
             
             # Delete in order to respect foreign key constraints
