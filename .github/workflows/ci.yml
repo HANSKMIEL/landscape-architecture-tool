@@ -480,7 +480,7 @@ jobs:
         docker compose down -v
 
   deploy:
-    needs: [integration-tests, docker-build]
+    needs: [integration-tests, docker-build, monitoring]
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
     steps:
@@ -510,27 +510,35 @@ jobs:
         echo "  integration-tests: ${{ needs.integration-tests.result }}"
         echo ""
         
-        # Calculate success rate
+        # Calculate success rate with safer arithmetic
         TOTAL=4
         SUCCESS=0
-        [[ "${{ needs.test-backend.result }}" == "success" ]] && ((SUCCESS++))
-        [[ "${{ needs.test-frontend.result }}" == "success" ]] && ((SUCCESS++))
-        [[ "${{ needs.code-quality.result }}" == "success" ]] && ((SUCCESS++))
-        [[ "${{ needs.integration-tests.result }}" == "success" ]] && ((SUCCESS++))
+        [[ "${{ needs.test-backend.result }}" == "success" ]] && SUCCESS=$((SUCCESS + 1)) || true
+        [[ "${{ needs.test-frontend.result }}" == "success" ]] && SUCCESS=$((SUCCESS + 1)) || true
+        [[ "${{ needs.code-quality.result }}" == "success" ]] && SUCCESS=$((SUCCESS + 1)) || true
+        [[ "${{ needs.integration-tests.result }}" == "success" ]] && SUCCESS=$((SUCCESS + 1)) || true
         
         SUCCESS_RATE=$((SUCCESS * 100 / TOTAL))
         echo "Success Rate: ${SUCCESS_RATE}% (${SUCCESS}/${TOTAL})"
         echo ""
         
         if [ $SUCCESS_RATE -eq 100 ]; then
-          echo "✅ All pipeline jobs completed successfully!"
+          echo "✅ All core pipeline jobs completed successfully!"
+          echo "🚀 Pipeline ready for deployment"
         elif [ $SUCCESS_RATE -ge 75 ]; then
           echo "⚠️ Pipeline mostly successful with some issues"
+          echo "📊 Review failed jobs before deployment"
         else
           echo "❌ Pipeline has significant failures"
+          echo "🔧 Address failing jobs before proceeding"
         fi
         
         # Export metrics for potential future use
         echo "success_rate=${SUCCESS_RATE}" >> $GITHUB_OUTPUT
         echo "total_jobs=${TOTAL}" >> $GITHUB_OUTPUT
         echo "successful_jobs=${SUCCESS}" >> $GITHUB_OUTPUT
+        
+        # Always exit successfully - monitoring is informational only
+        echo ""
+        echo "📈 Monitoring completed successfully"
+        exit 0
