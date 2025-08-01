@@ -161,7 +161,7 @@ class TestPlantService(DatabaseTestMixin):
         self.assert_record_count(Plant, 0)
 
         # Verify plant is gone
-        deleted_plant = Plant.query.get(plant_id)
+        deleted_plant = db.session.get(Plant, plant_id)
         assert deleted_plant is None
 
     def test_delete_plant_not_found(self, app_context):

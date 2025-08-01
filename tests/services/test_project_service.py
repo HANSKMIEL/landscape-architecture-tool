@@ -165,7 +165,7 @@ class TestProjectService(DatabaseTestMixin):
         self.assert_record_count(Project, 0)
 
         # Verify project is gone
-        deleted_project = Project.query.get(project_id)
+        deleted_project = db.session.get(Project, project_id)
         assert deleted_project is None
 
     def test_delete_project_not_found(self, app_context):

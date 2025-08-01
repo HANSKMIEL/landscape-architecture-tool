@@ -186,7 +186,7 @@ class TestSupplierService(DatabaseTestMixin):
         self.assert_record_count(Supplier, 0)
 
         # Verify supplier is gone
-        deleted_supplier = Supplier.query.get(supplier_id)
+        deleted_supplier = db.session.get(Supplier, supplier_id)
         assert deleted_supplier is None
 
     def test_delete_supplier_with_products(

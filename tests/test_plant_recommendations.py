@@ -354,7 +354,7 @@ class TestPlantRecommendationEngine:
             assert success
 
             # Verify feedback was saved
-            updated_request = PlantRecommendationRequest.query.get(logged_request.id)
+            updated_request = db.session.get(PlantRecommendationRequest, logged_request.id)
             assert updated_request.user_feedback == feedback
             assert updated_request.feedback_rating == 4
 
@@ -527,9 +527,7 @@ class TestRecommendationIntegration:
             assert feedback_response.status_code == 200
 
             # 4. Verify data persistence
-            request_record = PlantRecommendationRequest.query.get(
-                rec_data["request_id"]
-            )
+            request_record = db.session.get(PlantRecommendationRequest, rec_data["request_id"])
             assert request_record is not None
             assert request_record.feedback_rating == 4
             assert "improvements" in request_record.user_feedback
