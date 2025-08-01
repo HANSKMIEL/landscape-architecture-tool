@@ -163,7 +163,7 @@ class TestClientService(DatabaseTestMixin):
         self.assert_record_count(Client, 0)
 
         # Verify client is gone
-        deleted_client = Client.query.get(client_id)
+        deleted_client = db.session.get(Client, client_id)
         assert deleted_client is None
 
     def test_delete_client_with_active_projects(
