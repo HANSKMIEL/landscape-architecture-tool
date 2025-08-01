@@ -148,6 +148,7 @@ class TestRecommendationAlgorithm:
         ]
 
         from src.models.user import db
+
         for plant in plants:
             db.session.add(plant)
         db.session.commit()

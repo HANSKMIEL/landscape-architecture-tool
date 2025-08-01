@@ -188,7 +188,10 @@ def generate_business_summary_pdf(data):
         # Generation info
         story.append(
             Paragraph(
-                f"Generated: {datetime.now(timezone.utc).strftime('%B %d, %Y at %H:%M')}",
+                (
+                    f"Generated: "
+                    f"{datetime.now(timezone.utc).strftime('%B %d, %Y at %H:%M')}"
+                ),
                 styles["Normal"],
             )
         )
@@ -717,7 +720,9 @@ def generate_plant_usage_report():
                 Plant.name,
                 Plant.common_name,
                 Plant.category,
-                db.func.count(db.distinct(ProjectPlant.project_id)).label("project_count"),
+                db.func.count(db.distinct(ProjectPlant.project_id)).label(
+                    "project_count"
+                ),
             )
             .join(ProjectPlant, Plant.id == ProjectPlant.plant_id)
             .group_by(Plant.id, Plant.name, Plant.common_name, Plant.category)
@@ -740,7 +745,9 @@ def generate_plant_usage_report():
         category_stats = (
             db.session.query(
                 Plant.category,
-                db.func.count(db.distinct(ProjectPlant.project_id)).label("project_count"),
+                db.func.count(db.distinct(ProjectPlant.project_id)).label(
+                    "project_count"
+                ),
             )
             .join(ProjectPlant, Plant.id == ProjectPlant.plant_id)
             .filter(Plant.category.isnot(None))

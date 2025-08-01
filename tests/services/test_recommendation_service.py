@@ -27,6 +27,7 @@ class TestRecommendationService:
     def test_plants(self, app_context):
         """Create test plants with known characteristics"""
         from src.models.user import db
+
         plants = [
             create_test_plant(
                 name="Perfect Rose",
@@ -148,6 +149,7 @@ class TestRecommendationService:
     def test_height_range_matching(self, recommendation_service, app_context):
         """Test height range matching logic"""
         from src.models.user import db
+
         # Create plants with specific heights
         tall_plant = create_test_plant(
             name="Tall Tree", height_min=300, height_max=500, plant_type="tree"
@@ -182,6 +184,7 @@ class TestRecommendationService:
     def test_hardiness_zone_matching(self, recommendation_service, app_context):
         """Test hardiness zone matching logic"""
         from src.models.user import db
+
         plants = [
             create_test_plant(name="Cold Hardy", hardiness_zone="3-7"),
             create_test_plant(
@@ -269,6 +272,7 @@ class TestRecommendationService:
     def test_no_matching_plants(self, recommendation_service, app_context):
         """Test behavior when no plants match criteria"""
         from src.models.user import db
+
         # Create plants that won't match impossible criteria
         plant = create_test_plant(
             name="Normal Plant", plant_type="shrub", sun_requirements="full_sun"
@@ -296,6 +300,7 @@ class TestRecommendationService:
     def test_recommendation_performance(self, recommendation_service, app_context):
         """Test recommendation performance with larger dataset"""
         import time
+
         from src.models.user import db
 
         # Create many test plants
@@ -345,6 +350,7 @@ class TestRecommendationService:
     def test_recommendation_diversity(self, recommendation_service, app_context):
         """Test that recommendations provide diverse plant options"""
         from src.models.user import db
+
         # Create plants of different types
         plants = [
             create_test_plant(

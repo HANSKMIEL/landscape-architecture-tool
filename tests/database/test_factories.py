@@ -4,8 +4,8 @@ Tests for database factories
 
 import pytest
 
-from tests.database.factories import create_test_plant
 from src.models.landscape import Plant
+from tests.database.factories import create_test_plant
 
 
 class TestPlantFactory:
@@ -14,7 +14,7 @@ class TestPlantFactory:
     def test_create_test_plant_default_values(self):
         """Test creating a plant with default values"""
         plant = create_test_plant()
-        
+
         assert isinstance(plant, Plant)
         assert plant.name is not None
         assert plant.common_name is not None
@@ -36,7 +36,7 @@ class TestPlantFactory:
         assert plant.pollinator_friendly is not None
         assert plant.deer_resistant is not None
         assert plant.price is not None
-        
+
         # Verify that height_max is greater than height_min
         assert plant.height_max > plant.height_min
         assert plant.width_max > plant.width_min
@@ -63,11 +63,11 @@ class TestPlantFactory:
             "wildlife_value": "high",
             "pollinator_friendly": True,
             "deer_resistant": False,
-            "price": 25.99
+            "price": 25.99,
         }
-        
+
         plant = create_test_plant(**custom_values)
-        
+
         assert plant.name == "Custom Rose"
         assert plant.common_name == "Beautiful Rose"
         assert plant.category == "shrub"
@@ -91,11 +91,8 @@ class TestPlantFactory:
 
     def test_create_test_plant_with_spread_values(self):
         """Test creating a plant with spread values (compatibility)"""
-        plant = create_test_plant(
-            spread_min=1.2,
-            spread_max=2.5
-        )
-        
+        plant = create_test_plant(spread_min=1.2, spread_max=2.5)
+
         # Should map spread values to width values
         assert plant.width_min == 1.2
         assert plant.width_max == 2.5
@@ -103,18 +100,18 @@ class TestPlantFactory:
     def test_create_test_plant_with_water_requirements(self):
         """Test creating a plant with water_requirements (compatibility)"""
         plant = create_test_plant(water_requirements="high")
-        
+
         # Should map water_requirements to water_needs
         assert plant.water_needs == "high"
 
     def test_create_test_plant_random_generation(self):
         """Test that multiple plants have different values"""
         plants = [create_test_plant() for _ in range(5)]
-        
+
         # At least some plants should have different names
         names = [plant.name for plant in plants]
         assert len(set(names)) > 1, "All plants have the same name"
-        
+
         # Heights should vary
         heights = [plant.height_min for plant in plants]
         assert len(set(heights)) > 1, "All plants have the same height"
@@ -122,15 +119,15 @@ class TestPlantFactory:
     def test_create_test_plant_plant_type_compatibility(self):
         """Test the plant_type compatibility property"""
         plant = create_test_plant(plant_type="tree")
-        
+
         # Should have plant_type attribute set
-        assert hasattr(plant, 'plant_type')
+        assert hasattr(plant, "plant_type")
         assert plant.plant_type == "tree"
 
     def test_create_test_plant_ph_values(self):
         """Test pH range values"""
         plant = create_test_plant()
-        
+
         assert plant.soil_ph_min is not None
         assert plant.soil_ph_max is not None
         assert plant.soil_ph_max > plant.soil_ph_min
@@ -140,40 +137,46 @@ class TestPlantFactory:
     def test_create_test_plant_boolean_fields(self):
         """Test boolean field generation"""
         plant = create_test_plant()
-        
+
         boolean_fields = [
-            'native', 'pollinator_friendly', 'deer_resistant',
-            'suitable_for_containers', 'suitable_for_hedging',
-            'suitable_for_screening', 'suitable_for_groundcover',
-            'suitable_for_slopes'
+            "native",
+            "pollinator_friendly",
+            "deer_resistant",
+            "suitable_for_containers",
+            "suitable_for_hedging",
+            "suitable_for_screening",
+            "suitable_for_groundcover",
+            "suitable_for_slopes",
         ]
-        
+
         for field in boolean_fields:
             value = getattr(plant, field)
-            assert isinstance(value, bool), f"{field} should be boolean, got {type(value)}"
+            assert isinstance(
+                value, bool
+            ), f"{field} should be boolean, got {type(value)}"
 
     def test_create_test_plant_choice_fields(self):
         """Test fields with specific choice values"""
         plant = create_test_plant()
-        
+
         # Test sun requirements
         assert plant.sun_requirements in ["full_sun", "partial_shade", "full_shade"]
-        
+
         # Test soil type
         assert plant.soil_type in ["well_drained", "moist", "wet", "dry"]
-        
+
         # Test water needs
         assert plant.water_needs in ["low", "moderate", "high"]
-        
+
         # Test maintenance
         assert plant.maintenance in ["low", "medium", "high"]
-        
+
         # Test bloom time
         assert plant.bloom_time in ["spring", "summer", "fall", "winter"]
-        
+
         # Test resistance levels
         assert plant.pest_resistance in ["low", "medium", "high"]
         assert plant.disease_resistance in ["low", "medium", "high"]
-        
+
         # Test wildlife value
         assert plant.wildlife_value in ["low", "medium", "high"]
