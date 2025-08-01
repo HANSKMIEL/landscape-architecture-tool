@@ -45,9 +45,9 @@ class TestProjectService(DatabaseTestMixin):
         project1 = project_factory(  # noqa: F841
             name="Garden Renovation", description="Project description", location="City A", client=client
         )  # noqa: F841
-        project2 = project_factory(
+        _project2 = project_factory(
             name="Landscape Design", description="Different description", location="City B", client=client
-        )  # noqa: F841
+        )
         project3 = project_factory(  # noqa: F841
             name="Pool Installation", description="Another description", location="City C", client=client
         )  # noqa: F841

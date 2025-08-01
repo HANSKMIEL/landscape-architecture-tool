@@ -358,7 +358,7 @@ class TestReportsPDFGeneration(DatabaseTestMixin):
         }
         mock_send_file.return_value = MagicMock()
 
-        response = client.get("/api/reports/business-summary", query_string={"format": "pdf"})
+        _response = client.get("/api/reports/business-summary", query_string={"format": "pdf"})
 
         # Should attempt to create PDF
         mock_doc.assert_called()
