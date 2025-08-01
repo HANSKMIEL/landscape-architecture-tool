@@ -1,36 +1,8 @@
 """
-Database testing fixtures and utilities
+Database testing fixtures and utilities (minimal version)
 """
 
-import pytest
-
 from src.models.user import db
-
-
-@pytest.fixture
-def db_session(app_context):
-    """Provide a database session with automatic rollback"""
-    connection = db.engine.connect()
-    transaction = connection.begin()
-
-    # Configure session to use this connection
-    session = db.create_scoped_session(options={"bind": connection, "binds": {}})
-
-    # Make this the current session
-    db.session = session
-
-    yield session
-
-    # Rollback and cleanup
-    transaction.rollback()
-    connection.close()
-
-
-@pytest.fixture
-def sample_data(db_session):
-    """Provide sample data for testing"""
-    # This will be populated by factory fixtures
-    yield
 
 
 class DatabaseTestMixin:
