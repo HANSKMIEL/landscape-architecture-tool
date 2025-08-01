@@ -45,12 +45,42 @@ def app_context(app):
     with app.app_context():
         db.create_all()
         yield app
-        # Ensure proper cleanup of all database state
-        db.session.close()
-        db.session.remove()
-        db.drop_all()
-        # Recreate the engine to ensure clean state
-        db.engine.dispose()
+        # Comprehensive cleanup to ensure complete isolation between tests
+        try:
+            # First, try to rollback any pending transactions
+            db.session.rollback()
+        except Exception:
+            pass
+        
+        try:
+            # Clear all data from all tables (more reliable than drop_all/create_all)
+            from src.models.landscape import ProjectPlant, Project, Plant, Product, Client, Supplier
+            from src.models.user import User
+            
+            # Delete in order to respect foreign key constraints
+            db.session.query(ProjectPlant).delete()
+            db.session.query(Project).delete()
+            db.session.query(Plant).delete()
+            db.session.query(Product).delete()
+            db.session.query(Client).delete()
+            db.session.query(Supplier).delete()
+            db.session.query(User).delete()
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
+        
+        try:
+            # Close and remove the session
+            db.session.close()
+            db.session.remove()
+        except Exception:
+            pass
+        
+        try:
+            # Dispose of engine connections
+            db.engine.dispose()
+        except Exception:
+            pass
 
 
 @pytest.fixture
