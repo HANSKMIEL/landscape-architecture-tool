@@ -89,10 +89,10 @@ class TestReportsRoutes(DatabaseTestMixin):
         data = response.get_json()
         assert "error" in data
 
-    def test_generate_project_report_json_format(self, client, app_context, sample_data):
+    def test_generate_project_report_json_format(self, client, app_context, sample_project):
         """Test project report in JSON format"""
-        # Use a project from sample data (assuming it exists)
-        response = client.get("/api/reports/project/1")
+        # Use the sample project
+        response = client.get(f"/api/reports/project/{sample_project.id}")
         
         if response.status_code == 404:
             # If no project exists, skip this test
@@ -120,10 +120,10 @@ class TestReportsRoutes(DatabaseTestMixin):
         assert "name" in client_data
         assert "email" in client_data
 
-    def test_generate_project_report_pdf_format(self, client, app_context, sample_data):
+    def test_generate_project_report_pdf_format(self, client, app_context, sample_project):
         """Test project report in PDF format"""
         response = client.get(
-            "/api/reports/project/1",
+            f"/api/reports/project/{sample_project.id}",
             query_string={"format": "pdf"}
         )
         

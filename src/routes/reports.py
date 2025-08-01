@@ -3,7 +3,7 @@
 # This file handles all report generation operations
 
 import io
-from datetime import datetime
+from datetime import datetime, timezone
 
 from flask import Blueprint, jsonify, request, send_file
 from reportlab.lib import colors
@@ -132,7 +132,7 @@ def generate_business_summary():
         product_usage_data = []
 
         report_data = {
-            "generated_at": datetime.utcnow().isoformat(),
+            "generated_at": datetime.now(timezone.utc).isoformat(),
             "period": {"start_date": start_date, "end_date": end_date},
             "summary": {
                 "total_projects": total_projects,
@@ -188,7 +188,7 @@ def generate_business_summary_pdf(data):
         # Generation info
         story.append(
             Paragraph(
-                f"Generated: {datetime.utcnow().strftime('%B %d, %Y at %H:%M')}",
+                f"Generated: {datetime.now(timezone.utc).strftime('%B %d, %Y at %H:%M')}",
                 styles["Normal"],
             )
         )
@@ -390,7 +390,7 @@ def generate_business_summary_pdf(data):
             buffer,
             as_attachment=True,
             download_name=(
-                f'business_summary_{datetime.utcnow().strftime("%Y%m%d")}.pdf'
+                f'business_summary_{datetime.now(timezone.utc).strftime("%Y%m%d")}.pdf'
             ),
             mimetype="application/pdf",
         )
@@ -405,7 +405,9 @@ def generate_project_report(project_id):
     try:
         format_type = request.args.get("format", "json")  # json or pdf
 
-        project = Project.query.get_or_404(project_id)
+        project = db.session.get(Project, project_id)
+        if not project:
+            return jsonify({"error": "Project not found"}), 404
 
         # Get project plants with details
         plants_data = []
@@ -436,7 +438,7 @@ def generate_project_report(project_id):
         total_product_cost = 0
 
         report_data = {
-            "generated_at": datetime.utcnow().isoformat(),
+            "generated_at": datetime.now(timezone.utc).isoformat(),
             "project": {
                 "id": project.id,
                 "name": project.name,
@@ -458,13 +460,13 @@ def generate_project_report(project_id):
                 ),
             },
             "client": {
-                "name": project.client.name,
-                "email": project.client.email,
-                "phone": project.client.phone,
-                "client_type": project.client.client_type,
-                "address": project.client.address,
-                "city": project.client.city,
-                "postal_code": project.client.postal_code,
+                "name": project.client.name if project.client else "Unknown",
+                "email": project.client.email if project.client else "",
+                "phone": project.client.phone if project.client else "",
+                "client_type": project.client.client_type if project.client else "",
+                "address": project.client.address if project.client else "",
+                "city": project.client.city if project.client else "",
+                "postal_code": project.client.postal_code if project.client else "",
             },
             "plants": plants_data,
             "products": products_data,
@@ -700,7 +702,7 @@ def generate_project_report_pdf(data):
             as_attachment=True,
             download_name=(
                 f'project_{project["name"].replace(" ", "_")}_'
-                f'{datetime.utcnow().strftime("%Y%m%d")}.pdf'
+                f'{datetime.now(timezone.utc).strftime("%Y%m%d")}.pdf'
             ),
             mimetype="application/pdf",
         )
@@ -717,23 +719,22 @@ def generate_plant_usage_report():
         plant_usage = (
             db.session.query(
                 Plant.name,
-                Plant.scientific_name,
+                Plant.common_name,
                 Plant.category,
-                db.func.count(db.distinct(Project.id)).label("project_count"),
+                db.func.count(db.distinct(ProjectPlant.project_id)).label("project_count"),
             )
-            .join(Project.plants)
-            .join(Project)
-            .group_by(Plant.id, Plant.name, Plant.scientific_name, Plant.category)
+            .join(ProjectPlant, Plant.id == ProjectPlant.plant_id)
+            .group_by(Plant.id, Plant.name, Plant.common_name, Plant.category)
             .order_by(db.desc("project_count"))
             .all()
         )
 
         usage_data = []
-        for name, scientific_name, category, count in plant_usage:
+        for name, common_name, category, count in plant_usage:
             usage_data.append(
                 {
                     "name": name,
-                    "scientific_name": scientific_name,
+                    "common_name": common_name,
                     "category": category,
                     "project_count": count,
                 }
@@ -743,10 +744,9 @@ def generate_plant_usage_report():
         category_stats = (
             db.session.query(
                 Plant.category,
-                db.func.count(db.distinct(Project.id)).label("project_count"),
+                db.func.count(db.distinct(ProjectPlant.project_id)).label("project_count"),
             )
-            .join(Project.plants)
-            .join(Project)
+            .join(ProjectPlant, Plant.id == ProjectPlant.plant_id)
             .filter(Plant.category.isnot(None))
             .group_by(Plant.category)
             .order_by(db.desc("project_count"))
@@ -757,7 +757,7 @@ def generate_plant_usage_report():
 
         return jsonify(
             {
-                "generated_at": datetime.utcnow().isoformat(),
+                "generated_at": datetime.now(timezone.utc).isoformat(),
                 "plant_usage": usage_data,
                 "category_distribution": category_distribution,
                 "total_unique_plants": len(usage_data),
@@ -815,7 +815,7 @@ def generate_supplier_performance_report():
 
         return jsonify(
             {
-                "generated_at": datetime.utcnow().isoformat(),
+                "generated_at": datetime.now(timezone.utc).isoformat(),
                 "suppliers": supplier_data,
                 "total_suppliers": len(supplier_data),
                 "top_supplier": supplier_data[0] if supplier_data else None,
