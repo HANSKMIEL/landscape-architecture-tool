@@ -10,6 +10,7 @@ from unittest.mock import patch
 
 import pytest
 from flask import Flask
+from sqlalchemy.exc import SQLAlchemyError
 
 # Add project root to Python path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -43,47 +44,62 @@ def app():
 def app_context(app):
     """Create an application context for each test"""
     with app.app_context():
+        # Clean up before test to ensure clean state
+        _cleanup_database()
+
         db.create_all()
         yield app
-        # Comprehensive cleanup to ensure complete isolation between tests
-        try:
-            # First, try to rollback any pending transactions
-            db.session.rollback()
-        except Exception:
-            pass
-        
-        try:
-            # Clear all data from all tables (more reliable than drop_all/create_all)
-            from src.models.user import User
-            
-            # Delete in order to respect foreign key constraints
-            # Imports moved to module level
-            
-            # Delete in order to respect foreign key constraints
-            db.session.query(ProjectPlant).delete()
-            db.session.query(ProjectPlant).delete()
-            db.session.query(Project).delete()
-            db.session.query(Plant).delete()
-            db.session.query(Product).delete()
-            db.session.query(Client).delete()
-            db.session.query(Supplier).delete()
-            db.session.query(User).delete()
-            db.session.commit()
-        except Exception:
-            db.session.rollback()
-        
-        try:
-            # Close and remove the session
-            db.session.close()
-            db.session.remove()
-        except Exception:
-            pass
-        
-        try:
-            # Dispose of engine connections
-            db.engine.dispose()
-        except SQLAlchemyError:
-            pass
+
+        # Comprehensive cleanup after test to ensure complete isolation
+        _cleanup_database()
+
+
+def _cleanup_database():
+    """Helper function to clean up database consistently"""
+    try:
+        # First, try to rollback any pending transactions
+        db.session.rollback()
+    except Exception:
+        pass
+
+    try:
+        # Clear all data from all tables (more reliable than drop_all/create_all)
+        from src.models.landscape import (
+            Client,
+            Plant,
+            PlantRecommendationRequest,
+            Product,
+            Project,
+            ProjectPlant,
+            Supplier,
+        )
+        from src.models.user import User
+
+        # Delete in order to respect foreign key constraints
+        db.session.query(ProjectPlant).delete()
+        db.session.query(Project).delete()
+        db.session.query(PlantRecommendationRequest).delete()
+        db.session.query(Plant).delete()
+        db.session.query(Product).delete()
+        db.session.query(Client).delete()
+        db.session.query(Supplier).delete()
+        db.session.query(User).delete()
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+
+    try:
+        # Close and remove the session
+        db.session.close()
+        db.session.remove()
+    except Exception:
+        pass
+
+    try:
+        # Dispose of engine connections
+        db.engine.dispose()
+    except SQLAlchemyError:
+        pass
 
 
 @pytest.fixture
