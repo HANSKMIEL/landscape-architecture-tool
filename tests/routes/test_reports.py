@@ -345,19 +345,29 @@ class TestReportsPDFGeneration(DatabaseTestMixin):
     @patch("src.routes.reports.SimpleDocTemplate")
     @patch("src.routes.reports.getSampleStyleSheet")
     def test_business_summary_pdf_structure(
-        self, mock_styles, mock_doc, mock_send_file, client, app_context, client_factory, project_factory
+        self,
+        mock_styles,
+        mock_doc,
+        mock_send_file,
+        client,
+        app_context,
+        client_factory,
+        project_factory,
     ):
         """Test business summary PDF generation structure"""
         # Set up minimal test data
         client_obj = client_factory(name="Test Client")
-        project_factory(name="Test Project", client=client_obj, status="active", budget=1000.0)
-        
+        project_factory(
+            name="Test Project", client=client_obj, status="active", budget=1000.0
+        )
+
         # Mock the PDF components
         mock_doc_instance = MagicMock()
         mock_doc.return_value = mock_doc_instance
-        
+
         # Create proper mock styles that work with ReportLab
         from reportlab.lib.styles import ParagraphStyle
+
         mock_styles.return_value = {
             "Heading1": ParagraphStyle("MockHeading1"),
             "Heading2": ParagraphStyle("MockHeading2"),
@@ -368,9 +378,12 @@ class TestReportsPDFGeneration(DatabaseTestMixin):
         response = client.get(
             "/api/reports/business-summary", query_string={"format": "pdf"}
         )
-        
+
         # Debug: Check if response is successful
-        assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.get_data(as_text=True)}"
+        assert response.status_code == 200, (
+            f"Expected 200, got {response.status_code}: "
+            f"{response.get_data(as_text=True)}"
+        )
 
         # Should attempt to create PDF
         mock_doc.assert_called()
