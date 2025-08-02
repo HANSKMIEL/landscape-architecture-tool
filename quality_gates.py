@@ -5,11 +5,11 @@ Implements reasonable quality thresholds that maintain standards
 without unnecessarily blocking development.
 """
 
-import sys
 import json
-import xml.etree.ElementTree as ET
-import subprocess
 import os
+import subprocess
+import sys
+import xml.etree.ElementTree as ET
 
 
 def check_coverage_threshold(
