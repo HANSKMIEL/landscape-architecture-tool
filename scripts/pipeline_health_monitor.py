@@ -174,7 +174,8 @@ class PipelineHealthMonitor:
         except subprocess.TimeoutExpired:
             return {"status": "error", "error": "Tests timed out"}
         except Exception as e:
-            return {"status": "error", "error": str(e)}
+        except subprocess.CalledProcessError as e:
+            return {"status": "error", "error": f"Subprocess error: {e}"}
 
 
 def main():
