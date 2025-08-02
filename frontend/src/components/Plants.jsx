@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import ApiService from '../services/api';
 
 const Plants = () => {
   const [plants, setPlants] = useState([]);
@@ -41,13 +42,14 @@ const Plants = () => {
       setLoading(true);
       setError(null);
       
-      const response = await fetch(`http://127.0.0.1:5000/api/plants${searchTerm ? `?search=${encodeURIComponent(searchTerm)}` : ''}`);
-      if (!response.ok) {
-        throw new Error(`API error: ${response.status} ${response.statusText}`);
+      const params = {};
+      if (searchTerm) {
+        params.search = searchTerm;
       }
       
-      const data = await response.json();
-      setPlants(data);
+      const data = await ApiService.getPlants(params);
+      // API returns { plants: [...], total: X, ... } format
+      setPlants(data.plants || []);
     } catch (err) {
       console.error('Error fetching plants:', err);
       setError(err.message);
@@ -59,11 +61,9 @@ const Plants = () => {
   // Fetch suppliers for dropdown
   const fetchSuppliers = async () => {
     try {
-      const response = await fetch('http://127.0.0.1:5000/api/suppliers');
-      if (response.ok) {
-        const data = await response.json();
-        setSuppliers(data);
-      }
+      const data = await ApiService.getSuppliers();
+      // API returns { suppliers: [...] } format
+      setSuppliers(data.suppliers || []);
     } catch (err) {
       console.error('Error fetching suppliers:', err);
     }
@@ -114,18 +114,7 @@ const Plants = () => {
   const handleAddPlant = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch('http://127.0.0.1:5000/api/plants', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to add plant: ${response.statusText}`);
-      }
-
+      await ApiService.createPlant(formData);
       await fetchPlants();
       setShowAddModal(false);
       resetForm();
@@ -140,18 +129,7 @@ const Plants = () => {
   const handleEditPlant = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch(`http://127.0.0.1:5000/api/plants/${editingPlant.id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to update plant: ${response.statusText}`);
-      }
-
+      await ApiService.updatePlant(editingPlant.id, formData);
       await fetchPlants();
       setShowEditModal(false);
       setEditingPlant(null);
@@ -170,14 +148,7 @@ const Plants = () => {
     }
 
     try {
-      const response = await fetch(`http://127.0.0.1:5000/api/plants/${plantId}`, {
-        method: 'DELETE',
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to delete plant: ${response.statusText}`);
-      }
-
+      await ApiService.deletePlant(plantId);
       await fetchPlants();
       alert('Plant succesvol verwijderd!');
     } catch (err) {
@@ -217,7 +188,7 @@ const Plants = () => {
 
   // Get supplier name by ID
   const getSupplierName = (supplierId) => {
-    const supplier = suppliers.find(s => s.id === supplierId);
+    const supplier = Array.isArray(suppliers) ? suppliers.find(s => s.id === supplierId) : null;
     return supplier ? supplier.name : 'Onbekend';
   };
 
@@ -380,11 +351,11 @@ const Plants = () => {
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-landscape-primary focus:border-transparent"
           >
             <option value="">Selecteer leverancier</option>
-            {suppliers.map(supplier => (
+            {Array.isArray(suppliers) ? suppliers.map(supplier => (
               <option key={supplier.id} value={supplier.id}>
                 {supplier.name}
               </option>
-            ))}
+            )) : null}
           </select>
         </div>
       </div>
@@ -730,7 +701,7 @@ const Plants = () => {
           <ErrorDisplay />
         ) : loading ? (
           <LoadingSpinner />
-        ) : plants.length === 0 ? (
+        ) : !Array.isArray(plants) || plants.length === 0 ? (
           <div className="bg-white rounded-lg shadow-sm border">
             <EmptyState />
           </div>
@@ -738,7 +709,7 @@ const Plants = () => {
           <div>
             <h2 className="text-xl font-semibold text-gray-900 mb-4">Plantenlijst</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {plants.map((plant) => (
+              {Array.isArray(plants) ? plants.map((plant) => (
                 <div key={plant.id} className="bg-white rounded-lg shadow-sm border hover:shadow-md transition-shadow duration-200">
                   <div className="p-6">
                     <div className="flex items-start justify-between mb-4">
@@ -834,7 +805,11 @@ const Plants = () => {
                   </div>
                 </div>
               </div>
-            ))}
+            )) : (
+              <div className="col-span-full text-center py-8 text-gray-500">
+                No plants data available
+              </div>
+            )}
             </div>
           </div>
         )}
