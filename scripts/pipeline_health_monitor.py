@@ -115,7 +115,7 @@ class PipelineHealthMonitor:
                 r.ping()
             except ConnectionError:
                 redis_ok = False
-            except Exception:
+            except RedisConnectionError:
                 redis_ok = False
 
             if postgres_ok and redis_ok:
