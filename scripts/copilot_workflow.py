@@ -116,7 +116,7 @@ def main():
 
     if args.all or args.test:
         if not run_command(
-            "python -m pytest tests/test_basic.py -v --tb=short", "Basic tests"
+            "python -m pytest tests/ -v --tb=short --maxfail=5", "Basic tests"
         ):
             success = False
 

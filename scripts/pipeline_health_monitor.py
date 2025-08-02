@@ -155,7 +155,7 @@ class PipelineHealthMonitor:
         """Check basic test functionality."""
         try:
             result = subprocess.run(
-                ["python", "-m", "pytest", "tests/test_basic.py", "-q"],
+                ["python", "-m", "pytest", "tests/", "-q", "--maxfail=5"],
                 capture_output=True,
                 text=True,
                 timeout=300,
