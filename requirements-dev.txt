@@ -361,7 +361,7 @@ python-dotenv==1.1.1
     # via -r requirements.in
 pyyaml==6.0.2
     # via bandit
-redis==4.6.0
+redis==6.2.0
     # via -r requirements.in
 reportlab==4.4.3
     # via -r requirements.in
@@ -453,6 +453,7 @@ typing-extensions==4.14.1
     #   azure-identity
     #   azure-storage-blob
     #   azure-storage-file-datalake
+    #   ipython
     #   limits
     #   openai
     #   opentelemetry-api
