@@ -120,7 +120,11 @@ const Clients = ({ language }) => {
       // API returns { clients: [...] } format
       setClients(data.clients || []);
     } catch (err) {
-      console.error('Error loading clients:', err);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error loading clients:', err);
+      } else {
+        console.error('Error loading clients');
+      }
       setError(err.message);
     } finally {
       setLoading(false);
