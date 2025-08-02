@@ -79,7 +79,10 @@ addopts = [
 markers = [
     "slow: marks tests as slow (deselect with '-m \"not slow\"')",
     "integration: marks tests as integration tests",
-    "unit: marks tests as unit tests"
+    "unit: marks tests as unit tests",
+    "api: marks tests as API tests",
+    "service: marks tests as service layer tests",
+    "database: marks tests as database tests"
 ]
 
 [tool.coverage.run]
