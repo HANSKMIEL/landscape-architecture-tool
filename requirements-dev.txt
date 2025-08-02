@@ -321,6 +321,7 @@ pygments==2.19.2
     # via
     #   ipython
     #   ipython-pygments-lexers
+    #   pytest
     #   rich
     #   sphinx
 pyjwt[crypto]==2.10.1
@@ -331,7 +332,7 @@ pyproject-hooks==1.2.0
     # via
     #   build
     #   pip-tools
-pytest==7.4.0
+pytest==8.4.1
     # via
     #   -r requirements-dev.in
     #   pytest-cov
@@ -453,6 +454,7 @@ typing-extensions==4.14.1
     #   azure-identity
     #   azure-storage-blob
     #   azure-storage-file-datalake
+    #   ipython
     #   limits
     #   openai
     #   opentelemetry-api
