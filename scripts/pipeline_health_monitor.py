@@ -42,7 +42,7 @@ class PipelineHealthMonitor:
                 results[check_name] = result
                 if result.get("status") != "healthy":
                     overall_healthy = False
-            except Exception as e:
+            except (subprocess.CalledProcessError, OSError) as e:
                 results[check_name] = {"status": "error", "error": str(e)}
                 overall_healthy = False
 
