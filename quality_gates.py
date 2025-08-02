@@ -136,7 +136,7 @@ def check_test_results():
             return True
         else:
             print("⚠️ Basic tests have failures")
-            print(f"   Output: {result.stdout[-500:]}")  # Last 500 chars
+            print(f"   Output: {result.stdout[:200]}...")  # First 200 chars
             return False
 
     except subprocess.TimeoutExpired:
