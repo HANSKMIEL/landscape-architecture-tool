@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Building2, Plus, Upload, Edit, Trash2, Search, FolderPlus, Eye } from 'lucide-react';
+import ApiService from '../services/api';
 
 const Clients = ({ language }) => {
   // State management
@@ -114,11 +115,16 @@ const Clients = ({ language }) => {
   const loadClients = async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://127.0.0.1:5000/api/clients');
-      if (!response.ok) throw new Error('Failed to load clients');
-      const data = await response.json();
-      setClients(data);
+      setError(null);
+      const data = await ApiService.getClients();
+      // API returns { clients: [...] } format
+      setClients(data.clients || []);
     } catch (err) {
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error loading clients:', err);
+      } else {
+        console.error('Error loading clients');
+      }
       setError(err.message);
     } finally {
       setLoading(false);
@@ -127,10 +133,9 @@ const Clients = ({ language }) => {
 
   const loadProjects = async () => {
     try {
-      const response = await fetch('http://127.0.0.1:5000/api/projects');
-      if (!response.ok) throw new Error('Failed to load projects');
-      const data = await response.json();
-      setProjects(data);
+      const data = await ApiService.getProjects();
+      // API returns { projects: [...] } format
+      setProjects(data.projects || []);
     } catch (err) {
       console.error('Error loading projects:', err);
     }
@@ -149,16 +154,7 @@ const Clients = ({ language }) => {
   const handleAddClient = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch('http://127.0.0.1:5000/api/clients', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
-      
-      if (!response.ok) throw new Error('Failed to add client');
-      
+      await ApiService.createClient(formData);
       await loadClients(); // Reload clients
       setShowAddModal(false);
       setFormData({
@@ -173,6 +169,7 @@ const Clients = ({ language }) => {
       });
       alert(t.success);
     } catch (err) {
+      console.error('Error adding client:', err);
       alert(t.error + ': ' + err.message);
     }
   };
@@ -181,21 +178,13 @@ const Clients = ({ language }) => {
   const handleEditClient = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch(`http://127.0.0.1:5000/api/clients/${selectedClient.id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
-      
-      if (!response.ok) throw new Error('Failed to update client');
-      
+      await ApiService.updateClient(selectedClient.id, formData);
       await loadClients(); // Reload clients
       setShowEditModal(false);
       setSelectedClient(null);
       alert(t.success);
     } catch (err) {
+      console.error('Error updating client:', err);
       alert(t.error + ': ' + err.message);
     }
   };
@@ -205,15 +194,11 @@ const Clients = ({ language }) => {
     if (!confirm(t.confirmDelete)) return;
     
     try {
-      const response = await fetch(`http://127.0.0.1:5000/api/clients/${clientId}`, {
-        method: 'DELETE',
-      });
-      
-      if (!response.ok) throw new Error('Failed to delete client');
-      
+      await ApiService.deleteClient(clientId);
       await loadClients(); // Reload clients
       alert(t.success);
     } catch (err) {
+      console.error('Error deleting client:', err);
       alert(t.error + ': ' + err.message);
     }
   };
@@ -242,15 +227,15 @@ const Clients = ({ language }) => {
 
   // Get projects for a specific client
   const getClientProjects = (clientId) => {
-    return projects.filter(project => project.client_id === clientId);
+    return Array.isArray(projects) ? projects.filter(project => project.client_id === clientId) : [];
   };
 
   // Filter clients based on search term
-  const filteredClients = clients.filter(client =>
+  const filteredClients = Array.isArray(clients) ? clients.filter(client =>
     client.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     client.contact_person?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     client.city?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  ) : [];
 
   if (loading) {
     return (

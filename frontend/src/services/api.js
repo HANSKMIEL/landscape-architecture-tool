@@ -91,6 +91,19 @@ class ApiService {
     });
   }
 
+  async updatePlant(id, data) {
+    return this.request(`/plants/${id}`, {
+      method: 'PUT',
+      body: data,
+    });
+  }
+
+  async deletePlant(id) {
+    return this.request(`/plants/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
   async getPlantRecommendations(criteria) {
     return this.request('/plants/recommendations', {
       method: 'POST',
@@ -102,37 +115,94 @@ class ApiService {
     return this.request('/plants/categories');
   }
 
-  // Products API (placeholder for future implementation)
-  async getProducts() {
-    // For now, return mock data
-    return {
-      products: [],
-      total: 0,
-      pages: 0,
-      current_page: 1
-    };
+  // Products API
+  async getProducts(params = {}) {
+    const queryString = new URLSearchParams(params).toString();
+    return this.request(`/products${queryString ? `?${queryString}` : ''}`);
   }
 
-  // Clients API (placeholder for future implementation)
-  async getClients() {
-    // For now, return mock data
-    return {
-      clients: [],
-      total: 0,
-      pages: 0,
-      current_page: 1
-    };
+  async getProduct(id) {
+    return this.request(`/products/${id}`);
   }
 
-  // Projects API (placeholder for future implementation)
-  async getProjects() {
-    // For now, return mock data
-    return {
-      projects: [],
-      total: 0,
-      pages: 0,
-      current_page: 1
-    };
+  async createProduct(data) {
+    return this.request('/products', {
+      method: 'POST',
+      body: data,
+    });
+  }
+
+  async updateProduct(id, data) {
+    return this.request(`/products/${id}`, {
+      method: 'PUT',
+      body: data,
+    });
+  }
+
+  async deleteProduct(id) {
+    return this.request(`/products/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  // Clients API
+  async getClients(params = {}) {
+    const queryString = new URLSearchParams(params).toString();
+    return this.request(`/clients${queryString ? `?${queryString}` : ''}`);
+  }
+
+  async getClient(id) {
+    return this.request(`/clients/${id}`);
+  }
+
+  async createClient(data) {
+    return this.request('/clients', {
+      method: 'POST',
+      body: data,
+    });
+  }
+
+  async updateClient(id, data) {
+    return this.request(`/clients/${id}`, {
+      method: 'PUT',
+      body: data,
+    });
+  }
+
+  async deleteClient(id) {
+    return this.request(`/clients/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  // Projects API
+  async getProjects(params = {}) {
+    const queryString = new URLSearchParams(params).toString();
+    return this.request(`/projects${queryString ? `?${queryString}` : ''}`);
+  }
+
+  async getProject(id) {
+    return this.request(`/projects/${id}`);
+  }
+
+  async createProject(data) {
+    return this.request('/projects', {
+      method: 'POST',
+      body: data,
+    });
+  }
+
+  async updateProject(id, data) {
+    return this.request(`/projects/${id}`, {
+      method: 'PUT',
+      body: data,
+    });
+  }
+
+  async deleteProject(id) {
+    return this.request(`/projects/${id}`, {
+      method: 'DELETE',
+    });
   }
 }
 

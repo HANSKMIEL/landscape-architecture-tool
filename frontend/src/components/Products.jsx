@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Package, Plus, Upload, Edit, Trash2, Search } from 'lucide-react';
+import ApiService from '../services/api';
 
 const Products = ({ language }) => {
   // State management
@@ -88,11 +89,12 @@ const Products = ({ language }) => {
   const loadProducts = async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://127.0.0.1:5000/api/products');
-      if (!response.ok) throw new Error('Failed to load products');
-      const data = await response.json();
-      setProducts(data);
+      setError(null);
+      const data = await ApiService.getProducts();
+      // API returns { products: [...], total: X, ... } format
+      setProducts(data.products || []);
     } catch (err) {
+      console.error('Error loading products:', err);
       setError(err.message);
     } finally {
       setLoading(false);
@@ -112,16 +114,7 @@ const Products = ({ language }) => {
   const handleAddProduct = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch('http://127.0.0.1:5000/api/products', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
-      
-      if (!response.ok) throw new Error('Failed to add product');
-      
+      await ApiService.createProduct(formData);
       await loadProducts(); // Reload products
       setShowAddModal(false);
       setFormData({
@@ -135,6 +128,11 @@ const Products = ({ language }) => {
       });
       alert(t.success);
     } catch (err) {
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error adding product:', err);
+      } else {
+        console.error('Error adding product:', err.message);
+      }
       alert(t.error + ': ' + err.message);
     }
   };
@@ -143,21 +141,13 @@ const Products = ({ language }) => {
   const handleEditProduct = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch(`http://127.0.0.1:5000/api/products/${selectedProduct.id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
-      
-      if (!response.ok) throw new Error('Failed to update product');
-      
+      await ApiService.updateProduct(selectedProduct.id, formData);
       await loadProducts(); // Reload products
       setShowEditModal(false);
       setSelectedProduct(null);
       alert(t.success);
     } catch (err) {
+      console.error('Error updating product:', err);
       alert(t.error + ': ' + err.message);
     }
   };
@@ -167,15 +157,11 @@ const Products = ({ language }) => {
     if (!confirm(t.confirmDelete)) return;
     
     try {
-      const response = await fetch(`http://127.0.0.1:5000/api/products/${productId}`, {
-        method: 'DELETE',
-      });
-      
-      if (!response.ok) throw new Error('Failed to delete product');
-      
+      await ApiService.deleteProduct(productId);
       await loadProducts(); // Reload products
       alert(t.success);
     } catch (err) {
+      console.error('Error deleting product:', err);
       alert(t.error + ': ' + err.message);
     }
   };
@@ -196,10 +182,10 @@ const Products = ({ language }) => {
   };
 
   // Filter products based on search term
-  const filteredProducts = products.filter(product =>
+  const filteredProducts = Array.isArray(products) ? products.filter(product =>
     product.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     product.category?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  ) : [];
 
   if (loading) {
     return (
@@ -289,54 +275,62 @@ const Products = ({ language }) => {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {filteredProducts.map((product) => (
-                  <tr key={product.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <Package className="h-5 w-5 text-green-600 mr-3" />
-                        <div>
-                          <div className="text-sm font-medium text-gray-900">
-                            {product.name}
-                          </div>
-                          <div className="text-sm text-gray-500">
-                            {product.description}
-                          </div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {product.category}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      €{product.price}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {product.stock_quantity} {product.unit}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <div className="flex space-x-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => openEditModal(product)}
-                          className="flex items-center space-x-1"
-                        >
-                          <Edit className="h-3 w-3" />
-                          <span>{t.edit}</span>
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleDeleteProduct(product.id)}
-                          className="flex items-center space-x-1 text-red-600 hover:text-red-700"
-                        >
-                          <Trash2 className="h-3 w-3" />
-                          <span>{t.delete}</span>
-                        </Button>
-                      </div>
+                {filteredProducts.length === 0 ? (
+                  <tr>
+                    <td colSpan="5" className="px-6 py-8 text-center text-gray-500">
+                      {searchTerm ? `No products found matching "${searchTerm}"` : 'No products available'}
                     </td>
                   </tr>
-                ))}
+                ) : (
+                  filteredProducts.map((product) => (
+                    <tr key={product.id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center">
+                          <Package className="h-5 w-5 text-green-600 mr-3" />
+                          <div>
+                            <div className="text-sm font-medium text-gray-900">
+                              {product.name}
+                            </div>
+                            <div className="text-sm text-gray-500">
+                              {product.description}
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {product.category}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        €{product.price}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {product.stock_quantity} {product.unit}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <div className="flex space-x-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => openEditModal(product)}
+                            className="flex items-center space-x-1"
+                          >
+                            <Edit className="h-3 w-3" />
+                            <span>{t.edit}</span>
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleDeleteProduct(product.id)}
+                            className="flex items-center space-x-1 text-red-600 hover:text-red-700"
+                          >
+                            <Trash2 className="h-3 w-3" />
+                            <span>{t.delete}</span>
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
