@@ -50,7 +50,14 @@ compile_with_timeout() {
     fi
     
     # Execute with timeout
-    if timeout $TIMEOUT_SECONDS bash -c "$cmd"; then
+    # Execute pip-compile with timeout, passing arguments safely
+    if [ "$DRY_RUN_FLAG" = "--dry-run" ]; then
+        timeout $TIMEOUT_SECONDS pip-compile "$REQUIREMENTS_FILE" --resolver=backtracking --verbose --dry-run
+    else
+        timeout $TIMEOUT_SECONDS pip-compile "$REQUIREMENTS_FILE" --resolver=backtracking --verbose
+    fi
+    
+    if [ $? -eq 0 ]; then
         echo -e "${GREEN}✅ pip-compile successful on attempt $attempt${NC}"
         return 0
     else
