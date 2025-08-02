@@ -102,7 +102,19 @@ class PipelineHealthMonitor:
 
             try:
                 r = redis.from_url("redis://localhost:6379/1")
+                conn.close()
+            except OperationalError:
+                postgres_ok = False
+            except psycopg2.DatabaseError:
+                postgres_ok = False
+            except Exception:
+                postgres_ok = False
+
+            try:
+                r = redis.from_url("redis://localhost:6379/1")
                 r.ping()
+            except ConnectionError:
+                redis_ok = False
             except Exception:
                 redis_ok = False
 
