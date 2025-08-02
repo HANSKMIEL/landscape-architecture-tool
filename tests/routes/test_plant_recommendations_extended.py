@@ -259,8 +259,11 @@ class TestPlantRecommendationImportRoute:
         """Test import with valid CSV data"""
         with app.app_context():
             # Create test CSV content
-            csv_content = """name,common_name,category,height_min,height_max,sun_requirements,native
-Test Import Plant,Test Common,Shrub,1.0,2.0,Full Sun,true"""
+            csv_content = (
+                "name,common_name,category,height_min,height_max,"
+                "sun_requirements,native\n"
+                "Test Import Plant,Test Common,Shrub,1.0,2.0,Full Sun,true"
+            )
 
             csv_file = io.BytesIO(csv_content.encode("utf-8"))
 
@@ -431,9 +434,11 @@ class TestPlantRecommendationErrorHandling:
     def test_feedback_database_error(self, client, app, db_setup):
         """Test feedback endpoint with database error"""
         with app.app_context():
-            with patch(
-                "src.routes.plant_recommendations.recommendation_engine.save_user_feedback"
-            ) as mock_save:
+            patch_path = (
+                "src.routes.plant_recommendations."
+                "recommendation_engine.save_user_feedback"
+            )
+            with patch(patch_path) as mock_save:
                 mock_save.side_effect = Exception("Database error")
 
                 response = client.post(
@@ -450,9 +455,11 @@ class TestPlantRecommendationIntegration:
     def test_recommendation_with_logging_failure(self, client, app, db_setup):
         """Test recommendations when logging fails but recommendations succeed"""
         with app.app_context():
-            with patch(
-                "src.routes.plant_recommendations.recommendation_engine.log_recommendation_request"
-            ) as mock_log:
+            patch_path = (
+                "src.routes.plant_recommendations."
+                "recommendation_engine.log_recommendation_request"
+            )
+            with patch(patch_path) as mock_log:
                 mock_log.side_effect = Exception("Logging error")
 
                 response = client.post(
