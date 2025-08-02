@@ -156,6 +156,7 @@ class PipelineHealthMonitor:
             return {"status": "error", "error": f"OS error: {e}"}
         except Exception as e:
             return {"status": "error", "error": str(e)}
+
     def _check_tests(self) -> Dict[str, Any]:
         """Check basic test functionality."""
         try:
