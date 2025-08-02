@@ -36,7 +36,7 @@ def run_command_check(command, description):
     except subprocess.TimeoutExpired:
         print(f"⚠️ {description} - timed out")
         return False
-    except Exception as e:
+    except subprocess.CalledProcessError as e:
         print(f"❌ {description} - error: {e}")
         return False
 
