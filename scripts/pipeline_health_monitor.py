@@ -128,6 +128,7 @@ class PipelineHealthMonitor:
             return {"status": status, "postgres": postgres_ok, "redis": redis_ok}
         except Exception as e:
             return {"status": "error", "error": str(e)}
+
     def _check_code_quality(self) -> Dict[str, Any]:
         """Check code quality tools."""
         try:
