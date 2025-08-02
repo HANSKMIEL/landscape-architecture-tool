@@ -97,13 +97,7 @@ class PipelineHealthMonitor:
                     "landscape_test"
                 )
                 conn.close()
-            except Exception:
-                postgres_ok = False
-
-            try:
-                r = redis.from_url("redis://localhost:6379/1")
-                conn.close()
-            except OperationalError:
+            except psycopg2.OperationalError:
                 postgres_ok = False
             except psycopg2.DatabaseError:
                 postgres_ok = False
@@ -113,9 +107,9 @@ class PipelineHealthMonitor:
             try:
                 r = redis.from_url("redis://localhost:6379/1")
                 r.ping()
-            except ConnectionError:
+            except redis.ConnectionError:
                 redis_ok = False
-            except RedisConnectionError:
+            except redis.RedisError:
                 redis_ok = False
 
             if postgres_ok and redis_ok:
@@ -161,7 +155,7 @@ class PipelineHealthMonitor:
         """Check basic test functionality."""
         try:
             result = subprocess.run(
-                ["python", "-m", "pytest", "tests/test_basic.py", "-q"],
+                ["python", "-m", "pytest", "tests/", "-q", "--maxfail=5"],
                 capture_output=True,
                 text=True,
                 timeout=300,
@@ -174,9 +168,10 @@ class PipelineHealthMonitor:
             }
         except subprocess.TimeoutExpired:
             return {"status": "error", "error": "Tests timed out"}
-        except Exception as e:
         except subprocess.CalledProcessError as e:
             return {"status": "error", "error": f"Subprocess error: {e}"}
+        except Exception as e:
+            return {"status": "error", "error": f"Unexpected error: {e}"}
 
 
 def main():
