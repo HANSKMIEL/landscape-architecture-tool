@@ -67,6 +67,11 @@ def main():
             validation_results.append(False)
     except Exception:
         print("⚠️ Pre-commit framework not accessible")
+    except FileNotFoundError:
+        print("❌ Pre-commit framework not found (is 'pre-commit' installed?)")
+        validation_results.append(False)
+    except subprocess.SubprocessError as e:
+        print(f"⚠️ Pre-commit framework error: {e}")
         validation_results.append(False)
 
     # 2. Developer guidelines validation
