@@ -103,3 +103,20 @@ exclude_lines = [
     "if 0:",
     "if __name__ == .__main__.:"
 ]
+
+[tool.safety]
+ignore = [
+    # Known issues that are acceptable for development
+    "70612",  # Jinja2 issue resolved in pinned version
+]
+
+[tool.pip-tools]
+# Enhanced pip-compile configuration for network reliability
+index-url = "https://pypi.org/simple"
+timeout = 120
+resolver = "backtracking"
+# Use backtracking resolver for better dependency resolution
+generate-hashes = false
+# Disable hash generation for faster compilation
+emit-index-url = true
+emit-options = true

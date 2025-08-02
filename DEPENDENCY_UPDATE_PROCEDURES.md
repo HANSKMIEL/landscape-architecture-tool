@@ -62,15 +62,38 @@ When dependency conflicts arise:
 
 ## pip-compile Workflow
 
+### Network Timeout Handling
+
+**Important**: If you encounter network timeout errors during pip-compile:
+
+```bash
+# Use enhanced script with retry logic (recommended)
+./scripts/compile_requirements.sh requirements.in
+./scripts/compile_requirements.sh requirements-dev.in
+
+# Manual retry with enhanced settings
+pip-compile requirements.in --timeout=120 --resolver=backtracking --verbose
+
+# For immediate development, existing files are stable
+pip install -r requirements-dev.txt  # Known working versions
+```
+
+**Common causes**: Large dependency trees (75+ packages), PyPI load, network instability.
+**Not a security issue**: These are network performance issues, not vulnerabilities.
+
 ### Standard Workflow
 ```bash
 # 1. Edit source files
 vim requirements.in          # Edit main dependencies 
 vim requirements-dev.in      # Edit development dependencies
 
-# 2. Generate lock files
-pip-compile requirements.in --upgrade
-pip-compile requirements-dev.in --upgrade
+# 2. Generate lock files with timeout handling
+./scripts/compile_requirements.sh requirements.in
+./scripts/compile_requirements.sh requirements-dev.in
+
+# Alternative: Manual pip-compile (if script unavailable)
+pip-compile requirements.in --timeout=120 --resolver=backtracking
+pip-compile requirements-dev.in --timeout=120 --resolver=backtracking
 
 # 3. Install and test
 pip install -r requirements-dev.txt
