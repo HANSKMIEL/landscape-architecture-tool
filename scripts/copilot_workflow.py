@@ -23,7 +23,7 @@ def run_command(command, description):
             print(f"❌ {description} failed:")
             print(result.stderr)
             return False
-    except Exception as e:
+    except (subprocess.SubprocessError, FileNotFoundError, OSError) as e:
         print(f"❌ {description} error: {e}")
         return False
 
