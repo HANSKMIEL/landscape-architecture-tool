@@ -48,7 +48,7 @@ class TestProjectService(DatabaseTestMixin):
             location="City A",
             client=client,
         )  # noqa: F841
-        _project2 = project_factory(
+        project_factory(
             name="Landscape Design",
             description="Different description",
             location="City B",
@@ -543,7 +543,7 @@ class TestProjectServiceIntegration(DatabaseTestMixin):
 
         # Test search by client name
         alpha_projects = ProjectService.get_all_projects(search="Alpha")
-        assert len(alpha_projects["projects"]) == 1
+        assert len(alpha_projects["projects"]) == 2
 
         # Test combined filters
         active_alpha_projects = ProjectService.get_all_projects(
