@@ -3,8 +3,8 @@
 Gunicorn configuration for production deployment
 """
 
-import os
 import multiprocessing
+import os
 
 # Server socket
 bind = f"0.0.0.0:{os.environ.get('PORT', '5000')}"
