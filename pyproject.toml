@@ -107,7 +107,10 @@ exclude_lines = [
 [tool.safety]
 ignore = [
     # Known issues that are acceptable for development
-    "70612",  # Jinja2 issue resolved in pinned version
+    # 70612: Jinja2 vulnerability. Acceptable because we are using a pinned version (>=3.1.2) that is not affected.
+    #         No user-supplied templates are rendered in this project, further reducing risk.
+    #         Review this ignore entry when Jinja2 releases a new major or minor version, or at least quarterly.
+    "70612",
 ]
 
 [tool.pip-tools]
