@@ -180,10 +180,11 @@ class TestPopulateSampleData:
                 mock_supplier.side_effect = capture_supplier
 
                 # Mock other model classes
-                with patch("src.utils.db_init.Plant"), patch(
-                    "src.utils.db_init.Product"
-                ), patch("src.utils.db_init.Client"), patch(
-                    "src.utils.db_init.Project"
+                with (
+                    patch("src.utils.db_init.Plant"),
+                    patch("src.utils.db_init.Product"),
+                    patch("src.utils.db_init.Client"),
+                    patch("src.utils.db_init.Project"),
                 ):
 
                     populate_sample_data()
@@ -228,9 +229,11 @@ class TestPopulateSampleData:
                     mock_plant.side_effect = capture_plant
 
                     # Mock other model classes
-                    with patch("src.utils.db_init.Product"), patch(
-                        "src.utils.db_init.Client"
-                    ), patch("src.utils.db_init.Project"):
+                    with (
+                        patch("src.utils.db_init.Product"),
+                        patch("src.utils.db_init.Client"),
+                        patch("src.utils.db_init.Project"),
+                    ):
 
                         populate_sample_data()
 
@@ -280,8 +283,9 @@ class TestPopulateSampleData:
                         mock_project.side_effect = capture_project
 
                         # Mock other model classes
-                        with patch("src.utils.db_init.Plant"), patch(
-                            "src.utils.db_init.Product"
+                        with (
+                            patch("src.utils.db_init.Plant"),
+                            patch("src.utils.db_init.Product"),
                         ):
 
                             populate_sample_data()

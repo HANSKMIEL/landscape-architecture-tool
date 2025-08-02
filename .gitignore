@@ -164,3 +164,15 @@ dist
 tmp/
 temp/
 
+# Copilot-generated temporary files
+*.copilot.md
+.copilot/
+*_copilot_*
+temp_*.py
+draft_*.py
+.vscode/copilot-*
+
+# Black and formatting artifacts
+.black_cache/
+.isort.cfg
+

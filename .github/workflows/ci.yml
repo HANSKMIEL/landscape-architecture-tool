@@ -11,6 +11,11 @@ on:
 env:
   PYTHON_VERSION: '3.11'
   NODE_VERSION: '20'
+  DATABASE_URL: postgresql://postgres:postgres_password@localhost:5432/landscape_test?connect_timeout=30&application_name=ci_test
+  REDIS_URL: redis://localhost:6379/1
+  SECRET_KEY: test-secret-key-not-for-production
+  FLASK_ENV: testing
+  PYTHONPATH: .
 
 jobs:
   test-backend:
@@ -18,28 +23,29 @@ jobs:
     
     services:
       postgres:
-        image: postgres:15-alpine  # Smaller image for faster startup
+        image: postgres:15-alpine
         env:
           POSTGRES_DB: landscape_test
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres_password
-          POSTGRES_INITDB_ARGS: "--auth-host=trust"  # Faster initialization for CI
+          POSTGRES_INITDB_ARGS: "--auth-host=trust"
         options: >-
-          --health-cmd "pg_isready -U postgres"
-          --health-interval 5s
-          --health-timeout 3s
-          --health-retries 5
-          --health-start-period 15s
+          --health-cmd "pg_isready -h localhost -p 5432 -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+          --health-start-period 30s
         ports:
           - 5432:5432
       
       redis:
-        image: redis:7-alpine  # Smaller image for faster startup
+        image: redis:7-alpine
         options: >-
           --health-cmd "redis-cli ping"
-          --health-interval 3s
-          --health-timeout 2s
-          --health-retries 3
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+          --health-start-period 15s
         ports:
           - 6379:6379
     
@@ -74,48 +80,101 @@ jobs:
         pip install -r requirements-dev.txt
         pip install psycopg2-binary
         
-    - name: Wait for services
+    - name: Wait for services with enhanced validation
       run: |
-        # Wait for PostgreSQL with enhanced timeout and connection testing
-        timeout 60 bash -c 'until pg_isready -h localhost -p 5432 -U postgres; do sleep 2; done'
+        echo "🔄 Waiting for database services to be ready..."
         
-        # Wait for Redis with enhanced timeout
-        timeout 60 bash -c 'until redis-cli -h localhost -p 6379 ping; do sleep 2; done'
+        # Enhanced PostgreSQL connection testing
+        timeout 120 bash -c 'until pg_isready -h localhost -p 5432 -U postgres; do 
+          echo "Waiting for PostgreSQL..."; 
+          sleep 3; 
+        done'
         
-        # Additional connection validation
+        # Enhanced Redis connection testing
+        timeout 120 bash -c 'until redis-cli -h localhost -p 6379 ping; do 
+          echo "Waiting for Redis..."; 
+          sleep 3; 
+        done'
+        
+        # Application-level connection validation
         python -c "
         import psycopg2
         import redis
         import time
+        import sys
         
-        # Test PostgreSQL connection
-        for i in range(10):
+        # Test PostgreSQL with retry logic
+        for attempt in range(15):
             try:
-                conn = psycopg2.connect('postgresql://postgres:postgres_password@localhost:5432/landscape_test')
+                conn = psycopg2.connect(
+                    'postgresql://postgres:postgres_password@localhost:5432/landscape_test'
+                )
                 conn.close()
                 print('✅ PostgreSQL connection successful')
                 break
             except Exception as e:
-                print(f'PostgreSQL attempt {i+1}: {e}')
-                time.sleep(2)
-        else:
-            raise Exception('Failed to connect to PostgreSQL')
-            
-        # Test Redis connection  
-        for i in range(10):
+                print(f'PostgreSQL attempt {attempt+1}/15: {e}')
+                if attempt < 14:
+                    time.sleep(5)
+                else:
+                    print('❌ PostgreSQL connection failed after 15 attempts')
+                    sys.exit(1)
+        
+        # Test Redis with retry logic  
+        for attempt in range(15):
             try:
                 r = redis.from_url('redis://localhost:6379/1')
                 r.ping()
                 print('✅ Redis connection successful')
                 break
             except Exception as e:
-                print(f'Redis attempt {i+1}: {e}')
-                time.sleep(2)
-        else:
-            raise Exception('Failed to connect to Redis')
+                print(f'Redis attempt {attempt+1}/15: {e}')
+                if attempt < 14:
+                    time.sleep(5)
+                else:
+                    print('❌ Redis connection failed after 15 attempts')
+                    sys.exit(1)
+        
+        print('🎉 All database services are ready and validated')
         "
         
-        echo "✅ All services are ready"
+    - name: Validate environment configuration
+      run: |
+        echo "🔍 Validating environment variable configuration..."
+        
+        # Check required variables are set
+        python -c "
+        import os
+        import sys
+        
+        required_vars = [
+            'DATABASE_URL',
+            'REDIS_URL', 
+            'SECRET_KEY',
+            'FLASK_ENV',
+            'PYTHONPATH'
+        ]
+        
+        missing_vars = []
+        for var in required_vars:
+            if not os.getenv(var):
+                missing_vars.append(var)
+        
+        if missing_vars:
+            print(f'❌ Missing required environment variables: {missing_vars}')
+            sys.exit(1)
+        else:
+            print('✅ All required environment variables are set')
+            
+        # Validate database URL format
+        db_url = os.getenv('DATABASE_URL')
+        if 'connect_timeout' not in db_url:
+            print('⚠️ DATABASE_URL missing connect_timeout parameter')
+        if 'application_name' not in db_url:
+            print('⚠️ DATABASE_URL missing application_name parameter')
+            
+        print('✅ Environment variable validation complete')
+        "
         
     - name: Run database migrations
       env:
@@ -288,28 +347,29 @@ jobs:
     
     services:
       postgres:
-        image: postgres:15-alpine  # Smaller image for faster startup
+        image: postgres:15-alpine
         env:
           POSTGRES_DB: landscape_integration_test
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres_password
-          POSTGRES_INITDB_ARGS: "--auth-host=trust"  # Faster initialization for CI
+          POSTGRES_INITDB_ARGS: "--auth-host=trust"
         options: >-
-          --health-cmd "pg_isready -U postgres"
-          --health-interval 5s
-          --health-timeout 3s
-          --health-retries 5
-          --health-start-period 15s
+          --health-cmd "pg_isready -h localhost -p 5432 -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+          --health-start-period 30s
         ports:
           - 5432:5432
           
       redis:
-        image: redis:7-alpine  # Smaller image for faster startup
+        image: redis:7-alpine
         options: >-
           --health-cmd "redis-cli ping"
-          --health-interval 3s
-          --health-timeout 2s
-          --health-retries 3
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+          --health-start-period 15s
         ports:
           - 6379:6379
     

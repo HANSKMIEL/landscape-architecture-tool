@@ -168,6 +168,7 @@ landscape-architecture-tool/
 ├── tests/                   # Backend tests
 ├── Dockerfile              # Multi-stage backend container
 ├── docker-compose.yml      # Multi-service orchestration
+├── pyproject.toml             # Python project configuration (Black, isort, flake8, pytest)
 ├── .env.example            # Environment configuration template
 ├── SETUP_INSTRUCTIONS.md   # Comprehensive setup guide
 ├── ONEDRIVE_GUIDE.md       # Cloud integration guide
@@ -281,6 +282,7 @@ The pipeline features improved error handling with detailed artifact collection:
 - **Linting Issues** - Complete lint reports with line-by-line feedback
 - **Security Vulnerabilities** - JSON reports with vulnerability details
 - **Build Failures** - Comprehensive build logs and dependency information
+- **Service Reliability** - Enhanced PostgreSQL and Redis health checks with 10-15 retry attempts
 
 ### Security Features
 
@@ -345,9 +347,10 @@ The pipeline automatically collects and stores:
 
 ### 🔧 Development Tools
 - **Automated Testing** - CI/CD with PostgreSQL and Redis services
-- **Code Quality** - Linting, formatting, and security scanning
+- **Code Quality** - Linting, formatting, and security scanning with `pyproject.toml` configuration
 - **Dependency Management** - Automated updates via Dependabot
 - **Health Monitoring** - Comprehensive health checks and logging
+- **Environment Stabilization** - Enhanced database service reliability and connection validation
 
 ### 🛠️ Environment Setup
 
@@ -429,7 +432,7 @@ pip install --upgrade -r requirements-dev.txt
 pip install safety && safety check
 cd frontend && npm audit
 
-# Check code quality
+# Check code quality (configured via pyproject.toml)
 flake8 src/ tests/
 black src/ tests/
 isort src/ tests/
@@ -440,12 +443,25 @@ python -m pytest tests/ -v
 cd frontend && npm run test
 ```
 
+### Project Configuration
+
+The project uses **`pyproject.toml`** for centralized Python tool configuration:
+
+- **Black**: Line length 88, excludes migrations and .copilot directories
+- **isort**: Black-compatible profile with trailing commas
+- **flake8**: Line length 88, complexity limit 25, specific ignore rules
+- **pytest**: Verbose output, strict markers, maxfail 5, coverage integration
+- **coverage**: Source tracking with appropriate exclusions
+
+This ensures consistent formatting and testing behavior across all environments.
+
 ### Development vs Production Dependencies
 
 This project separates production and development dependencies for optimal deployment:
 
 - **`requirements.txt`** - Contains only production dependencies needed to run the application
-- **`requirements-dev.txt`** - Contains all development dependencies including testing tools, linters, and debugging utilities
+- **`requirements-dev.txt`** - Contains all development dependencies including testing tools, linters, and debugging utilities (includes production dependencies via `-r requirements.txt`)
+- **`requirements-test.txt`** - **DEPRECATED** - Use `requirements-dev.txt` instead for all development needs
 
 **For Production Deployment:**
 ```bash
@@ -457,13 +473,13 @@ pip install -r requirements.txt
 pip install -r requirements-dev.txt  # Includes production dependencies via -r requirements.txt
 ```
 
-The development requirements include:
-- Testing frameworks (pytest, factory_boy, faker)
-- Code quality tools (flake8, black, isort, bandit)
-- Development utilities (python-dotenv, debugpy, ipython)
-- Coverage reporting (coverage, pytest-cov)
-- Documentation tools (sphinx)
-- Database testing support (psycopg2-binary for PostgreSQL testing)
+**Requirements File Structure:**
+- **Core Production**: Flask, SQLAlchemy, Pydantic, Redis, Gunicorn
+- **Development Tools**: pytest, black, isort, flake8, bandit, safety
+- **Testing Support**: factory_boy, faker, pytest-flask, pytest-cov
+- **Database Testing**: psycopg2-binary for PostgreSQL integration testing
+- **Development Utilities**: python-dotenv, debugpy, ipython
+- **Documentation**: sphinx, sphinx-rtd-theme
 
 ### Database Operations
 
@@ -525,10 +541,12 @@ npm run build
 
 ### Code Quality
 ```bash
+# All formatting tools are configured in pyproject.toml
+
 # Python linting
 flake8 src/
 
-# Python formatting
+# Python formatting  
 black src/
 
 # Import sorting
@@ -592,7 +610,15 @@ For support and questions:
 
 ## 🔄 Updates
 
-### Version 2.0 - Backend Refactoring (Latest)
+### Phase 1: Environment Stabilization (Latest - August 2025)
+- **Comprehensive pyproject.toml Configuration** - Centralized configuration for Black, isort, flake8, and pytest
+- **Enhanced CI/CD Pipeline** - Improved database service reliability with extended health checks and retry logic
+- **Black Formatting Standardization** - Applied consistent code formatting across 74 files
+- **Environment Variable Validation** - Added validation step to catch configuration issues early
+- **Database Connection Hardening** - 15-attempt retry logic with 5-second intervals for PostgreSQL and Redis
+- **Gitignore Cleanup** - Enhanced .gitignore to exclude Copilot temporary files and formatting artifacts
+
+### Version 2.0 - Backend Refactoring
 - Complete backend architecture refactoring
 - Modular structure with services, schemas, and utilities
 - Persistent SQLite database with SQLAlchemy ORM
