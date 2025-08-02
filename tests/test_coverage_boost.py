@@ -128,7 +128,8 @@ class TestCoverageBoost:
                     data="invalid json",
                     content_type="application/json",
                 )
-                # Accept either 400, 422, or 500 as all are error scenarios we want to cover
+                # Accept either 400, 422, or 500 as all are error scenarios 
+                # we want to cover
                 assert response.status_code in [400, 422, 500]
             except Exception:
                 pass
@@ -216,7 +217,7 @@ class TestCoverageBoost:
         with app.test_client() as client:
             # Trigger error handling through API calls
             try:
-                response = client.get("/api/nonexistent-endpoint")
+                client.get("/api/nonexistent-endpoint")
                 # Cover error handling paths
             except Exception:
                 pass

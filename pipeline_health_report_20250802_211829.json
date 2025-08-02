@@ -1,0 +1,27 @@
+{
+  "timestamp": "2025-08-02T21:18:29.795329",
+  "overall_status": "warning",
+  "checks": {
+    "git_status": {
+      "status": "warning",
+      "uncommitted_files": 1
+    },
+    "dependencies": {
+      "status": "healthy",
+      "conflicts": false
+    },
+    "database": {
+      "status": "error",
+      "error": "name 'OperationalError' is not defined"
+    },
+    "code_quality": {
+      "status": "healthy",
+      "black": true,
+      "isort": true
+    },
+    "tests": {
+      "status": "error",
+      "tests_passing": false
+    }
+  }
+}
