@@ -8,7 +8,6 @@ omit =
     */build/*
     */dist/*
     src/__pycache__/*
-    src/*/migrations/*
     src/sample_data.py
     src/utils/sample_data.py
 
