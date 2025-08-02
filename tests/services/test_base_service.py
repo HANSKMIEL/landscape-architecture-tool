@@ -239,11 +239,12 @@ class TestBaseService:
         with app.app_context():
             service = BaseService(Plant)
 
-            # Mock the query to raise an exception during iteration
+            # Mock the query to raise an exception during pagination
             with patch.object(Plant, "query") as mock_query:
-                mock_paginate = Mock()
-                mock_paginate.paginate.side_effect = Exception("Database error")
-                mock_query.return_value = mock_paginate
+                # Set up the mock chain properly
+                mock_order_by = Mock()
+                mock_order_by.paginate.side_effect = Exception("Database error")
+                mock_query.order_by.return_value = mock_order_by
 
                 with pytest.raises(Exception):
                     service.get_all()
