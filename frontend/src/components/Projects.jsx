@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { FolderOpen, Plus, Users, MapPin, Calendar, Loader2 } from 'lucide-react'
 import ProjectPlantManagement from './ProjectPlantManagement'
+import ApiService from '../services/api';
 
 const Projects = ({ language }) => {
   const [projects, setProjects] = useState([]);
@@ -52,14 +53,11 @@ const Projects = ({ language }) => {
       setLoading(true);
       setError(null);
       
-      const response = await fetch('http://127.0.0.1:5000/api/projects');
-      if (!response.ok) {
-        throw new Error(`API error: ${response.status}`);
-      }
-      
-      const data = await response.json();
-      setProjects(data);
+      const data = await ApiService.getProjects();
+      // API returns { projects: [...] } format
+      setProjects(data.projects || []);
     } catch (err) {
+      console.error('Error fetching projects:', err);
       setError(err.message);
     } finally {
       setLoading(false);
@@ -174,7 +172,7 @@ const Projects = ({ language }) => {
             <LoadingSpinner />
           </CardContent>
         </Card>
-      ) : projects.length === 0 ? (
+      ) : !Array.isArray(projects) || projects.length === 0 ? (
         <Card>
           <CardContent className="p-12">
             <div className="text-center">
@@ -190,7 +188,7 @@ const Projects = ({ language }) => {
         </Card>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {projects.map((project) => (
+          {Array.isArray(projects) ? projects.map((project) => (
             <Card key={project.id} className="hover:shadow-lg transition-shadow">
               <CardHeader>
                 <div className="flex items-start justify-between">
@@ -241,7 +239,11 @@ const Projects = ({ language }) => {
                 </Button>
               </CardContent>
             </Card>
-          ))}
+          )) : (
+            <div className="col-span-full text-center py-8 text-gray-500">
+              No projects data available
+            </div>
+          )}
         </div>
       )}
     </div>
