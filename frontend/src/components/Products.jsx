@@ -128,7 +128,11 @@ const Products = ({ language }) => {
       });
       alert(t.success);
     } catch (err) {
-      console.error('Error adding product:', err);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error adding product:', err);
+      } else {
+        console.error('Error adding product:', err.message);
+      }
       alert(t.error + ': ' + err.message);
     }
   };
