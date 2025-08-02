@@ -113,7 +113,6 @@ ignore = [
 [tool.pip-tools]
 # Enhanced pip-compile configuration for network reliability
 index-url = "https://pypi.org/simple"
-timeout = 120
 resolver = "backtracking"
 # Use backtracking resolver for better dependency resolution
 generate-hashes = false

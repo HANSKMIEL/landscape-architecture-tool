@@ -44,7 +44,7 @@ compile_with_timeout() {
     echo -e "${BLUE}🔄 Attempt $attempt/$MAX_ATTEMPTS (timeout: ${TIMEOUT_SECONDS}s)${NC}"
     
     # Build pip-compile command
-    local cmd="pip-compile $REQUIREMENTS_FILE --timeout=120 --resolver=backtracking --verbose"
+    local cmd="pip-compile $REQUIREMENTS_FILE --resolver=backtracking --verbose"
     if [ "$DRY_RUN_FLAG" = "--dry-run" ]; then
         cmd="$cmd --dry-run"
     fi
