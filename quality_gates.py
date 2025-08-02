@@ -118,7 +118,9 @@ def check_code_quality():
                     for line in shown_lines:
                         print(f"     {line}")
                     if len(lines) > max_lines:
-                        print(f"     ... ({len(lines) - max_lines} more lines truncated)")
+                        print(
+                            f"     ... ({len(lines) - max_lines} more lines truncated)"
+                        )
                 all_passed = False
         except subprocess.TimeoutExpired:
             print(f"⚠️ {check_name} timed out")
