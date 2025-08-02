@@ -51,7 +51,7 @@ const Plants = () => {
       // API returns { plants: [...], total: X, ... } format
       setPlants(data.plants || []);
     } catch (err) {
-      console.error('Error fetching plants:', err);
+      console.error('Error fetching plants:', err.message);
       setError(err.message);
     } finally {
       setLoading(false);
