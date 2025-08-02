@@ -66,7 +66,7 @@ class PipelineHealthMonitor:
                 "status": "healthy" if len(uncommitted) == 0 else "warning",
                 "uncommitted_files": len(uncommitted),
             }
-        except Exception as e:
+        except OSError as e:
             return {"status": "error", "error": str(e)}
 
     def _check_dependencies(self) -> Dict[str, Any]:
