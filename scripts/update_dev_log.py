@@ -4,9 +4,9 @@ Development Log Update Script
 Updates the dev_log.md file with development activities and changes.
 """
 
+import argparse
 import os
 import sys
-import argparse
 from datetime import datetime
 from pathlib import Path
 
