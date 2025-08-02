@@ -118,9 +118,10 @@ class TestProjectService:
         """Test successful project update"""
         update_data = {"status": "completed", "budget": 6000.00}
 
-        with patch("src.models.landscape.Project.query") as mock_query, patch(
-            "src.models.user.db.session"
-        ) as mock_session:
+        with (
+            patch("src.models.landscape.Project.query") as mock_query,
+            patch("src.models.user.db.session") as mock_session,
+        ):
 
             mock_query.get.return_value = mock_project
             mock_project.to_dict.return_value = {
@@ -147,9 +148,10 @@ class TestProjectService:
 
     def test_delete_project_success(self, app_context, project_service, mock_project):
         """Test successful project deletion"""
-        with patch("src.models.landscape.Project.query") as mock_query, patch(
-            "src.models.user.db.session"
-        ) as mock_session:
+        with (
+            patch("src.models.landscape.Project.query") as mock_query,
+            patch("src.models.user.db.session") as mock_session,
+        ):
 
             mock_query.get.return_value = mock_project
 
@@ -346,9 +348,10 @@ class TestProjectService:
         """Test project status update scenarios"""
         valid_statuses = ["Planning", "In uitvoering", "Afgerond", "On Hold"]
 
-        with patch("src.models.landscape.Project.query") as mock_query, patch(
-            "src.models.user.db.session"
-        ) as _:
+        with (
+            patch("src.models.landscape.Project.query") as mock_query,
+            patch("src.models.user.db.session") as _,
+        ):
 
             mock_query.get.return_value = mock_project
 
@@ -361,9 +364,10 @@ class TestProjectService:
         """Test budget-related operations"""
         budget_scenarios = [0.0, 1000.50, 50000.00, 100000.00]
 
-        with patch("src.models.landscape.Project.query") as mock_query, patch(
-            "src.models.user.db.session"
-        ) as _:
+        with (
+            patch("src.models.landscape.Project.query") as mock_query,
+            patch("src.models.user.db.session") as _,
+        ):
 
             mock_query.get.return_value = mock_project
 

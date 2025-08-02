@@ -106,9 +106,10 @@ class TestPlantService:
         """Test successful plant update"""
         update_data = {"name": "Updated Rose Name", "price": 30.99}
 
-        with patch("src.models.landscape.Plant.query") as mock_query, patch(
-            "src.models.user.db.session"
-        ) as mock_session:
+        with (
+            patch("src.models.landscape.Plant.query") as mock_query,
+            patch("src.models.user.db.session") as mock_session,
+        ):
 
             mock_query.get.return_value = mock_plant
             mock_plant.to_dict.return_value = {
@@ -135,9 +136,10 @@ class TestPlantService:
 
     def test_delete_plant_success(self, app_context, plant_service, mock_plant):
         """Test successful plant deletion"""
-        with patch("src.models.landscape.Plant.query") as mock_query, patch(
-            "src.models.user.db.session"
-        ) as mock_session:
+        with (
+            patch("src.models.landscape.Plant.query") as mock_query,
+            patch("src.models.user.db.session") as mock_session,
+        ):
 
             mock_query.get.return_value = mock_plant
 
