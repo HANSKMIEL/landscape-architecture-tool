@@ -2,28 +2,34 @@
 
 ### Required Before Each Commit
 - Check if the Requirement text files are correct (there are multiple files)
-- Check coding is in the right format and the right syntax is used
+- Check coding is in the right format and the right syntax is used using pyproject.toml configuration
 - If there is an issue that arises in the test then resolve
 - Test and debug
 - fix errors without loss of advancements or goals with regard to the software
 - Make sure the CI will pass
+- Update documentation files (.github/copilot-instructions.md, README.md, CI workflow files) to reflect any changes
 - Update instructions and make adjustments where necessary to allow codespace to run without error. This must not influence or change the other aspects of the software.
 
 ### Code Quality Standards
 
 #### Python Code Formatting
+- **pyproject.toml Configuration**: All formatting tools are configured in `pyproject.toml` for consistency
 - Use black with line length 88: `black --line-length 88 src/ tests/`
 - Use isort with black profile: `isort src/ tests/ --profile black`
 - Follow flake8 rules: `flake8 src/ tests/ --max-line-length=88 --extend-ignore=E203,W503,F401,F403,E402,C901,W291 --max-complexity=25`
 - Pass bandit security scan: `bandit -r src/ -f json -o bandit-report.json`
 - Check Python security: `safety check --json`
+- **Automated Configuration**: All tool settings are centralized in `pyproject.toml` to ensure consistent formatting across development environments
 
-#### CI/CD Pipeline Requirements
+#### CI/CD Pipeline Requirements  
 - All code quality checks must pass before merge
 - Backend and frontend tests must pass independently
 - Database migrations must be tested
 - Docker build must succeed
 - Integration tests must pass after unit tests
+- **Enhanced Service Reliability**: PostgreSQL and Redis services have enhanced health checks with 10-15 retry attempts and extended timeout periods
+- **Environment Variable Validation**: All required environment variables are validated before tests run
+- **Connection Validation**: Database connections are tested with 15-attempt retry logic and 5-second intervals
 
 ### Development Flow
 - Build: `make build`
@@ -151,3 +157,11 @@ landscape-architecture-tool/
 6. Document public APIs and complex logic. Suggest changes to the `docs/` folder when appropriate
 7. Suggest changes to the repository structure when appropriate with focus on clean and logical development and user environment.
 8. When faced with a complex problem, choose the option that will advance software towards goals.
+
+## Standard Documentation Update Workflow
+As a standard practice for each commit:
+1. **Review Configuration Files**: Check if `pyproject.toml`, `requirements.txt`, `requirements-dev.txt` need updates
+2. **Update Documentation**: Ensure `.github/copilot-instructions.md`, `README.md`, and workflow files reflect changes
+3. **Validate Requirements**: Ensure all requirement files are consistent and properly documented
+4. **CI/CD Alignment**: Verify workflow files match current configurations and capabilities
+5. **Environment Consistency**: Ensure `.env.example` includes all required variables mentioned in documentation
