@@ -338,7 +338,10 @@ jobs:
         # Install linting tools with up to 3 attempts, each with a 300-second timeout
         for i in {1..3}; do
           echo "🔄 Linting tools installation attempt $i/3..."
-          if timeout 300 pip install --timeout=120 black==24.3.0 flake8==7.0.0 isort==5.13.2 bandit==1.7.5 safety==3.0.1; then
+        LINT_PACKAGES="black==24.3.0 flake8==7.0.0 isort==5.13.2 bandit==1.7.5 safety==3.0.1"
+        for i in {1..3}; do
+          echo "🔄 Linting tools installation attempt $i/3..."
+          if timeout 300 pip install --timeout=120 $LINT_PACKAGES; then
             echo "✅ Linting tools installed successfully on attempt $i"
             break
           else
