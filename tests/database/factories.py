@@ -57,10 +57,6 @@ def create_test_plant(
 
     if category is None:
         # If plant_type is provided, use it for category; otherwise use random
-        category = (
-            plant_type
-            if plant_type is not None
-            else random.choice(["tree", "shrub", "perennial", "annual"])
         category = plant_type or random.choice(["tree", "shrub", "perennial", "annual"])
 
     if sun_requirements is None:

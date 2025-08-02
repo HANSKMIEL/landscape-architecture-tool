@@ -383,7 +383,7 @@ class TestReportsPDFGeneration(DatabaseTestMixin):
         assert response.status_code == 200, (
             f"Expected 200, got {response.status_code}: "
             f"{response.get_data(as_text=True)}"
-        assert response.status_code == 200
+        )
 
         # Should attempt to create PDF
         mock_doc.assert_called()
