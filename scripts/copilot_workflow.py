@@ -74,7 +74,7 @@ def cleanup_copilot_files():
                 file_path.unlink()
                 files_removed += 1
                 print(f"🗑️ Removed: {file_path}")
-            except Exception as e:
+            except OSError as e:
                 print(f"⚠️ Could not remove {file_path}: {e}")
 
     if files_removed > 0:
