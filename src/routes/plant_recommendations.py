@@ -267,8 +267,17 @@ def get_recommendation_history():
     try:
         user_id = request.args.get("user_id")
         session_id = request.args.get("session_id", session.get("session_id"))
-        limit = min(int(request.args.get("limit", 50)), 100)  # Max 100 records
-        offset = int(request.args.get("offset", 0))
+
+        # Handle invalid parameters gracefully
+        try:
+            limit = min(int(request.args.get("limit", 50)), 100)  # Max 100 records
+        except (ValueError, TypeError):
+            return jsonify({"error": "Invalid limit parameter"}), 400
+
+        try:
+            offset = int(request.args.get("offset", 0))
+        except (ValueError, TypeError):
+            return jsonify({"error": "Invalid offset parameter"}), 400
 
         query = PlantRecommendationRequest.query
 

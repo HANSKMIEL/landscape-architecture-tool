@@ -1,13 +1,15 @@
 [run]
 source = src
 omit = 
-    src/migrations/*
-    src/static/*
-    src/utils/sample_data.py
-    tests/*
+    */tests/*
+    */migrations/*
     */venv/*
     */env/*
-    */__pycache__/*
+    */build/*
+    */dist/*
+    src/__pycache__/*
+    src/sample_data.py
+    src/utils/sample_data.py
 
 [report]
 exclude_lines =
@@ -22,5 +24,11 @@ exclude_lines =
     class .*\bProtocol\):
     @(abc\.)?abstractmethod
 
+show_missing = True
+precision = 2
+
 [html]
 directory = htmlcov
+
+[xml]
+output = coverage.xml
