@@ -4,20 +4,20 @@
 repos:
   # Python code formatting and quality
   - repo: https://github.com/psf/black
-    rev: 24.3.0
+    rev: 25.1.0
     hooks:
       - id: black
         language_version: python3
         args: [--line-length=88]
         
   - repo: https://github.com/pycqa/isort
-    rev: 5.13.2
+    rev: 6.0.1
     hooks:
       - id: isort
         args: [--profile=black, --line-length=88]
         
   - repo: https://github.com/pycqa/flake8
-    rev: 7.0.0
+    rev: 7.3.0
     hooks:
       - id: flake8
         args: [
@@ -28,7 +28,7 @@ repos:
 
   # Security and safety checks
   - repo: https://github.com/pycqa/bandit
-    rev: 1.7.5
+    rev: 1.8.6
     hooks:
       - id: bandit
         args: [-r, src/, -f, json, -o, bandit-report.json]

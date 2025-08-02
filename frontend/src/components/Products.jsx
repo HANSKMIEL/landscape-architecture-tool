@@ -128,6 +128,7 @@ const Products = ({ language }) => {
       });
       alert(t.success);
     } catch (err) {
+      // eslint-disable-next-line no-undef
       if (process.env.NODE_ENV === 'development') {
         console.error('Error adding product:', err);
       } else {
