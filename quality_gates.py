@@ -94,7 +94,15 @@ def check_code_quality():
             else:
                 print(f"⚠️ {check_name} issues detected")
                 if result.stdout:
-                    print(f"   Output: {result.stdout[:200]}...")
+                    # Show up to 10 lines, preserving complete lines
+                    lines = result.stdout.splitlines()
+                    max_lines = 10
+                    shown_lines = lines[:max_lines]
+                    print("   Output:")
+                    for line in shown_lines:
+                        print(f"     {line}")
+                    if len(lines) > max_lines:
+                        print(f"     ... ({len(lines) - max_lines} more lines truncated)")
                 all_passed = False
         except subprocess.TimeoutExpired:
             print(f"⚠️ {check_name} timed out")
