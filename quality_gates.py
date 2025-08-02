@@ -15,7 +15,23 @@ import xml.etree.ElementTree as ET
 def check_coverage_threshold(
     coverage_file="coverage.xml", min_line_coverage=50.0, min_branch_coverage=30.0
 ):
-    """Check if coverage meets minimum thresholds."""
+    """
+    Check if coverage meets minimum thresholds.
+
+    Args:
+        coverage_file (str): Path to the coverage XML file. The file should be in Cobertura format,
+            with the root element containing 'line-rate' and 'branch-rate' attributes representing
+            the overall line and branch coverage as decimal fractions (e.g., 0.85 for 85%).
+        min_line_coverage (float): Minimum required line coverage percentage (0-100).
+        min_branch_coverage (float): Minimum required branch coverage percentage (0-100).
+
+    Returns:
+        bool: True if both line and branch coverage meet or exceed the thresholds, False otherwise.
+
+    If the coverage file is missing, malformed, or the thresholds are not met, the function prints
+    warnings and returns False. Threshold failures do not raise exceptions but are reported via
+    console output.
+    """
     print("🔍 Checking coverage thresholds...")
 
     if not os.path.exists(coverage_file):
