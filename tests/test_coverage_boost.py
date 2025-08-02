@@ -128,7 +128,7 @@ class TestCoverageBoost:
                     data="invalid json",
                     content_type="application/json",
                 )
-                # Accept either 400, 422, or 500 as all are error scenarios 
+                # Accept either 400, 422, or 500 as all are error scenarios
                 # we want to cover
                 assert response.status_code in [400, 422, 500]
             except Exception:
