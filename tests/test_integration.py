@@ -1,109 +1,104 @@
 #!/usr/bin/env python3
 """
 Integration tests for the Landscape Architecture Management System
-These tests simulate the CI integration test scenarios locally
+These tests simulate the CI integration test scenarios using Flask test client
 """
 
 import os
-import signal
-import subprocess
 import sys
-import time
-from unittest import TestCase
 
-import requests
+import pytest
 
+# Add project root to Python path
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-class IntegrationTestCase(TestCase):
-    """Base class for integration tests that start the actual Flask application"""
-
-    @classmethod
-    def setUpClass(cls):
-        """Start the Flask application for integration testing"""
-        # Set testing environment
-        os.environ["FLASK_ENV"] = "testing"
-        os.environ["PYTHONPATH"] = "."
-
-        # Start the Flask application
-        cls.flask_process = subprocess.Popen(
-            [sys.executable, "src/main.py"],
-            cwd=os.getcwd(),
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-        )
-
-        # Wait for the server to start
-        cls._wait_for_server()
-
-    @classmethod
-    def tearDownClass(cls):
-        """Stop the Flask application"""
-        if hasattr(cls, "flask_process") and cls.flask_process:
-            cls.flask_process.terminate()
-            try:
-                cls.flask_process.wait(timeout=5)
-            except subprocess.TimeoutExpired:
-                cls.flask_process.kill()
-                cls.flask_process.wait()
-
-    @classmethod
-    def _wait_for_server(cls, timeout=30):
-        """Wait for the Flask server to be ready"""
-        start_time = time.time()
-        while time.time() - start_time < timeout:
-            try:
-                response = requests.get("http://localhost:5000/health", timeout=2)
-                if response.status_code == 200:
-                    return
-            except requests.exceptions.RequestException:
-                pass
-            time.sleep(1)
-
-        raise RuntimeError("Flask server did not start within timeout period")
+from src.main import create_app  # noqa: E402
+from src.models.user import db  # noqa: E402
 
 
-class TestIntegrationEndpoints(IntegrationTestCase):
+@pytest.fixture(scope="class")
+def integration_app():
+    """Create and configure a test app that simulates the CI environment"""
+    # Set testing environment
+    os.environ["FLASK_ENV"] = "testing"
+
+    app = create_app()
+    app.config.update(
+        {
+            "TESTING": True,
+            "SQLALCHEMY_DATABASE_URI": "sqlite:///:memory:",
+            "SESSION_COOKIE_SECURE": False,
+            "RATELIMIT_ENABLED": False,
+            "WTF_CSRF_ENABLED": False,
+            "SECRET_KEY": "test-secret-key",
+        }
+    )
+
+    with app.app_context():
+        db.create_all()
+        
+        # Initialize sample data to match CI expectations
+        from src.utils.sample_data import populate_sample_data
+        try:
+            populate_sample_data()
+        except Exception:
+            pass  # Sample data may already exist
+            
+        yield app
+        
+        # Clean up
+        db.drop_all()
+
+
+@pytest.fixture(scope="class")  
+def integration_client(integration_app):
+    """Create a test client for integration testing"""
+    return integration_app.test_client()
+
+
+@pytest.mark.integration
+class TestIntegrationEndpoints:
     """Test the main integration test scenarios from the CI workflow"""
 
-    def test_health_endpoint(self):
+    def test_health_endpoint(self, integration_client):
         """Test the health endpoint returns expected response"""
-        response = requests.get("http://localhost:5000/health")
+        response = integration_client.get("/health")
 
-        self.assertEqual(response.status_code, 200)
-        data = response.json()
+        assert response.status_code == 200
+        data = response.get_json()
 
-        self.assertEqual(data["status"], "healthy")
-        self.assertEqual(data["environment"], "testing")
-        self.assertEqual(data["version"], "2.0.0")
-        self.assertEqual(data["database_status"], "connected")
-        self.assertIn("timestamp", data)
+        assert data["status"] == "healthy"
+        assert data["environment"] == "testing"
+        assert data["version"] == "2.0.0"
+        assert data["database_status"] == "connected"
+        assert "timestamp" in data
 
-    def test_dashboard_stats_endpoint(self):
+    def test_dashboard_stats_endpoint(self, integration_client):
         """Test the dashboard stats endpoint"""
-        response = requests.get("http://localhost:5000/api/dashboard/stats")
+        response = integration_client.get("/api/dashboard/stats")
 
-        self.assertEqual(response.status_code, 200)
-        data = response.json()
+        assert response.status_code == 200
+        data = response.get_json()
 
         # Verify the expected structure
-        self.assertIn("totals", data)
-        self.assertIn("projects_by_status", data)
-        self.assertIn("recent_activity", data)
-        self.assertIn("financial", data)
+        assert "totals" in data
+        assert "projects_by_status" in data
+        assert "recent_activity" in data
+        assert "financial" in data
 
         # Verify sample data is loaded
         totals = data["totals"]
-        self.assertEqual(totals["suppliers"], 3)
-        self.assertEqual(totals["plants"], 3)
-        self.assertEqual(totals["projects"], 3)
-        self.assertEqual(totals["clients"], 3)
+        assert totals["suppliers"] == 3
+        assert totals["plants"] == 3
+        assert totals["projects"] == 3
+        assert totals["clients"] == 3
 
-    def test_supplier_crud_operations(self):
+    def test_supplier_crud_operations(self, integration_client):
         """Test supplier CRUD operations as done in CI"""
         # Test listing suppliers first
-        response = requests.get("http://localhost:5000/api/suppliers")
-        self.assertEqual(response.status_code, 200)
-        initial_data = response.json()
+        response = integration_client.get("/api/suppliers")
+        assert response.status_code == 200
+        initial_data = response.get_json()
         initial_count = initial_data["total"]
 
         # Test creating a supplier with the same data as CI
@@ -115,54 +110,45 @@ class TestIntegrationEndpoints(IntegrationTestCase):
             "address": "123 Test St",
         }
 
-        response = requests.post(
-            "http://localhost:5000/api/suppliers",
+        response = integration_client.post(
+            "/api/suppliers",
             json=supplier_data,
             headers={"Content-Type": "application/json"},
         )
 
-        self.assertEqual(response.status_code, 201)
-        created_supplier = response.json()
+        assert response.status_code == 201
+        created_supplier = response.get_json()
 
         # Verify the created supplier data
-        self.assertEqual(created_supplier["name"], supplier_data["name"])
-        self.assertEqual(
-            created_supplier["contact_person"], supplier_data["contact_person"]
-        )
-        self.assertEqual(created_supplier["email"], supplier_data["email"])
-        self.assertEqual(created_supplier["phone"], supplier_data["phone"])
-        self.assertEqual(created_supplier["address"], supplier_data["address"])
-        self.assertIsNotNone(created_supplier["id"])
-        self.assertIsNotNone(created_supplier["created_at"])
+        assert created_supplier["name"] == supplier_data["name"]
+        assert created_supplier["contact_person"] == supplier_data["contact_person"]
+        assert created_supplier["email"] == supplier_data["email"]
+        assert created_supplier["phone"] == supplier_data["phone"]
+        assert created_supplier["address"] == supplier_data["address"]
+        assert created_supplier["id"] is not None
+        assert created_supplier["created_at"] is not None
 
         # Test listing suppliers again to verify the new supplier is included
-        response = requests.get("http://localhost:5000/api/suppliers")
-        self.assertEqual(response.status_code, 200)
-        updated_data = response.json()
+        response = integration_client.get("/api/suppliers")
+        assert response.status_code == 200
+        updated_data = response.get_json()
 
         # Should have one more supplier
-        self.assertEqual(updated_data["total"], initial_count + 1)
+        assert updated_data["total"] == initial_count + 1
 
         # Verify the new supplier is in the list
         supplier_names = [s["name"] for s in updated_data["suppliers"]]
-        self.assertIn("Test Supplier", supplier_names)
+        assert "Test Supplier" in supplier_names
 
-    def test_api_documentation_endpoint(self):
+    def test_api_documentation_endpoint(self, integration_client):
         """Test the API documentation endpoint"""
-        response = requests.get("http://localhost:5000/api/")
+        response = integration_client.get("/api/")
 
-        self.assertEqual(response.status_code, 200)
-        data = response.json()
+        assert response.status_code == 200
+        data = response.get_json()
 
-        self.assertEqual(data["name"], "Landscape Architecture Management API")
-        self.assertEqual(data["version"], "2.0.0")
-        self.assertEqual(data["status"], "operational")
-        self.assertEqual(data["database"], "persistent")
-        self.assertIn("endpoints", data)
-
-
-if __name__ == "__main__":
-    import unittest
-
-    # Run the integration tests
-    unittest.main(verbosity=2)
+        assert data["name"] == "Landscape Architecture Management API"
+        assert data["version"] == "2.0.0"
+        assert data["status"] == "operational"
+        assert data["database"] == "persistent"
+        assert "endpoints" in data
