@@ -6,6 +6,7 @@ These tests simulate the CI integration test scenarios using Flask test client
 
 import os
 import sys
+import warnings
 
 import pytest
 
@@ -88,7 +89,7 @@ class TestIntegrationEndpoints:
         assert "recent_activity" in data
         assert "financial" in data
 
-        # Verify sample data structure - the exact counts may vary depending on test execution order
+        # Verify sample data structure - counts may vary by test execution order
         totals = data["totals"]
         assert isinstance(totals["suppliers"], int)
         assert isinstance(totals["plants"], int)

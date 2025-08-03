@@ -1,17 +1,17 @@
 {
   "errors": [],
-  "generated_at": "2025-08-02T22:06:38Z",
+  "generated_at": "2025-08-03T20:01:41Z",
   "metrics": {
     "_totals": {
       "CONFIDENCE.HIGH": 146,
       "CONFIDENCE.LOW": 0,
-      "CONFIDENCE.MEDIUM": 2,
+      "CONFIDENCE.MEDIUM": 3,
       "CONFIDENCE.UNDEFINED": 0,
       "SEVERITY.HIGH": 0,
       "SEVERITY.LOW": 146,
-      "SEVERITY.MEDIUM": 2,
+      "SEVERITY.MEDIUM": 3,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 10477,
+      "loc": 10499,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -44,13 +44,13 @@
     "src/main.py": {
       "CONFIDENCE.HIGH": 0,
       "CONFIDENCE.LOW": 0,
-      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.MEDIUM": 1,
       "CONFIDENCE.UNDEFINED": 0,
       "SEVERITY.HIGH": 0,
       "SEVERITY.LOW": 0,
-      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.MEDIUM": 1,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 961,
+      "loc": 983,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -589,6 +589,26 @@
     }
   },
   "results": [
+    {
+      "code": "1230         # 127.0.0.1 for development\n1231         host = \"0.0.0.0\" if flask_env == \"testing\" else \"127.0.0.1\"\n1232 \n",
+      "col_offset": 15,
+      "end_col_offset": 24,
+      "filename": "src/main.py",
+      "issue_confidence": "MEDIUM",
+      "issue_cwe": {
+        "id": 605,
+        "link": "https://cwe.mitre.org/data/definitions/605.html"
+      },
+      "issue_severity": "MEDIUM",
+      "issue_text": "Possible binding to all interfaces.",
+      "line_number": 1231,
+      "line_range": [
+        1231
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.8.6/plugins/b104_hardcoded_bind_all_interfaces.html",
+      "test_id": "B104",
+      "test_name": "hardcoded_bind_all_interfaces"
+    },
     {
       "code": "47                 return cached_result\n48         except Exception:\n49             # Cache error, proceed to generate fresh data\n50             pass\n51 \n",
       "col_offset": 8,
