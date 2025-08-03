@@ -77,13 +77,21 @@ def _cleanup_database():
         from src.models.user import User
 
         # Delete in order to respect foreign key constraints
-        for model in [ProjectPlant, Project, PlantRecommendationRequest,
-                     Plant, Product, Client, Supplier, User]:
+        for model in [
+            ProjectPlant,
+            Project,
+            PlantRecommendationRequest,
+            Plant,
+            Product,
+            Client,
+            Supplier,
+            User,
+        ]:
             try:
                 db.session.query(model).delete()
             except Exception:
                 pass
-        
+
         db.session.commit()
     except Exception:
         try:

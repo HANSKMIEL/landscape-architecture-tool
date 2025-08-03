@@ -36,21 +36,22 @@ def integration_app():
 
     with app.app_context():
         db.create_all()
-        
+
         # Initialize sample data to match CI expectations
         from src.utils.sample_data import populate_sample_data
+
         try:
             populate_sample_data()
         except Exception:
             pass  # Sample data may already exist
-            
+
         yield app
-        
+
         # Clean up
         db.drop_all()
 
 
-@pytest.fixture(scope="class")  
+@pytest.fixture(scope="class")
 def integration_client(integration_app):
     """Create a test client for integration testing"""
     return integration_app.test_client()
