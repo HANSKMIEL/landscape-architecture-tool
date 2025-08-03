@@ -120,6 +120,7 @@ const Clients = ({ language }) => {
       // API returns { clients: [...] } format
       setClients(data.clients || []);
     } catch (err) {
+      // eslint-disable-next-line no-undef
       if (process.env.NODE_ENV === 'development') {
         console.error('Error loading clients:', err);
       } else {
