@@ -57,8 +57,9 @@ def app_context(app):
 def _cleanup_database():
     """Helper function to clean up database consistently"""
     try:
-        # First, try to rollback any pending transactions
-        db.session.rollback()
+        # Close any active transactions first
+        if db.session.is_active:
+            db.session.rollback()
     except Exception:
         pass
 
@@ -76,30 +77,41 @@ def _cleanup_database():
         from src.models.user import User
 
         # Delete in order to respect foreign key constraints
-        db.session.query(ProjectPlant).delete()
-        db.session.query(Project).delete()
-        db.session.query(PlantRecommendationRequest).delete()
-        db.session.query(Plant).delete()
-        db.session.query(Product).delete()
-        db.session.query(Client).delete()
-        db.session.query(Supplier).delete()
-        db.session.query(User).delete()
+        for model in [
+            ProjectPlant,
+            Project,
+            PlantRecommendationRequest,
+            Plant,
+            Product,
+            Client,
+            Supplier,
+            User,
+        ]:
+            try:
+                db.session.query(model).delete()
+            except Exception:
+                pass
+
         db.session.commit()
     except Exception:
-        db.session.rollback()
+        try:
+            db.session.rollback()
+        except Exception:
+            pass
 
     try:
-        # Close and remove the session
+        # Close the session
         db.session.close()
+    except Exception:
+        pass
+
+    try:
+        # Remove scoped session
         db.session.remove()
     except Exception:
         pass
 
-    try:
-        # Dispose of engine connections
-        db.engine.dispose()
-    except SQLAlchemyError:
-        pass
+    # Don't dispose engine for SQLite in-memory databases as it can cause issues
 
 
 @pytest.fixture

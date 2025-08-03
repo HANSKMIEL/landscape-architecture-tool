@@ -72,7 +72,9 @@ class TestingConfig(Config):
 
     TESTING = True
     DEBUG = True
-    SQLALCHEMY_DATABASE_URI = "sqlite:///:memory:"
+    # Use DATABASE_URL if provided (for CI integration tests),
+    # otherwise use in-memory SQLite
+    SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URL") or "sqlite:///:memory:"
     SESSION_COOKIE_SECURE = False
 
 
