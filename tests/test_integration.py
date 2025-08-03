@@ -43,7 +43,7 @@ def integration_app():
         try:
             populate_sample_data()
         except Exception as e:
-            print(f"Warning: Could not populate sample data: {e}")
+            warnings.warn(f"Could not populate sample data: {e}", RuntimeWarning)
             # Continue anyway - test might work without sample data
 
         yield app
