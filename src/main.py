@@ -1221,34 +1221,54 @@ def create_app():
 # Create the application only when run directly
 def main():
     """Main entry point for development server"""
-    app = create_app()
+    try:
+        app = create_app()
 
-    logger.info("Starting Landscape Architecture Management System...")
-    logger.info("Backend API will be available at: http://127.0.0.1:5000")
-    logger.info("API documentation available at: http://127.0.0.1:5000/api/")
-
-    with app.app_context():
-        # Initialize database
-        initialize_database()
-
-        # Populate with sample data if empty
-        populate_sample_data()
-
-    # Start the Flask development server (development or integration testing)
-    flask_env = os.environ.get("FLASK_ENV", "development")
-    if flask_env in ["development", "testing"]:
+        flask_env = os.environ.get("FLASK_ENV", "development")
         port = int(os.environ.get("PORT", 5000))
-        # For testing, disable reloader to avoid issues in CI
-        debug_mode = flask_env == "development"
-        use_reloader = flask_env == "development"
-        app.run(
-            host="127.0.0.1", port=port, debug=debug_mode, use_reloader=use_reloader
-        )
-    else:
-        logger.warning(
-            "Use a production WSGI server (like Gunicorn) instead of Flask dev server"
-        )
-        print("For production, use: gunicorn -c gunicorn.conf.py wsgi:application")
+        # Use 0.0.0.0 for testing to allow CI container access, 127.0.0.1 for development
+        host = "0.0.0.0" if flask_env == "testing" else "127.0.0.1"
+
+        logger.info("Starting Landscape Architecture Management System...")
+        logger.info(f"Backend API will be available at: http://{host}:{port}")
+        logger.info(f"API documentation available at: http://{host}:{port}/api/")
+
+        with app.app_context():
+            # Initialize database with error handling
+            try:
+                initialize_database()
+                logger.info("Database initialized successfully")
+            except Exception as e:
+                logger.error(f"Failed to initialize database: {str(e)}")
+                raise
+
+            # Populate with sample data if empty
+            try:
+                populate_sample_data()
+                logger.info("Sample data population completed")
+            except Exception as e:
+                logger.warning(f"Failed to populate sample data: {str(e)}")
+                # Don't fail if sample data population fails
+                pass
+
+        # Start the Flask development server (development or integration testing)
+        if flask_env in ["development", "testing"]:
+            # For testing, disable reloader to avoid issues in CI
+            debug_mode = flask_env == "development"
+            use_reloader = flask_env == "development"
+            logger.info(f"Starting Flask server on {host}:{port} (env: {flask_env})")
+            app.run(
+                host=host, port=port, debug=debug_mode, use_reloader=use_reloader
+            )
+        else:
+            logger.warning(
+                "Use a production WSGI server (like Gunicorn) instead of Flask dev server"
+            )
+            print("For production, use: gunicorn -c gunicorn.conf.py wsgi:application")
+
+    except Exception as e:
+        logger.error(f"Failed to start application: {str(e)}")
+        raise
 
 
 # Create app instance for WSGI servers (like Waitress, Gunicorn)
