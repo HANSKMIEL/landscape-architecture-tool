@@ -293,13 +293,22 @@ class TestSupplierService(DatabaseTestMixin):
     def test_search_suppliers(self, app_context, supplier_factory):
         """Test searching suppliers"""
         supplier1 = supplier_factory(  # noqa: F841
-            name="Alpha Nursery", contact_person="John Alpha"
+            name="Alpha Nursery",
+            contact_person="John Alpha",
+            email="alpha@nursery.com",
+            city="Alphaville",
         )  # noqa: F841
         supplier2 = supplier_factory(  # noqa: F841
-            name="Beta Plants", email="beta@test.com"
+            name="Beta Plants",
+            contact_person="Beta Manager",
+            email="beta@test.com",
+            city="Betatown",
         )  # noqa: F841
         supplier3 = supplier_factory(  # noqa: F841
-            name="Gamma Gardens", city="Springfield"
+            name="Gamma Gardens",
+            contact_person="Gamma Owner",
+            email="gamma@gardens.com",
+            city="Springfield",
         )  # noqa: F841
 
         # Search by name
