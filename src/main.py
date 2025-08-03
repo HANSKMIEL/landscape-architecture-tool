@@ -102,7 +102,14 @@ def create_app():
                 key_func=get_remote_address,
                 default_limits=[app.config["RATELIMIT_DEFAULT"]],
             )
-        except (ImportError, redis.ConnectionError, redis.RedisError):
+        except (
+            ImportError,
+            redis.ConnectionError,
+            redis.RedisError,
+            ConnectionError,
+            OSError,
+            Exception,
+        ):
             logger.info("Redis unavailable, using in-memory rate limiting")
             limiter = Limiter(
                 key_func=get_remote_address,
