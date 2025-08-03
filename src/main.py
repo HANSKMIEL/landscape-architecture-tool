@@ -1226,7 +1226,8 @@ def main():
 
         flask_env = os.environ.get("FLASK_ENV", "development")
         port = int(os.environ.get("PORT", 5000))
-        # Use 0.0.0.0 for testing to allow CI container access, 127.0.0.1 for development
+        # Use 0.0.0.0 for testing to allow CI container access,
+        # 127.0.0.1 for development
         host = "0.0.0.0" if flask_env == "testing" else "127.0.0.1"
 
         logger.info("Starting Landscape Architecture Management System...")
@@ -1260,7 +1261,8 @@ def main():
             app.run(host=host, port=port, debug=debug_mode, use_reloader=use_reloader)
         else:
             logger.warning(
-                "Use a production WSGI server (like Gunicorn) instead of Flask dev server"
+                "Use a production WSGI server (like Gunicorn) instead of "
+                "Flask dev server"
             )
             print("For production, use: gunicorn -c gunicorn.conf.py wsgi:application")
 
