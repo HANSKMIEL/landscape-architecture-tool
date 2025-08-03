@@ -1257,9 +1257,7 @@ def main():
             debug_mode = flask_env == "development"
             use_reloader = flask_env == "development"
             logger.info(f"Starting Flask server on {host}:{port} (env: {flask_env})")
-            app.run(
-                host=host, port=port, debug=debug_mode, use_reloader=use_reloader
-            )
+            app.run(host=host, port=port, debug=debug_mode, use_reloader=use_reloader)
         else:
             logger.warning(
                 "Use a production WSGI server (like Gunicorn) instead of Flask dev server"
