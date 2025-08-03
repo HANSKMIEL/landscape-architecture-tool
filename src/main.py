@@ -1247,7 +1247,7 @@ def main():
                 populate_sample_data()
                 logger.info("Sample data population completed")
             except Exception as e:
-                logger.warning(f"Failed to populate sample data: {str(e)}")
+                logger.error(f"Failed to populate sample data: {str(e)}")
                 # Don't fail if sample data population fails
                 pass
 
