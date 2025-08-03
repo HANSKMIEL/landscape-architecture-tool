@@ -96,7 +96,7 @@ class TestIntegrationEndpoints:
         assert isinstance(totals["clients"], int)
         assert (
             totals["suppliers"] >= 0
-        )  # May be 0 if sample data not loaded in this test context
+        assert totals["suppliers"] >= 0  # May be 0 if sample data not loaded in this test context
         assert totals["plants"] >= 0
         assert totals["projects"] >= 0
         assert totals["clients"] >= 0
