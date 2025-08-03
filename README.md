@@ -461,7 +461,7 @@ This project separates production and development dependencies for optimal deplo
 
 - **`requirements.txt`** - Contains only production dependencies needed to run the application
 - **`requirements-dev.txt`** - Contains all development dependencies including testing tools, linters, and debugging utilities (includes production dependencies via `-r requirements.txt`)
-- **`requirements-test.txt`** - **DEPRECATED** - Use `requirements-dev.txt` instead for all development needs
+- **`requirements-test.txt`** - **REMOVED** - Use `requirements-dev.txt` instead for all development needs (see [REQUIREMENTS_GUIDE.md](REQUIREMENTS_GUIDE.md))
 
 **For Production Deployment:**
 ```bash
