@@ -106,7 +106,7 @@ execnet==2.1.1
     # via pytest-xdist
 executing==2.2.0
     # via stack-data
-factory-boy==3.3.0
+factory-boy==3.3.3
     # via -r requirements-dev.in
 faker==19.6.0
     # via
@@ -453,6 +453,7 @@ typing-extensions==4.14.1
     #   azure-identity
     #   azure-storage-blob
     #   azure-storage-file-datalake
+    #   ipython
     #   limits
     #   openai
     #   opentelemetry-api
