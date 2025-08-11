@@ -167,7 +167,7 @@ multidict==6.6.3
     # via
     #   aiohttp
     #   yarl
-openai==1.98.0
+openai==1.99.6
     # via -r requirements.in
 opentelemetry-api==1.36.0
     # via
