@@ -80,7 +80,7 @@ cryptography==45.0.5
     #   azure-storage-blob
     #   msal
     #   pyjwt
-debugpy==1.8.15
+debugpy==1.8.16
     # via -r requirements-dev.in
 decorator==5.2.1
     # via ipython
@@ -453,6 +453,7 @@ typing-extensions==4.14.1
     #   azure-identity
     #   azure-storage-blob
     #   azure-storage-file-datalake
+    #   ipython
     #   limits
     #   openai
     #   opentelemetry-api
