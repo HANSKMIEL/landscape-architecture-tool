@@ -117,7 +117,8 @@ def main():
     if args.all or args.test:
         # Try full pytest first, fallback to basic tests if dependencies missing
         if not run_command(
-            "python -m pytest tests/test_integration.py -v --tb=short --maxfail=5 --override-ini='addopts='", "Integration tests"
+            "python -m pytest tests/test_integration.py -v --tb=short --maxfail=5 --override-ini='addopts='",
+            "Integration tests",
         ):
             # Fallback to basic import and functionality tests
             test_script = """

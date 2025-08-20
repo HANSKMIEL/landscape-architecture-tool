@@ -142,4 +142,8 @@ except ImportError as e:
     # Factory-boy or other dependencies not available
     # This is acceptable in CI environments with limited dependencies
     import warnings
-    warnings.warn(f"Factory fixtures not available: {e}. Some advanced test features may be limited.", UserWarning)
+
+    warnings.warn(
+        f"Factory fixtures not available: {e}. Some advanced test features may be limited.",
+        UserWarning,
+    )
