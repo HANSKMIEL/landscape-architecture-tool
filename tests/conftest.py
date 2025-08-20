@@ -136,14 +136,18 @@ def clean_db(app_context):
 
 
 # Import factory fixtures (optional - for development environments)
+# Critical dependencies are validated at startup, but optional test dependencies
+# like factory-boy may be missing in CI environments with network issues
 try:
     from tests.fixtures.test_data import *
 except ImportError as e:
-    # Factory-boy or other dependencies not available
+    # Factory-boy or other optional test dependencies not available
     # This is acceptable in CI environments with limited dependencies
+    # Production dependencies are validated separately by DependencyValidator
     import warnings
-
     warnings.warn(
-        f"Factory fixtures not available: {e}. Some advanced test features may be limited.",
-        UserWarning,
+        f"Optional test fixtures not available: {e}. "
+        "Advanced test features may be limited, but core functionality is unaffected. "
+        "Install development dependencies with: pip install -r requirements-dev.txt",
+        UserWarning
     )
