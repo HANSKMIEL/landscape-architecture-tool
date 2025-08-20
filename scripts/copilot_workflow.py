@@ -119,10 +119,10 @@ def main():
         # First, validate dependencies and provide clear feedback
         if not run_command(
             "python -c \"from src.utils.dependency_validator import validate_dependencies; validator = validate_dependencies(); print('Dependency validation completed')\"",
-            "Dependency validation"
+            "Dependency validation",
         ):
             print("⚠️ Dependency validation failed - proceeding with fallback tests")
-        
+
         # Try full pytest first, fallback to basic tests if dependencies missing
         if not run_command(
             "python -m pytest tests/test_integration.py -v --tb=short --maxfail=5 --override-ini='addopts='",
@@ -154,7 +154,10 @@ except Exception as e:
     print('Basic tests failed:', str(e))
     sys.exit(1)
 """
-            if not run_command(f'python -c "{test_script}"', "Enhanced fallback tests with dependency validation"):
+            if not run_command(
+                f'python -c "{test_script}"',
+                "Enhanced fallback tests with dependency validation",
+            ):
                 success = False
 
     print("=" * 40)

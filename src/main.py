@@ -164,11 +164,13 @@ def create_app():
         and critical dependency availability.
         """
         from src.utils.dependency_validator import DependencyValidator
-        
+
         validator = DependencyValidator()
         critical_ok, missing_critical = validator.validate_critical_dependencies()
-        available_optional, missing_optional = validator.validate_optional_dependencies()
-        
+        available_optional, missing_optional = (
+            validator.validate_optional_dependencies()
+        )
+
         # Database connectivity check
         db_status = "unknown"
         try:
@@ -178,7 +180,7 @@ def create_app():
         except Exception as e:
             db_status = f"error: {str(e)}"
             logger.warning(f"Database connectivity issue in health check: {e}")
-        
+
         health_data = {
             "status": "healthy" if critical_ok else "unhealthy",
             "timestamp": datetime.utcnow().isoformat(),
@@ -187,30 +189,33 @@ def create_app():
                     "status": "ok" if critical_ok else "missing",
                     "missing": missing_critical,
                     "total": len(validator.CRITICAL_DEPENDENCIES),
-                    "available": len(validator.CRITICAL_DEPENDENCIES) - len(missing_critical)
+                    "available": len(validator.CRITICAL_DEPENDENCIES)
+                    - len(missing_critical),
                 },
                 "optional": {
                     "total": len(validator.OPTIONAL_DEPENDENCIES),
                     "available": available_optional,
-                    "missing": missing_optional
-                }
+                    "missing": missing_optional,
+                },
             },
-            "database": {
-                "status": db_status
-            },
+            "database": {"status": db_status},
             "services": {
                 "web_server": "running",
-                "rate_limiting": "active" if limiter else "disabled"
-            }
+                "rate_limiting": "active" if limiter else "disabled",
+            },
         }
-        
+
         if not critical_ok:
             # Return 503 Service Unavailable if critical dependencies are missing
-            health_data["message"] = "Critical dependencies missing - application may not function properly"
+            health_data["message"] = (
+                "Critical dependencies missing - application may not function properly"
+            )
             return jsonify(health_data), 503
         elif missing_optional:
-            health_data["message"] = "Some optional features may be limited due to missing dependencies"
-            
+            health_data["message"] = (
+                "Some optional features may be limited due to missing dependencies"
+            )
+
         return jsonify(health_data)
 
     # API Routes

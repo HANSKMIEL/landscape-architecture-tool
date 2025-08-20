@@ -145,9 +145,10 @@ except ImportError as e:
     # This is acceptable in CI environments with limited dependencies
     # Production dependencies are validated separately by DependencyValidator
     import warnings
+
     warnings.warn(
         f"Optional test fixtures not available: {e}. "
         "Advanced test features may be limited, but core functionality is unaffected. "
         "Install development dependencies with: pip install -r requirements-dev.txt",
-        UserWarning
+        UserWarning,
     )
