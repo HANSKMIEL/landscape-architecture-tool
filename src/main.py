@@ -133,7 +133,7 @@ def create_app():
             default_limits=[app.config["RATELIMIT_DEFAULT"]],
             storage_uri="memory://",
         )
-        if app.config.get("FLASK_ENV") == "testing":
+        if app.config.get("TESTING"):
             logger.debug("Rate limiting configured with in-memory storage for testing")
 
     limiter.init_app(app)
