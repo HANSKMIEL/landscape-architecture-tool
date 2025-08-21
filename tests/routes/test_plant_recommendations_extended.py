@@ -4,7 +4,6 @@ Extended tests for Plant Recommendation Routes
 Tests the missing routes and edge cases to improve coverage.
 """
 
-import csv
 import io
 import json
 from unittest.mock import patch
@@ -12,7 +11,6 @@ from unittest.mock import patch
 import pytest
 
 from src.main import create_app
-from src.models.landscape import Plant, PlantRecommendationRequest
 from src.models.user import db
 from tests.database.factories import create_test_plant
 

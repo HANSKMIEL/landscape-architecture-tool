@@ -9,7 +9,6 @@ import json
 import pytest
 
 from src.models.landscape import Plant
-from src.models.user import db
 from tests.fixtures.database import DatabaseTestMixin
 
 

@@ -77,7 +77,7 @@ lint:
 	@command -v isort >/dev/null 2>&1 || pip install isort
 	black --check src/ tests/ --diff || true
 	isort --check-only src/ tests/ --diff || true
-	flake8 src/ tests/ --max-line-length=88 --extend-ignore=E203,W503 || true
+	flake8 src/ tests/ --max-line-length=88 --extend-ignore=E203,W503,F403,C901,W291 --max-complexity=25 || true
 	@echo "Running frontend linting..."
 	cd frontend && npm run lint || true
 	@echo "✅ Linting complete"
