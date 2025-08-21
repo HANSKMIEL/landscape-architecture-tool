@@ -12,4 +12,4 @@ We highly encourage switching to the new `scan` command which is easier to use, 
 +===========================================================================================================================================================================================+
 
 
-Check your network connection, unable to reach the server.
+Unhandled exception happened: post_dump() got an unexpected keyword argument 'pass_many'
