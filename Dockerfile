@@ -24,10 +24,26 @@ COPY requirements.txt .
 RUN python -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
-# Install Python dependencies
+# Install Python dependencies with network timeout and retry handling
 RUN pip install --no-cache-dir --upgrade pip --trusted-host pypi.org --trusted-host pypi.python.org --trusted-host files.pythonhosted.org && \
-    pip install --no-cache-dir -r requirements.txt --trusted-host pypi.org --trusted-host pypi.python.org --trusted-host files.pythonhosted.org && \
-    pip install --no-cache-dir psycopg2-binary gunicorn --trusted-host pypi.org --trusted-host pypi.python.org --trusted-host files.pythonhosted.org
+    pip install --no-cache-dir -r requirements.txt --trusted-host pypi.org --trusted-host pypi.python.org --trusted-host files.pythonhosted.org --timeout 60 --retries 3 && \
+    pip install --no-cache-dir psycopg2-binary gunicorn --trusted-host pypi.org --trusted-host pypi.python.org --trusted-host files.pythonhosted.org --timeout 60 --retries 3
+
+# Copy dependency validator for build-time validation
+COPY src/utils/dependency_validator.py /tmp/dependency_validator.py
+
+# Validate critical dependencies were installed successfully
+RUN python -c "
+import sys
+sys.path.insert(0, '/tmp')
+from dependency_validator import DependencyValidator
+validator = DependencyValidator()
+critical_ok, missing = validator.validate_critical_dependencies()
+if not critical_ok:
+    print('CRITICAL: Docker build failed - missing dependencies:', missing)
+    exit(1)
+print('✅ All critical dependencies validated in Docker build')
+"
 
 # Stage 2: Production stage
 FROM python:3.11-slim as production

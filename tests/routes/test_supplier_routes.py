@@ -8,7 +8,7 @@ import json
 
 import pytest
 
-from src.models.landscape import Plant, Product, Supplier
+from src.models.landscape import Product, Supplier
 from src.models.user import db
 from tests.fixtures.database import DatabaseTestMixin
 

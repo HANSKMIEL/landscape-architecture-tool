@@ -1,6 +1,6 @@
 {
   "errors": [],
-  "generated_at": "2025-08-03T20:01:41Z",
+  "generated_at": "2025-08-21T08:05:56Z",
   "metrics": {
     "_totals": {
       "CONFIDENCE.HIGH": 146,
@@ -11,7 +11,7 @@
       "SEVERITY.LOW": 146,
       "SEVERITY.MEDIUM": 3,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 10499,
+      "loc": 10800,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -50,7 +50,7 @@
       "SEVERITY.LOW": 0,
       "SEVERITY.MEDIUM": 1,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 983,
+      "loc": 1038,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -548,6 +548,19 @@
       "nosec": 0,
       "skipped_tests": 0
     },
+    "src/utils/dependency_validator.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 246,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
     "src/utils/error_handlers.py": {
       "CONFIDENCE.HIGH": 0,
       "CONFIDENCE.LOW": 0,
@@ -590,7 +603,7 @@
   },
   "results": [
     {
-      "code": "1230         # 127.0.0.1 for development\n1231         host = \"0.0.0.0\" if flask_env == \"testing\" else \"127.0.0.1\"\n1232 \n",
+      "code": "1299         # 127.0.0.1 for development\n1300         host = \"0.0.0.0\" if flask_env == \"testing\" else \"127.0.0.1\"\n1301 \n",
       "col_offset": 15,
       "end_col_offset": 24,
       "filename": "src/main.py",
@@ -601,9 +614,9 @@
       },
       "issue_severity": "MEDIUM",
       "issue_text": "Possible binding to all interfaces.",
-      "line_number": 1231,
+      "line_number": 1300,
       "line_range": [
-        1231
+        1300
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.8.6/plugins/b104_hardcoded_bind_all_interfaces.html",
       "test_id": "B104",

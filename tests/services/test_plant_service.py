@@ -5,7 +5,6 @@ Comprehensive tests for plant service layer business logic.
 """
 
 import pytest
-from sqlalchemy.exc import IntegrityError
 
 from src.models.landscape import Plant
 from src.models.user import db
