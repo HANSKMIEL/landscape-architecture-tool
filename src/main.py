@@ -15,13 +15,6 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 # Define version for health endpoint
 __version__ = "2.0.0"
 
-# Validate critical dependencies before importing Flask components
-from src.utils.dependency_validator import DependencyValidator  # noqa: E402
-
-# Ensure critical production dependencies are available
-dependency_validator = DependencyValidator()
-dependency_validator.ensure_critical_dependencies()
-
 from flask import Flask, jsonify
 from flask_cors import CORS
 from flask_limiter import Limiter
@@ -53,6 +46,7 @@ from src.services.analytics import AnalyticsService  # noqa: E402
 from src.services.dashboard_service import DashboardService  # noqa: E402
 from src.utils.db_init import initialize_database  # noqa: E402
 from src.utils.db_init import populate_sample_data
+from src.utils.dependency_validator import DependencyValidator  # noqa: E402
 from src.utils.error_handlers import handle_errors  # noqa: E402
 from src.utils.error_handlers import register_error_handlers  # noqa: E402
 
@@ -87,6 +81,11 @@ def create_app():
     # Load configuration
     config = get_config()
     app.config.from_object(config)
+
+    # Validate critical dependencies - only when app is actually created
+    # (not during module import for testing or introspection)
+    dependency_validator = DependencyValidator()
+    dependency_validator.ensure_critical_dependencies()
 
     # Configure logging
     configure_logging(app)
