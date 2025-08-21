@@ -1,8 +1,9 @@
-// Jest provides describe, it, expect, beforeEach as globals
+// Test framework agnostic - works with Jest and Vitest
 import { screen, waitFor } from '@testing-library/react'
 import { axe, toHaveNoViolations } from 'jest-axe'
 import { renderWithLanguage } from '../../test/utils/render.jsx'
 import { createMockProjects } from '../../test/utils/mockData.js'
+import { clearAllMocks, createMockFn } from '../../test/utils/test-helpers.js'
 import Projects from '../Projects'
 
 expect.extend(toHaveNoViolations)
@@ -15,10 +16,10 @@ describe('Projects Component', () => {
     originalFetch = global.fetch
     
     // Reset mocks before each test
-    jest.clearAllMocks()
+    clearAllMocks()
 
-    // Mock fetch for API calls
-    global.fetch = jest.fn((url) => {
+    // Mock fetch for API calls using framework-agnostic helper
+    global.fetch = createMockFn((url) => {
       if (url.includes('/api/projects')) {
         // Mock projects data with realistic project information
         const mockProjects = createMockProjects(3, [
@@ -57,7 +58,10 @@ describe('Projects Component', () => {
         return Promise.resolve({
           ok: true,
           status: 200,
-          json: () => Promise.resolve(mockProjects)
+          headers: {
+            get: (name) => name === 'content-type' ? 'application/json' : null
+          },
+          json: () => Promise.resolve(createMockProjectsApiResponse(mockProjects))
         })
       }
       

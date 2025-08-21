@@ -9,7 +9,10 @@ export default [
     files: ['**/*.{js,jsx}'],
     languageOptions: {
       ecmaVersion: 2020,
-      globals: globals.browser,
+      globals: {
+        ...globals.browser,
+        process: 'readonly', // For env.js file
+      },
       parserOptions: {
         ecmaVersion: 'latest',
         ecmaFeatures: { jsx: true },
@@ -39,6 +42,8 @@ export default [
         ...globals.jest,
         ...globals.node,
         global: 'readonly',
+        vi: 'readonly', // For Vitest
+        jest: 'readonly', // For Jest
       },
       parserOptions: {
         ecmaVersion: 'latest',

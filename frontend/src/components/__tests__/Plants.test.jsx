@@ -1,8 +1,9 @@
-// Jest provides describe, it, expect, beforeEach as globals
+// Test framework agnostic - works with Jest and Vitest
 import { screen, waitFor } from '@testing-library/react'
 import { axe, toHaveNoViolations } from 'jest-axe'
 import { render } from '../../test/utils/render.jsx'
 import { createMockPlants, createMockSuppliers } from '../../test/utils/mockData.js'
+import { clearAllMocks, createMockFn } from '../../test/utils/test-helpers.js'
 import Plants from '../Plants'
 
 expect.extend(toHaveNoViolations)
@@ -15,10 +16,10 @@ describe('Plants Component', () => {
     originalFetch = global.fetch
     
     // Reset mocks before each test
-    jest.clearAllMocks()
+    clearAllMocks()
 
-    // Mock fetch for API calls
-    global.fetch = jest.fn((url) => {
+    // Mock fetch for API calls using framework-agnostic helper
+    global.fetch = createMockFn((url) => {
       if (url.includes('/api/plants')) {
         // Mock plants data with realistic plant information
         const mockPlants = createMockPlants(3, [
@@ -69,7 +70,10 @@ describe('Plants Component', () => {
         return Promise.resolve({
           ok: true,
           status: 200,
-          json: () => Promise.resolve(mockPlants)
+          headers: {
+            get: (name) => name === 'content-type' ? 'application/json' : null
+          },
+          json: () => Promise.resolve({ plants: mockPlants })
         })
       }
       
@@ -93,7 +97,10 @@ describe('Plants Component', () => {
         return Promise.resolve({
           ok: true,
           status: 200,
-          json: () => Promise.resolve(mockSuppliers)
+          headers: {
+            get: (name) => name === 'content-type' ? 'application/json' : null
+          },
+          json: () => Promise.resolve({ suppliers: mockSuppliers })
         })
       }
       
