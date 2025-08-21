@@ -189,7 +189,7 @@ def create_app():
         health_data = {
             "status": "healthy" if critical_ok else "unhealthy",
             "timestamp": datetime.now(timezone.utc).isoformat(),
-            "version": "2.0.0",  # Added for test compatibility
+            "version": __version__,  # Added for test compatibility
             "environment": os.environ.get(
                 "FLASK_ENV", "development"
             ),  # Added for test compatibility
