@@ -1258,20 +1258,6 @@ def create_app():
 
         return jsonify({"message": "Project deleted successfully"})
 
-    # Health check endpoint
-    @app.route("/health", methods=["GET"])
-    def health_check():
-        """Health check endpoint"""
-        return jsonify(
-            {
-                "status": "healthy",
-                "timestamp": datetime.now().isoformat(),
-                "version": "2.0.0",
-                "database_status": "connected",
-                "environment": os.environ.get("FLASK_ENV", "development"),
-            }
-        )
-
     # Add security headers
     @app.after_request
     def add_security_headers(response):
