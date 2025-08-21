@@ -1,5 +1,7 @@
 // API service for landscape architecture application
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api'
+import { getApiBaseUrl } from '../lib/env.js';
+
+const API_BASE_URL = getApiBaseUrl();
 
 class ApiService {
   async request(endpoint, options = {}) {
