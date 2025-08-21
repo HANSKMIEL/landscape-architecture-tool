@@ -35,7 +35,22 @@ export function createMockFn(implementation) {
     }
     default: {
       // Fallback for unknown frameworks - basic function that tracks calls
-      const mockFn = implementation || (() => {});
+      // Fallback for unknown frameworks - enhanced mock function with call tracking and return value support
+      function mockFn(...args) {
+        mockFn.mock.calls.push(args);
+        let result;
+        if (typeof mockFn._resolvedValue !== 'undefined') {
+          result = Promise.resolve(mockFn._resolvedValue);
+        } else if (typeof mockFn._returnValue !== 'undefined') {
+          result = mockFn._returnValue;
+        } else if (implementation) {
+          result = implementation.apply(this, args);
+        } else {
+          result = undefined;
+        }
+        mockFn.mock.results.push({ type: 'return', value: result });
+        return result;
+      }
       mockFn.mock = { calls: [], results: [] };
       mockFn.mockReturnValue = (value) => {
         mockFn._returnValue = value;
