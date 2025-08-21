@@ -56,6 +56,7 @@ __version__ = "2.0.0"
 dependency_validator = DependencyValidator()
 dependency_validator.ensure_critical_dependencies()
 
+
 # Configure logging
 def configure_logging(app):
     """Configure logging based on environment"""
