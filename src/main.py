@@ -9,14 +9,21 @@ import os
 import sys
 from datetime import datetime
 
+# Add project root to Python path
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+# Validate critical dependencies before importing Flask components
+from src.utils.dependency_validator import DependencyValidator  # noqa: E402
+
+# Ensure critical production dependencies are available
+dependency_validator = DependencyValidator()
+dependency_validator.ensure_critical_dependencies()
+
 from flask import Flask, jsonify
 from flask_cors import CORS
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_migrate import Migrate
-
-# Add project root to Python path
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from src.config import get_config  # noqa: E402
 from src.models.user import db  # noqa: E402
@@ -147,6 +154,69 @@ def create_app():
     project_service = ProjectService()
     dashboard_service = DashboardService()
     analytics_service = AnalyticsService()
+
+    # Health check endpoint with dependency validation
+    @app.route("/health", methods=["GET"])
+    @handle_errors
+    def health_check():
+        """
+        Enhanced health check endpoint that validates both system health
+        and critical dependency availability.
+        """
+        from src.utils.dependency_validator import DependencyValidator
+
+        validator = DependencyValidator()
+        critical_ok, missing_critical = validator.validate_critical_dependencies()
+        available_optional, missing_optional = (
+            validator.validate_optional_dependencies()
+        )
+
+        # Database connectivity check
+        db_status = "unknown"
+        try:
+            # Simple database connectivity test
+            db.session.execute(text("SELECT 1"))
+            db_status = "connected"
+        except Exception as e:
+            db_status = "error"
+            logger.warning(f"Database connectivity issue in health check: {e}")
+
+        health_data = {
+            "status": "healthy" if critical_ok else "unhealthy",
+            "timestamp": datetime.utcnow().isoformat(),
+            "dependencies": {
+                "critical": {
+                    "status": "ok" if critical_ok else "missing",
+                    "missing": missing_critical,
+                    "total": len(validator.CRITICAL_DEPENDENCIES),
+                    "available": len(validator.CRITICAL_DEPENDENCIES)
+                    - len(missing_critical),
+                },
+                "optional": {
+                    "total": len(validator.OPTIONAL_DEPENDENCIES),
+                    "available": available_optional,
+                    "missing": missing_optional,
+                },
+            },
+            "database": {"status": db_status},
+            "services": {
+                "web_server": "running",
+                "rate_limiting": "active" if limiter else "disabled",
+            },
+        }
+
+        if not critical_ok:
+            # Return 503 Service Unavailable if critical dependencies are missing
+            health_data["message"] = (
+                "Critical dependencies missing - application may not function properly"
+            )
+            return jsonify(health_data), 503
+        elif missing_optional:
+            health_data["message"] = (
+                "Some optional features may be limited due to missing dependencies"
+            )
+
+        return jsonify(health_data)
 
     # API Routes
     @app.route("/api/", methods=["GET"])
