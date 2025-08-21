@@ -130,7 +130,8 @@ def main():
         ):
             # Fallback to basic import and functionality tests
             test_script = """
-import sys, os
+import sys
+import os
 sys.path.insert(0, '.')
 try:
     # Test critical dependency validation
