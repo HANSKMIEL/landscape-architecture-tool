@@ -132,8 +132,6 @@ class DependencyValidator:
                 )
 
         if self.missing_optional:
-            warnings.warn(
-                f"Some optional dependencies are missing: {', '.join(self.missing_optional)}. "
             install_cmds = [
                 f"  {dep}: pip install {dep.replace('_', '-')}"
                 for dep in self.missing_optional
@@ -141,8 +139,7 @@ class DependencyValidator:
             warning_msg = (
                 f"Some optional dependencies are missing: {', '.join(self.missing_optional)}.\n"
                 "This may limit development/testing features but won't affect core functionality.\n"
-                "To install the missing dependencies, run:\n"
-                + "\n".join(install_cmds)
+                "To install the missing dependencies, run:\n" + "\n".join(install_cmds)
             )
             warnings.warn(
                 warning_msg,
