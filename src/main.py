@@ -52,10 +52,6 @@ from src.utils.error_handlers import handle_errors, register_error_handlers
 # Define version for health endpoint
 __version__ = "2.0.0"
 
-# Validate critical dependencies before importing Flask components
-dependency_validator = DependencyValidator()
-dependency_validator.ensure_critical_dependencies()
-
 
 # Configure logging
 def configure_logging(app):
@@ -87,6 +83,11 @@ def create_app():
     # Load configuration
     config = get_config()
     app.config.from_object(config)
+
+    # Validate critical dependencies - only when app is actually created
+    # (not during module import for testing or introspection)
+    dependency_validator = DependencyValidator()
+    dependency_validator.ensure_critical_dependencies()
 
     # Configure logging
     configure_logging(app)
