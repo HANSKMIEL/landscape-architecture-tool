@@ -176,3 +176,8 @@ draft_*.py
 .black_cache/
 .isort.cfg
 
+
+# Copilot temporary files
+*.copilot.tmp
+copilot_session_*
+.copilot_*
