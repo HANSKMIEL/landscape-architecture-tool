@@ -12,6 +12,9 @@ from datetime import datetime, timezone
 # Add project root to Python path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+# Define version for health endpoint
+__version__ = "2.0.0"
+
 # Validate critical dependencies before importing Flask components
 from src.utils.dependency_validator import DependencyValidator  # noqa: E402
 
