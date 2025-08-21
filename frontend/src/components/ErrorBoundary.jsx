@@ -59,7 +59,6 @@ class ErrorBoundary extends React.Component {
                 </button>
               </div>
               
-              {/* eslint-disable-next-line no-undef */}
               {process.env.REACT_APP_SHOW_ERROR_DETAILS === 'true' && this.state.errorInfo && (
                 <details className="mt-4">
                   <summary className="text-sm text-gray-600 cursor-pointer hover:text-gray-800">

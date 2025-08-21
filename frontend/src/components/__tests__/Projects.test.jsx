@@ -2,7 +2,7 @@
 import { screen, waitFor } from '@testing-library/react'
 import { axe, toHaveNoViolations } from 'jest-axe'
 import { renderWithLanguage } from '../../test/utils/render.jsx'
-import { createMockProjects } from '../../test/utils/mockData.js'
+import { createMockProjects, createApiResponse } from '../../test/utils/mockData.js'
 import { clearAllMocks, createMockFn } from '../../test/utils/test-helpers.js'
 import Projects from '../Projects'
 
@@ -61,7 +61,7 @@ describe('Projects Component', () => {
           headers: {
             get: (name) => name === 'content-type' ? 'application/json' : null
           },
-          json: () => Promise.resolve(createMockProjectsApiResponse(mockProjects))
+          json: () => Promise.resolve(createApiResponse(mockProjects))
         })
       }
       

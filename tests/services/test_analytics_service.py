@@ -9,10 +9,7 @@ from datetime import UTC, datetime, timedelta
 import pytest
 
 from src.models.landscape import (
-    Client,
-    Plant,
     PlantRecommendationRequest,
-    Project,
     ProjectPlant,
 )
 from src.models.user import db

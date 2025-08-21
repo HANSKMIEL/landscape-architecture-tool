@@ -4,7 +4,6 @@ Ensures that 'from src.services.performance import cache' works correctly.
 """
 
 import importlib
-import sys
 
 import pytest
 
@@ -180,7 +179,7 @@ class TestPerformanceCacheConfiguration:
 
     def test_cache_stats_function_works(self):
         """Test that get_cache_stats function works with imported cache."""
-        from src.services.performance import cache, get_cache_stats
+        from src.services.performance import get_cache_stats
 
         # This should not raise an exception
         stats = get_cache_stats()

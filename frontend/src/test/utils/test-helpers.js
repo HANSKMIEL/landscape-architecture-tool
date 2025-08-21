@@ -153,15 +153,10 @@ export function createFetchMock(mockImplementation) {
   return createMockFn((url, options = {}) => {
     const mockResponse = mockImplementation(url, options);
     
-    // Ensure the response has the fetch API structure
-    return Promise.resolve({
-      ok: true,
-      status: 200,
-      statusText: 'OK',
-      json: () => Promise.resolve(mockResponse),
-      text: () => Promise.resolve(JSON.stringify(mockResponse)),
     // Store the body as a string, as fetch does
     const bodyString = typeof mockResponse === 'string' ? mockResponse : JSON.stringify(mockResponse);
+    
+    // Ensure the response has the fetch API structure
     return Promise.resolve({
       ok: true,
       status: 200,
