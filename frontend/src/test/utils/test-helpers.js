@@ -153,15 +153,10 @@ export function createFetchMock(mockImplementation) {
   return createMockFn((url, options = {}) => {
     const mockResponse = mockImplementation(url, options);
     
-    // Ensure the response has the fetch API structure
-    return Promise.resolve({
-      ok: true,
-      status: 200,
-      statusText: 'OK',
-      json: () => Promise.resolve(mockResponse),
-      text: () => Promise.resolve(JSON.stringify(mockResponse)),
     // Store the body as a string, as fetch does
     const bodyString = typeof mockResponse === 'string' ? mockResponse : JSON.stringify(mockResponse);
+    
+    // Ensure the response has the fetch API structure
     return Promise.resolve({
       ok: true,
       status: 200,
@@ -204,4 +199,22 @@ export function createSpy(object, method) {
       return spy;
     }
   }
+}
+
+/**
+ * Create mock API response for projects
+ * @param {Array} projects - Array of project objects
+ * @returns {Object} Mock API response structure
+ */
+export function createMockProjectsApiResponse(projects) {
+  return {
+    success: true,
+    data: {
+      projects: projects || [],
+      total: projects ? projects.length : 0,
+      page: 1,
+      per_page: 20
+    },
+    message: 'Projects retrieved successfully'
+  };
 }
