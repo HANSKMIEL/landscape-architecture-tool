@@ -7,7 +7,7 @@ Refactored modular version with persistent database
 import logging
 import os
 import sys
-from datetime import datetime
+from datetime import datetime, timezone
 
 # Add project root to Python path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -24,6 +24,7 @@ from flask_cors import CORS
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_migrate import Migrate
+from sqlalchemy import text
 
 from src.config import get_config  # noqa: E402
 from src.models.user import db  # noqa: E402
@@ -108,7 +109,9 @@ def create_app():
             limiter = Limiter(
                 key_func=get_remote_address,
                 default_limits=[app.config["RATELIMIT_DEFAULT"]],
+                storage_uri=storage_url,
             )
+            logger.info("Rate limiting configured with Redis storage")
         except (
             ImportError,
             redis.ConnectionError,
@@ -124,12 +127,14 @@ def create_app():
                 storage_uri="memory://",
             )
     else:
-        # Use memory storage without warnings
+        # Use memory storage explicitly to suppress warnings in testing/development
         limiter = Limiter(
             key_func=get_remote_address,
             default_limits=[app.config["RATELIMIT_DEFAULT"]],
             storage_uri="memory://",
         )
+        if app.config.get("FLASK_ENV") == "testing":
+            logger.debug("Rate limiting configured with in-memory storage for testing")
 
     limiter.init_app(app)
 
@@ -183,7 +188,10 @@ def create_app():
 
         health_data = {
             "status": "healthy" if critical_ok else "unhealthy",
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "version": "2.0.0",  # Added for test compatibility
+            "environment": os.environ.get("FLASK_ENV", "development"),  # Added for test compatibility
+            "database_status": db_status,  # Added for test compatibility
             "dependencies": {
                 "critical": {
                     "status": "ok" if critical_ok else "missing",
