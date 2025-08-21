@@ -141,4 +141,61 @@ except Exception as e:
         ), "Dependency validator should be instantiated inside create_app()"
         assert (
             "dependency_validator.ensure_critical_dependencies()" in create_app_section
-        ), "Dependency validation should be called inside create_app()"
+        # Parse the file using ast
+        tree = ast.parse(content, filename=main_py_path)
+
+        # Check for module-level dependency_validator instantiation and validation call
+        module_level_instantiation = False
+        module_level_validation_call = False
+        create_app_instantiation = False
+        create_app_validation_call = False
+
+        for node in tree.body:
+            # Check for module-level assignment: dependency_validator = DependencyValidator()
+            if isinstance(node, ast.Assign):
+                for target in node.targets:
+                    if (
+                        isinstance(target, ast.Name)
+                        and target.id == "dependency_validator"
+                        and isinstance(node.value, ast.Call)
+                        and getattr(node.value.func, "id", None) == "DependencyValidator"
+                    ):
+                        module_level_instantiation = True
+            # Check for module-level call: dependency_validator.ensure_critical_dependencies()
+            if isinstance(node, ast.Expr) and isinstance(node.value, ast.Call):
+                func = node.value.func
+                if (
+                    isinstance(func, ast.Attribute)
+                    and isinstance(func.value, ast.Name)
+                    and func.value.id == "dependency_validator"
+                    and func.attr == "ensure_critical_dependencies"
+                ):
+                    module_level_validation_call = True
+            # Find the create_app function
+            if isinstance(node, ast.FunctionDef) and node.name == "create_app":
+                for stmt in ast.walk(node):
+                    # Assignment inside create_app
+                    if isinstance(stmt, ast.Assign):
+                        for target in stmt.targets:
+                            if (
+                                isinstance(target, ast.Name)
+                                and target.id == "dependency_validator"
+                                and isinstance(stmt.value, ast.Call)
+                                and getattr(stmt.value.func, "id", None) == "DependencyValidator"
+                            ):
+                                create_app_instantiation = True
+                    # Call inside create_app
+                    if isinstance(stmt, ast.Expr) and isinstance(stmt.value, ast.Call):
+                        func = stmt.value.func
+                        if (
+                            isinstance(func, ast.Attribute)
+                            and isinstance(func.value, ast.Name)
+                            and func.value.id == "dependency_validator"
+                            and func.attr == "ensure_critical_dependencies"
+                        ):
+                            create_app_validation_call = True
+
+        assert not module_level_instantiation, "Module-level dependency validator instantiation should be removed"
+        assert not module_level_validation_call, "Module-level dependency validation call should be removed"
+        assert create_app_instantiation, "Dependency validator should be instantiated inside create_app()"
+        assert create_app_validation_call, "Dependency validation should be called inside create_app()"
