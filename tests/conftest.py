@@ -5,12 +5,8 @@ Enhanced test configuration with comprehensive fixtures and factory patterns
 
 import os
 import sys
-import tempfile
-from unittest.mock import patch
 
 import pytest
-from flask import Flask
-from sqlalchemy.exc import SQLAlchemyError
 
 # Add project root to Python path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -139,7 +135,7 @@ def clean_db(app_context):
 # Critical dependencies are validated at startup, but optional test dependencies
 # like factory-boy may be missing in CI environments with network issues
 try:
-    from tests.fixtures.test_data import *
+    from tests.fixtures.test_data import *  # noqa: F401,F403
 except ImportError as e:
     # Factory-boy or other optional test dependencies not available
     # This is acceptable in CI environments with limited dependencies
