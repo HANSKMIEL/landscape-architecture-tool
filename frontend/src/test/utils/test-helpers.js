@@ -160,7 +160,15 @@ export function createFetchMock(mockImplementation) {
       statusText: 'OK',
       json: () => Promise.resolve(mockResponse),
       text: () => Promise.resolve(JSON.stringify(mockResponse)),
-      ...mockResponse.responseOverrides
+    // Store the body as a string, as fetch does
+    const bodyString = typeof mockResponse === 'string' ? mockResponse : JSON.stringify(mockResponse);
+    return Promise.resolve({
+      ok: true,
+      status: 200,
+      statusText: 'OK',
+      json: () => Promise.resolve(JSON.parse(bodyString)),
+      text: () => Promise.resolve(bodyString),
+      ...(mockResponse && mockResponse.responseOverrides)
     });
   });
 }
