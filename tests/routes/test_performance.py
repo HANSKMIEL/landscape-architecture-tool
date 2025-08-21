@@ -1,8 +1,8 @@
 # Test file for Performance API Routes
 # This file handles comprehensive testing of performance monitoring endpoints
 
-import json
-from unittest.mock import MagicMock, patch
+import json  # noqa: F401
+from unittest.mock import patch
 
 import pytest
 

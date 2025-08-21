@@ -2,8 +2,6 @@
 Tests for database factories
 """
 
-import pytest
-
 from src.models.landscape import Plant
 from tests.database.factories import create_test_plant
 
