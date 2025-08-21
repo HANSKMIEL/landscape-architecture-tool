@@ -135,7 +135,38 @@ except Exception as e:
         ), "Module-level dependency validation call should be removed"
 
         # Check that validation is inside create_app function
-        create_app_section = content.split("def create_app()")[1].split("def ")[0]
+        # Parse the file using AST to robustly find module-level and function-level code
+        tree = ast.parse(content, filename=main_py_path)
+
+        # Gather all top-level statements (module-level)
+        module_level_lines = []
+        for node in tree.body:
+            if not isinstance(node, ast.FunctionDef):
+                module_level_lines.append(content[node.lineno - 1])
+
+        module_level_code = "\n".join(module_level_lines)
+
+        assert (
+            "dependency_validator = DependencyValidator()" not in module_level_code
+        ), "Module-level dependency validator instantiation should be removed"
+        assert (
+            "dependency_validator.ensure_critical_dependencies()" not in module_level_code
+        ), "Module-level dependency validation call should be removed"
+
+        # Find the create_app function definition
+        create_app_func = None
+        for node in tree.body:
+            if isinstance(node, ast.FunctionDef) and node.name == "create_app":
+                create_app_func = node
+                break
+        assert create_app_func is not None, "create_app function not found"
+
+        # Extract the source code for the create_app function body
+        # (Get lines from the start of the function to the end)
+        func_start = create_app_func.body[0].lineno - 1
+        func_end = create_app_func.body[-1].end_lineno if hasattr(create_app_func.body[-1], "end_lineno") else create_app_func.body[-1].lineno
+        func_lines = content.splitlines()[func_start:func_end]
+        create_app_section = "\n".join(func_lines)
         assert (
             "dependency_validator = DependencyValidator()" in create_app_section
         ), "Dependency validator should be instantiated inside create_app()"
