@@ -61,7 +61,7 @@ describe('Projects Component', () => {
           headers: {
             get: (name) => name === 'content-type' ? 'application/json' : null
           },
-          json: () => Promise.resolve({ projects: mockProjects })
+          json: () => Promise.resolve(createMockProjectsApiResponse(mockProjects))
         })
       }
       
