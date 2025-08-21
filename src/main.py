@@ -190,7 +190,9 @@ def create_app():
             "status": "healthy" if critical_ok else "unhealthy",
             "timestamp": datetime.now(timezone.utc).isoformat(),
             "version": "2.0.0",  # Added for test compatibility
-            "environment": os.environ.get("FLASK_ENV", "development"),  # Added for test compatibility
+            "environment": os.environ.get(
+                "FLASK_ENV", "development"
+            ),  # Added for test compatibility
             "database_status": db_status,  # Added for test compatibility
             "dependencies": {
                 "critical": {
