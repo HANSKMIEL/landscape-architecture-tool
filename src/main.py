@@ -12,16 +12,6 @@ from datetime import datetime, timezone
 # Add project root to Python path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-# Define version for health endpoint
-__version__ = "2.0.0"
-
-# Validate critical dependencies before importing Flask components
-from src.utils.dependency_validator import DependencyValidator  # noqa: E402
-
-# Ensure critical production dependencies are available
-dependency_validator = DependencyValidator()
-dependency_validator.ensure_critical_dependencies()
-
 from flask import Flask, jsonify
 from flask_cors import CORS
 from flask_limiter import Limiter
@@ -29,14 +19,14 @@ from flask_limiter.util import get_remote_address
 from flask_migrate import Migrate
 from sqlalchemy import text
 
-from src.config import get_config  # noqa: E402
-from src.models.user import db  # noqa: E402
-from src.routes.plant_recommendations import plant_recommendations_bp  # noqa: E402
-from src.routes.project_plants import project_plants_bp  # noqa: E402
-from src.routes.reports import reports_bp  # noqa: E402
-from src.schemas import ClientCreateSchema  # noqa: E402
-from src.schemas import ClientUpdateSchema  # noqa: E402
+from src.config import get_config
+from src.models.user import db
+from src.routes.plant_recommendations import plant_recommendations_bp
+from src.routes.project_plants import project_plants_bp
+from src.routes.reports import reports_bp
 from src.schemas import (
+    ClientCreateSchema,
+    ClientUpdateSchema,
     PlantCreateSchema,
     PlantUpdateSchema,
     ProductCreateSchema,
@@ -46,15 +36,25 @@ from src.schemas import (
     SupplierCreateSchema,
     SupplierUpdateSchema,
 )
-from src.services import ClientService  # noqa: E402
-from src.services import PlantService  # noqa: E402
-from src.services import ProductService, ProjectService, SupplierService
-from src.services.analytics import AnalyticsService  # noqa: E402
-from src.services.dashboard_service import DashboardService  # noqa: E402
-from src.utils.db_init import initialize_database  # noqa: E402
-from src.utils.db_init import populate_sample_data
-from src.utils.error_handlers import handle_errors  # noqa: E402
-from src.utils.error_handlers import register_error_handlers  # noqa: E402
+from src.services import (
+    ClientService,
+    PlantService,
+    ProductService,
+    ProjectService,
+    SupplierService,
+)
+from src.services.analytics import AnalyticsService
+from src.services.dashboard_service import DashboardService
+from src.utils.db_init import initialize_database, populate_sample_data
+from src.utils.dependency_validator import DependencyValidator
+from src.utils.error_handlers import handle_errors, register_error_handlers
+
+# Define version for health endpoint
+__version__ = "2.0.0"
+
+# Validate critical dependencies before importing Flask components
+dependency_validator = DependencyValidator()
+dependency_validator.ensure_critical_dependencies()
 
 
 # Configure logging

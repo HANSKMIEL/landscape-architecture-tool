@@ -1,14 +1,11 @@
 # Test file for Reports API Routes
 # This file handles comprehensive testing of report generation operations
 
-import json
 from datetime import datetime
-from io import BytesIO
 from unittest.mock import MagicMock, patch
 
 import pytest
 
-from src.models.landscape import Client, Plant, Product, Project, ProjectPlant, Supplier
 from tests.fixtures.database import DatabaseTestMixin
 
 

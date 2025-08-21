@@ -6,10 +6,10 @@ Enhanced test configuration with comprehensive fixtures and factory patterns
 import os
 import sys
 
-import pytest
-
 # Add project root to Python path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+import pytest
 
 from src.main import create_app
 from src.models.user import db
