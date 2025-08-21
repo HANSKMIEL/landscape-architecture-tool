@@ -175,7 +175,7 @@ def create_app():
         db_status = "unknown"
         try:
             # Simple database connectivity test
-            db.session.execute("SELECT 1")
+            db.session.execute(text("SELECT 1"))
             db_status = "connected"
         except Exception as e:
             db_status = "error"
