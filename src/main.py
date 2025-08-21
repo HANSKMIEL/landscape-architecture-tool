@@ -178,7 +178,7 @@ def create_app():
             db.session.execute("SELECT 1")
             db_status = "connected"
         except Exception as e:
-            db_status = f"error: {str(e)}"
+            db_status = "error"
             logger.warning(f"Database connectivity issue in health check: {e}")
 
         health_data = {
