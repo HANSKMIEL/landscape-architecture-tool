@@ -133,6 +133,17 @@ class TestErrorHandlers:
                 assert "error" in data
                 assert "validation_errors" in data
 
+    def test_handle_validation_error_generic(self, app):
+        """Test handling of generic validation errors (non-pydantic)"""
+        with app.app_context():
+            # Create a non-pydantic validation error
+            error = ValueError("Generic validation error")
+            response = handle_validation_error(error)
+
+            assert response[1] == 400
+            data = json.loads(response[0].data.decode())
+            assert data["error"] == "Generic validation error"
+
     def test_handle_not_found_error(self, app):
         """Test not found error handler"""
         with app.app_context():
