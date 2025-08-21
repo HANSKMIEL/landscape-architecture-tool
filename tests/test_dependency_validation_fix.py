@@ -132,7 +132,7 @@ except Exception as e:
         create_app_validation_call = False
 
         for node in tree.body:
-            # Check for module-level assignment: dependency_validator = DependencyValidator()
+            # Check for module-level assignment
             if isinstance(node, ast.Assign):
                 for target in node.targets:
                     if (
