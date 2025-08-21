@@ -43,7 +43,7 @@ class TestDependencyValidationFix:
     def test_module_import_isolation(self):
         """Test module import in a subprocess to ensure clean isolation"""
         # Use subprocess to test clean import without validation
-        current_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        current_dir = self.PROJECT_ROOT
         result = subprocess.run(
             [
                 sys.executable,
