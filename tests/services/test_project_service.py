@@ -4,8 +4,6 @@ Test Project Service
 Comprehensive tests for project service layer business logic.
 """
 
-from datetime import datetime, timedelta
-
 import pytest
 
 from src.models.landscape import Project, ProjectPlant

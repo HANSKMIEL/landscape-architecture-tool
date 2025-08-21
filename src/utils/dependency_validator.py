@@ -9,7 +9,7 @@ import importlib.util
 import logging
 import sys
 import warnings
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Tuple
 
 logger = logging.getLogger(__name__)
 
@@ -132,26 +132,27 @@ class DependencyValidator:
                 )
 
         if self.missing_optional:
-            warnings.warn(
-                f"Some optional dependencies are missing: {', '.join(self.missing_optional)}. "
             install_cmds = [
                 f"  {dep}: pip install {dep.replace('_', '-')}"
                 for dep in self.missing_optional
             ]
+            missing_deps = ", ".join(self.missing_optional)
             warning_msg = (
-                f"Some optional dependencies are missing: {', '.join(self.missing_optional)}.\n"
-                "This may limit development/testing features but won't affect core functionality.\n"
-                "To install the missing dependencies, run:\n"
-                + "\n".join(install_cmds)
+                f"Some optional dependencies are missing: {missing_deps}.\n"
+                "This may limit development/testing features but won't affect "
+                "core functionality.\n"
+                "To install the missing dependencies, run:\n" + "\n".join(install_cmds)
             )
             warnings.warn(
                 warning_msg,
                 UserWarning,
             )
 
-        logger.info(
-            f"Optional dependencies: {available_count}/{len(self.OPTIONAL_DEPENDENCIES)} available"
+        optional_available = (
+            f"Optional dependencies: {available_count}/"
+            f"{len(self.OPTIONAL_DEPENDENCIES)} available"
         )
+        logger.info(optional_available)
         return available_count, self.missing_optional
 
     def get_validation_report(self) -> str:
@@ -193,12 +194,17 @@ class DependencyValidator:
             )
             report_lines.append(f"  {dep_name}: {status}")
 
+        critical_count = len(self.CRITICAL_DEPENDENCIES)
+        critical_available = critical_count - len(self.missing_critical)
+        optional_count = len(self.OPTIONAL_DEPENDENCIES)
+        optional_available = optional_count - len(self.missing_optional)
+
         report_lines.extend(
             [
                 "",
                 "Summary:",
-                f"  Critical: {len(self.CRITICAL_DEPENDENCIES) - len(self.missing_critical)}/{len(self.CRITICAL_DEPENDENCIES)} available",
-                f"  Optional: {len(self.OPTIONAL_DEPENDENCIES) - len(self.missing_optional)}/{len(self.OPTIONAL_DEPENDENCIES)} available",
+                f"  Critical: {critical_available}/{critical_count} available",
+                f"  Optional: {optional_available}/{optional_count} available",
             ]
         )
 
@@ -207,8 +213,10 @@ class DependencyValidator:
                 [
                     "",
                     "🚨 ACTION REQUIRED:",
-                    "  Missing critical dependencies will prevent application from functioning.",
-                    "  Install missing dependencies with: pip install -r requirements.txt",
+                    "  Missing critical dependencies will prevent application "
+                    "from functioning.",
+                    "  Install missing dependencies with: "
+                    "pip install -r requirements.txt",
                 ]
             )
         elif self.missing_optional:
@@ -253,9 +261,12 @@ class DependencyValidator:
         critical_success, missing = self.validate_critical_dependencies()
 
         if not critical_success:
+            missing_list = ", ".join(missing)
             error_msg = (
-                f"Application cannot start due to missing critical dependencies: {', '.join(missing)}\n"
-                "Please install required dependencies with: pip install -r requirements.txt"
+                f"Application cannot start due to missing critical dependencies: "
+                f"{missing_list}\n"
+                "Please install required dependencies with: "
+                "pip install -r requirements.txt"
             )
             logger.critical(error_msg)
             print(f"🚨 CRITICAL ERROR: {error_msg}", file=sys.stderr)

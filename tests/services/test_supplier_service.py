@@ -6,7 +6,7 @@ Comprehensive tests for supplier service layer business logic.
 
 import pytest
 
-from src.models.landscape import Plant, Product, Supplier
+from src.models.landscape import Product, Supplier
 from src.models.user import db
 from src.services.supplier_service import SupplierService
 from tests.fixtures.database import DatabaseTestMixin

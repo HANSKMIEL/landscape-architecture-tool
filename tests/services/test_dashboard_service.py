@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 
 import pytest
 
-from src.models.landscape import Client, Plant, Product, Project, ProjectPlant, Supplier
+from src.models.landscape import Client, Plant, Project, ProjectPlant, Supplier
 from src.models.user import db
 from src.services.dashboard_service import DashboardService
 from tests.fixtures.database import DatabaseTestMixin

@@ -7,8 +7,6 @@ import os
 import sys
 from unittest.mock import MagicMock, patch
 
-import pytest
-
 # Add project root to Python path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -221,3 +219,35 @@ class TestCoverageBoost:
                 # Cover error handling paths
             except Exception:
                 pass
+
+    def test_plant_recommendation_request_to_dict(self):
+        """Test PlantRecommendationRequest to_dict method for coverage"""
+        from src.models.landscape import PlantRecommendationRequest
+
+        # Create a PlantRecommendationRequest with minimal required fields
+        request = PlantRecommendationRequest(
+            project_type="residential",
+            site_conditions={"soil": "clay"},
+            hardiness_zone="6a",
+            sun_exposure="full_sun",
+        )
+
+        # Test the to_dict method
+        result = request.to_dict()
+        assert isinstance(result, dict)
+        assert result["project_type"] == "residential"
+        assert result["hardiness_zone"] == "6a"
+        assert result["sun_exposure"] == "full_sun"
+
+    def test_user_to_dict(self):
+        """Test User to_dict method for coverage"""
+        from src.models.user import User
+
+        # Create a User with minimal required fields
+        user = User(username="testuser", email="test@example.com")
+
+        # Test the to_dict method
+        result = user.to_dict()
+        assert isinstance(result, dict)
+        assert result["username"] == "testuser"
+        assert result["email"] == "test@example.com"

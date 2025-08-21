@@ -6,7 +6,7 @@ Comprehensive tests for client service layer business logic.
 
 import pytest
 
-from src.models.landscape import Client, Project
+from src.models.landscape import Client
 from src.models.user import db
 from src.services.client_service import ClientService
 from tests.fixtures.database import DatabaseTestMixin

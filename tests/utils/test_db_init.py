@@ -2,13 +2,10 @@
 Tests for database initialization utilities
 """
 
-import logging
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import Mock, patch
 
 import pytest
 
-from src.models.landscape import Client, Plant, Product, Project, Supplier
-from src.models.user import db
 from src.utils.db_init import initialize_database, populate_sample_data
 
 

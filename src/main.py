@@ -7,32 +7,26 @@ Refactored modular version with persistent database
 import logging
 import os
 import sys
-from datetime import datetime
+from datetime import datetime, timezone
 
 # Add project root to Python path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-# Validate critical dependencies before importing Flask components
-from src.utils.dependency_validator import DependencyValidator  # noqa: E402
-
-# Ensure critical production dependencies are available
-dependency_validator = DependencyValidator()
-dependency_validator.ensure_critical_dependencies()
 
 from flask import Flask, jsonify
 from flask_cors import CORS
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_migrate import Migrate
+from sqlalchemy import text
 
-from src.config import get_config  # noqa: E402
-from src.models.user import db  # noqa: E402
-from src.routes.plant_recommendations import plant_recommendations_bp  # noqa: E402
-from src.routes.project_plants import project_plants_bp  # noqa: E402
-from src.routes.reports import reports_bp  # noqa: E402
-from src.schemas import ClientCreateSchema  # noqa: E402
-from src.schemas import ClientUpdateSchema  # noqa: E402
+from src.config import get_config
+from src.models.user import db
+from src.routes.plant_recommendations import plant_recommendations_bp
+from src.routes.project_plants import project_plants_bp
+from src.routes.reports import reports_bp
 from src.schemas import (
+    ClientCreateSchema,
+    ClientUpdateSchema,
     PlantCreateSchema,
     PlantUpdateSchema,
     ProductCreateSchema,
@@ -42,15 +36,21 @@ from src.schemas import (
     SupplierCreateSchema,
     SupplierUpdateSchema,
 )
-from src.services import ClientService  # noqa: E402
-from src.services import PlantService  # noqa: E402
-from src.services import ProductService, ProjectService, SupplierService
-from src.services.analytics import AnalyticsService  # noqa: E402
-from src.services.dashboard_service import DashboardService  # noqa: E402
-from src.utils.db_init import initialize_database  # noqa: E402
-from src.utils.db_init import populate_sample_data
-from src.utils.error_handlers import handle_errors  # noqa: E402
-from src.utils.error_handlers import register_error_handlers  # noqa: E402
+from src.services import (
+    ClientService,
+    PlantService,
+    ProductService,
+    ProjectService,
+    SupplierService,
+)
+from src.services.analytics import AnalyticsService
+from src.services.dashboard_service import DashboardService
+from src.utils.db_init import initialize_database, populate_sample_data
+from src.utils.dependency_validator import DependencyValidator
+from src.utils.error_handlers import handle_errors, register_error_handlers
+
+# Define version for health endpoint
+__version__ = "2.0.0"
 
 
 # Configure logging
@@ -84,6 +84,11 @@ def create_app():
     config = get_config()
     app.config.from_object(config)
 
+    # Validate critical dependencies - only when app is actually created
+    # (not during module import for testing or introspection)
+    dependency_validator = DependencyValidator()
+    dependency_validator.ensure_critical_dependencies()
+
     # Configure logging
     configure_logging(app)
 
@@ -108,7 +113,9 @@ def create_app():
             limiter = Limiter(
                 key_func=get_remote_address,
                 default_limits=[app.config["RATELIMIT_DEFAULT"]],
+                storage_uri=storage_url,
             )
+            logger.info("Rate limiting configured with Redis storage")
         except (
             ImportError,
             redis.ConnectionError,
@@ -124,12 +131,14 @@ def create_app():
                 storage_uri="memory://",
             )
     else:
-        # Use memory storage without warnings
+        # Use memory storage explicitly to suppress warnings in testing/development
         limiter = Limiter(
             key_func=get_remote_address,
             default_limits=[app.config["RATELIMIT_DEFAULT"]],
             storage_uri="memory://",
         )
+        if app.config.get("TESTING"):
+            logger.debug("Rate limiting configured with in-memory storage for testing")
 
     limiter.init_app(app)
 
@@ -183,7 +192,12 @@ def create_app():
 
         health_data = {
             "status": "healthy" if critical_ok else "unhealthy",
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "version": __version__,  # Added for test compatibility
+            "environment": os.environ.get(
+                "FLASK_ENV", "development"
+            ),  # Added for test compatibility
+            "database_status": db_status,  # Added for test compatibility
             "dependencies": {
                 "critical": {
                     "status": "ok" if critical_ok else "missing",
@@ -1257,20 +1271,6 @@ def create_app():
             return jsonify({"error": "Project not found"}), 404
 
         return jsonify({"message": "Project deleted successfully"})
-
-    # Health check endpoint
-    @app.route("/health", methods=["GET"])
-    def health_check():
-        """Health check endpoint"""
-        return jsonify(
-            {
-                "status": "healthy",
-                "timestamp": datetime.now().isoformat(),
-                "version": "2.0.0",
-                "database_status": "connected",
-                "environment": os.environ.get("FLASK_ENV", "development"),
-            }
-        )
 
     # Add security headers
     @app.after_request
