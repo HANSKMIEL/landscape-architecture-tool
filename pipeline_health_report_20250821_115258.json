@@ -1,0 +1,26 @@
+{
+  "timestamp": "2025-08-21T11:52:58.989304",
+  "overall_status": "warning",
+  "checks": {
+    "git_status": {
+      "status": "healthy",
+      "uncommitted_files": 0
+    },
+    "dependencies": {
+      "status": "healthy",
+      "conflicts": false
+    },
+    "database": {
+      "status": "error",
+      "error": "No module named 'psycopg2'"
+    },
+    "code_quality": {
+      "status": "error",
+      "error": "[Errno 2] No such file or directory: 'black'"
+    },
+    "tests": {
+      "status": "error",
+      "tests_passing": false
+    }
+  }
+}
