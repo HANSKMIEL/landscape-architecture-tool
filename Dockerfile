@@ -5,7 +5,7 @@
 # docker build --no-cache -t landscape-architecture-tool .
 #
 # Stage 1: Build stage
-FROM python:3.11-slim as builder
+FROM python:3.13-slim as builder
 
 WORKDIR /app
 
@@ -46,7 +46,7 @@ print('✅ All critical dependencies validated in Docker build')
 "
 
 # Stage 2: Production stage
-FROM python:3.11-slim as production
+FROM python:3.13-slim as production
 
 WORKDIR /app
 
