@@ -213,7 +213,7 @@ pyjwt[crypto]==2.10.1
     #   pyjwt
 python-dotenv==1.1.1
     # via -r requirements.in
-redis==4.6.0
+redis==6.4.0
     # via -r requirements.in
 reportlab==4.4.3
     # via -r requirements.in
