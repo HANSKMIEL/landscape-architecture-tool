@@ -87,6 +87,9 @@ src/static/assets/
 
 # IDE
 .vscode/
+!.vscode/settings.json
+!.vscode/launch.json
+!.vscode/tasks.json
 .idea/
 *.swp
 *.swo
@@ -176,3 +179,8 @@ draft_*.py
 .black_cache/
 .isort.cfg
 
+
+# Copilot temporary files
+*.copilot.tmp
+copilot_session_*
+.copilot_*

@@ -1,0 +1,51 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: Flask App",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/src/main.py",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}",
+                "FLASK_ENV": "development",
+                "FLASK_DEBUG": "1"
+            },
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}",
+            "stopOnEntry": false,
+            "timeout": 30000
+        },
+        {
+            "name": "Python: Pytest Current File",
+            "type": "python",
+            "request": "launch",
+            "module": "pytest",
+            "args": [
+                "${file}",
+                "-v",
+                "--tb=short"
+            ],
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}",
+                "FLASK_ENV": "testing"
+            },
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}",
+            "timeout": 30000
+        },
+        {
+            "name": "Python: Copilot Workflow",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/scripts/copilot_workflow.py",
+            "args": ["--all"],
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            },
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}",
+            "timeout": 60000
+        }
+    ]
+}

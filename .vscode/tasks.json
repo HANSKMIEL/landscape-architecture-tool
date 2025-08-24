@@ -1,0 +1,108 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Clean Copilot Files",
+            "type": "shell",
+            "command": "python",
+            "args": ["scripts/copilot_workflow.py", "--cleanup"],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Format Code",
+            "type": "shell",
+            "command": "python",
+            "args": ["scripts/copilot_workflow.py", "--format"],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Validate Code Quality", 
+            "type": "shell",
+            "command": "python",
+            "args": ["scripts/copilot_workflow.py", "--validate"],
+            "group": "test",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Run Tests",
+            "type": "shell", 
+            "command": "python",
+            "args": ["scripts/copilot_workflow.py", "--test"],
+            "group": "test",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Full Copilot Workflow",
+            "type": "shell",
+            "command": "python", 
+            "args": ["scripts/copilot_workflow.py", "--all"],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [],
+            "dependsOrder": "sequence"
+        },
+        {
+            "label": "Reset Development Environment",
+            "type": "shell",
+            "command": "bash",
+            "args": ["scripts/reset_dev_environment.sh"],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always", 
+                "focus": false,
+                "panel": "shared"
+            },
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": []
+        }
+    ]
+}
