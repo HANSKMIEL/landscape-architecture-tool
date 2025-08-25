@@ -242,7 +242,7 @@ multidict==6.6.3
     #   yarl
 mypy-extensions==1.1.0
     # via black
-openai==1.98.0
+openai==1.101.0
     # via -r requirements.in
 opentelemetry-api==1.36.0
     # via
@@ -453,6 +453,7 @@ typing-extensions==4.14.1
     #   azure-identity
     #   azure-storage-blob
     #   azure-storage-file-datalake
+    #   ipython
     #   limits
     #   openai
     #   opentelemetry-api
