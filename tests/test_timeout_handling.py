@@ -10,11 +10,11 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-# Add project root to Python path
-
 from src.main import create_app
 from src.models.user import db
 from tests.conftest import _cleanup_database
+
+# Add project root to Python path
 
 
 class TestTimeoutHandling:
