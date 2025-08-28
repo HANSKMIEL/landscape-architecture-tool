@@ -15,6 +15,10 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 class TestDependencyValidationFix:
     """Test that dependency validation is properly moved to create_app()"""
+    
+    def setup_method(self):
+        """Setup method called before each test method"""
+        self.PROJECT_ROOT = os.path.dirname(os.path.dirname(__file__))
 
     def test_module_import_without_validation(self):
         """Test that the main module can be imported without triggering validation"""
