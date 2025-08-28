@@ -532,9 +532,28 @@ jobs:
         
         # Start backend in background with logging and timeout protection
         echo "Starting backend application..."
-        timeout 300 python src/main.py > backend.log 2>&1 &
-        BACKEND_PID=$!
-        
+        (
+          python src/main.py > backend.log 2>&1 &
+          BACKEND_PID=$!
+          # Wait up to 300 seconds for the backend to exit
+          SECONDS=0
+          while kill -0 "$BACKEND_PID" 2>/dev/null; do
+            if [ "$SECONDS" -ge 300 ]; then
+              echo "❌ Backend process exceeded 300 seconds, killing..."
+              kill "$BACKEND_PID" 2>/dev/null || true
+              # Give it a moment to terminate gracefully
+              sleep 5
+              kill -9 "$BACKEND_PID" 2>/dev/null || true
+              exit 124
+            fi
+            sleep 1
+          done
+        ) &
+        BACKEND_WRAPPER_PID=$!
+        # Save the actual backend PID for later use (for kill in error handler)
+        # Wait a moment to ensure BACKEND_PID is set
+        sleep 2
+        BACKEND_PID=$(pgrep -f "python src/main.py" | head -n1)
         # Wait for backend to start with enhanced timeout and failure detection
         echo "Waiting for backend to be ready..."
         START_TIME=$(date +%s)
