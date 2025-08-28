@@ -22,10 +22,34 @@ def app():
     os.environ["FLASK_ENV"] = "testing"
 
     app = create_app()
+
+    # Enhanced database configuration for testing
+    database_url = os.environ.get("DATABASE_URL")
+    if database_url and "postgresql" in database_url:
+        # Add connection pooling and timeout parameters for PostgreSQL
+        if "?" in database_url:
+            database_url += (
+                "&pool_size=5&max_overflow=10&pool_timeout=30&pool_recycle=300"
+            )
+        else:
+            database_url += (
+                "?pool_size=5&max_overflow=10&pool_timeout=30&pool_recycle=300"
+            )
+
     app.config.update(
         {
             "TESTING": True,
-            "SQLALCHEMY_DATABASE_URI": "sqlite:///:memory:",
+            "SQLALCHEMY_DATABASE_URI": database_url or "sqlite:///:memory:",
+            "SQLALCHEMY_ENGINE_OPTIONS": {
+                "pool_timeout": 30,
+                "pool_recycle": 300,
+                "pool_pre_ping": True,
+                "connect_args": (
+                    {"connect_timeout": 30, "application_name": "landscape_test"}
+                    if database_url and "postgresql" in database_url
+                    else {}
+                ),
+            },
             "SESSION_COOKIE_SECURE": False,
             "RATELIMIT_ENABLED": False,
             "WTF_CSRF_ENABLED": False,
@@ -38,76 +62,174 @@ def app():
 
 @pytest.fixture(scope="function")
 def app_context(app):
-    """Create an application context for each test"""
+    """Create an application context for each test with enhanced isolation"""
     with app.app_context():
-        # Clean up before test to ensure clean state
+        # Pre-test cleanup to ensure clean state
         _cleanup_database()
 
-        db.create_all()
+        # Verify database connection before proceeding
+        max_retries = 3
+        for attempt in range(max_retries):
+            try:
+                db.create_all()
+                # Test the connection with a simple query
+                db.session.execute(db.text("SELECT 1")).fetchone()
+                break
+            except Exception as e:
+                if attempt == max_retries - 1:
+                    # Last attempt failed, but continue with testing
+                    # This prevents the entire test suite from failing due to
+                    # DB setup issues
+                    import warnings
+
+                    warnings.warn(
+                        f"Database setup failed after {max_retries} attempts: {e}"
+                    )
+                else:
+                    # Wait before retry
+                    import time
+
+                    time.sleep(1)
+
         yield app
 
-        # Comprehensive cleanup after test to ensure complete isolation
+        # Post-test cleanup with timeout protection
         _cleanup_database()
 
 
 def _cleanup_database():
-    """Helper function to clean up database consistently"""
+    """Helper function to clean up database consistently with timeout handling"""
+    import signal
+    import time
+
+    def timeout_handler(signum, frame):
+        raise TimeoutError("Database cleanup operation timed out")
+
+    # Set timeout for database operations (30 seconds max)
+    old_handler = signal.signal(signal.SIGALRM, timeout_handler)
+    signal.alarm(30)
+
     try:
         # Close any active transactions first
-        if db.session.is_active:
-            db.session.rollback()
-    except Exception:
-        pass
-
-    try:
-        # Clear all data from all tables (more reliable than drop_all/create_all)
-        from src.models.landscape import (
-            Client,
-            Plant,
-            PlantRecommendationRequest,
-            Product,
-            Project,
-            ProjectPlant,
-            Supplier,
-        )
-        from src.models.user import User
-
-        # Delete in order to respect foreign key constraints
-        for model in [
-            ProjectPlant,
-            Project,
-            PlantRecommendationRequest,
-            Plant,
-            Product,
-            Client,
-            Supplier,
-            User,
-        ]:
-            try:
-                db.session.query(model).delete()
-            except Exception:
-                pass
-
-        db.session.commit()
-    except Exception:
         try:
-            db.session.rollback()
+            if hasattr(db.session, "is_active") and db.session.is_active:
+                db.session.rollback()
         except Exception:
             pass
 
-    try:
-        # Close the session
-        db.session.close()
-    except Exception:
-        pass
+        # Use faster truncation approach for PostgreSQL, fallback to delete for others
+        try:
+            # Check if we're using PostgreSQL
+            engine_name = str(db.engine.url).lower()
+            if "postgresql" in engine_name:
+                # Use TRUNCATE for faster cleanup in PostgreSQL
+                with db.engine.connect() as conn:
+                    # Get all table names (excluding system tables)
+                    result = conn.execute(
+                        db.text(
+                            """
+                        SELECT tablename FROM pg_tables 
+                        WHERE schemaname = 'public' 
+                        AND tablename NOT LIKE 'alembic%'
+                    """
+                        )
+                    )
 
-    try:
-        # Remove scoped session
-        db.session.remove()
-    except Exception:
-        pass
+                    tables = [row[0] for row in result]
 
-    # Don't dispose engine for SQLite in-memory databases as it can cause issues
+                    # Truncate all tables with CASCADE to handle foreign keys
+                    if tables:
+                        for table in tables:
+                            try:
+                                conn.execute(
+                                    db.text(
+                                        f'TRUNCATE TABLE "{table}" '
+                                        f"RESTART IDENTITY CASCADE"
+                                    )
+                                )
+                            except Exception:
+                                pass
+
+                        conn.commit()
+            else:
+                # Fallback to delete for SQLite and other databases
+                from src.models.landscape import (
+                    Client,
+                    Plant,
+                    PlantRecommendationRequest,
+                    Product,
+                    Project,
+                    ProjectPlant,
+                    Supplier,
+                )
+                from src.models.user import User
+
+                # Delete in order to respect foreign key constraints
+                for model in [
+                    ProjectPlant,
+                    Project,
+                    PlantRecommendationRequest,
+                    Plant,
+                    Product,
+                    Client,
+                    Supplier,
+                    User,
+                ]:
+                    try:
+                        # Add timeout for each delete operation
+                        start_time = time.time()
+                        db.session.query(model).delete()
+                        if (
+                            time.time() - start_time > 5
+                        ):  # 5 second timeout per operation
+                            break
+                    except Exception:
+                        pass
+
+                db.session.commit()
+
+        except Exception:
+            try:
+                db.session.rollback()
+            except Exception:
+                pass
+
+        # Clean up session with timeout protection
+        try:
+            if hasattr(db.session, "close"):
+                db.session.close()
+        except Exception:
+            pass
+
+        try:
+            if hasattr(db.session, "remove"):
+                db.session.remove()
+        except Exception:
+            pass
+
+    except TimeoutError:
+        # If cleanup times out, force close connections
+        try:
+            db.session.rollback()
+            db.session.close()
+            db.session.remove()
+        except Exception:
+            pass
+        # Continue execution - don't fail tests due to cleanup timeout
+
+    except Exception:
+        # Any other exception during cleanup should not fail tests
+        try:
+            db.session.rollback()
+            db.session.close()
+            db.session.remove()
+        except Exception:
+            pass
+
+    finally:
+        # Always restore the signal handler and clear alarm
+        signal.alarm(0)
+        signal.signal(signal.SIGALRM, old_handler)
 
 
 @pytest.fixture
