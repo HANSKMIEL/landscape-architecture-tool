@@ -118,8 +118,8 @@ jobs:
         import time
         import sys
         
-        # Test PostgreSQL with retry logic
-        for attempt in range(15):
+        # Test PostgreSQL with reduced retry logic (max 30 seconds)
+        for attempt in range(10):
             try:
                 conn = psycopg2.connect(
                     'postgresql://postgres:postgres_password@localhost:5432/landscape_test'
@@ -128,26 +128,26 @@ jobs:
                 print('✅ PostgreSQL connection successful')
                 break
             except Exception as e:
-                print(f'PostgreSQL attempt {attempt+1}/15: {e}')
-                if attempt < 14:
-                    time.sleep(5)
+                print(f'PostgreSQL attempt {attempt+1}/10: {e}')
+                if attempt < 9:
+                    time.sleep(3)  # Reduced from 5 to 3 seconds
                 else:
-                    print('❌ PostgreSQL connection failed after 15 attempts')
+                    print('❌ PostgreSQL connection failed after 10 attempts')
                     sys.exit(1)
         
-        # Test Redis with retry logic  
-        for attempt in range(15):
+        # Test Redis with reduced retry logic (max 30 seconds)
+        for attempt in range(10):
             try:
                 r = redis.from_url('redis://localhost:6379/1')
                 r.ping()
                 print('✅ Redis connection successful')
                 break
             except Exception as e:
-                print(f'Redis attempt {attempt+1}/15: {e}')
-                if attempt < 14:
-                    time.sleep(5)
+                print(f'Redis attempt {attempt+1}/10: {e}')
+                if attempt < 9:
+                    time.sleep(3)  # Reduced from 5 to 3 seconds
                 else:
-                    print('❌ Redis connection failed after 15 attempts')
+                    print('❌ Redis connection failed after 10 attempts')
                     sys.exit(1)
         
         print('🎉 All database services are ready and validated')
@@ -202,18 +202,38 @@ jobs:
       env:
         PYTHONPATH: .
         FLASK_ENV: testing
+      timeout-minutes: 15
       run: |
-        python -m pytest tests/ -v --tb=short --maxfail=5
+        echo "🧪 Running backend tests with SQLite..."
+        python -m pytest tests/ -v --tb=short --maxfail=5 --timeout=600
         
     - name: Test backend with PostgreSQL
       env:
-        DATABASE_URL: postgresql://postgres:postgres_password@localhost:5432/landscape_test?connect_timeout=30&application_name=ci_test
+        DATABASE_URL: postgresql://postgres:postgres_password@localhost:5432/landscape_test?connect_timeout=30&application_name=ci_test&pool_size=5&max_overflow=10
         REDIS_URL: redis://localhost:6379/1
         SECRET_KEY: test-secret-key-not-for-production
         PYTHONPATH: .
         FLASK_ENV: testing
+      timeout-minutes: 20
       run: |
-        python -m pytest tests/ -v --tb=short --maxfail=5
+        echo "🧪 Running backend tests with PostgreSQL..."
+        
+        # Additional validation before running tests
+        python -c "
+        import psycopg2
+        import sys
+        try:
+            conn = psycopg2.connect('$DATABASE_URL')
+            conn.close()
+            print('✅ PostgreSQL connection validated')
+        except Exception as e:
+            print(f'❌ PostgreSQL connection failed: {e}')
+            sys.exit(1)
+        "
+        
+        # Run tests with timeout and memory monitoring
+        python -m pytest tests/ -v --tb=short --maxfail=5 --timeout=600 \
+          --durations=10 --durations-min=5.0
 
   test-frontend:
     runs-on: ubuntu-latest
@@ -465,20 +485,21 @@ jobs:
         
     - name: Run integration tests
       env:
-        DATABASE_URL: postgresql://postgres:postgres_password@localhost:5432/landscape_integration_test?connect_timeout=30&application_name=integration_test
+        DATABASE_URL: postgresql://postgres:postgres_password@localhost:5432/landscape_integration_test?connect_timeout=30&application_name=integration_test&pool_size=5&max_overflow=10
         REDIS_URL: redis://localhost:6379/1
         SECRET_KEY: integration-test-secret-key
         FLASK_ENV: testing
         PYTHONPATH: .
+      timeout-minutes: 25
       run: |
-        # Enhanced service health validation
+        # Enhanced service health validation with timeout
         echo "Validating service connections..."
-        python -c "
+        timeout 60 python -c "
         import psycopg2
         import redis
         import time
         
-        # Test PostgreSQL connection
+        # Test PostgreSQL connection with reduced retries
         for i in range(10):
             try:
                 conn = psycopg2.connect('$DATABASE_URL')
@@ -491,7 +512,7 @@ jobs:
         else:
             raise Exception('Failed to connect to PostgreSQL')
             
-        # Test Redis connection  
+        # Test Redis connection with reduced retries
         for i in range(10):
             try:
                 r = redis.from_url('$REDIS_URL')
@@ -503,53 +524,70 @@ jobs:
                 time.sleep(2)
         else:
             raise Exception('Failed to connect to Redis')
-        "
+        " || { echo "❌ Service validation failed"; exit 1; }
         
-        # Setup database
-        flask --app src.main db upgrade
+        # Setup database with timeout protection
+        echo "Setting up database..."
+        timeout 120 flask --app src.main db upgrade || { echo "❌ Database migration failed"; exit 1; }
         
-        # Start backend in background with logging
+        # Start backend in background with logging and timeout protection
         echo "Starting backend application..."
-        python src/main.py > backend.log 2>&1 &
+        timeout 300 python src/main.py > backend.log 2>&1 &
         BACKEND_PID=$!
         
-        # Wait for backend to start with enhanced timeout
+        # Wait for backend to start with enhanced timeout and failure detection
         echo "Waiting for backend to be ready..."
-        timeout 60 bash -c 'until curl -f http://localhost:5000/health; do sleep 2; done'
-        
+        START_TIME=$(date +%s)
+        timeout 120 bash -c '
+        while ! curl -f http://localhost:5000/health >/dev/null 2>&1; do 
+            sleep 3
+            CURRENT_TIME=$(date +%s)
+            ELAPSED=$((CURRENT_TIME - START_TIME))
+            if [ $ELAPSED -gt 90 ]; then
+                echo "❌ Backend startup timeout after 90 seconds"
+                exit 1
+            fi
+            echo "Waiting for backend... (${ELAPSED}s elapsed)"
+        done
+        ' || { 
+            echo "❌ Backend failed to start within timeout"
+            echo "Backend log contents:"
+            cat backend.log || echo "No backend log available"
+            kill $BACKEND_PID 2>/dev/null || true
+            exit 1 
+        }
+
         echo "Backend is ready, running integration tests..."
         
-        # Test API endpoints with error handling
+        # Test API endpoints with error handling and timeouts
         set -e  # Exit on any error
         
         echo "Testing health endpoint..."
-        curl -f http://localhost:5000/health
+        timeout 30 curl -f http://localhost:5000/health || { echo "❌ Health endpoint failed"; exit 1; }
         
         echo "Testing dashboard stats..."
-        curl -f http://localhost:5000/api/dashboard/stats
+        timeout 30 curl -f http://localhost:5000/api/dashboard/stats || { echo "❌ Dashboard stats failed"; exit 1; }
         
         echo "Testing CRUD operations..."
         
-        # Test supplier creation
-        SUPPLIER_RESPONSE=$(curl -X POST http://localhost:5000/api/suppliers \
+        # Test supplier creation with timeout
+        echo "Creating test supplier..."
+        SUPPLIER_RESPONSE=$(timeout 30 curl -X POST http://localhost:5000/api/suppliers \
           -H "Content-Type: application/json" \
-          -d '{"name":"Test Supplier","contact_person":"John Doe","email":"john@test.com","phone":"123-456-7890","address":"123 Test St"}')
+          -d '{"name":"Test Supplier","contact_person":"John Doe","email":"john@test.com","phone":"123-456-7890","address":"123 Test St"}' \
+          2>/dev/null) || { echo "❌ Supplier creation failed"; exit 1; }
         
         echo "Supplier creation response: $SUPPLIER_RESPONSE"
         
-        # Test supplier listing
+        # Test supplier listing with timeout
         echo "Testing supplier listing..."
-        curl -f http://localhost:5000/api/suppliers
+        timeout 30 curl -f http://localhost:5000/api/suppliers || { echo "❌ Supplier listing failed"; exit 1; }
         
         echo "✅ All integration tests passed"
         
-        # Collect application metrics
-        echo "Backend application metrics:" >> integration-artifacts/summary.txt
-        curl -s http://localhost:5000/health >> integration-artifacts/summary.txt 2>&1 || echo "Health endpoint not available" >> integration-artifacts/summary.txt
-        
-        # Cleanup
+        # Cleanup - ensure backend is stopped
         echo "Stopping backend application..."
-        kill $BACKEND_PID || true
+        kill $BACKEND_PID 2>/dev/null || true
         wait $BACKEND_PID 2>/dev/null || true
         
     - name: Collect integration test artifacts
