@@ -78,7 +78,8 @@ def app_context(app):
             except Exception as e:
                 if attempt == max_retries - 1:
                     # Last attempt failed, but continue with testing
-                    # This prevents the entire test suite from failing due to DB setup issues
+                    # This prevents the entire test suite from failing due to
+                    # DB setup issues
                     import warnings
 
                     warnings.warn(
@@ -142,7 +143,8 @@ def _cleanup_database():
                             try:
                                 conn.execute(
                                     db.text(
-                                        f'TRUNCATE TABLE "{table}" RESTART IDENTITY CASCADE'
+                                        f'TRUNCATE TABLE "{table}" '
+                                        f"RESTART IDENTITY CASCADE"
                                     )
                                 )
                             except Exception:
