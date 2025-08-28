@@ -1,0 +1,391 @@
+{
+  "name": "Project Milestone Tracking",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "project-milestone",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-milestone",
+      "name": "Webhook - Project Milestone",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [100, 300],
+      "webhookId": "project-milestone"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{$json.milestone}}",
+              "operation": "equal",
+              "value2": "design_completed"
+            }
+          ]
+        }
+      },
+      "id": "check-milestone-type",
+      "name": "Check Milestone Type",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [300, 300]
+    },
+    {
+      "parameters": {
+        "url": "=http://landscape-backend:5000/api/projects/{{$json.project_id}}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "get-project-details",
+      "name": "Get Project Details",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [500, 200]
+    },
+    {
+      "parameters": {
+        "url": "=http://landscape-backend:5000/api/clients/{{$json.client_id}}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "get-client-details",
+      "name": "Get Client Details",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [700, 200]
+    },
+    {
+      "parameters": {
+        "sendTo": "={{$('Get Client Details').item.json.email}}",
+        "subject": "=Design Phase Completed - {{$('Get Project Details').item.json.name}}",
+        "emailType": "html",
+        "message": "=<!DOCTYPE html>\n<html>\n<head>\n    <style>\n        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }\n        .header { background-color: #4CAF50; color: white; padding: 20px; text-align: center; }\n        .content { padding: 20px; }\n        .milestone { background-color: #e8f5e8; padding: 15px; border-left: 4px solid #4CAF50; margin: 20px 0; }\n        .progress-bar { background-color: #f1f1f1; border-radius: 10px; padding: 3px; }\n        .progress { background-color: #4CAF50; height: 20px; border-radius: 10px; color: white; text-align: center; line-height: 20px; }\n        .footer { background-color: #f1f1f1; padding: 10px; text-align: center; font-size: 12px; }\n        .button { background-color: #4CAF50; color: white; padding: 15px 25px; text-decoration: none; border-radius: 5px; display: inline-block; margin: 20px 0; }\n    </style>\n</head>\n<body>\n    <div class=\"header\">\n        <h1>🎉 Milestone Achieved!</h1>\n    </div>\n    <div class=\"content\">\n        <h2>Dear {{$('Get Client Details').item.json.name}},</h2>\n        \n        <div class=\"milestone\">\n            <h3>✅ Design Phase Completed</h3>\n            <p><strong>Project:</strong> {{$('Get Project Details').item.json.name}}</p>\n            <p><strong>Completion Date:</strong> {{$json.timestamp}}</p>\n        </div>\n        \n        <h3>Project Progress</h3>\n        <div class=\"progress-bar\">\n            <div class=\"progress\" style=\"width: {{$json.completion_percentage || 50}}%;\">{{$json.completion_percentage || 50}}% Complete</div>\n        </div>\n        \n        <h3>What's Next?</h3>\n        <ul>\n            <li>📋 Review and approve the final design</li>\n            <li>🛍️ Material and plant selection confirmation</li>\n            <li>📅 Schedule construction phase start date</li>\n            <li>💰 Final quote and contract signing</li>\n        </ul>\n        \n        <h3>Design Files Available</h3>\n        <p>Your design files are now available for review in the client portal:</p>\n        <ul>\n            <li>🎨 Conceptual drawings</li>\n            <li>🌱 Plant selection guide</li>\n            <li>📐 Technical specifications</li>\n            <li>📊 Material list and costs</li>\n        </ul>\n        \n        <a href=\"https://yourdomain.com/client-portal/project/{{$json.project_id}}\" class=\"button\">View Design Files</a>\n        \n        <p>Please review the designs and let us know if you have any questions or requested changes.</p>\n        \n        <p>Best regards,<br>\n        <strong>The Landscape Architecture Team</strong></p>\n    </div>\n    <div class=\"footer\">\n        <p>Project ID: {{$json.project_id}} | Milestone: {{$json.milestone}}</p>\n    </div>\n</body>\n</html>",
+        "options": {}
+      },
+      "id": "send-milestone-email",
+      "name": "Send Milestone Email",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [900, 200],
+      "credentials": {
+        "smtp": {
+          "id": "1",
+          "name": "SMTP Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=http://landscape-backend:5000/api/n8n/receive/email-sent",
+        "sendBody": true,
+        "bodyContentType": "json",
+        "jsonBody": "={\n  \"email_type\": \"milestone_notification\",\n  \"recipient\": \"{{$('Get Client Details').item.json.email}}\",\n  \"project_id\": {{$json.project_id}},\n  \"client_id\": {{$('Get Project Details').item.json.client_id}},\n  \"status\": \"sent\",\n  \"milestone\": \"{{$json.milestone}}\",\n  \"completion_percentage\": {{$json.completion_percentage || 50}},\n  \"timestamp\": \"{{$now}}\",\n  \"message_id\": \"milestone-{{$json.project_id}}-{{$json.milestone}}-{{$now}}\"\n}",
+        "options": {}
+      },
+      "id": "notify-backend-milestone",
+      "name": "Notify Backend Milestone",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [1100, 200]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "number": [
+            {
+              "value1": "={{$json.completion_percentage}}",
+              "operation": "largerEqual",
+              "value2": 100
+            }
+          ]
+        }
+      },
+      "id": "check-project-complete",
+      "name": "Check Project Complete",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [1300, 200]
+    },
+    {
+      "parameters": {
+        "url": "=http://landscape-backend:5000/api/n8n/receive/task-completed",
+        "sendBody": true,
+        "bodyContentType": "json",
+        "jsonBody": "={\n  \"task_id\": \"invoice-generation-{{$json.project_id}}\",\n  \"task_type\": \"invoice_processing\",\n  \"status\": \"ready\",\n  \"project_id\": {{$json.project_id}},\n  \"result_data\": {\n    \"project_name\": \"{{$('Get Project Details').item.json.name}}\",\n    \"client_name\": \"{{$('Get Client Details').item.json.name}}\",\n    \"completion_date\": \"{{$json.timestamp}}\",\n    \"final_amount\": \"{{$('Get Project Details').item.json.budget || 'TBD'}}\"\n  },\n  \"timestamp\": \"{{$now}}\"\n}",
+        "options": {}
+      },
+      "id": "trigger-invoice-generation",
+      "name": "Trigger Invoice Generation",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [1500, 100]
+    },
+    {
+      "parameters": {
+        "sendTo": "=team@landscapetool.com",
+        "subject": "=🎉 Project Completed - {{$('Get Project Details').item.json.name}}",
+        "emailType": "html",
+        "message": "=<!DOCTYPE html>\n<html>\n<head>\n    <style>\n        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }\n        .header { background-color: #4CAF50; color: white; padding: 20px; text-align: center; }\n        .content { padding: 20px; }\n        .success { background-color: #e8f5e8; padding: 15px; border-left: 4px solid #4CAF50; margin: 20px 0; }\n    </style>\n</head>\n<body>\n    <div class=\"header\">\n        <h1>🎉 Project Completion</h1>\n    </div>\n    <div class=\"content\">\n        <div class=\"success\">\n            <h3>Project Successfully Completed!</h3>\n            <p><strong>Project:</strong> {{$('Get Project Details').item.json.name}}</p>\n            <p><strong>Client:</strong> {{$('Get Client Details').item.json.name}}</p>\n            <p><strong>Completion Date:</strong> {{$json.timestamp}}</p>\n            <p><strong>Project ID:</strong> {{$json.project_id}}</p>\n        </div>\n        \n        <h3>Next Actions:</h3>\n        <ul>\n            <li>✅ Final invoice generated automatically</li>\n            <li>📧 Client completion notification sent</li>\n            <li>📋 Schedule final walkthrough</li>\n            <li>⭐ Request client testimonial</li>\n            <li>📸 Capture project photos for portfolio</li>\n        </ul>\n    </div>\n</body>\n</html>",
+        "options": {}
+      },
+      "id": "notify-team-completion",
+      "name": "Notify Team Completion",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [1500, 300],
+      "credentials": {
+        "smtp": {
+          "id": "1",
+          "name": "SMTP Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "milestone",
+              "value": "={{$json.milestone}}"
+            },
+            {
+              "name": "status",
+              "value": "={{$json.status}}"
+            }
+          ],
+          "number": [
+            {
+              "name": "completion_percentage",
+              "value": "={{$json.completion_percentage || 25}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "handle-other-milestones",
+      "name": "Handle Other Milestones",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [500, 400]
+    },
+    {
+      "parameters": {
+        "url": "=http://landscape-backend:5000/api/n8n/receive/task-completed",
+        "sendBody": true,
+        "bodyContentType": "json",
+        "jsonBody": "={\n  \"task_id\": \"milestone-{{$json.project_id}}-{{$json.milestone}}\",\n  \"task_type\": \"milestone_tracking\",\n  \"status\": \"completed\",\n  \"project_id\": {{$json.project_id}},\n  \"result_data\": {\n    \"milestone\": \"{{$json.milestone}}\",\n    \"completion_percentage\": {{$json.completion_percentage || 25}},\n    \"status\": \"{{$json.status}}\"\n  },\n  \"timestamp\": \"{{$now}}\"\n}",
+        "options": {}
+      },
+      "id": "log-milestone-progress",
+      "name": "Log Milestone Progress",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [700, 400]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"status\": \"success\",\n  \"message\": \"Milestone workflow completed\",\n  \"project_id\": {{$json.project_id}},\n  \"milestone\": \"{{$json.milestone}}\",\n  \"completion_percentage\": {{$json.completion_percentage || 25}},\n  \"actions_completed\": [\n    \"milestone_logged\",\n    \"backend_notified\"\n  ],\n  \"timestamp\": \"{{$now}}\"\n}"
+      },
+      "id": "respond-other-milestones",
+      "name": "Respond Other Milestones",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [900, 400]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"status\": \"success\",\n  \"message\": \"Design milestone workflow completed\",\n  \"project_id\": {{$json.project_id}},\n  \"milestone\": \"{{$json.milestone}}\",\n  \"completion_percentage\": {{$json.completion_percentage || 50}},\n  \"actions_completed\": [\n    \"client_notification_sent\",\n    \"milestone_logged\",\n    \"backend_notified\"\n  ],\n  \"next_steps\": [\n    \"Client design review\",\n    \"Material confirmation\",\n    \"Construction planning\"\n  ],\n  \"timestamp\": \"{{$now}}\"\n}"
+      },
+      "id": "respond-design-complete",
+      "name": "Respond Design Complete",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1300, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"status\": \"success\",\n  \"message\": \"Project completion workflow executed\",\n  \"project_id\": {{$json.project_id}},\n  \"milestone\": \"{{$json.milestone}}\",\n  \"completion_percentage\": 100,\n  \"actions_completed\": [\n    \"client_notification_sent\",\n    \"team_notification_sent\",\n    \"invoice_generation_triggered\",\n    \"milestone_logged\",\n    \"backend_notified\"\n  ],\n  \"final_actions\": [\n    \"Final walkthrough scheduled\",\n    \"Portfolio photos requested\",\n    \"Testimonial request sent\"\n  ],\n  \"timestamp\": \"{{$now}}\"\n}"
+      },
+      "id": "respond-project-complete",
+      "name": "Respond Project Complete",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1700, 200]
+    }
+  ],
+  "connections": {
+    "Webhook - Project Milestone": {
+      "main": [
+        [
+          {
+            "node": "Check Milestone Type",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Milestone Type": {
+      "main": [
+        [
+          {
+            "node": "Get Project Details",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Handle Other Milestones",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Project Details": {
+      "main": [
+        [
+          {
+            "node": "Get Client Details",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Client Details": {
+      "main": [
+        [
+          {
+            "node": "Send Milestone Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Milestone Email": {
+      "main": [
+        [
+          {
+            "node": "Notify Backend Milestone",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notify Backend Milestone": {
+      "main": [
+        [
+          {
+            "node": "Check Project Complete",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Project Complete": {
+      "main": [
+        [
+          {
+            "node": "Trigger Invoice Generation",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Design Complete",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Trigger Invoice Generation": {
+      "main": [
+        [
+          {
+            "node": "Notify Team Completion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notify Team Completion": {
+      "main": [
+        [
+          {
+            "node": "Respond Project Complete",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Handle Other Milestones": {
+      "main": [
+        [
+          {
+            "node": "Log Milestone Progress",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Milestone Progress": {
+      "main": [
+        [
+          {
+            "node": "Respond Other Milestones",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {},
+  "versionId": "2",
+  "id": "2",
+  "meta": {
+    "version": 1,
+    "templateCredsSetupCompleted": false
+  },
+  "tags": [
+    {
+      "createdAt": "2024-01-01T12:00:00.000Z",
+      "updatedAt": "2024-01-01T12:00:00.000Z",
+      "id": "1",
+      "name": "landscape-automation"
+    }
+  ]
+}
