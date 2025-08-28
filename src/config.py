@@ -37,13 +37,13 @@ class Config:
     LOG_LEVEL = os.environ.get("LOG_LEVEL", "INFO")
 
     # N8n Integration Configuration
-    N8N_BASE_URL = os.environ.get('N8N_BASE_URL', 'http://localhost:5678')
-    N8N_WEBHOOK_SECRET = os.environ.get('N8N_WEBHOOK_SECRET')
-    N8N_BASIC_AUTH_USER = os.environ.get('N8N_BASIC_AUTH_USER', 'admin')
-    N8N_BASIC_AUTH_PASSWORD = os.environ.get('N8N_BASIC_AUTH_PASSWORD')
-    
+    N8N_BASE_URL = os.environ.get("N8N_BASE_URL", "http://localhost:5678")
+    N8N_WEBHOOK_SECRET = os.environ.get("N8N_WEBHOOK_SECRET")
+    N8N_BASIC_AUTH_USER = os.environ.get("N8N_BASIC_AUTH_USER", "admin")
+    N8N_BASIC_AUTH_PASSWORD = os.environ.get("N8N_BASIC_AUTH_PASSWORD")
+
     # Webhook timeout settings
-    N8N_WEBHOOK_TIMEOUT = int(os.environ.get('N8N_WEBHOOK_TIMEOUT', '30'))
+    N8N_WEBHOOK_TIMEOUT = int(os.environ.get("N8N_WEBHOOK_TIMEOUT", "30"))
 
 
 class DevelopmentConfig(Config):

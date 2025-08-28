@@ -156,7 +156,7 @@ def create_app():
     app.register_blueprint(performance_bp)
 
     # Register N8n integration blueprints
-    from src.routes import webhooks, n8n_receivers
+    from src.routes import n8n_receivers, webhooks
 
     app.register_blueprint(webhooks.bp)
     app.register_blueprint(n8n_receivers.bp)
