@@ -155,6 +155,12 @@ def create_app():
 
     app.register_blueprint(performance_bp)
 
+    # Register N8n integration blueprints
+    from src.routes import webhooks, n8n_receivers
+
+    app.register_blueprint(webhooks.bp)
+    app.register_blueprint(n8n_receivers.bp)
+
     # Initialize services
     supplier_service = SupplierService()
     plant_service = PlantService()
