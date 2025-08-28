@@ -99,15 +99,44 @@ def app_context(app):
 
 def _cleanup_database():
     """Helper function to clean up database consistently with timeout handling"""
-    import signal
-    import time
+    import threading
 
-    def timeout_handler(signum, frame):
-        raise TimeoutError("Database cleanup operation timed out")
+    # Use threading-based timeout instead of signal (works in all thread contexts)
+    cleanup_success = threading.Event()
+    cleanup_exception = None
 
-    # Set timeout for database operations (30 seconds max)
-    old_handler = signal.signal(signal.SIGALRM, timeout_handler)
-    signal.alarm(30)
+    def cleanup_with_timeout():
+        nonlocal cleanup_exception
+        try:
+            _perform_database_cleanup()
+            cleanup_success.set()
+        except Exception as e:
+            cleanup_exception = e
+
+    # Start cleanup in a separate thread to enable timeout
+    cleanup_thread = threading.Thread(target=cleanup_with_timeout)
+    cleanup_thread.daemon = True
+    cleanup_thread.start()
+
+    # Wait for completion with 30-second timeout
+    cleanup_success.wait(timeout=30.0)
+
+    if cleanup_thread.is_alive():
+        # Cleanup timed out - log and continue without failing tests
+        import warnings
+
+        warnings.warn("Database cleanup timed out after 30 seconds, continuing...")
+        return
+
+    if cleanup_exception:
+        # Log the exception but don't fail tests due to cleanup issues
+        import warnings
+
+        warnings.warn(f"Database cleanup failed with exception: {cleanup_exception}")
+
+
+def _perform_database_cleanup():
+    """Perform the actual database cleanup operations"""
 
     try:
         # Close any active transactions first
@@ -177,6 +206,8 @@ def _cleanup_database():
                 ]:
                     try:
                         # Add timeout for each delete operation
+                        import time
+
                         start_time = time.time()
                         db.session.query(model).delete()
                         if (
@@ -207,29 +238,14 @@ def _cleanup_database():
         except Exception:
             pass
 
-    except TimeoutError:
-        # If cleanup times out, force close connections
-        try:
-            db.session.rollback()
-            db.session.close()
-            db.session.remove()
-        except Exception:
-            pass
-        # Continue execution - don't fail tests due to cleanup timeout
-
     except Exception:
-        # Any other exception during cleanup should not fail tests
+        # Any exception during cleanup should not fail tests
         try:
             db.session.rollback()
             db.session.close()
             db.session.remove()
         except Exception:
             pass
-
-    finally:
-        # Always restore the signal handler and clear alarm
-        signal.alarm(0)
-        signal.signal(signal.SIGALRM, old_handler)
 
 
 @pytest.fixture
