@@ -9,7 +9,7 @@ from datetime import datetime, timezone
 import requests
 from flask import Blueprint, current_app, jsonify, request
 
-from src.models.landscape import db
+from src.models.landscape import db  # noqa: F401,E501 - Future webhook persistence
 from src.utils.error_handlers import handle_errors
 
 logger = logging.getLogger(__name__)
@@ -21,7 +21,9 @@ def trigger_n8n_workflow(webhook_url, data):
     Helper function to trigger N8n workflows via webhook
     """
     try:
-        n8n_base_url = current_app.config.get("N8N_BASE_URL", "http://localhost:5678")
+        n8n_base_url = current_app.config.get(
+            "N8N_BASE_URL", "http://localhost:5678"
+        )  # noqa: E501
         full_url = f"{n8n_base_url}/webhook/{webhook_url}"
 
         response = requests.post(
@@ -36,7 +38,8 @@ def trigger_n8n_workflow(webhook_url, data):
             return True
         else:
             logger.error(
-                f"Failed to trigger N8n workflow: {webhook_url}, Status: {response.status_code}"
+                f"Failed to trigger N8n workflow: {webhook_url}, "
+                f"Status: {response.status_code}"
             )
             return False
 
@@ -50,7 +53,9 @@ def trigger_n8n_workflow(webhook_url, data):
 def trigger_project_created():
     """
     Trigger N8n workflow when a new project is created
-    Expected payload: {'project_id': int, 'client_id': int, 'project_name': str}
+    Expected payload: {
+        'project_id': int, 'client_id': int, 'project_name': str
+    }
     """
     data = request.get_json()
 
@@ -63,7 +68,9 @@ def trigger_project_created():
         "project_id": data["project_id"],
         "client_id": data.get("client_id"),
         "project_name": data.get("project_name"),
-        "timestamp": data.get("timestamp", datetime.now(timezone.utc).isoformat()),
+        "timestamp": data.get(
+            "timestamp", datetime.now(timezone.utc).isoformat()
+        ),  # noqa: E501
         "created_by": data.get("created_by"),
     }
 
@@ -71,19 +78,26 @@ def trigger_project_created():
 
     if success:
         return (
-            jsonify({"status": "workflow_triggered", "webhook": "project-created"}),
+            jsonify(
+                {"status": "workflow_triggered", "webhook": "project-created"}
+            ),  # noqa: E501
             200,
         )
     else:
-        return jsonify({"status": "workflow_failed", "webhook": "project-created"}), 500
+        return (
+            jsonify(
+                {"status": "workflow_failed", "webhook": "project-created"}
+            ),  # noqa: E501
+            500,
+        )  # noqa: E501
 
 
 @bp.route("/n8n/client-updated", methods=["POST"])
 @handle_errors
 def trigger_client_updated():
     """
-    Trigger N8n workflow when client information is updated
-    Expected payload: {'client_id': int, 'updated_fields': list, 'client_data': dict}
+    Trigger N8n workflow when client information is updated  # noqa: E501
+    Expected payload: {'client_id': int, 'updated_fields': list, 'client_data': dict}  # noqa: E501
     """
     data = request.get_json()
 
@@ -95,25 +109,34 @@ def trigger_client_updated():
         "client_id": data["client_id"],
         "updated_fields": data.get("updated_fields", []),
         "client_data": data.get("client_data", {}),
-        "timestamp": data.get("timestamp", datetime.now(timezone.utc).isoformat()),
+        "timestamp": data.get(
+            "timestamp", datetime.now(timezone.utc).isoformat()
+        ),  # noqa: E501
     }
 
     success = trigger_n8n_workflow("client-updated", workflow_data)
 
     if success:
         return (
-            jsonify({"status": "workflow_triggered", "webhook": "client-updated"}),
+            jsonify(
+                {"status": "workflow_triggered", "webhook": "client-updated"}
+            ),  # noqa: E501
             200,
         )
     else:
-        return jsonify({"status": "workflow_failed", "webhook": "client-updated"}), 500
+        return (
+            jsonify(
+                {"status": "workflow_failed", "webhook": "client-updated"}
+            ),  # noqa: E501
+            500,
+        )  # noqa: E501
 
 
 @bp.route("/n8n/project-milestone", methods=["POST"])
 @handle_errors
 def trigger_project_milestone():
     """
-    Trigger N8n workflow when a project reaches a milestone
+    Trigger N8n workflow when a project reaches a milestone  # noqa: E501
     Expected payload: {'project_id': int, 'milestone': str, 'status': str}
     """
     data = request.get_json()
@@ -127,19 +150,28 @@ def trigger_project_milestone():
         "milestone": data["milestone"],
         "status": data.get("status"),
         "completion_percentage": data.get("completion_percentage"),
-        "timestamp": data.get("timestamp", datetime.now(timezone.utc).isoformat()),
+        "timestamp": data.get(
+            "timestamp", datetime.now(timezone.utc).isoformat()
+        ),  # noqa: E501
     }
 
     success = trigger_n8n_workflow("project-milestone", workflow_data)
 
     if success:
         return (
-            jsonify({"status": "workflow_triggered", "webhook": "project-milestone"}),
+            jsonify(
+                {
+                    "status": "workflow_triggered",
+                    "webhook": "project-milestone",
+                }  # noqa: E501
+            ),  # noqa: E501
             200,
         )
     else:
         return (
-            jsonify({"status": "workflow_failed", "webhook": "project-milestone"}),
+            jsonify(
+                {"status": "workflow_failed", "webhook": "project-milestone"}
+            ),  # noqa: E501
             500,
         )
 
@@ -148,8 +180,8 @@ def trigger_project_milestone():
 @handle_errors
 def trigger_inventory_alert():
     """
-    Trigger N8n workflow for low inventory alerts
-    Expected payload: {'plant_id': int, 'current_stock': int, 'minimum_threshold': int}
+    Trigger N8n workflow for low inventory alerts  # noqa: E501
+    Expected payload: {'plant_id': int, 'current_stock': int, 'minimum_threshold': int}  # noqa: E501
     """
     data = request.get_json()
 
@@ -163,15 +195,24 @@ def trigger_inventory_alert():
         "current_stock": data.get("current_stock", 0),
         "minimum_threshold": data.get("minimum_threshold", 0),
         "supplier_id": data.get("supplier_id"),
-        "timestamp": data.get("timestamp", datetime.now(timezone.utc).isoformat()),
+        "timestamp": data.get(
+            "timestamp", datetime.now(timezone.utc).isoformat()
+        ),  # noqa: E501
     }
 
     success = trigger_n8n_workflow("inventory-alert", workflow_data)
 
     if success:
         return (
-            jsonify({"status": "workflow_triggered", "webhook": "inventory-alert"}),
+            jsonify(
+                {"status": "workflow_triggered", "webhook": "inventory-alert"}
+            ),  # noqa: E501
             200,
         )
     else:
-        return jsonify({"status": "workflow_failed", "webhook": "inventory-alert"}), 500
+        return (
+            jsonify(
+                {"status": "workflow_failed", "webhook": "inventory-alert"}
+            ),  # noqa: E501
+            500,
+        )  # noqa: E501

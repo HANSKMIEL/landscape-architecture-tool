@@ -43,13 +43,17 @@ repos:
       - id: end-of-file-fixer
         exclude: \.md$
       - id: check-yaml
+        args: [--allow-multiple-documents]
       - id: check-toml
       - id: check-json
+        exclude: pipeline_health_report_.*\.json$  # Exclude generated health reports
       - id: check-merge-conflict
       - id: check-added-large-files
         args: [--maxkb=1000]
       - id: mixed-line-ending
         args: [--fix=lf]
+      - id: check-symlinks
+      - id: check-case-conflict
 
   # Python-specific checks
   - repo: https://github.com/pre-commit/pre-commit-hooks
