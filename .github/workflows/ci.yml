@@ -69,7 +69,7 @@ jobs:
               command = importlib.import_module('alembic.config')
               from alembic.config import Config
               from alembic import command as alembic_command
-              cfg_path = 'alembic.ini'
+              cfg_path = 'migrations/alembic.ini'
               if os.path.exists(cfg_path):
                   cfg = Config(cfg_path)
                   alembic_command.upgrade(cfg, 'head')
@@ -80,14 +80,11 @@ jobs:
               print(f'Alembic not available/applicable ({e}); falling back to create_all if Base is exposed')
               try:
                   # Adjust the import path to your project if needed
-                  from app.db import Base  # noqa: E402
+                  from src.models.user import db  # noqa: E402
+                  db.metadata.create_all(bind=engine)
+                  print('Created tables via db.metadata.create_all')
               except Exception:
-                  Base = None
-              if Base is not None:
-                  Base.metadata.create_all(bind=engine)
-                  print('Created tables via Base.metadata.create_all')
-              else:
-                  print('No Base available; assuming migrations manage schema')
+                  print('No db available; assuming migrations manage schema')
           PY
 
       - name: Lint
