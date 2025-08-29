@@ -48,6 +48,24 @@ A comprehensive web application for managing landscape architecture projects, su
 - **Dutch Localization** - Sample data and formatting for Dutch market
 - **Responsive Design** - Works on desktop and mobile devices
 
+## 📚 Documentation
+
+Comprehensive documentation is organized in the `documentation/` directory by category:
+
+- **📖 [Documentation Index](documentation/README.md)** - Complete documentation overview and navigation
+- **🛠️ [Development](documentation/development/)** - Developer guidelines, setup, and contributing
+- **🚀 [Deployment](documentation/deployment/)** - Production deployment and hosting guides  
+- **🔧 [Pipeline](documentation/pipeline/)** - CI/CD troubleshooting and pipeline optimization
+- **📊 [Analysis](documentation/analysis/)** - Reports, testing, and development tracking
+- **📖 [Guides](documentation/guides/)** - Integration guides and advanced features
+- **📋 [Project Management](documentation/project-management/)** - Roadmaps and project planning
+
+### Quick Links
+- **Getting Started**: [Setup Instructions](documentation/development/SETUP_INSTRUCTIONS.md)
+- **For Developers**: [Developer Guidelines](documentation/development/DEVELOPER_GUIDELINES.md)
+- **For DevOps**: [Deployment Guide](documentation/deployment/DEPLOYMENT_GUIDE.md)
+- **Troubleshooting**: [Pipeline Troubleshooting](documentation/pipeline/PIPELINE_TROUBLESHOOTING.md)
+
 ### New in v2.0 (Backend Refactoring)
 - **Modular Architecture** - Separated models, services, routes, and utilities
 - **Persistent Database** - SQLite database with SQLAlchemy ORM
@@ -447,9 +465,10 @@ cd frontend && npm run test
 
 The project uses **`pyproject.toml`** for centralized Python tool configuration:
 
-- **Black**: Line length 88, excludes migrations and .copilot directories
-- **isort**: Black-compatible profile with trailing commas
-- **flake8**: Line length 88, complexity limit 25, specific ignore rules
+- **Black**: Line length 120, excludes migrations and .copilot directories
+- **isort**: Black-compatible profile with trailing commas, line length 120
+- **ruff**: Line length 120, comprehensive linting and security checks
+- **flake8**: Line length 120, complexity limit 25, specific ignore rules
 - **pytest**: Verbose output, strict markers, maxfail 5, coverage integration
 - **coverage**: Source tracking with appropriate exclusions
 
@@ -461,7 +480,7 @@ This project separates production and development dependencies for optimal deplo
 
 - **`requirements.txt`** - Contains only production dependencies needed to run the application
 - **`requirements-dev.txt`** - Contains all development dependencies including testing tools, linters, and debugging utilities (includes production dependencies via `-r requirements.txt`)
-- **`requirements-test.txt`** - **REMOVED** - Use `requirements-dev.txt` instead for all development needs (see [REQUIREMENTS_GUIDE.md](REQUIREMENTS_GUIDE.md))
+- **`requirements-test.txt`** - **REMOVED** - Use `requirements-dev.txt` instead for all development needs (see [REQUIREMENTS_GUIDE.md](documentation/development/REQUIREMENTS_GUIDE.md))
 
 **For Production Deployment:**
 ```bash
