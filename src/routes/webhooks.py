@@ -85,7 +85,9 @@ def trigger_project_created():
         )
     else:
         return (
-            jsonify({"status": "workflow_failed", "webhook": "project-created"}),  # noqa: E501
+            jsonify(
+                {"status": "workflow_failed", "webhook": "project-created"}
+            ),  # noqa: E501
             500,
         )  # noqa: E501
 
@@ -123,7 +125,9 @@ def trigger_client_updated():
         )
     else:
         return (
-            jsonify({"status": "workflow_failed", "webhook": "client-updated"}),  # noqa: E501
+            jsonify(
+                {"status": "workflow_failed", "webhook": "client-updated"}
+            ),  # noqa: E501
             500,
         )  # noqa: E501
 
@@ -156,7 +160,10 @@ def trigger_project_milestone():
     if success:
         return (
             jsonify(
-                {"status": "workflow_triggered", "webhook": "project-milestone"}  # noqa: E501
+                {
+                    "status": "workflow_triggered",
+                    "webhook": "project-milestone",
+                }  # noqa: E501
             ),  # noqa: E501
             200,
         )
@@ -204,6 +211,8 @@ def trigger_inventory_alert():
         )
     else:
         return (
-            jsonify({"status": "workflow_failed", "webhook": "inventory-alert"}),  # noqa: E501
+            jsonify(
+                {"status": "workflow_failed", "webhook": "inventory-alert"}
+            ),  # noqa: E501
             500,
         )  # noqa: E501

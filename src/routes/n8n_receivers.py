@@ -136,7 +136,9 @@ def receive_task_completion():
         # Update financial records or project billing status
 
     return (
-        jsonify({"status": "received", "message": "Task completion processed"}),  # noqa: E501
+        jsonify(
+            {"status": "received", "message": "Task completion processed"}
+        ),  # noqa: E501
         200,
     )  # noqa: E501
 
