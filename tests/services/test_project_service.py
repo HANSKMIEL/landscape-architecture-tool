@@ -35,9 +35,7 @@ class TestProjectService(DatabaseTestMixin):
         assert all("id" in project for project in result["projects"])
         assert all("name" in project for project in result["projects"])
 
-    def test_get_all_projects_with_search(
-        self, app_context, project_factory, client_factory
-    ):
+    def test_get_all_projects_with_search(self, app_context, project_factory, client_factory):
         """Test getting projects with search filter"""
         client = client_factory(name="Regular Client")
         project1 = project_factory(  # noqa: F841
@@ -68,9 +66,7 @@ class TestProjectService(DatabaseTestMixin):
         result = ProjectService.get_all_projects(search="Regular Client")
         assert len(result["projects"]) == 3
 
-    def test_get_all_projects_with_status_filter(
-        self, app_context, project_factory, client_factory
-    ):
+    def test_get_all_projects_with_status_filter(self, app_context, project_factory, client_factory):
         """Test getting projects with status filter"""
         client = client_factory()
         project1 = project_factory(status="active", client=client)  # noqa: F841
@@ -81,9 +77,7 @@ class TestProjectService(DatabaseTestMixin):
         assert len(result["projects"]) == 2
         assert all(project["status"] == "active" for project in result["projects"])
 
-    def test_get_all_projects_with_client_filter(
-        self, app_context, project_factory, client_factory
-    ):
+    def test_get_all_projects_with_client_filter(self, app_context, project_factory, client_factory):
         """Test getting projects with client filter"""
         client1 = client_factory(name="Client 1")
         client2 = client_factory(name="Client 2")
@@ -204,46 +198,32 @@ class TestProjectService(DatabaseTestMixin):
         assert len(active_projects) == 2
         assert all(project.status == "active" for project in active_projects)
 
-    def test_add_plant_to_project_success(
-        self, app_context, sample_project, sample_plant
-    ):
+    def test_add_plant_to_project_success(self, app_context, sample_project, sample_plant):
         """Test adding a plant to a project successfully"""
-        result = ProjectService.add_plant_to_project(
-            sample_project.id, sample_plant.id, quantity=5, unit_cost=25.99
-        )
+        result = ProjectService.add_plant_to_project(sample_project.id, sample_plant.id, quantity=5, unit_cost=25.99)
 
         assert result is True
 
         # Verify the relationship was created
-        project_plant = ProjectPlant.query.filter_by(
-            project_id=sample_project.id, plant_id=sample_plant.id
-        ).first()
+        project_plant = ProjectPlant.query.filter_by(project_id=sample_project.id, plant_id=sample_plant.id).first()
 
         assert project_plant is not None
         assert project_plant.quantity == 5
         assert project_plant.unit_cost == 25.99
 
-    def test_add_plant_to_project_existing_plant(
-        self, app_context, sample_project, sample_plant
-    ):
+    def test_add_plant_to_project_existing_plant(self, app_context, sample_project, sample_plant):
         """Test adding a plant that already exists in project
         (should increase quantity)"""
         # Add plant first time
-        ProjectService.add_plant_to_project(
-            sample_project.id, sample_plant.id, quantity=3
-        )
+        ProjectService.add_plant_to_project(sample_project.id, sample_plant.id, quantity=3)
 
         # Add same plant again
-        result = ProjectService.add_plant_to_project(
-            sample_project.id, sample_plant.id, quantity=2
-        )
+        result = ProjectService.add_plant_to_project(sample_project.id, sample_plant.id, quantity=2)
 
         assert result is True
 
         # Should have combined quantity
-        project_plant = ProjectPlant.query.filter_by(
-            project_id=sample_project.id, plant_id=sample_plant.id
-        ).first()
+        project_plant = ProjectPlant.query.filter_by(project_id=sample_project.id, plant_id=sample_plant.id).first()
 
         assert project_plant.quantity == 5
 
@@ -257,36 +237,24 @@ class TestProjectService(DatabaseTestMixin):
         result = ProjectService.add_plant_to_project(sample_project.id, 999, quantity=1)
         assert result is False
 
-    def test_remove_plant_from_project_success(
-        self, app_context, sample_project, sample_plant
-    ):
+    def test_remove_plant_from_project_success(self, app_context, sample_project, sample_plant):
         """Test removing a plant from project successfully"""
         # First add the plant
-        ProjectService.add_plant_to_project(
-            sample_project.id, sample_plant.id, quantity=5
-        )
+        ProjectService.add_plant_to_project(sample_project.id, sample_plant.id, quantity=5)
 
         # Then remove it
-        result = ProjectService.remove_plant_from_project(
-            sample_project.id, sample_plant.id
-        )
+        result = ProjectService.remove_plant_from_project(sample_project.id, sample_plant.id)
 
         assert result is True
 
         # Verify it's gone
-        project_plant = ProjectPlant.query.filter_by(
-            project_id=sample_project.id, plant_id=sample_plant.id
-        ).first()
+        project_plant = ProjectPlant.query.filter_by(project_id=sample_project.id, plant_id=sample_plant.id).first()
 
         assert project_plant is None
 
-    def test_remove_plant_from_project_not_found(
-        self, app_context, sample_project, sample_plant
-    ):
+    def test_remove_plant_from_project_not_found(self, app_context, sample_project, sample_plant):
         """Test removing plant that's not in project"""
-        result = ProjectService.remove_plant_from_project(
-            sample_project.id, sample_plant.id
-        )
+        result = ProjectService.remove_plant_from_project(sample_project.id, sample_plant.id)
         assert result is False
 
     def test_get_project_plants(self, app_context, sample_project, plant_factory):
@@ -295,12 +263,8 @@ class TestProjectService(DatabaseTestMixin):
         plant2 = plant_factory(name="Plant 2", price=20.0)
 
         # Add plants to project
-        ProjectService.add_plant_to_project(
-            sample_project.id, plant1.id, quantity=5, unit_cost=12.0
-        )
-        ProjectService.add_plant_to_project(
-            sample_project.id, plant2.id, quantity=3, unit_cost=25.0
-        )
+        ProjectService.add_plant_to_project(sample_project.id, plant1.id, quantity=5, unit_cost=12.0)
+        ProjectService.add_plant_to_project(sample_project.id, plant2.id, quantity=3, unit_cost=25.0)
 
         project_plants = ProjectService.get_project_plants(sample_project.id)
 
@@ -318,12 +282,8 @@ class TestProjectService(DatabaseTestMixin):
         plant2 = plant_factory(name="Plant 2")
 
         # Add plants with different quantities and prices
-        ProjectService.add_plant_to_project(
-            sample_project.id, plant1.id, quantity=5, unit_cost=10.0
-        )
-        ProjectService.add_plant_to_project(
-            sample_project.id, plant2.id, quantity=3, unit_cost=20.0
-        )
+        ProjectService.add_plant_to_project(sample_project.id, plant1.id, quantity=5, unit_cost=10.0)
+        ProjectService.add_plant_to_project(sample_project.id, plant2.id, quantity=3, unit_cost=20.0)
 
         cost_analysis = ProjectService.calculate_project_cost(sample_project.id)
 
@@ -332,18 +292,14 @@ class TestProjectService(DatabaseTestMixin):
         assert len(cost_analysis["plant_costs"]) == 2
 
         # Check individual plant costs
-        plant1_cost = next(
-            p for p in cost_analysis["plant_costs"] if p["plant_name"] == "Plant 1"
-        )
+        plant1_cost = next(p for p in cost_analysis["plant_costs"] if p["plant_name"] == "Plant 1")
         assert plant1_cost["line_total"] == 50.0
 
     def test_update_project_status(self, app_context, sample_project):
         """Test updating project status"""
         original_status = sample_project.status  # noqa: F841
 
-        updated_project = ProjectService.update_project_status(
-            sample_project.id, "completed"
-        )
+        updated_project = ProjectService.update_project_status(sample_project.id, "completed")
 
         assert updated_project is not None
         assert updated_project.status == "completed"
@@ -429,9 +385,7 @@ class TestProjectServiceIntegration(DatabaseTestMixin):
         assert project.id is not None
 
         # Add plants to project
-        ProjectService.add_plant_to_project(
-            project.id, plant.id, quantity=10, unit_cost=20.0
-        )
+        ProjectService.add_plant_to_project(project.id, plant.id, quantity=10, unit_cost=20.0)
 
         # Check project plants
         project_plants = ProjectService.get_project_plants(project.id)
@@ -459,23 +413,17 @@ class TestProjectServiceIntegration(DatabaseTestMixin):
         deleted_project = ProjectService.get_project_by_id(project.id)
         assert deleted_project is None
 
-    def test_complex_project_plant_management(
-        self, app_context, project_factory, plant_factory, client_factory
-    ):
+    def test_complex_project_plant_management(self, app_context, project_factory, plant_factory, client_factory):
         """Test complex project-plant relationship management"""
         client = client_factory()
         project = project_factory(client=client)
 
         # Create multiple plants
-        plants = [
-            plant_factory(name=f"Plant {i}", price=float(i * 10)) for i in range(1, 6)
-        ]
+        plants = [plant_factory(name=f"Plant {i}", price=float(i * 10)) for i in range(1, 6)]
 
         # Add plants with different quantities
         for i, plant in enumerate(plants, 1):
-            ProjectService.add_plant_to_project(
-                project.id, plant.id, quantity=i * 2, unit_cost=plant.price + 5.0
-            )
+            ProjectService.add_plant_to_project(project.id, plant.id, quantity=i * 2, unit_cost=plant.price + 5.0)
 
         # Verify all plants added
         project_plants = ProjectService.get_project_plants(project.id)
@@ -495,9 +443,7 @@ class TestProjectServiceIntegration(DatabaseTestMixin):
         new_cost_analysis = ProjectService.calculate_project_cost(project.id)
         assert new_cost_analysis["total_cost"] < cost_analysis["total_cost"]
 
-    def test_project_search_and_filtering(
-        self, app_context, project_factory, client_factory
-    ):
+    def test_project_search_and_filtering(self, app_context, project_factory, client_factory):
         """Test complex search and filtering scenarios"""
         # Create clients
         client1 = client_factory(name="Alpha Corp")
@@ -544,8 +490,6 @@ class TestProjectServiceIntegration(DatabaseTestMixin):
         assert len(alpha_projects["projects"]) == 2
 
         # Test combined filters
-        active_alpha_projects = ProjectService.get_all_projects(
-            status="active", client_id=client1.id
-        )
+        active_alpha_projects = ProjectService.get_all_projects(status="active", client_id=client1.id)
         assert len(active_alpha_projects["projects"]) == 1
         assert active_alpha_projects["projects"][0]["name"] == "Garden Design Alpha"

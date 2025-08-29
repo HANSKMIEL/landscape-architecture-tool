@@ -16,9 +16,7 @@ def run_command(cmd, description):
     print("=" * 60)
 
     try:
-        result = subprocess.run(
-            cmd, shell=True, capture_output=True, text=True, timeout=120
-        )
+        result = subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=120)
 
         if result.returncode == 0:
             print(f"✅ PASSED: {description}")
@@ -54,7 +52,7 @@ def main():
     checks = [
         # Syntax and import validation
         (
-            f"python -c 'import src.main; print(\"✅ Main module imports successfully\")'",
+            "python -c 'import src.main; print(\"✅ Main module imports successfully\")'",
             "Main module import validation",
         ),
         # Critical flake8 checks (syntax errors, undefined names)
@@ -64,7 +62,8 @@ def main():
         ),
         # Line length and basic formatting
         (
-            "python -m flake8 tests/test_integration.py --max-line-length=88 --extend-ignore=E203,W503,F401,F403,E402,C901,W291",
+            "python -m flake8 tests/test_integration.py --max-line-length=88 "
+            "--extend-ignore=E203,W503,F401,F403,E402,C901,W291",
             "Integration test formatting check",
         ),
         # Black formatting check
@@ -98,13 +97,11 @@ def main():
     passed = sum(1 for _, success, _ in results if success)
     total = len(results)
 
-    for description, success, output in results:
+    for description, success, _output in results:
         status = "✅ PASS" if success else "❌ FAIL"
         print(f"{status} {description}")
 
-    print(
-        f"\n🎯 Overall Score: {passed}/{total} checks passed ({passed/total*100:.1f}%)"
-    )
+    print(f"\n🎯 Overall Score: {passed}/{total} checks passed ({passed/total*100:.1f}%)")
 
     if passed == total:
         print("🎉 All code quality checks passed!")

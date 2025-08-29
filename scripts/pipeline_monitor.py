@@ -30,14 +30,10 @@ class PipelineHealthMonitor:
         else:
             return "POOR"
 
-    def calculate_success_rate(
-        self, job_results: Dict[str, str]
-    ) -> Tuple[float, int, int]:
+    def calculate_success_rate(self, job_results: Dict[str, str]) -> Tuple[float, int, int]:
         """Calculate success rate from job results"""
         total_jobs = len(job_results)
-        successful_jobs = sum(
-            1 for result in job_results.values() if result == "success"
-        )
+        successful_jobs = sum(1 for result in job_results.values() if result == "success")
         success_rate = (successful_jobs / total_jobs * 100) if total_jobs > 0 else 0
         return success_rate, successful_jobs, total_jobs
 
@@ -49,13 +45,9 @@ class PipelineHealthMonitor:
                 failed_jobs.append(f"{job_name}({result})")
         return failed_jobs
 
-    def generate_health_report(
-        self, job_results: Dict[str, str], workflow_info: Optional[Dict] = None
-    ) -> Dict:
+    def generate_health_report(self, job_results: Dict[str, str], workflow_info: Optional[Dict] = None) -> Dict:
         """Generate comprehensive pipeline health report"""
-        success_rate, successful_jobs, total_jobs = self.calculate_success_rate(
-            job_results
-        )
+        success_rate, successful_jobs, total_jobs = self.calculate_success_rate(job_results)
         health_status = self.assess_pipeline_health(success_rate)
         failed_jobs = self.identify_failed_jobs(job_results)
 
@@ -75,9 +67,7 @@ class PipelineHealthMonitor:
 
         return report
 
-    def get_health_recommendations(
-        self, health_status: str, failed_jobs: List[str]
-    ) -> List[str]:
+    def get_health_recommendations(self, health_status: str, failed_jobs: List[str]) -> List[str]:
         """Get recommendations based on pipeline health"""
         recommendations = []
 
@@ -117,24 +107,16 @@ class PipelineHealthMonitor:
         # Job-specific recommendations
         if failed_jobs:
             if any("test-backend" in job for job in failed_jobs):
-                recommendations.append(
-                    "🔧 Backend tests failing: Check database connectivity and migrations"
-                )
+                recommendations.append("🔧 Backend tests failing: Check database connectivity and migrations")
 
             if any("test-frontend" in job for job in failed_jobs):
-                recommendations.append(
-                    "🔧 Frontend tests failing: Check dependencies and build configuration"
-                )
+                recommendations.append("🔧 Frontend tests failing: Check dependencies and build configuration")
 
             if any("code-quality" in job for job in failed_jobs):
-                recommendations.append(
-                    "🔧 Code quality issues: Run linting tools locally and fix violations"
-                )
+                recommendations.append("🔧 Code quality issues: Run linting tools locally and fix violations")
 
             if any("integration-tests" in job for job in failed_jobs):
-                recommendations.append(
-                    "🔧 Integration tests failing: Check service orchestration and API endpoints"
-                )
+                recommendations.append("🔧 Integration tests failing: Check service orchestration and API endpoints")
 
         return recommendations
 
@@ -161,9 +143,7 @@ class PipelineHealthMonitor:
         print("=== CI/CD Pipeline Health Report ===")
         print(f"Timestamp: {report['timestamp']}")
         print(f"Pipeline Health: {report['pipeline_health']}")
-        print(
-            f"Success Rate: {report['success_rate']:.1f}% ({report['successful_jobs']}/{report['total_jobs']})"
-        )
+        print(f"Success Rate: {report['success_rate']:.1f}% ({report['successful_jobs']}/{report['total_jobs']})")
 
         if "workflow" in report:
             print(f"Workflow: {report['workflow']}")
@@ -183,9 +163,7 @@ class PipelineHealthMonitor:
             print(f"\nFailed Jobs: {', '.join(report['failed_jobs'])}")
 
         # Get and display recommendations
-        recommendations = self.get_health_recommendations(
-            report["pipeline_health"], report["failed_jobs"]
-        )
+        recommendations = self.get_health_recommendations(report["pipeline_health"], report["failed_jobs"])
 
         print("\nRecommendations:")
         for rec in recommendations:

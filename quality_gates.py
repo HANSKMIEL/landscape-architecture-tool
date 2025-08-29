@@ -5,16 +5,13 @@ Implements reasonable quality thresholds that maintain standards
 without unnecessarily blocking development.
 """
 
-import json
 import os
 import subprocess
 import sys
 import xml.etree.ElementTree as ET
 
 
-def check_coverage_threshold(
-    coverage_file="coverage.xml", min_line_coverage=50.0, min_branch_coverage=30.0
-):
+def check_coverage_threshold(coverage_file="coverage.xml", min_line_coverage=50.0, min_branch_coverage=30.0):
     """
     Check if coverage meets minimum thresholds.
 
@@ -45,11 +42,11 @@ def check_coverage_threshold(
         line_rate = float(root.get("line-rate", "0")) * 100
         branch_rate = float(root.get("branch-rate", "0")) * 100
 
-        print(f"📊 Current Coverage:")
+        print("📊 Current Coverage:")
         print(f"  Line Coverage: {line_rate:.1f}%")
         print(f"  Branch Coverage: {branch_rate:.1f}%")
 
-        print(f"📏 Minimum Thresholds:")
+        print("📏 Minimum Thresholds:")
         print(f"  Line Coverage: {min_line_coverage}%")
         print(f"  Branch Coverage: {min_branch_coverage}%")
 
@@ -59,16 +56,12 @@ def check_coverage_threshold(
         if line_pass:
             print("✅ Line coverage meets threshold")
         else:
-            print(
-                f"⚠️ Line coverage below threshold ({line_rate:.1f}% < {min_line_coverage}%)"
-            )
+            print(f"⚠️ Line coverage below threshold ({line_rate:.1f}% < {min_line_coverage}%)")
 
         if branch_pass:
             print("✅ Branch coverage meets threshold")
         else:
-            print(
-                f"⚠️ Branch coverage below threshold ({branch_rate:.1f}% < {min_branch_coverage}%)"
-            )
+            print(f"⚠️ Branch coverage below threshold ({branch_rate:.1f}% < {min_branch_coverage}%)")
 
         return line_pass and branch_pass
 
@@ -118,9 +111,7 @@ def check_code_quality():
                     for line in shown_lines:
                         print(f"     {line}")
                     if len(lines) > max_lines:
-                        print(
-                            f"     ... ({len(lines) - max_lines} more lines truncated)"
-                        )
+                        print(f"     ... ({len(lines) - max_lines} more lines truncated)")
                 all_passed = False
         except subprocess.TimeoutExpired:
             print(f"⚠️ {check_name} timed out")

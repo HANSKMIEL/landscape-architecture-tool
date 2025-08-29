@@ -34,8 +34,6 @@ include_trailing_comma = true
 [tool.ruff]
 line-length = 120
 src = ["."]
-select = ["E", "F", "I", "B"]
-ignore = []
 exclude = [
   ".git",
   ".venv",
@@ -44,6 +42,10 @@ exclude = [
   "dist",
   "__pycache__",
 ]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B"]
+ignore = []
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

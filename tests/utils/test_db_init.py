@@ -33,9 +33,7 @@ class TestInitializeDatabase:
             initialize_database()
 
         mock_db.create_all.assert_called_once()
-        mock_logger.error.assert_called_with(
-            "Error creating database tables: Database error"
-        )
+        mock_logger.error.assert_called_with("Error creating database tables: Database error")
 
 
 class TestPopulateSampleData:
@@ -44,9 +42,7 @@ class TestPopulateSampleData:
     @patch("src.utils.db_init.Supplier")
     @patch("src.utils.db_init.db")
     @patch("src.utils.db_init.logger")
-    def test_populate_sample_data_skips_if_data_exists(
-        self, mock_logger, mock_db, mock_supplier
-    ):
+    def test_populate_sample_data_skips_if_data_exists(self, mock_logger, mock_db, mock_supplier):
         """Test that sample data is skipped if suppliers already exist"""
         # Mock that suppliers already exist
         mock_query = Mock()
@@ -55,9 +51,7 @@ class TestPopulateSampleData:
 
         populate_sample_data()
 
-        mock_logger.info.assert_called_with(
-            "Sample data already exists, skipping initialization"
-        )
+        mock_logger.info.assert_called_with("Sample data already exists, skipping initialization")
         # Should not add new suppliers
         mock_db.session.add.assert_not_called()
 
@@ -127,9 +121,7 @@ class TestPopulateSampleData:
     @patch("src.utils.db_init.Supplier")
     @patch("src.utils.db_init.db")
     @patch("src.utils.db_init.logger")
-    def test_populate_sample_data_handles_error(
-        self, mock_logger, mock_db, mock_supplier
-    ):
+    def test_populate_sample_data_handles_error(self, mock_logger, mock_db, mock_supplier):
         """Test error handling during sample data creation"""
         # Mock that no suppliers exist
         mock_supplier_query = Mock()
@@ -147,9 +139,7 @@ class TestPopulateSampleData:
 
         # Should rollback on error
         mock_db.session.rollback.assert_called_once()
-        mock_logger.error.assert_called_with(
-            "Error populating sample data: Database error"
-        )
+        mock_logger.error.assert_called_with("Error populating sample data: Database error")
 
     def test_populate_sample_data_supplier_data_structure(self, app_context):
         """Test that supplier data has expected structure"""
@@ -292,12 +282,8 @@ class TestPopulateSampleData:
 
                             # Check first project
                             first_project = created_projects[0]
-                            assert (
-                                first_project["name"] == "Vondelpark Renovatie Fase 2"
-                            )
-                            assert (
-                                first_project["client_id"] == 2
-                            )  # Second client (Vondelpark Beheer)
+                            assert first_project["name"] == "Vondelpark Renovatie Fase 2"
+                            assert first_project["client_id"] == 2  # Second client (Vondelpark Beheer)
                             assert first_project["status"] == "In uitvoering"
                             assert first_project["budget"] == 75000.00
                             assert first_project["project_manager"] == "Hans Kmiel"
@@ -310,6 +296,4 @@ class TestPopulateSampleData:
 
             populate_sample_data()
 
-            mock_logger.info.assert_called_with(
-                "Sample data already exists, skipping initialization"
-            )
+            mock_logger.info.assert_called_with("Sample data already exists, skipping initialization")

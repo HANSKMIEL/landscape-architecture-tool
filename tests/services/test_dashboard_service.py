@@ -96,9 +96,7 @@ class TestDashboardService(DatabaseTestMixin):
         assert analytics["average_budget"] == 0
         assert analytics["top_clients"] == []
 
-    def test_get_project_analytics_with_data(
-        self, app_context, client_factory, project_factory
-    ):
+    def test_get_project_analytics_with_data(self, app_context, client_factory, project_factory):
         """Test getting project analytics with sample data"""
         # Create clients
         client1 = client_factory(name="Alpha Corp")
@@ -137,9 +135,7 @@ class TestDashboardService(DatabaseTestMixin):
         analytics = DashboardService.get_project_analytics(days=30)
 
         # Check projects by status
-        status_counts = {
-            item["status"]: item["count"] for item in analytics["projects_by_status"]
-        }
+        status_counts = {item["status"]: item["count"] for item in analytics["projects_by_status"]}
         assert status_counts["active"] == 2
         assert status_counts["completed"] == 1
         assert status_counts["planning"] == 1
@@ -163,20 +159,12 @@ class TestDashboardService(DatabaseTestMixin):
         assert analytics["native_distribution"]["native"] == 0
         assert analytics["native_distribution"]["non_native"] == 0
 
-    def test_get_plant_analytics_with_data(
-        self, app_context, plant_factory, project_factory, client_factory
-    ):
+    def test_get_plant_analytics_with_data(self, app_context, plant_factory, project_factory, client_factory):
         """Test getting plant analytics with sample data"""
         # Create plants with different categories and properties
-        plant1 = plant_factory(
-            name="Rose Bush", category="Shrub", sun_exposure="full_sun", native=True
-        )
-        plant2 = plant_factory(
-            name="Oak Tree", category="Tree", sun_exposure="partial_shade", native=True
-        )
-        plant3 = plant_factory(
-            name="Tulip", category="Perennial", sun_exposure="full_sun", native=False
-        )
+        plant1 = plant_factory(name="Rose Bush", category="Shrub", sun_exposure="full_sun", native=True)
+        plant2 = plant_factory(name="Oak Tree", category="Tree", sun_exposure="partial_shade", native=True)
+        plant3 = plant_factory(name="Tulip", category="Perennial", sun_exposure="full_sun", native=False)
         plant4 = plant_factory(  # noqa: F841
             name="Maple Tree",
             category="Tree",
@@ -200,18 +188,13 @@ class TestDashboardService(DatabaseTestMixin):
         analytics = DashboardService.get_plant_analytics()
 
         # Check plants by category
-        category_counts = {
-            item["category"]: item["count"] for item in analytics["plants_by_category"]
-        }
+        category_counts = {item["category"]: item["count"] for item in analytics["plants_by_category"]}
         assert category_counts["Tree"] == 2
         assert category_counts["Shrub"] == 1
         assert category_counts["Perennial"] == 1
 
         # Check plants by sun exposure
-        sun_counts = {
-            item["sun_exposure"]: item["count"]
-            for item in analytics["plants_by_sun_exposure"]
-        }
+        sun_counts = {item["sun_exposure"]: item["count"] for item in analytics["plants_by_sun_exposure"]}
         assert sun_counts["full_sun"] == 2
         assert sun_counts["partial_shade"] == 2
 
@@ -229,9 +212,7 @@ class TestDashboardService(DatabaseTestMixin):
         assert analytics["top_projects"] == []
         assert analytics["monthly_trends"] == []
 
-    def test_get_financial_analytics_with_data(
-        self, app_context, client_factory, project_factory
-    ):
+    def test_get_financial_analytics_with_data(self, app_context, client_factory, project_factory):
         """Test getting financial analytics with sample data"""
         # Create clients
         client1 = client_factory(name="Alpha Corp")
@@ -239,18 +220,10 @@ class TestDashboardService(DatabaseTestMixin):
 
         # Create projects with different budgets and statuses
         projects = [  # noqa: F841
-            project_factory(
-                client=client1, name="Project Alpha", status="active", budget=10000.0
-            ),
-            project_factory(
-                client=client2, name="Project Beta", status="completed", budget=15000.0
-            ),
-            project_factory(
-                client=client1, name="Project Gamma", status="planning", budget=5000.0
-            ),
-            project_factory(
-                client=client2, name="Project Delta", status="active", budget=8000.0
-            ),
+            project_factory(client=client1, name="Project Alpha", status="active", budget=10000.0),
+            project_factory(client=client2, name="Project Beta", status="completed", budget=15000.0),
+            project_factory(client=client1, name="Project Gamma", status="planning", budget=5000.0),
+            project_factory(client=client2, name="Project Delta", status="active", budget=8000.0),
         ]
 
         analytics = DashboardService.get_financial_analytics()
@@ -260,10 +233,7 @@ class TestDashboardService(DatabaseTestMixin):
         assert analytics["average_project_value"] == 9500.0
 
         # Check values by status
-        status_values = {
-            item["status"]: item["total_value"]
-            for item in analytics["values_by_status"]
-        }
+        status_values = {item["status"]: item["total_value"] for item in analytics["values_by_status"]}
         assert status_values["active"] == 18000.0  # 10000 + 8000
         assert status_values["completed"] == 15000.0
         assert status_values["planning"] == 5000.0
@@ -283,9 +253,7 @@ class TestDashboardService(DatabaseTestMixin):
         assert analytics["top_suppliers"] == []
         assert analytics["specializations"] == []
 
-    def test_get_supplier_analytics_with_data(
-        self, app_context, supplier_factory, product_factory, plant_factory
-    ):
+    def test_get_supplier_analytics_with_data(self, app_context, supplier_factory, product_factory, plant_factory):
         """Test getting supplier analytics with sample data"""
         # Clear cache to ensure fresh data
         from src.services.performance import cache
@@ -293,15 +261,9 @@ class TestDashboardService(DatabaseTestMixin):
         cache.clear()
 
         # Create suppliers with different specializations
-        supplier1 = supplier_factory(
-            name="Alpha Nursery", specialization="Native Plants"
-        )
-        supplier2 = supplier_factory(
-            name="Beta Tools", specialization="Garden Equipment"
-        )
-        supplier3 = supplier_factory(
-            name="Gamma Plants", specialization="Native Plants"
-        )
+        supplier1 = supplier_factory(name="Alpha Nursery", specialization="Native Plants")
+        supplier2 = supplier_factory(name="Beta Tools", specialization="Garden Equipment")
+        supplier3 = supplier_factory(name="Gamma Plants", specialization="Native Plants")
 
         # Add products and plants to suppliers
         for _ in range(5):
@@ -328,10 +290,7 @@ class TestDashboardService(DatabaseTestMixin):
         assert top_supplier["total_items"] == 8  # 5 products + 3 plants
 
         # Check specializations
-        spec_counts = {
-            item["specialization"]: item["count"]
-            for item in analytics["specializations"]
-        }
+        spec_counts = {item["specialization"]: item["count"] for item in analytics["specializations"]}
         assert spec_counts["Native Plants"] == 2
         assert spec_counts["Garden Equipment"] == 1
 
@@ -343,16 +302,13 @@ class TestDashboardService(DatabaseTestMixin):
         assert activity["recent_clients"] == []
         assert activity["recent_plants"] == []
 
-    def test_get_recent_activity_with_data(
-        self, app_context, client_factory, project_factory, plant_factory
-    ):
+    def test_get_recent_activity_with_data(self, app_context, client_factory, project_factory, plant_factory):
         """Test getting recent activity with sample data"""
         # Create recent entities
         clients = [client_factory(name=f"Client {i}") for i in range(3)]
         plants = [plant_factory(name=f"Plant {i}") for i in range(3)]  # noqa: F841
         projects = [  # noqa: F841
-            project_factory(client=clients[i], name=f"Project {i}", status="active")
-            for i in range(3)
+            project_factory(client=clients[i], name=f"Project {i}", status="active") for i in range(3)
         ]
 
         activity = DashboardService.get_recent_activity(limit=5)
@@ -381,9 +337,7 @@ class TestDashboardService(DatabaseTestMixin):
         assert metrics["total_entities"]["plants"] == 0
         assert metrics["total_entities"]["suppliers"] == 0
 
-    def test_get_performance_metrics_with_data(
-        self, app_context, client_factory, project_factory, plant_factory
-    ):
+    def test_get_performance_metrics_with_data(self, app_context, client_factory, project_factory, plant_factory):
         """Test getting performance metrics with sample data"""
         # Create test data
         clients = [client_factory() for _ in range(2)]
@@ -457,33 +411,21 @@ class TestDashboardServiceIntegration(DatabaseTestMixin):
 
         # Suppliers
         suppliers = [
-            supplier_factory(
-                name="Native Plants Nursery", specialization="Native Plants"
-            ),
+            supplier_factory(name="Native Plants Nursery", specialization="Native Plants"),
             supplier_factory(name="Garden Tools Co", specialization="Garden Equipment"),
         ]
 
         # Plants
         plants = [
-            plant_factory(
-                name="Red Oak", category="Tree", native=True, supplier=suppliers[0]
-            ),
-            plant_factory(
-                name="Rose Bush", category="Shrub", native=False, supplier=suppliers[0]
-            ),
-            plant_factory(
-                name="Tulip", category="Perennial", native=False, supplier=suppliers[0]
-            ),
+            plant_factory(name="Red Oak", category="Tree", native=True, supplier=suppliers[0]),
+            plant_factory(name="Rose Bush", category="Shrub", native=False, supplier=suppliers[0]),
+            plant_factory(name="Tulip", category="Perennial", native=False, supplier=suppliers[0]),
         ]
 
         # Products
         products = [  # noqa: F841
-            product_factory(
-                name="Shovel", supplier=suppliers[1], price=25.0, stock_quantity=10
-            ),
-            product_factory(
-                name="Fertilizer", supplier=suppliers[1], price=15.0, stock_quantity=50
-            ),
+            product_factory(name="Shovel", supplier=suppliers[1], price=25.0, stock_quantity=10),
+            product_factory(name="Fertilizer", supplier=suppliers[1], price=15.0, stock_quantity=50),
         ]
 
         # Projects with varying dates, statuses, and budgets
@@ -523,18 +465,10 @@ class TestDashboardServiceIntegration(DatabaseTestMixin):
         ]
 
         # Project-Plant relationships
-        pp1 = ProjectPlant(
-            project=projects[0], plant=plants[0], quantity=10, unit_cost=50.0
-        )
-        pp2 = ProjectPlant(
-            project=projects[0], plant=plants[1], quantity=25, unit_cost=20.0
-        )
-        pp3 = ProjectPlant(
-            project=projects[1], plant=plants[0], quantity=5, unit_cost=50.0
-        )
-        pp4 = ProjectPlant(
-            project=projects[3], plant=plants[2], quantity=100, unit_cost=5.0
-        )
+        pp1 = ProjectPlant(project=projects[0], plant=plants[0], quantity=10, unit_cost=50.0)
+        pp2 = ProjectPlant(project=projects[0], plant=plants[1], quantity=25, unit_cost=20.0)
+        pp3 = ProjectPlant(project=projects[1], plant=plants[0], quantity=5, unit_cost=50.0)
+        pp4 = ProjectPlant(project=projects[3], plant=plants[2], quantity=100, unit_cost=5.0)
         db.session.add_all([pp1, pp2, pp3, pp4])
         db.session.commit()
 
@@ -592,9 +526,7 @@ class TestDashboardServiceIntegration(DatabaseTestMixin):
         assert len(recent_activity["recent_clients"]) == 3
         assert len(recent_activity["recent_plants"]) == 3
 
-    def test_dashboard_with_time_filtering(
-        self, app_context, client_factory, project_factory
-    ):
+    def test_dashboard_with_time_filtering(self, app_context, client_factory, project_factory):
         """Test dashboard analytics with different time ranges"""
         # Clear cache to ensure fresh data
         from src.services.performance import cache
@@ -605,9 +537,7 @@ class TestDashboardServiceIntegration(DatabaseTestMixin):
         now = datetime.utcnow()
 
         # Create projects at different times
-        old_project = project_factory(  # noqa: F841
-            client=client, created_at=now - timedelta(days=100), budget=5000.0
-        )
+        old_project = project_factory(client=client, created_at=now - timedelta(days=100), budget=5000.0)  # noqa: F841
         recent_project = project_factory(  # noqa: F841
             client=client, created_at=now - timedelta(days=10), budget=8000.0
         )
@@ -617,32 +547,22 @@ class TestDashboardServiceIntegration(DatabaseTestMixin):
 
         # Test 30-day analytics (should include 2 recent projects)
         analytics_30 = DashboardService.get_project_analytics(days=30)
-        assert (
-            len([p for p in analytics_30["projects_over_time"]]) >= 0
-        )  # May vary by date grouping
+        assert len([p for p in analytics_30["projects_over_time"]]) >= 0  # May vary by date grouping
 
         # Test 7-day analytics (should include 1 very recent project)
         analytics_7 = DashboardService.get_project_analytics(days=7)
-        assert (
-            len([p for p in analytics_7["projects_over_time"]]) >= 0
-        )  # May vary by date grouping
+        assert len([p for p in analytics_7["projects_over_time"]]) >= 0  # May vary by date grouping
 
         # Test dashboard summary recent activity
         summary = DashboardService.get_dashboard_summary()
         assert summary["recent_activity"]["new_projects"] == 2  # Last 30 days
 
-    def test_dashboard_edge_cases(
-        self, app_context, client_factory, project_factory, plant_factory
-    ):
+    def test_dashboard_edge_cases(self, app_context, client_factory, project_factory, plant_factory):
         """Test dashboard service edge cases and error handling"""
         # Test with projects having null budgets
         client = client_factory()
-        project_with_budget = project_factory(  # noqa: F841
-            client=client, budget=5000.0
-        )  # noqa: F841
-        project_without_budget = project_factory(  # noqa: F841
-            client=client, budget=None
-        )  # noqa: F841
+        project_with_budget = project_factory(client=client, budget=5000.0)  # noqa: F841  # noqa: F841
+        project_without_budget = project_factory(client=client, budget=None)  # noqa: F841  # noqa: F841
 
         financial_analytics = DashboardService.get_financial_analytics()
         assert financial_analytics["total_project_value"] == 5000.0
@@ -652,9 +572,7 @@ class TestDashboardServiceIntegration(DatabaseTestMixin):
         unused_plant = plant_factory()  # noqa: F841
 
         plant_analytics = DashboardService.get_plant_analytics()
-        assert (
-            len(plant_analytics["most_used_plants"]) == 0
-        )  # No ProjectPlant relationships
+        assert len(plant_analytics["most_used_plants"]) == 0  # No ProjectPlant relationships
 
         performance = DashboardService.get_performance_metrics()
         assert performance["plant_utilization_rate"] == 0.0  # No plants used
@@ -668,6 +586,4 @@ class TestDashboardServiceIntegration(DatabaseTestMixin):
         )
 
         performance = DashboardService.get_performance_metrics()
-        assert (
-            performance["average_project_duration_days"] == 0
-        )  # No valid duration data
+        assert performance["average_project_duration_days"] == 0  # No valid duration data

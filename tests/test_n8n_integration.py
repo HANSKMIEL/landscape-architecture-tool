@@ -382,9 +382,7 @@ class TestN8nSignatureValidation:
         json_data = json.dumps(data)
 
         # Calculate expected signature
-        signature = hmac.new(
-            "test-secret".encode(), json_data.encode(), hashlib.sha256
-        ).hexdigest()
+        signature = hmac.new("test-secret".encode(), json_data.encode(), hashlib.sha256).hexdigest()
 
         response = client.post(
             "/api/n8n/receive/email-sent",
