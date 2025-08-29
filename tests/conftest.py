@@ -44,8 +44,13 @@ def connection(engine):
 
     # For SQLAlchemy 2.0, handle transactions properly
     if conn.in_transaction():
-        # If already in transaction, just use it
-        yield conn
+        # If already in transaction, ensure proper cleanup
+        try:
+            yield conn
+        finally:
+            # Roll back to ensure clean state for next session
+            if conn.in_transaction():
+                conn.rollback()
     else:
         # Start a new transaction
         outer_tx = conn.begin()
