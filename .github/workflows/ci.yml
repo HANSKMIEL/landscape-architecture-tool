@@ -202,10 +202,23 @@ jobs:
       env:
         PYTHONPATH: .
         FLASK_ENV: testing
-      timeout-minutes: 15
+        # Add memory optimization for tests
+        SQLALCHEMY_ENGINE_OPTIONS: '{"pool_timeout": 15, "pool_recycle": 180}'
+      timeout-minutes: 12
       run: |
         echo "🧪 Running backend tests with SQLite..."
-        python -m pytest tests/ -v --tb=short --maxfail=5 --timeout=600
+        # Add memory monitoring
+        echo "Memory usage before tests:"
+        free -h || true
+        
+        # Run tests with enhanced timeout and memory monitoring
+        python -m pytest tests/ -v --tb=short --maxfail=5 --timeout=300 \
+          --durations=10 --durations-min=2.0 \
+          -x tests/test_database_isolation.py
+        
+        
+        echo "Memory usage after tests:"
+        free -h || true
         
     - name: Test backend with PostgreSQL
       env:
