@@ -1,0 +1,75 @@
+{
+  "timestamp": "2025-08-29T18:52:16.502536",
+  "overall_status": "error",
+  "validation_steps": {
+    "git_status": {
+      "status": "healthy",
+      "uncommitted_files": 2,
+      "recent_commits": [
+        "8a16c4e Potential fix for code scanning alert no. 187: Workflow does not contain permissions",
+        "70702cc Fix database validation function call in automated validation system",
+        "958f802 Update .github/workflows/automated-validation.yml",
+        "f90eee8 Implement comprehensive automated validation system to address pipeline reliability issues",
+        "b203eec Fix transaction handling consistency in connection fixture"
+      ]
+    },
+    "dependencies": {
+      "status": "healthy",
+      "pip_check": true,
+      "npm_check": true,
+      "pip_errors": "",
+      "npm_errors": ""
+    },
+    "code_quality": {
+      "status": "healthy",
+      "linting_passed": true,
+      "quality_issues_count": 0,
+      "quality_issues": []
+    },
+    "application_health": {
+      "status": "healthy",
+      "app_creation": true,
+      "model_imports": true,
+      "app_error": "",
+      "import_error": ""
+    },
+    "database": {
+      "status": "error",
+      "initialization": false,
+      "error": "  File \"<string>\", line 1\n    from src.main import create_app; from src.utils.db_init import initialize_database; app = create_app(); with app.app_context(): initialize_database(); print('\u2705 Database initialized')\n                                                                                                            ^^^^\nSyntaxError: invalid syntax\n"
+    },
+    "tests": {
+      "status": "error",
+      "backend": {
+        "passed": false,
+        "summary": {
+          "raw": "============= 3 failed, 31 passed, 1 skipped, 85 warnings in 2.17s ============="
+        },
+        "stderr": ""
+      },
+      "frontend": {
+        "passed": false,
+        "summary": {
+          "raw": "\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[31m1 failed\u001b[39m\u001b[22m\u001b[2m | \u001b[22m\u001b[1m\u001b[32m7 passed\u001b[39m\u001b[22m\u001b[90m (8)\u001b[39m"
+        },
+        "stderr": "\n\u001b[31m\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u001b[39m\u001b[1m\u001b[41m Failed Tests 2 \u001b[49m\u001b[22m\u001b[31m\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u001b[39m\n\n\u001b[41m\u001b[1m FAIL \u001b[22m\u001b[49m src/components/__tests__/Projects.test.jsx\u001b[2m > \u001b[22mProjects Component\u001b[2m > \u001b[22mBasic Rendering\u001b[2m > \u001b[22mdisplays projects data after loading\n\u001b[31m\u001b[1mError\u001b[22m: Test timed out in 5000ms.\nIf this is a long-running test, pass a timeout value as the last argument or configure it globally with \"testTimeout\".\u001b[39m\n\u001b[36m \u001b[2m\u276f\u001b[22m src/components/__tests__/Projects.test.jsx:\u001b[2m95:5\u001b[22m\u001b[39m\n    "
+      }
+    }
+  },
+  "summary": {
+    "total_steps": 6,
+    "healthy_steps": 4,
+    "health_percentage": 66.7,
+    "status_distribution": {
+      "healthy": 4,
+      "warning": 0,
+      "error": 2
+    }
+  },
+  "recommendations": [
+    "\u274c Critical issues found. Address errors before continuing development.",
+    "Database initialization failed. Check database configuration.",
+    "Backend tests failing. Run 'make backend-test' for detailed output.",
+    "Frontend tests failing. Run 'cd frontend && npm run test:vitest:run' for details."
+  ]
+}

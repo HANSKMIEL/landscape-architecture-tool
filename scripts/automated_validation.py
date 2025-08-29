@@ -240,15 +240,36 @@ class AutomatedValidator:
         print("🗄️ Validating database setup...")
         
         try:
-            # Test database initialization
-            db_test = self.run_command(
-                'PYTHONPATH=. python -c "from src.main import create_app; '
-                'from src.utils.db_init import initialize_database; '
-                'app = create_app(); '
-                'with app.app_context(): initialize_database(); '
-                'print(\'✅ Database initialized\')"',
-                timeout=30
-            )
+            # Test database initialization - create a simple script
+            script_content = """
+from src.main import create_app
+from src.utils.db_init import initialize_database
+app = create_app()
+ctx = app.app_context()
+ctx.push()
+initialize_database()
+ctx.pop()
+print('Database initialized')
+"""
+            
+            # Write temporary script and execute it
+            import tempfile
+            with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as f:
+                f.write(script_content)
+                script_path = f.name
+            
+            try:
+                db_test = self.run_command(
+                    f'PYTHONPATH=. python {script_path}',
+                    timeout=30
+                )
+            finally:
+                # Clean up temporary file
+                import os
+                try:
+                    os.unlink(script_path)
+                except OSError:
+                    pass
             
             status = "healthy" if db_test["success"] else "error"
             

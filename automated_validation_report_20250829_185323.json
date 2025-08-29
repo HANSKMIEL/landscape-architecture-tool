@@ -1,0 +1,50 @@
+{
+  "timestamp": "2025-08-29T18:53:20.631610",
+  "overall_status": "error",
+  "validation_steps": {
+    "git_status": {
+      "status": "healthy",
+      "uncommitted_files": 4,
+      "recent_commits": [
+        "8a16c4e Potential fix for code scanning alert no. 187: Workflow does not contain permissions",
+        "70702cc Fix database validation function call in automated validation system",
+        "958f802 Update .github/workflows/automated-validation.yml",
+        "f90eee8 Implement comprehensive automated validation system to address pipeline reliability issues",
+        "b203eec Fix transaction handling consistency in connection fixture"
+      ]
+    },
+    "dependencies": {
+      "status": "healthy",
+      "pip_check": true,
+      "npm_check": true,
+      "pip_errors": "",
+      "npm_errors": ""
+    },
+    "code_quality": {
+      "status": "error",
+      "linting_passed": false,
+      "quality_issues_count": 0,
+      "quality_issues": []
+    },
+    "application_health": {
+      "status": "healthy",
+      "app_creation": true,
+      "model_imports": true,
+      "app_error": "",
+      "import_error": ""
+    }
+  },
+  "summary": {
+    "total_steps": 4,
+    "healthy_steps": 3,
+    "health_percentage": 75.0,
+    "status_distribution": {
+      "healthy": 3,
+      "warning": 0,
+      "error": 1
+    }
+  },
+  "recommendations": [
+    "\u274c Critical issues found. Address errors before continuing development."
+  ]
+}
