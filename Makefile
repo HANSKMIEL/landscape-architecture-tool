@@ -75,6 +75,8 @@ lint:
 	@command -v flake8 >/dev/null 2>&1 || pip install flake8
 	@command -v black >/dev/null 2>&1 || pip install black
 	@command -v isort >/dev/null 2>&1 || pip install isort
+	@command -v ruff >/dev/null 2>&1 || pip install ruff
+	ruff check .
 	black --check src/ tests/ --diff || true
 	isort --check-only src/ tests/ --diff || true
 	flake8 src/ tests/ --max-line-length=120 --extend-ignore=E203,W503,F403,C901,W291,E402 --max-complexity=25 || true
