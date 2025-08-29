@@ -9,7 +9,7 @@ from datetime import datetime, timezone
 import requests
 from flask import Blueprint, current_app, jsonify, request
 
-from src.models.landscape import db  # noqa: F401,E501 - Future webhook persistence
+from src.models.landscape import db  # noqa: F401 - Future webhook persistence
 from src.utils.error_handlers import handle_errors
 
 logger = logging.getLogger(__name__)
