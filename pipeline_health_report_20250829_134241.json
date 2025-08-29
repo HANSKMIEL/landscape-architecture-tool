@@ -1,0 +1,27 @@
+{
+  "timestamp": "2025-08-29T13:42:41.652075",
+  "overall_status": "warning",
+  "checks": {
+    "git_status": {
+      "status": "warning",
+      "uncommitted_files": 2
+    },
+    "dependencies": {
+      "status": "healthy",
+      "conflicts": false
+    },
+    "database": {
+      "status": "error",
+      "error": "No module named 'psycopg2'"
+    },
+    "code_quality": {
+      "status": "healthy",
+      "black": true,
+      "isort": true
+    },
+    "tests": {
+      "status": "error",
+      "tests_passing": false
+    }
+  }
+}
