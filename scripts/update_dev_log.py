@@ -202,8 +202,11 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  python scripts/update_dev_log.py --action feature_added --description "Added plant recommendation system" --author "john_doe"
-  python scripts/update_dev_log.py --action bug_fixed --description "Fixed database connection issue" --author "jane_smith" --impact "Resolves production stability issues"
+  python scripts/update_dev_log.py --action feature_added \\
+    --description "Added plant recommendation system" --author "john_doe"
+  python scripts/update_dev_log.py --action bug_fixed \\
+    --description "Fixed database connection issue" --author "jane_smith" \\
+    --impact "Resolves production stability issues"
   python scripts/update_dev_log.py --list --count 5
   python scripts/update_dev_log.py --stats
         """,

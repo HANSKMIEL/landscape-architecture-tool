@@ -196,7 +196,7 @@ class TestAnalyticsService(DatabaseTestMixin):
         ]
 
         # Alpha Corp: 3 projects, $18,000 total budget
-        for i in range(3):
+        for _i in range(3):
             project_factory(client=clients[0], budget=6000.0)
 
         # Beta LLC: 2 projects, $25,000 total budget

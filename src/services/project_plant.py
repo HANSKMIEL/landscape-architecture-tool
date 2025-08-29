@@ -74,7 +74,7 @@ class ProjectPlantService:
         except IntegrityError as e:
             db.session.rollback()
             logger.error(f"Database integrity error: {e}")
-            raise ValueError("Database constraint violation")
+            raise ValueError("Database constraint violation") from e
         except Exception as e:
             db.session.rollback()
             logger.error(f"Error adding plant to project: {e}")

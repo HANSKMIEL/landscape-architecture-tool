@@ -114,8 +114,12 @@ def main():
     if args.all or args.test:
         # Enhanced testing with dependency validation
         # First, validate dependencies and provide clear feedback
+        dependency_validation_cmd = (
+            'python -c "from src.utils.dependency_validator import validate_dependencies; '
+            "validator = validate_dependencies(); print('Dependency validation completed')\""
+        )
         if not run_command(
-            "python -c \"from src.utils.dependency_validator import validate_dependencies; validator = validate_dependencies(); print('Dependency validation completed')\"",
+            dependency_validation_cmd,
             "Dependency validation",
         ):
             print("⚠️ Dependency validation failed - proceeding with fallback tests")

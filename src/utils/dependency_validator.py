@@ -139,6 +139,7 @@ class DependencyValidator:
             warnings.warn(
                 warning_msg,
                 UserWarning,
+                stacklevel=2,
             )
 
         optional_available = f"Optional dependencies: {available_count}/" f"{len(self.OPTIONAL_DEPENDENCIES)} available"
@@ -172,7 +173,7 @@ class DependencyValidator:
             ]
         )
 
-        for dep_name, description in self.OPTIONAL_DEPENDENCIES.items():
+        for dep_name, _description in self.OPTIONAL_DEPENDENCIES.items():
             status = "✅ AVAILABLE" if self.validation_results.get(dep_name, False) else "⚠️  MISSING"
             report_lines.append(f"  {dep_name}: {status}")
 

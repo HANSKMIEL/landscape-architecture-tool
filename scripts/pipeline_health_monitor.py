@@ -133,8 +133,6 @@ class PipelineHealthMonitor:
                 "black": black_ok,
                 "isort": isort_ok,
             }
-        except Exception as e:
-            return {"status": "error", "error": str(e)}
         except FileNotFoundError as e:
             return {"status": "error", "error": f"File not found: {e}"}
         except OSError as e:

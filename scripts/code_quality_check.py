@@ -62,7 +62,8 @@ def main():
         ),
         # Line length and basic formatting
         (
-            "python -m flake8 tests/test_integration.py --max-line-length=88 --extend-ignore=E203,W503,F401,F403,E402,C901,W291",
+            "python -m flake8 tests/test_integration.py --max-line-length=88 "
+            "--extend-ignore=E203,W503,F401,F403,E402,C901,W291",
             "Integration test formatting check",
         ),
         # Black formatting check
@@ -96,7 +97,7 @@ def main():
     passed = sum(1 for _, success, _ in results if success)
     total = len(results)
 
-    for description, success, output in results:
+    for description, success, _output in results:
         status = "✅ PASS" if success else "❌ FAIL"
         print(f"{status} {description}")
 
