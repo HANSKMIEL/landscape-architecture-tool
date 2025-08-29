@@ -42,6 +42,12 @@ def connection(engine):
         # SQLite or engines that don't support this — ignore
         pass
 
+    # Create database tables for the test session
+    from src.models.user import db as flask_db
+    
+    # Create all tables in the test database
+    flask_db.metadata.create_all(bind=engine)
+
     # For SQLAlchemy 2.0, handle transactions properly
     if conn.in_transaction():
         # If already in transaction, ensure proper cleanup
@@ -122,3 +128,9 @@ def client(app):
 def runner(app):
     """Create a test runner"""
     return app.test_cli_runner()
+
+
+@pytest.fixture
+def app_context(app):
+    """Create application context for tests that need it"""
+    return app

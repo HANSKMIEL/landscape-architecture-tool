@@ -1,0 +1,119 @@
+name: Automated Pipeline Validation
+
+on:
+  push:
+    branches: [ main, develop, copilot/*, feature/* ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.12]
+        node-version: [18.x]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Set up Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+
+    - name: Cache Python dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements-dev.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+
+    - name: Cache Node.js dependencies
+      uses: actions/cache@v3
+      with:
+        path: frontend/node_modules
+        key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-node-
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements-dev.txt
+        cd frontend && npm ci --legacy-peer-deps
+
+    - name: Run Automated Validation
+      env:
+        PYTHONPATH: .
+        FLASK_ENV: testing
+        CI: true
+      run: |
+        python scripts/automated_validation.py
+
+    - name: Upload Validation Report
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: validation-report-${{ github.run_number }}
+        path: automated_validation_report_*.json
+        retention-days: 30
+
+    - name: Comment PR with Results
+      if: github.event_name == 'pull_request' && always()
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const fs = require('fs');
+          const glob = require('glob');
+          
+          // Find the validation report
+          const reportFiles = glob.sync('automated_validation_report_*.json');
+          if (reportFiles.length === 0) {
+            console.log('No validation report found');
+            return;
+          }
+          
+          const reportFile = reportFiles[0];
+          const reportData = JSON.parse(fs.readFileSync(reportFile, 'utf8'));
+          
+          // Create summary comment
+          const status = reportData.overall_status;
+          const summary = reportData.summary;
+          const statusIcon = status === 'healthy' ? '✅' : status === 'warning' ? '⚠️' : '❌';
+          
+          const comment = `## ${statusIcon} Automated Validation Results
+          
+          **Overall Status:** ${status.toUpperCase()}
+          **Health Score:** ${summary.health_percentage}% (${summary.healthy_steps}/${summary.total_steps} checks passed)
+          
+          ### Validation Steps
+          ${Object.entries(reportData.validation_steps).map(([step, data]) => {
+            const icon = data.status === 'healthy' ? '✅' : data.status === 'warning' ? '⚠️' : '❌';
+            return `- ${icon} **${step.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}**: ${data.status}`;
+          }).join('\n')}
+          
+          ### Recommendations
+          ${reportData.recommendations.slice(0, 3).map((rec, i) => `${i + 1}. ${rec}`).join('\n')}
+          
+          <details>
+          <summary>View Full Report</summary>
+          
+          \`\`\`json
+          ${JSON.stringify(reportData, null, 2)}
+          \`\`\`
+          </details>
+          `;
+          
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: comment
+          });
