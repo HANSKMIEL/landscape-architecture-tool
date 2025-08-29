@@ -214,8 +214,8 @@ jobs:
         # Run tests with enhanced timeout and memory monitoring
         python -m pytest tests/ -v --tb=short --maxfail=5 --timeout=300 \
           --durations=10 --durations-min=2.0 \
-          -x tests/test_database_isolation.py \
-          || echo "⚠️ Some tests failed but continuing..."
+          -x tests/test_database_isolation.py
+        
         
         echo "Memory usage after tests:"
         free -h || true
