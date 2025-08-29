@@ -119,9 +119,7 @@ class TestPerformanceRoutes(DatabaseTestMixin):
     @patch("src.routes.performance.invalidate_dashboard_cache")
     def test_invalidate_cache_dashboard(self, mock_invalidate, client, app_context):
         """Test dashboard cache invalidation"""
-        response = client.post(
-            "/api/performance/cache/invalidate", json={"type": "dashboard"}
-        )
+        response = client.post("/api/performance/cache/invalidate", json={"type": "dashboard"})
 
         assert response.status_code == 200
         data = response.get_json()
@@ -133,9 +131,7 @@ class TestPerformanceRoutes(DatabaseTestMixin):
     @patch("src.routes.performance.invalidate_plant_cache")
     def test_invalidate_cache_plants(self, mock_invalidate, client, app_context):
         """Test plants cache invalidation"""
-        response = client.post(
-            "/api/performance/cache/invalidate", json={"type": "plants"}
-        )
+        response = client.post("/api/performance/cache/invalidate", json={"type": "plants"})
 
         assert response.status_code == 200
         data = response.get_json()
@@ -147,9 +143,7 @@ class TestPerformanceRoutes(DatabaseTestMixin):
     @patch("src.routes.performance.invalidate_project_cache")
     def test_invalidate_cache_projects(self, mock_invalidate, client, app_context):
         """Test projects cache invalidation"""
-        response = client.post(
-            "/api/performance/cache/invalidate", json={"type": "projects"}
-        )
+        response = client.post("/api/performance/cache/invalidate", json={"type": "projects"})
 
         assert response.status_code == 200
         data = response.get_json()
@@ -161,13 +155,9 @@ class TestPerformanceRoutes(DatabaseTestMixin):
     @patch("src.routes.performance.invalidate_dashboard_cache")
     @patch("src.routes.performance.invalidate_plant_cache")
     @patch("src.routes.performance.invalidate_project_cache")
-    def test_invalidate_cache_all(
-        self, mock_project, mock_plant, mock_dashboard, client, app_context
-    ):
+    def test_invalidate_cache_all(self, mock_project, mock_plant, mock_dashboard, client, app_context):
         """Test invalidating all cache types"""
-        response = client.post(
-            "/api/performance/cache/invalidate", json={"type": "all"}
-        )
+        response = client.post("/api/performance/cache/invalidate", json={"type": "all"})
 
         assert response.status_code == 200
         data = response.get_json()
@@ -182,9 +172,7 @@ class TestPerformanceRoutes(DatabaseTestMixin):
 
     def test_invalidate_cache_invalid_type(self, client, app_context):
         """Test cache invalidation with invalid type"""
-        response = client.post(
-            "/api/performance/cache/invalidate", json={"type": "invalid"}
-        )
+        response = client.post("/api/performance/cache/invalidate", json={"type": "invalid"})
 
         assert response.status_code == 400
         data = response.get_json()
@@ -194,9 +182,7 @@ class TestPerformanceRoutes(DatabaseTestMixin):
     @patch("src.routes.performance.invalidate_dashboard_cache")
     @patch("src.routes.performance.invalidate_plant_cache")
     @patch("src.routes.performance.invalidate_project_cache")
-    def test_invalidate_cache_no_json(
-        self, mock_project, mock_plant, mock_dashboard, client, app_context
-    ):
+    def test_invalidate_cache_no_json(self, mock_project, mock_plant, mock_dashboard, client, app_context):
         """Test cache invalidation without JSON data"""
         response = client.post("/api/performance/cache/invalidate")
 
@@ -210,9 +196,7 @@ class TestPerformanceRoutes(DatabaseTestMixin):
         """Test cache invalidation with exception"""
         mock_invalidate.side_effect = Exception("Invalidation failed")
 
-        response = client.post(
-            "/api/performance/cache/invalidate", json={"type": "dashboard"}
-        )
+        response = client.post("/api/performance/cache/invalidate", json={"type": "dashboard"})
 
         assert response.status_code == 500
         data = response.get_json()
@@ -325,9 +309,7 @@ class TestPerformanceRoutes(DatabaseTestMixin):
         assert len(success_recommendations) > 0
 
     @patch("src.routes.performance.get_cache_stats")
-    def test_get_performance_metrics_redis_unavailable(
-        self, mock_get_stats, client, app_context
-    ):
+    def test_get_performance_metrics_redis_unavailable(self, mock_get_stats, client, app_context):
         """Test performance metrics with Redis unavailable"""
         mock_stats = {
             "cache_backend": "memory",
@@ -352,9 +334,7 @@ class TestPerformanceRoutes(DatabaseTestMixin):
         assert "Redis cache not available" in warning["message"]
 
     @patch("src.routes.performance.get_cache_stats")
-    def test_get_performance_metrics_low_hit_rate(
-        self, mock_get_stats, client, app_context
-    ):
+    def test_get_performance_metrics_low_hit_rate(self, mock_get_stats, client, app_context):
         """Test performance metrics with low hit rate"""
         mock_stats = {
             "cache_backend": "redis",
@@ -372,9 +352,7 @@ class TestPerformanceRoutes(DatabaseTestMixin):
 
         # Should have critical recommendation
         recommendations = data["recommendations"]
-        critical_recommendations = [
-            r for r in recommendations if r["type"] == "critical"
-        ]
+        critical_recommendations = [r for r in recommendations if r["type"] == "critical"]
         assert len(critical_recommendations) > 0
 
         critical = critical_recommendations[0]
@@ -382,9 +360,7 @@ class TestPerformanceRoutes(DatabaseTestMixin):
         assert "35%" in critical["message"]
 
     @patch("src.routes.performance.get_cache_stats")
-    def test_get_performance_metrics_exception(
-        self, mock_get_stats, client, app_context
-    ):
+    def test_get_performance_metrics_exception(self, mock_get_stats, client, app_context):
         """Test performance metrics with exception"""
         mock_get_stats.side_effect = Exception("Metrics unavailable")
 
@@ -425,9 +401,7 @@ class TestPerformanceRoutesIntegration(DatabaseTestMixin):
         assert response.status_code in [200, 500]  # May fail due to cache issues
 
         # 3. Invalidate specific cache
-        response = client.post(
-            "/api/performance/cache/invalidate", json={"type": "dashboard"}
-        )
+        response = client.post("/api/performance/cache/invalidate", json={"type": "dashboard"})
         assert response.status_code in [200, 500]  # May fail due to cache issues
 
     def test_health_monitoring_workflow(self, client, app_context):

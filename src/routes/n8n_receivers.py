@@ -81,14 +81,10 @@ def receive_email_notification():
         if project:
             # Update project with email notification info
             # This could be stored in a separate notifications table
-            logger.info(
-                f"Email {data.get('status', 'unknown')} for project {project.id}"  # noqa: E501
-            )
+            logger.info(f"Email {data.get('status', 'unknown')} for project {project.id}")  # noqa: E501
 
     return (
-        jsonify(
-            {"status": "received", "message": "Email notification processed"}
-        ),  # noqa: E501
+        jsonify({"status": "received", "message": "Email notification processed"}),  # noqa: E501
         200,
     )
 
@@ -125,9 +121,7 @@ def receive_task_completion():
         if project_id:
             project = Project.query.get(project_id)
             if project:
-                logger.info(
-                    f"Document generation completed for project {project.id}"
-                )  # noqa: E501
+                logger.info(f"Document generation completed for project {project.id}")  # noqa: E501
                 # Update project status or add notification
 
     elif task_type == "invoice_processing" and status == "completed":
@@ -136,9 +130,7 @@ def receive_task_completion():
         # Update financial records or project billing status
 
     return (
-        jsonify(
-            {"status": "received", "message": "Task completion processed"}
-        ),  # noqa: E501
+        jsonify({"status": "received", "message": "Task completion processed"}),  # noqa: E501
         200,
     )  # noqa: E501
 
@@ -193,9 +185,7 @@ def n8n_integration_status():
     try:
         import requests
 
-        n8n_base_url = current_app.config.get(
-            "N8N_BASE_URL", "http://localhost:5678"
-        )  # noqa: E501
+        n8n_base_url = current_app.config.get("N8N_BASE_URL", "http://localhost:5678")  # noqa: E501
 
         # Try to ping N8n
         response = requests.get(f"{n8n_base_url}/healthz", timeout=5)
@@ -210,12 +200,8 @@ def n8n_integration_status():
             {
                 "n8n_integration": "enabled",
                 "n8n_available": n8n_available,
-                "n8n_base_url": current_app.config.get(
-                    "N8N_BASE_URL", "not_configured"
-                ),
-                "webhook_secret_configured": bool(
-                    current_app.config.get("N8N_WEBHOOK_SECRET")
-                ),
+                "n8n_base_url": current_app.config.get("N8N_BASE_URL", "not_configured"),
+                "webhook_secret_configured": bool(current_app.config.get("N8N_WEBHOOK_SECRET")),
             }
         ),
         200,

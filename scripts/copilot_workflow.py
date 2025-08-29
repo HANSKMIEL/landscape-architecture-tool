@@ -5,7 +5,6 @@ Assists with formatting and validating Copilot-generated content.
 """
 
 import argparse
-import os
 import subprocess
 import sys
 from pathlib import Path
@@ -48,9 +47,7 @@ def validate_code_quality():
     if not run_command("black --check .", "Black format validation"):
         success = False
 
-    if not run_command(
-        "isort --check-only --profile black .", "Import sort validation"
-    ):
+    if not run_command("isort --check-only --profile black .", "Import sort validation"):
         success = False
 
     flake8_cmd = (

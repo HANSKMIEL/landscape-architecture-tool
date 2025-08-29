@@ -23,9 +23,7 @@ class SupplierCreateSchema(BaseModel):
             # Basic phone validation: at least contains some digits and valid characters
             phone_pattern = r"^[\d\s\-\+\(\)\.]+$"
             if not re.match(phone_pattern, v) or not any(char.isdigit() for char in v):
-                raise ValueError(
-                    "Phone number must contain digits and valid characters only"
-                )
+                raise ValueError("Phone number must contain digits and valid characters only")
         return v
 
     @field_validator("website")
@@ -56,9 +54,7 @@ class SupplierUpdateSchema(BaseModel):
             # Basic phone validation: at least contains some digits and valid characters
             phone_pattern = r"^[\d\s\-\+\(\)\.]+$"
             if not re.match(phone_pattern, v) or not any(char.isdigit() for char in v):
-                raise ValueError(
-                    "Phone number must contain digits and valid characters only"
-                )
+                raise ValueError("Phone number must contain digits and valid characters only")
         return v
 
     @field_validator("website")

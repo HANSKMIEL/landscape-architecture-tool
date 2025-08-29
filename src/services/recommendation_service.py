@@ -21,9 +21,7 @@ class RecommendationService:
         self.engine = PlantRecommendationEngine()
         self._cache = {}
 
-    def get_recommendations(
-        self, criteria: Dict, max_results: int = 10, min_score: float = 0.0
-    ) -> List[Dict]:
+    def get_recommendations(self, criteria: Dict, max_results: int = 10, min_score: float = 0.0) -> List[Dict]:
         """
         Get plant recommendations based on criteria
 
@@ -157,9 +155,7 @@ class RecommendationService:
             )
 
         if "soil_type" in criteria:
-            match["soil_type"] = self._check_soil_match(
-                plant_score.plant.soil_type, criteria["soil_type"]
-            )
+            match["soil_type"] = self._check_soil_match(plant_score.plant.soil_type, criteria["soil_type"])
 
         if "plant_type" in criteria:
             match["plant_type"] = plant_score.plant.category == criteria["plant_type"]
@@ -190,15 +186,11 @@ class RecommendationService:
             return False
         # Split soil types into sets of individual components
         plant_soil_set = set(soil.strip().lower() for soil in plant_soil.split(","))
-        criteria_soil_set = set(
-            soil.strip().lower() for soil in criteria_soil.split(",")
-        )
+        criteria_soil_set = set(soil.strip().lower() for soil in criteria_soil.split(","))
         # Check for any intersection between the two sets
         return not plant_soil_set.isdisjoint(criteria_soil_set)
 
-    def _check_height_match(
-        self, plant_min: float, plant_max: float, height_range: List
-    ) -> bool:
+    def _check_height_match(self, plant_min: float, plant_max: float, height_range: List) -> bool:
         """Check if height ranges overlap"""
         if not plant_min or not plant_max or not height_range or len(height_range) < 2:
             return False
@@ -224,9 +216,7 @@ class RecommendationService:
             # Fallback to string comparison if parsing fails
             return plant_zone == criteria_zone
 
-    def _create_cache_key(
-        self, criteria: Dict, max_results: int, min_score: float
-    ) -> str:
+    def _create_cache_key(self, criteria: Dict, max_results: int, min_score: float) -> str:
         """Create cache key from criteria"""
         import json
 

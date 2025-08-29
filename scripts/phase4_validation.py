@@ -4,7 +4,6 @@ Phase 4 Comprehensive Validation Script
 Validates all prevention measures are properly implemented.
 """
 
-import os
 import subprocess
 import sys
 from pathlib import Path
@@ -24,9 +23,7 @@ def check_file_exists(filepath, description):
 def run_command_check(command, description):
     """Run a command and check if it succeeds."""
     try:
-        result = subprocess.run(
-            command, shell=True, capture_output=True, text=True, timeout=60
-        )
+        result = subprocess.run(command, shell=True, capture_output=True, text=True, timeout=60)
         if result.returncode == 0:
             print(f"✅ {description}")
             return True
@@ -50,15 +47,11 @@ def main():
 
     # 1. Pre-commit hooks validation
     print("\n📋 Step 4.1: Pre-commit Hooks Validation")
-    validation_results.append(
-        check_file_exists(".pre-commit-config.yaml", "Pre-commit configuration")
-    )
+    validation_results.append(check_file_exists(".pre-commit-config.yaml", "Pre-commit configuration"))
 
     # Check if pre-commit is installed
     try:
-        result = subprocess.run(
-            ["pre-commit", "--version"], capture_output=True, text=True
-        )
+        result = subprocess.run(["pre-commit", "--version"], capture_output=True, text=True)
         if result.returncode == 0:
             print("✅ Pre-commit framework installed")
             validation_results.append(True)
@@ -76,18 +69,12 @@ def main():
 
     # 2. Developer guidelines validation
     print("\n📋 Step 4.2: Developer Guidelines Validation")
-    validation_results.append(
-        check_file_exists("DEVELOPER_GUIDELINES.md", "Developer guidelines")
-    )
+    validation_results.append(check_file_exists("DEVELOPER_GUIDELINES.md", "Developer guidelines"))
 
     # 3. Copilot integration validation
     print("\n📋 Step 4.3: Copilot Integration Validation")
-    validation_results.append(
-        check_file_exists(".vscode/settings.json", "VSCode settings")
-    )
-    validation_results.append(
-        check_file_exists("scripts/copilot_workflow.py", "Copilot workflow helper")
-    )
+    validation_results.append(check_file_exists(".vscode/settings.json", "VSCode settings"))
+    validation_results.append(check_file_exists("scripts/copilot_workflow.py", "Copilot workflow helper"))
 
     # Test copilot workflow script
     if Path("scripts/copilot_workflow.py").exists():
@@ -100,11 +87,7 @@ def main():
 
     # 4. Monitoring system validation
     print("\n📋 Step 4.4: Monitoring System Validation")
-    validation_results.append(
-        check_file_exists(
-            "scripts/pipeline_health_monitor.py", "Pipeline health monitor"
-        )
-    )
+    validation_results.append(check_file_exists("scripts/pipeline_health_monitor.py", "Pipeline health monitor"))
 
     # Test monitoring script
     if Path("scripts/pipeline_health_monitor.py").exists():
@@ -118,13 +101,9 @@ def main():
 
     # 5. Code quality tools validation
     print("\n📋 Step 4.5: Code Quality Tools Validation")
-    validation_results.append(
-        run_command_check("black --version", "Black formatter available")
-    )
+    validation_results.append(run_command_check("black --version", "Black formatter available"))
     validation_results.append(run_command_check("isort --version", "isort available"))
-    validation_results.append(
-        run_command_check("flake8 --version", "flake8 linter available")
-    )
+    validation_results.append(run_command_check("flake8 --version", "flake8 linter available"))
 
     # 6. Integration validation
     print("\n📋 Step 4.6: Integration Tests")

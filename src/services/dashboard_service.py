@@ -39,11 +39,7 @@ class DashboardService:
 
         try:
             cached_result = cache.get(cache_key)
-            if (
-                cached_result
-                and isinstance(cached_result, dict)
-                and "totals" in cached_result
-            ):
+            if cached_result and isinstance(cached_result, dict) and "totals" in cached_result:
                 return cached_result
         except Exception:
             # Cache error, proceed to generate fresh data
@@ -59,23 +55,15 @@ class DashboardService:
         active_projects = Project.query.filter_by(status="active").count()
 
         # Projects by status
-        projects_by_status = (
-            db.session.query(Project.status, func.count(Project.id))
-            .group_by(Project.status)
-            .all()
-        )
+        projects_by_status = db.session.query(Project.status, func.count(Project.id)).group_by(Project.status).all()
 
         status_counts = {status: count for status, count in projects_by_status}
 
         # Recent activity (last 30 days)
         thirty_days_ago = datetime.now(UTC) - timedelta(days=30)
-        recent_projects = Project.query.filter(
-            Project.created_at >= thirty_days_ago
-        ).count()
+        recent_projects = Project.query.filter(Project.created_at >= thirty_days_ago).count()
 
-        recent_clients = Client.query.filter(
-            Client.created_at >= thirty_days_ago
-        ).count()
+        recent_clients = Client.query.filter(Client.created_at >= thirty_days_ago).count()
 
         # Total budget across all projects
         total_budget = db.session.query(func.sum(Project.budget)).scalar() or 0
@@ -123,11 +111,7 @@ class DashboardService:
         )
 
         # Projects by status
-        projects_by_status = (
-            db.session.query(Project.status, func.count(Project.id))
-            .group_by(Project.status)
-            .all()
-        )
+        projects_by_status = db.session.query(Project.status, func.count(Project.id)).group_by(Project.status).all()
 
         # Average project budget
         avg_budget = db.session.query(func.avg(Project.budget)).scalar() or 0
@@ -143,17 +127,10 @@ class DashboardService:
         )
 
         result = {
-            "projects_over_time": [
-                {"date": str(date), "count": count} for date, count in projects_by_date
-            ],
-            "projects_by_status": [
-                {"status": status, "count": count}
-                for status, count in projects_by_status
-            ],
+            "projects_over_time": [{"date": str(date), "count": count} for date, count in projects_by_date],
+            "projects_by_status": [{"status": status, "count": count} for status, count in projects_by_status],
             "average_budget": avg_budget,
-            "top_clients": [
-                {"name": name, "project_count": count} for name, count in top_clients
-            ],
+            "top_clients": [{"name": name, "project_count": count} for name, count in top_clients],
         }
 
         # Ensure all expected keys are present with appropriate defaults
@@ -182,18 +159,10 @@ class DashboardService:
         )
 
         # Plants by category
-        plants_by_category = (
-            db.session.query(Plant.category, func.count(Plant.id))
-            .group_by(Plant.category)
-            .all()
-        )
+        plants_by_category = db.session.query(Plant.category, func.count(Plant.id)).group_by(Plant.category).all()
 
         # Plants by sun exposure
-        plants_by_sun = (
-            db.session.query(Plant.sun_exposure, func.count(Plant.id))
-            .group_by(Plant.sun_exposure)
-            .all()
-        )
+        plants_by_sun = db.session.query(Plant.sun_exposure, func.count(Plant.id)).group_by(Plant.sun_exposure).all()
 
         # Native vs non-native plants
         native_count = Plant.query.filter_by(native=True).count()
@@ -210,14 +179,10 @@ class DashboardService:
                 for name, common_name, total_quantity, project_count in most_used_plants
             ],
             "plants_by_category": [
-                {"category": category, "count": count}
-                for category, count in plants_by_category
-                if category
+                {"category": category, "count": count} for category, count in plants_by_category if category
             ],
             "plants_by_sun_exposure": [
-                {"sun_exposure": exposure, "count": count}
-                for exposure, count in plants_by_sun
-                if exposure
+                {"sun_exposure": exposure, "count": count} for exposure, count in plants_by_sun if exposure
             ],
             "native_distribution": {
                 "native": native_count,
@@ -243,17 +208,11 @@ class DashboardService:
         avg_project_value = db.session.query(func.avg(Project.budget)).scalar() or 0
 
         # Project values by status
-        values_by_status = (
-            db.session.query(Project.status, func.sum(Project.budget))
-            .group_by(Project.status)
-            .all()
-        )
+        values_by_status = db.session.query(Project.status, func.sum(Project.budget)).group_by(Project.status).all()
 
         # Top projects by budget
         top_projects = (
-            db.session.query(
-                Project.name, Project.budget, Client.name.label("client_name")
-            )
+            db.session.query(Project.name, Project.budget, Client.name.label("client_name"))
             .join(Client)
             .filter(Project.budget.isnot(None))
             .order_by(desc(Project.budget))
@@ -278,8 +237,7 @@ class DashboardService:
             "total_project_value": total_project_value,
             "average_project_value": avg_project_value,
             "values_by_status": [
-                {"status": status, "total_value": float(total) if total else 0}
-                for status, total in values_by_status
+                {"status": status, "total_value": float(total) if total else 0} for status, total in values_by_status
             ],
             "top_projects": [
                 {
@@ -344,10 +302,7 @@ class DashboardService:
             .outerjoin(product_counts, Supplier.id == product_counts.c.supplier_id)
             .outerjoin(plant_counts, Supplier.id == plant_counts.c.supplier_id)
             .order_by(
-                desc(
-                    func.coalesce(product_counts.c.product_count, 0)
-                    + func.coalesce(plant_counts.c.plant_count, 0)
-                )
+                desc(func.coalesce(product_counts.c.product_count, 0) + func.coalesce(plant_counts.c.plant_count, 0))
             )
             .limit(5)
             .all()
@@ -372,11 +327,7 @@ class DashboardService:
                 }
                 for name, product_count, plant_count in suppliers_by_products
             ],
-            "specializations": [
-                {"specialization": spec, "count": count}
-                for spec, count in specializations
-                if spec
-            ],
+            "specializations": [{"specialization": spec, "count": count} for spec, count in specializations if spec],
         }
 
         # Ensure all expected keys are present with appropriate defaults
@@ -391,14 +342,10 @@ class DashboardService:
     def get_recent_activity(limit: int = 10) -> Dict:
         """Get recent activity across the system"""
         # Recent projects
-        recent_projects = (
-            Project.query.order_by(desc(Project.created_at)).limit(limit).all()
-        )
+        recent_projects = Project.query.order_by(desc(Project.created_at)).limit(limit).all()
 
         # Recent clients
-        recent_clients = (
-            Client.query.order_by(desc(Client.created_at)).limit(limit).all()
-        )
+        recent_clients = Client.query.order_by(desc(Client.created_at)).limit(limit).all()
 
         # Recent plants
         recent_plants = Plant.query.order_by(desc(Plant.created_at)).limit(limit).all()
@@ -409,9 +356,7 @@ class DashboardService:
                     "id": project.id,
                     "name": project.name,
                     "client_name": project.client.name if project.client else None,
-                    "created_at": (
-                        project.created_at.isoformat() if project.created_at else None
-                    ),
+                    "created_at": (project.created_at.isoformat() if project.created_at else None),
                     "status": project.status,
                 }
                 for project in recent_projects
@@ -421,9 +366,7 @@ class DashboardService:
                     "id": client.id,
                     "name": client.name,
                     "company": client.company,
-                    "created_at": (
-                        client.created_at.isoformat() if client.created_at else None
-                    ),
+                    "created_at": (client.created_at.isoformat() if client.created_at else None),
                 }
                 for client in recent_clients
             ],
@@ -433,9 +376,7 @@ class DashboardService:
                     "name": plant.name,
                     "common_name": plant.common_name,
                     "category": plant.category,
-                    "created_at": (
-                        plant.created_at.isoformat() if plant.created_at else None
-                    ),
+                    "created_at": (plant.created_at.isoformat() if plant.created_at else None),
                 }
                 for plant in recent_plants
             ],
@@ -454,9 +395,7 @@ class DashboardService:
         # Calculate completion rates
         total_projects = Project.query.count()
         completed_projects = Project.query.filter_by(status="completed").count()
-        completion_rate = (
-            (completed_projects / total_projects * 100) if total_projects > 0 else 0
-        )
+        completion_rate = (completed_projects / total_projects * 100) if total_projects > 0 else 0
 
         # Average project duration (for completed projects)
         completed_with_dates = Project.query.filter(
@@ -477,9 +416,7 @@ class DashboardService:
                     start_date = project.start_date
 
                 if isinstance(project.actual_completion_date, str):
-                    end_date = datetime.fromisoformat(
-                        project.actual_completion_date
-                    ).date()
+                    end_date = datetime.fromisoformat(project.actual_completion_date).date()
                 else:
                     end_date = project.actual_completion_date
 
@@ -495,9 +432,7 @@ class DashboardService:
         # Plant utilization rate
         total_plants = Plant.query.count()
         used_plants = db.session.query(ProjectPlant.plant_id).distinct().count()
-        plant_utilization = (
-            (used_plants / total_plants * 100) if total_plants > 0 else 0
-        )
+        plant_utilization = (used_plants / total_plants * 100) if total_plants > 0 else 0
 
         result = {
             "project_completion_rate": completion_rate,

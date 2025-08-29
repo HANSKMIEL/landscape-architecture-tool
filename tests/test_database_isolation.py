@@ -16,17 +16,13 @@ class TestDatabaseIsolation:
         """Test that database starts with no data"""
         with app.app_context():
             plant_count = db.session.query(Plant).count()
-            assert (
-                plant_count == 0
-            ), f"Database should start clean but found {plant_count} plants"
+            assert plant_count == 0, f"Database should start clean but found {plant_count} plants"
 
     def test_create_plant_isolated_1(self, app):
         """First test creating a plant - should not affect other tests"""
         with app.app_context():
             # Create a plant
-            plant = Plant(
-                name="Test Plant 1", common_name="Isolated Test Plant 1", category="Test"
-            )
+            plant = Plant(name="Test Plant 1", common_name="Isolated Test Plant 1", category="Test")
             db.session.add(plant)
             db.session.commit()
 
@@ -39,14 +35,10 @@ class TestDatabaseIsolation:
         with app.app_context():
             # Database should start clean
             initial_count = db.session.query(Plant).count()
-            assert (
-                initial_count == 0
-            ), f"Database should start clean but found {initial_count} plants"
+            assert initial_count == 0, f"Database should start clean but found {initial_count} plants"
 
             # Create a different plant
-            plant = Plant(
-                name="Test Plant 2", common_name="Isolated Test Plant 2", category="Test"
-            )
+            plant = Plant(name="Test Plant 2", common_name="Isolated Test Plant 2", category="Test")
             db.session.add(plant)
             db.session.commit()
 
@@ -59,9 +51,7 @@ class TestDatabaseIsolation:
         with app.app_context():
             # Database should start clean again
             initial_count = db.session.query(Plant).count()
-            assert (
-                initial_count == 0
-            ), f"Database isolation failed - found {initial_count} plants"
+            assert initial_count == 0, f"Database isolation failed - found {initial_count} plants"
 
     def test_concurrent_operations_simulation(self, app):
         """Test simulating concurrent database operations"""
