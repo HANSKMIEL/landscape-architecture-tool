@@ -173,10 +173,16 @@ curl http://localhost:5174/
 # Test creating new supplier
 curl -X POST http://localhost:5000/api/suppliers \
   -H "Content-Type: application/json" \
-  -d '{"name": "Test Supplier", "contact_person": "Test Person", 
-       "email": "test@example.com", "phone": "123-456-7890", 
-       "address": "Test Address", "city": "Test City", 
-       "postal_code": "12345", "country": "Netherlands"}'
+  -d '{
+    "name": "Test Supplier",
+    "contact_person": "Test Person",
+    "email": "test@example.com",
+    "phone": "123-456-7890",
+    "address": "Test Address",
+    "city": "Test City",
+    "postal_code": "12345",
+    "country": "Netherlands"
+  }'
 
 # Verify supplier count increased
 curl http://localhost:5000/api/suppliers | grep -o '"suppliers":\[.*\]' | grep -o '}' | wc -l
