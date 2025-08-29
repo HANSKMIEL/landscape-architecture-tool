@@ -131,6 +131,18 @@ pipeline-health:
 	@python scripts/pipeline_monitor.py
 	@echo "✅ Pipeline health check complete"
 
+# Automated validation (comprehensive)
+validate:
+	@echo "🚀 Running comprehensive automated validation..."
+	@python scripts/automated_validation.py
+	@echo "✅ Comprehensive validation complete"
+
+# Quick validation (skip tests)
+validate-quick:
+	@echo "🏃‍♂️ Running quick validation..."
+	@python scripts/automated_validation.py --quick
+	@echo "✅ Quick validation complete"
+
 # Pipeline troubleshooting guide (bonus command)
 troubleshoot:
 	@echo "📋 Pipeline Troubleshooting Guide"
