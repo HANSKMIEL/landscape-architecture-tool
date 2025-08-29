@@ -185,7 +185,7 @@ curl -X POST http://localhost:5000/api/suppliers \
   }'
 
 # Verify supplier count increased
-curl http://localhost:5000/api/suppliers | grep -o '"suppliers":\[.*\]' | grep -o '}' | wc -l
+curl http://localhost:5000/api/suppliers | jq '.suppliers | length'
 # Expected: Count should increase by 1
 ```
 
