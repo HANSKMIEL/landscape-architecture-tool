@@ -1,16 +1,10 @@
 import os
-import sys
+from contextlib import contextmanager
 
 import pytest
-from sqlalchemy import create_engine, event, text
-from sqlalchemy.orm import scoped_session, sessionmaker
+from sqlalchemy import event, create_engine, text
+from sqlalchemy.orm import sessionmaker, scoped_session
 from sqlalchemy.pool import StaticPool
-
-# Add project root to Python path
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-from src.main import create_app
-from src.models.user import db as flask_db
 
 # Use a dedicated test DB URL and NEVER touch prod/dev DBs.
 TEST_DATABASE_URL = os.getenv("TEST_DATABASE_URL") or os.getenv("DATABASE_URL", "sqlite+pysqlite:///:memory:")
@@ -32,46 +26,15 @@ def _make_engine(url: str):
 
 
 @pytest.fixture(scope="session")
-def app():
-    """Create and configure a test app for the entire test session"""
-    # Set testing environment
-    os.environ["FLASK_ENV"] = "testing"
-
-    app = create_app()
-
+def engine():
     # Basic safety check to prevent running against a production DB
     assert "prod" not in TEST_DATABASE_URL.lower(), "Refusing to run tests against a DB that looks like production"
-
-    app.config.update(
-        {
-            "TESTING": True,
-            "SQLALCHEMY_DATABASE_URI": TEST_DATABASE_URL,
-            "SQLALCHEMY_ENGINE_OPTIONS": {
-                "pool_pre_ping": True,
-                "future": True,
-            },
-            "SESSION_COOKIE_SECURE": False,
-            "RATELIMIT_ENABLED": False,
-            "WTF_CSRF_ENABLED": False,
-            "SECRET_KEY": "test-secret-key",
-        }
-    )
-
-    return app
-
-
-@pytest.fixture(scope="session")
-def engine(app):
-    """Create SQLAlchemy engine for tests"""
-    with app.app_context():
-        eng = _make_engine(TEST_DATABASE_URL)
-        flask_db.metadata.create_all(bind=eng)
-        return eng
+    eng = _make_engine(TEST_DATABASE_URL)
+    return eng
 
 
 @pytest.fixture(scope="session")
 def connection(engine):
-    """Create a connection for the test session"""
     conn = engine.connect()
     # Apply a per-session statement timeout for tests (Postgres only)
     try:
@@ -79,40 +42,66 @@ def connection(engine):
     except Exception:
         # SQLite or engines that don't support this — ignore
         pass
-
-    yield conn
-    conn.close()
+    outer_tx = conn.begin()
+    try:
+        yield conn
+    finally:
+        outer_tx.rollback()
+        conn.close()
 
 
 @pytest.fixture(scope="session")
 def Session(connection):
-    """Bind a sessionmaker to a single connection to enable SAVEPOINT-based isolation per test"""
-    return scoped_session(sessionmaker(bind=connection, expire_on_commit=False, autoflush=False, future=True))
+    # Bind a sessionmaker to a single connection to enable SAVEPOINT-based isolation per test
+    return scoped_session(
+        sessionmaker(bind=connection, expire_on_commit=False, autoflush=False, future=True)
+    )
 
 
 @pytest.fixture(autouse=True)
-def db_session(app, Session, connection):
-    """Each test runs inside a nested transaction (SAVEPOINT) and rolls it back after the test"""
+def db_session(Session, connection):
+    # Each test runs inside a nested transaction (SAVEPOINT) and rolls it back after the test
+    nested = connection.begin_nested()
+
+    @event.listens_for(connection, "after_transaction_end")
+    def restart_savepoint(conn, trans):
+        if trans is nested:
+            return
+        if not conn.in_transaction():
+            conn.begin()
+
+    try:
+        yield Session
+    finally:
+        nested.rollback()
+        Session.remove()
+
+
+@pytest.fixture(scope="session") 
+def app():
+    """Create Flask app for testing"""
+    from src.main import create_app
+    from src.models.user import db as flask_db
+    
+    app = create_app()
+    app.config.update({
+        "TESTING": True,
+        "SQLALCHEMY_DATABASE_URI": TEST_DATABASE_URL,
+        "SQLALCHEMY_ENGINE_OPTIONS": {
+            "pool_pre_ping": True,
+            "future": True,
+        },
+        "SESSION_COOKIE_SECURE": False,
+        "RATELIMIT_ENABLED": False,
+        "WTF_CSRF_ENABLED": False,
+        "SECRET_KEY": "test-secret-key",
+    })
+    
+    # Initialize database schema
     with app.app_context():
-        # Replace the Flask-SQLAlchemy session with our session
-        flask_db.session = Session
-
-        # Each test runs inside a nested transaction (SAVEPOINT) and rolls it back after the test
-        nested = connection.begin_nested()
-
-        @event.listens_for(Session, "after_transaction_end")
-        def end_savepoint(session, transaction):
-            if connection.closed:
-                return
-
-            if not connection.in_nested_transaction():
-                connection.begin_nested()
-
-        try:
-            yield Session
-        finally:
-            Session.remove()
-            nested.rollback()
+        flask_db.metadata.create_all(bind=_make_engine(TEST_DATABASE_URL))
+    
+    return app
 
 
 @pytest.fixture
