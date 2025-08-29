@@ -40,6 +40,21 @@ Before committing, developers should:
 - **Markdown files**: Review for formatting before committing
 - **Code suggestions**: Must pass all quality checks before commit
 
+### VSCode Configuration for Copilot
+For optimal development experience, create `.vscode/settings.json` with:
+```json
+{
+  "python.defaultInterpreterPath": "./venv/bin/python",
+  "python.formatting.provider": "black", 
+  "python.linting.enabled": true,
+  "python.linting.flake8Enabled": true,
+  "python.linting.flake8Args": ["--max-line-length=120"],
+  "editor.formatOnSave": true,
+  "github.copilot.enable": {"*": true}
+}
+```
+Note: `.vscode/` is gitignored to allow personal IDE preferences.
+
 ## Database Development
 
 ### Local Development
