@@ -242,8 +242,11 @@ class AutomatedValidator:
         try:
             # Test database initialization
             db_test = self.run_command(
-                'PYTHONPATH=. python -c "from src.utils.db_init import init_database; '
-                'init_database(); print(\'✅ Database initialized\')"',
+                'PYTHONPATH=. python -c "from src.main import create_app; '
+                'from src.utils.db_init import initialize_database; '
+                'app = create_app(); '
+                'with app.app_context(): initialize_database(); '
+                'print(\'✅ Database initialized\')"',
                 timeout=30
             )
             
