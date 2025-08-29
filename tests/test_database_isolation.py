@@ -115,7 +115,9 @@ class TestDatabaseIsolation:
         # Intentionally cause an error and ensure cleanup works
         try:
             # Create an invalid plant by omitting a required field to guarantee an error
-            plant = Plant(common_name="Should Fail", category="ErrorTest")  # Missing 'name' field
+            plant = Plant(
+                common_name="Should Fail", category="ErrorTest"
+            )  # Missing 'name' field
             db.session.add(plant)
             db.session.commit()
         except Exception:
