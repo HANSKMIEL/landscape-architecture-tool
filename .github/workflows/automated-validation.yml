@@ -71,10 +71,10 @@ jobs:
       with:
         script: |
           const fs = require('fs');
-          const glob = require('glob');
+          const path = require('path');
           
           // Find the validation report
-          const reportFiles = glob.sync('automated_validation_report_*.json');
+          const reportFiles = fs.readdirSync('.').filter(f => /^automated_validation_report_.*\.json$/.test(f));
           if (reportFiles.length === 0) {
             console.log('No validation report found');
             return;
