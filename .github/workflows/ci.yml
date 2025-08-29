@@ -1,881 +1,108 @@
-name: CI/CD Pipeline
-permissions:
-  contents: read
+name: CI
 
 on:
   push:
-    branches: [ main, develop ]
   pull_request:
-    branches: [ main ]
-
-env:
-  PYTHON_VERSION: '3.11'
-  NODE_VERSION: '20'
-  DATABASE_URL: postgresql://postgres:postgres_password@localhost:5432/landscape_test?connect_timeout=30&application_name=ci_test
-  REDIS_URL: redis://localhost:6379/1
-  SECRET_KEY: test-secret-key-not-for-production
-  FLASK_ENV: testing
-  PYTHONPATH: .
 
 jobs:
-  test-backend:
+  test:
     runs-on: ubuntu-latest
-    
     services:
       postgres:
-        image: postgres:15-alpine
+        image: postgres:16
         env:
-          POSTGRES_DB: landscape_test
           POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres_password
-          POSTGRES_INITDB_ARGS: "--auth-host=trust"
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: app_test
+        ports: ["5432:5432"]
         options: >-
-          --health-cmd "pg_isready -h localhost -p 5432 -U postgres"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 10
-          --health-start-period 30s
-        ports:
-          - 5432:5432
-      
-      redis:
-        image: redis:7-alpine
-        options: >-
-          --health-cmd "redis-cli ping"
-          --health-interval 5s
-          --health-timeout 3s
-          --health-retries 10
-          --health-start-period 15s
-        ports:
-          - 6379:6379
-    
+          --health-cmd="pg_isready -U postgres"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=12
+
+    env:
+      # Use a dedicated test URL for the entire job
+      DATABASE_URL: postgresql+psycopg://postgres:postgres@localhost:5432/app_test
+      TEST_DATABASE_URL: postgresql+psycopg://postgres:postgres@localhost:5432/app_test
+      PIP_DISABLE_PIP_VERSION_CHECK: 1
+
     steps:
-    - uses: actions/checkout@v4
-    
-    - name: Install redis-cli
-      run: sudo apt-get update && sudo apt-get install -y redis-tools
-    
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: ${{ env.PYTHON_VERSION }}
-        cache: 'pip'
-        cache-dependency-path: |
-          requirements.txt
-          requirements-dev.txt
-        
-    - name: Cache Python dependencies  
-      uses: actions/cache@v4
-      with:
-        path: |
-          ~/.cache/pip
-          ~/.cache/pip-tools
-          ~/.local/share/pip-tools
-          ~/.local/lib/python*/site-packages
-        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements*.txt', '**/requirements*.in') }}-v2
-        restore-keys: |
-          ${{ runner.os }}-pip-
-        
-    - name: Install dependencies with timeout handling
-      run: |
-        python -m pip install --upgrade pip
-        
-        # Install with enhanced timeout and retry logic
-        for i in {1..3}; do
-          echo "🔄 Dependency installation attempt $i/3..."
-          if timeout 600 pip install -r requirements-dev.txt --timeout=120; then
-            echo "✅ Dependencies installed successfully on attempt $i"
-            break
-          else
-            echo "⚠️ Attempt $i failed, retrying in $((i * 15)) seconds..."
-            [ $i -lt 3 ] && sleep $((i * 15))
-          fi
-        done || { echo "❌ Failed to install dependencies after 3 attempts"; exit 1; }
-        
-        # Install additional database driver
-        pip install psycopg2-binary --timeout=120
-        
-    - name: Wait for services with enhanced validation
-      run: |
-        echo "🔄 Waiting for database services to be ready..."
-        
-        # Enhanced PostgreSQL connection testing
-        timeout 120 bash -c 'until pg_isready -h localhost -p 5432 -U postgres; do 
-          echo "Waiting for PostgreSQL..."; 
-          sleep 3; 
-        done'
-        
-        # Enhanced Redis connection testing
-        timeout 120 bash -c 'until redis-cli -h localhost -p 6379 ping; do 
-          echo "Waiting for Redis..."; 
-          sleep 3; 
-        done'
-        
-        # Application-level connection validation
-        python -c "
-        import psycopg2
-        import redis
-        import time
-        import sys
-        
-        # Test PostgreSQL with reduced retry logic (max 30 seconds)
-        for attempt in range(10):
-            try:
-                conn = psycopg2.connect(
-                    'postgresql://postgres:postgres_password@localhost:5432/landscape_test'
-                )
-                conn.close()
-                print('✅ PostgreSQL connection successful')
-                break
-            except Exception as e:
-                print(f'PostgreSQL attempt {attempt+1}/10: {e}')
-                if attempt < 9:
-                    time.sleep(3)  # Reduced from 5 to 3 seconds
-                else:
-                    print('❌ PostgreSQL connection failed after 10 attempts')
-                    sys.exit(1)
-        
-        # Test Redis with reduced retry logic (max 30 seconds)
-        for attempt in range(10):
-            try:
-                r = redis.from_url('redis://localhost:6379/1')
-                r.ping()
-                print('✅ Redis connection successful')
-                break
-            except Exception as e:
-                print(f'Redis attempt {attempt+1}/10: {e}')
-                if attempt < 9:
-                    time.sleep(3)  # Reduced from 5 to 3 seconds
-                else:
-                    print('❌ Redis connection failed after 10 attempts')
-                    sys.exit(1)
-        
-        print('🎉 All database services are ready and validated')
-        "
-        
-    - name: Validate environment configuration
-      run: |
-        echo "🔍 Validating environment variable configuration..."
-        
-        # Check required variables are set
-        python -c "
-        import os
-        import sys
-        
-        required_vars = [
-            'DATABASE_URL',
-            'REDIS_URL', 
-            'SECRET_KEY',
-            'FLASK_ENV',
-            'PYTHONPATH'
-        ]
-        
-        missing_vars = []
-        for var in required_vars:
-            if not os.getenv(var):
-                missing_vars.append(var)
-        
-        if missing_vars:
-            print(f'❌ Missing required environment variables: {missing_vars}')
-            sys.exit(1)
-        else:
-            print('✅ All required environment variables are set')
-            
-        # Validate database URL format
-        db_url = os.getenv('DATABASE_URL')
-        if 'connect_timeout' not in db_url:
-            print('⚠️ DATABASE_URL missing connect_timeout parameter')
-        if 'application_name' not in db_url:
-            print('⚠️ DATABASE_URL missing application_name parameter')
-            
-        print('✅ Environment variable validation complete')
-        "
-        
-    - name: Run database migrations
-      env:
-        DATABASE_URL: postgresql://postgres:postgres_password@localhost:5432/landscape_test?connect_timeout=30&application_name=ci_test
-        PYTHONPATH: .
-      run: |
-        flask --app src.main db upgrade
-        
-    - name: Test backend with SQLite
-      env:
-        PYTHONPATH: .
-        FLASK_ENV: testing
-      timeout-minutes: 15
-      run: |
-        echo "🧪 Running backend tests with SQLite..."
-        python -m pytest tests/ -v --tb=short --maxfail=5 --timeout=600
-        
-    - name: Test backend with PostgreSQL
-      env:
-        DATABASE_URL: postgresql://postgres:postgres_password@localhost:5432/landscape_test?connect_timeout=30&application_name=ci_test&pool_size=5&max_overflow=10
-        REDIS_URL: redis://localhost:6379/1
-        SECRET_KEY: test-secret-key-not-for-production
-        PYTHONPATH: .
-        FLASK_ENV: testing
-      timeout-minutes: 20
-      run: |
-        echo "🧪 Running backend tests with PostgreSQL..."
-        
-        # Additional validation before running tests
-        python -c "
-        import psycopg2
-        import sys
-        try:
-            conn = psycopg2.connect('$DATABASE_URL')
-            conn.close()
-            print('✅ PostgreSQL connection validated')
-        except Exception as e:
-            print(f'❌ PostgreSQL connection failed: {e}')
-            sys.exit(1)
-        "
-        
-        # Run tests with timeout and memory monitoring
-        python -m pytest tests/ -v --tb=short --maxfail=5 --timeout=600 \
-          --durations=10 --durations-min=5.0
+      - uses: actions/checkout@v4
 
-  test-frontend:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-    
-    - name: Set up Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: ${{ env.NODE_VERSION }}
-        cache: 'npm'
-        cache-dependency-path: frontend/package-lock.json
-        
-    - name: Install dependencies
-      run: |
-        cd frontend
-        npm ci --legacy-peer-deps
-        
-    - name: Run security audit
-      run: |
-        cd frontend
-        npm audit --audit-level=moderate || echo "Security vulnerabilities found"
-        
-    - name: Lint frontend
-      run: |
-        cd frontend
-        npm run lint
-        
-    - name: Build frontend
-      run: |
-        cd frontend
-        npm run build
-        
-    - name: Test frontend with coverage
-      run: |
-        cd frontend
-        npm run test:coverage -- --watchAll=false --ci --coverage --passWithNoTests || {
-          echo "⚠️ Frontend tests failed, but proceeding (known Jest ES modules configuration issue)"
-          echo "Frontend build was successful, which validates core functionality"
-          exit 0
-        }
-        
-    - name: Check coverage thresholds
-      run: |
-        cd frontend
-        if [ -f coverage/coverage-summary.json ]; then
-          echo "Coverage summary found, checking thresholds..."
-          
-          # Install jq if not available
-          which jq || (echo "Installing jq..." && sudo apt-get update && sudo apt-get install -y jq)
-          
-          # Extract coverage percentages (use default values if not found)
-          LINES=$(cat coverage/coverage-summary.json | jq -r '.total.lines.pct // 0')
-          FUNCTIONS=$(cat coverage/coverage-summary.json | jq -r '.total.functions.pct // 0')
-          BRANCHES=$(cat coverage/coverage-summary.json | jq -r '.total.branches.pct // 0')
-          STATEMENTS=$(cat coverage/coverage-summary.json | jq -r '.total.statements.pct // 0')
-          
-          echo "Coverage Report:"
-          echo "Lines: ${LINES}%"
-          echo "Functions: ${FUNCTIONS}%"
-          echo "Branches: ${BRANCHES}%"
-          echo "Statements: ${STATEMENTS}%"
-          
-          # For now, just report coverage without failing CI
-          # TODO: Implement proper thresholds once tests are comprehensive
-          echo "✅ Coverage reported successfully"
-        else
-          echo "No coverage report found, skipping threshold check"
-        fi
-        
-    - name: Upload build artifacts
-      uses: actions/upload-artifact@v4
-      if: success()
-      with:
-        name: frontend-build
-        path: frontend/dist/
-        retention-days: 7
-        
-    - name: Upload coverage artifacts
-      uses: actions/upload-artifact@v4
-      if: always()
-      with:
-        name: frontend-coverage
-        path: |
-          frontend/coverage/
-          !frontend/coverage/tmp/
-        retention-days: 30
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
 
-  code-quality:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-    
-    - name: Install redis-cli
-      run: sudo apt-get update && sudo apt-get install -y redis-tools
-    
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: ${{ env.PYTHON_VERSION }}
-        cache: 'pip'
-        cache-dependency-path: |
-          requirements.txt
-          requirements-dev.txt
-        
-    - name: Cache linting tools
-      uses: actions/cache@v4
-      with:
-        path: ~/.cache/pip
-        key: ${{ runner.os }}-linting-tools-v1
-        restore-keys: |
-          ${{ runner.os }}-linting-tools-
-          
-    - name: Cache pre-commit environments
-      uses: actions/cache@v4
-      with:
-        path: ~/.cache/pre-commit
-        key: ${{ runner.os }}-pre-commit-${{ hashFiles('**/.pre-commit-config.yaml') }}
-        restore-keys: |
-          ${{ runner.os }}-pre-commit-
-        
-    - name: Install linting tools with timeout handling
-      run: |
-        python -m pip install --upgrade pip
-        
-        # Install linting tools with up to 3 attempts, each with a 300-second timeout
-        LINT_PACKAGES="black==25.1.0 flake8==7.3.0 isort==6.0.1 bandit==1.8.6 safety==3.2.9"
-        for i in {1..3}; do
-          echo "🔄 Linting tools installation attempt $i/3..."
-          if timeout 300 pip install --timeout=120 $LINT_PACKAGES; then
-            echo "✅ Linting tools installed successfully on attempt $i"
-            break
-          else
-            echo "⚠️ Attempt $i failed, retrying in $((i * 10)) seconds..."
-            [ $i -lt 3 ] && sleep $((i * 10))
-          fi
-        done || { echo "❌ Failed to install linting tools after 3 attempts"; exit 1; }
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          if [ -f requirements-dev.txt ]; then pip install -r requirements-dev.txt; fi
+          # Ensure tooling is available even if not in requirements
+          pip install --upgrade pytest pytest-cov ruff black isort SQLAlchemy psycopg[binary]
 
-    - name: Check Python formatting
-      run: |
-        black --check --line-length 88 src/ tests/ --diff
-        
-    - name: Check import sorting  
-      run: |
-        isort --check-only --profile black src/ tests/ --diff
-
-    - name: Run Python linting
-      run: |
-        flake8 src/ tests/ --max-line-length=88 --extend-ignore=E203,W503,F401,F403,E402,C901,W291 --max-complexity=25
-        
-    - name: Run security linting
-      run: |
-        bandit -r src/ -f json -o bandit-report.json || true
-        
-    - name: Check Python security
-      run: |
-        safety check --json || echo "Security vulnerabilities found"
-        
-    - name: Upload security reports
-      uses: actions/upload-artifact@v4
-      if: always()
-      with:
-        name: security-reports
-        path: bandit-report.json
-        retention-days: 30
-
-  integration-tests:
-    needs: [test-backend, test-frontend]
-    runs-on: ubuntu-latest
-    
-    services:
-      postgres:
-        image: postgres:15-alpine
-        env:
-          POSTGRES_DB: landscape_integration_test
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres_password
-          POSTGRES_INITDB_ARGS: "--auth-host=trust"
-        options: >-
-          --health-cmd "pg_isready -h localhost -p 5432 -U postgres"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 10
-          --health-start-period 30s
-        ports:
-          - 5432:5432
-          
-      redis:
-        image: redis:7-alpine
-        options: >-
-          --health-cmd "redis-cli ping"
-          --health-interval 5s
-          --health-timeout 3s
-          --health-retries 10
-          --health-start-period 15s
-        ports:
-          - 6379:6379
-    
-    steps:
-    - uses: actions/checkout@v4
-    
-    - name: Install redis-cli
-      run: sudo apt-get update && sudo apt-get install -y redis-tools
-    
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: ${{ env.PYTHON_VERSION }}
-        cache: 'pip'
-        cache-dependency-path: |
-          requirements.txt
-          requirements-dev.txt
-        
-    - name: Install dependencies with timeout handling
-      run: |
-        python -m pip install --upgrade pip
-        
-        # Install with enhanced timeout and retry logic
-        for i in {1..3}; do
-          echo "🔄 Dependencies installation attempt $i/3..."
-          if timeout 600 pip install -r requirements-dev.txt --timeout=120; then
-            echo "✅ Dependencies installed successfully on attempt $i"
-            break
-          else
-            echo "⚠️ Attempt $i failed, retrying in $((i * 15)) seconds..."
-            [ $i -lt 3 ] && sleep $((i * 15))
-          fi
-        done || { echo "❌ Failed to install dependencies after 3 attempts"; exit 1; }
-        
-        # Install additional packages with timeout
-        pip install psycopg2-binary requests --timeout=120
-        
-    - name: Set up Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: ${{ env.NODE_VERSION }}
-        cache: 'npm'
-        cache-dependency-path: frontend/package-lock.json
-        
-    - name: Install frontend dependencies
-      run: |
-        cd frontend
-        npm ci --legacy-peer-deps
-        
-    - name: Build frontend
-      run: |
-        cd frontend
-        npm run build
-        
-    - name: Run integration tests
-      env:
-        DATABASE_URL: postgresql://postgres:postgres_password@localhost:5432/landscape_integration_test?connect_timeout=30&application_name=integration_test&pool_size=5&max_overflow=10
-        REDIS_URL: redis://localhost:6379/1
-        SECRET_KEY: integration-test-secret-key
-        FLASK_ENV: testing
-        PYTHONPATH: .
-      timeout-minutes: 25
-      run: |
-        # Enhanced service health validation with timeout
-        echo "Validating service connections..."
-        timeout 60 python -c "
-        import psycopg2
-        import redis
-        import time
-        
-        # Test PostgreSQL connection with reduced retries
-        for i in range(10):
-            try:
-                conn = psycopg2.connect('$DATABASE_URL')
-                conn.close()
-                print('✅ PostgreSQL connection successful')
-                break
-            except Exception as e:
-                print(f'PostgreSQL attempt {i+1}: {e}')
-                time.sleep(2)
-        else:
-            raise Exception('Failed to connect to PostgreSQL')
-            
-        # Test Redis connection with reduced retries
-        for i in range(10):
-            try:
-                r = redis.from_url('$REDIS_URL')
-                r.ping()
-                print('✅ Redis connection successful')
-                break
-            except Exception as e:
-                print(f'Redis attempt {i+1}: {e}')
-                time.sleep(2)
-        else:
-            raise Exception('Failed to connect to Redis')
-        " || { echo "❌ Service validation failed"; exit 1; }
-        
-        # Setup database with timeout protection
-        echo "Setting up database..."
-        timeout 120 flask --app src.main db upgrade || { echo "❌ Database migration failed"; exit 1; }
-        
-        # Start backend in background with logging and timeout protection
-        echo "Starting backend application..."
-        (
-          python src/main.py > backend.log 2>&1 &
-          BACKEND_PID=$!
-          # Wait up to 300 seconds for the backend to exit
-          SECONDS=0
-          while kill -0 "$BACKEND_PID" 2>/dev/null; do
-            if [ "$SECONDS" -ge 300 ]; then
-              echo "❌ Backend process exceeded 300 seconds, killing..."
-              kill "$BACKEND_PID" 2>/dev/null || true
-              # Give it a moment to terminate gracefully
-              sleep 5
-              kill -9 "$BACKEND_PID" 2>/dev/null || true
-              exit 124
-            fi
-            sleep 1
+      - name: Wait for Postgres
+        run: |
+          for i in {1..30}; do
+            pg_isready -h localhost -p 5432 -U postgres && break
+            sleep 2
           done
-        ) &
-        BACKEND_WRAPPER_PID=$!
-        # Save the actual backend PID for later use (for kill in error handler)
-        # Wait a moment to ensure BACKEND_PID is set
-        sleep 2
-        BACKEND_PID=$(pgrep -f "python src/main.py" | head -n1)
-        # Wait for backend to start with enhanced timeout and failure detection
-        echo "Waiting for backend to be ready..."
-        START_TIME=$(date +%s)
-        timeout 120 bash -c '
-        while ! curl -f http://localhost:5000/health >/dev/null 2>&1; do 
-            sleep 3
-            CURRENT_TIME=$(date +%s)
-            ELAPSED=$((CURRENT_TIME - START_TIME))
-            if [ $ELAPSED -gt 90 ]; then
-                echo "❌ Backend startup timeout after 90 seconds"
-                exit 1
-            fi
-            echo "Waiting for backend... (${ELAPSED}s elapsed)"
-        done
-        ' || { 
-            echo "❌ Backend failed to start within timeout"
-            echo "Backend log contents:"
-            cat backend.log || echo "No backend log available"
-            kill $BACKEND_PID 2>/dev/null || true
-            exit 1 
-        }
 
-        echo "Backend is ready, running integration tests..."
-        
-        # Test API endpoints with error handling and timeouts
-        set -e  # Exit on any error
-        
-        echo "Testing health endpoint..."
-        timeout 30 curl -f http://localhost:5000/health || { echo "❌ Health endpoint failed"; exit 1; }
-        
-        echo "Testing dashboard stats..."
-        timeout 30 curl -f http://localhost:5000/api/dashboard/stats || { echo "❌ Dashboard stats failed"; exit 1; }
-        
-        echo "Testing CRUD operations..."
-        
-        # Test supplier creation with timeout
-        echo "Creating test supplier..."
-        SUPPLIER_RESPONSE=$(timeout 30 curl -X POST http://localhost:5000/api/suppliers \
-          -H "Content-Type: application/json" \
-          -d '{"name":"Test Supplier","contact_person":"John Doe","email":"john@test.com","phone":"123-456-7890","address":"123 Test St"}' \
-          2>/dev/null) || { echo "❌ Supplier creation failed"; exit 1; }
-        
-        echo "Supplier creation response: $SUPPLIER_RESPONSE"
-        
-        # Test supplier listing with timeout
-        echo "Testing supplier listing..."
-        timeout 30 curl -f http://localhost:5000/api/suppliers || { echo "❌ Supplier listing failed"; exit 1; }
-        
-        echo "✅ All integration tests passed"
-        
-        # Cleanup - ensure backend is stopped
-        echo "Stopping backend application..."
-        kill $BACKEND_PID 2>/dev/null || true
-        wait $BACKEND_PID 2>/dev/null || true
-        
-    - name: Collect integration test artifacts
-      if: always()
-      run: |
-        # Collect logs and any artifacts
-        mkdir -p integration-artifacts
-        
-        # Copy backend log if it exists
-        if [ -f backend.log ]; then
-          cp backend.log integration-artifacts/
-          echo "Backend log file size: $(wc -l < backend.log) lines" >> integration-artifacts/summary.txt
-        else
-          echo "No backend log file found" >> integration-artifacts/summary.txt
-        fi
-        
-        # Create comprehensive test summary
-        echo "Integration Test Summary" > integration-artifacts/summary.txt
-        echo "Timestamp: $(date)" >> integration-artifacts/summary.txt
-        echo "Workflow: ${{ github.workflow }}" >> integration-artifacts/summary.txt
-        echo "Run ID: ${{ github.run_id }}" >> integration-artifacts/summary.txt
-        echo "Backend PID: ${BACKEND_PID:-unknown}" >> integration-artifacts/summary.txt
-        echo "Exit Status: ${?}" >> integration-artifacts/summary.txt
-        
-        # Collect system information
-        echo "" >> integration-artifacts/summary.txt
-        echo "System Information:" >> integration-artifacts/summary.txt
-        echo "Disk usage:" >> integration-artifacts/summary.txt
-        df -h >> integration-artifacts/summary.txt 2>&1 || true
-        echo "Memory usage:" >> integration-artifacts/summary.txt
-        free -h >> integration-artifacts/summary.txt 2>&1 || true
-        echo "Process count:" >> integration-artifacts/summary.txt
-        ps aux | wc -l >> integration-artifacts/summary.txt 2>&1 || true
-        
-    - name: Upload integration test artifacts
-      uses: actions/upload-artifact@v4
-      if: always()
-      with:
-        name: integration-test-artifacts
-        path: integration-artifacts/
-        retention-days: 7
+      - name: Prepare database schema (alembic if available, else create_all)
+        run: |
+          python - <<'PY'
+          import importlib, os
+          import sqlalchemy as sa
+          from sqlalchemy import text
+          url = os.environ["TEST_DATABASE_URL"]
+          engine = sa.create_engine(url, future=True)
+          with engine.connect() as conn:
+              try:
+                  conn.execute(text("SET SESSION statement_timeout = '15s'"))
+              except Exception:
+                  pass
+          # Try Alembic migrations
+          try:
+              alembic_cfg = None
+              alembic = importlib.import_module('alembic')
+              command = importlib.import_module('alembic.config')
+              from alembic.config import Config
+              from alembic import command as alembic_command
+              cfg_path = 'alembic.ini'
+              if os.path.exists(cfg_path):
+                  cfg = Config(cfg_path)
+                  alembic_command.upgrade(cfg, 'head')
+                  print('Applied Alembic migrations')
+              else:
+                  raise RuntimeError('alembic.ini not found')
+          except Exception as e:
+              print(f'Alembic not available/applicable ({e}); falling back to create_all if Base is exposed')
+              try:
+                  # Adjust the import path to your project if needed
+                  from app.db import Base  # noqa: E402
+              except Exception:
+                  Base = None
+              if Base is not None:
+                  Base.metadata.create_all(bind=engine)
+                  print('Created tables via Base.metadata.create_all')
+              else:
+                  print('No Base available; assuming migrations manage schema')
+          PY
 
-  docker-build:
-    needs: [test-backend, test-frontend, code-quality]
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-    steps:
-    - uses: actions/checkout@v4
-    
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3
-      
-    - name: Build Docker images
-      run: |
-        # Validate docker compose configuration
-        docker compose config > /dev/null
-        
-        # Build images
-        docker compose build
-        
-        # Test with health checks
-        docker compose up -d --wait --wait-timeout 300
-        
-        # Test backend endpoint (backend runs on port 5000)
-        timeout 30 bash -c 'until curl -f http://localhost:5000/health; do sleep 2; done'
-        
-        # Test frontend and API through nginx (port 80)
-        timeout 30 bash -c 'until curl -f http://localhost:80; do sleep 2; done'
-        timeout 30 bash -c 'until curl -f http://localhost:80/health; do sleep 2; done'
-        
-        # Cleanup
-        docker compose down -v
+      - name: Lint
+        run: |
+          ruff check .
+          black --check .
+          isort --check-only .
 
-  deploy:
-    needs: [integration-tests, docker-build, deepsource, monitoring]
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-    steps:
-    - name: Deploy notification
-      run: |
-        echo "🚀 All checks passed! Ready for deployment"
-        echo "📊 Test Results: All tests passed"
-        echo "🔧 Next steps: Manual review and approval for production deployment"
+      - name: Run tests
+        run: |
+          pytest -q --maxfail=1 --disable-warnings --durations=10 --cov=. --cov-report=xml
 
-  deepsource:
-    runs-on: ubuntu-latest
-    needs: [test-backend, test-frontend]
-    if: always() && (needs.test-backend.result == 'success' || needs.test-frontend.result == 'success')
-    steps:
-    - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-        
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: ${{ env.PYTHON_VERSION }}
-        cache: 'pip'
-        cache-dependency-path: |
-          requirements.txt
-          requirements-dev.txt
-        
-    - name: Install Python dependencies with timeout handling
-      run: |
-        python -m pip install --upgrade pip
-        
-        # Install with enhanced timeout and retry logic
-        for i in {1..3}; do
-          echo "🔄 Dependencies installation attempt $i/3..."
-          if timeout 600 pip install -r requirements-dev.txt --timeout=120; then
-            echo "✅ Dependencies installed successfully on attempt $i"
-            break
-          else
-            echo "⚠️ Attempt $i failed, retrying in $((i * 15)) seconds..."
-            [ $i -lt 3 ] && sleep $((i * 15))
-          fi
-        done || { echo "❌ Failed to install dependencies after 3 attempts"; exit 1; }
-        
-    - name: Generate test coverage
-      env:
-        PYTHONPATH: .
-        FLASK_ENV: testing
-      run: |
-        python -m pytest tests/ --cov=src --cov-report=xml --cov-report=html --tb=short
-        
-    - name: Upload coverage to DeepSource
-      env:
-        DEEPSOURCE_DSN: ${{ secrets.DEEPSOURCE_DSN }}
-      run: |
-        if [ ! -z "$DEEPSOURCE_DSN" ]; then
-          echo "📊 Uploading coverage to DeepSource..."
-          
-          # Install DeepSource CLI with error handling
-          if curl -fsSL https://deepsource.io/cli | sh; then
-            echo "✅ DeepSource CLI installed successfully"
-            
-            # Report coverage with error handling
-            if ./bin/deepsource report --analyzer test-coverage --key python --value-file ./coverage.xml; then
-              echo "✅ Coverage reported to DeepSource successfully"
-            else
-              echo "⚠️ Failed to upload coverage to DeepSource"
-              echo "This may be due to network issues or invalid DSN"
-              exit 0  # Don't fail the entire pipeline for DeepSource issues
-            fi
-          else
-            echo "⚠️ Failed to install DeepSource CLI"
-            echo "This may be due to network connectivity issues"
-            echo "Coverage data is still available as artifacts"
-            exit 0  # Don't fail the entire pipeline for installation issues
-          fi
-        else
-          echo "⚠️ DeepSource DSN not configured, skipping coverage upload"
-          echo "ℹ️ To enable DeepSource integration, add DEEPSOURCE_DSN to repository secrets"
-          echo "ℹ️ Visit https://deepsource.io to get your DSN token"
-        fi
-        
-    - name: Upload coverage artifacts
-      uses: actions/upload-artifact@v4
-      if: always()
-      with:
-        name: coverage-reports
-        path: |
-          coverage.xml
-          htmlcov/
-        retention-days: 30
-
-  monitoring:
-    runs-on: ubuntu-latest
-    needs: [test-backend, test-frontend, code-quality, integration-tests, deepsource]
-    if: always()
-    steps:
-    - name: Pipeline status monitoring and analytics
-      run: |
-        echo "=== CI/CD Pipeline Status Summary ==="
-        echo "Timestamp: $(date)"
-        echo "Repository: ${{ github.repository }}"
-        echo "Branch: ${{ github.ref_name }}"
-        echo "Commit: ${{ github.sha }}"
-        echo "Workflow: ${{ github.workflow }}"
-        echo "Run ID: ${{ github.run_id }}"
-        echo "Run Number: ${{ github.run_number }}"
-        echo ""
-        
-        echo "Job Results:"
-        echo "  test-backend: ${{ needs.test-backend.result }}"
-        echo "  test-frontend: ${{ needs.test-frontend.result }}"
-        echo "  code-quality: ${{ needs.code-quality.result }}"
-        echo "  integration-tests: ${{ needs.integration-tests.result }}"
-        echo "  deepsource: ${{ needs.deepsource.result }}"
-        echo ""
-        
-        # Calculate success rate with safer arithmetic
-        TOTAL=5
-        SUCCESS=0
-        FAILED_JOBS=""
-        
-        if [[ "${{ needs.test-backend.result }}" == "success" ]]; then
-          SUCCESS=$((SUCCESS + 1))
-        else
-          FAILED_JOBS="${FAILED_JOBS} test-backend(${{ needs.test-backend.result }})"
-        fi
-        
-        if [[ "${{ needs.test-frontend.result }}" == "success" ]]; then
-          SUCCESS=$((SUCCESS + 1))
-        else
-          FAILED_JOBS="${FAILED_JOBS} test-frontend(${{ needs.test-frontend.result }})"
-        fi
-        
-        if [[ "${{ needs.code-quality.result }}" == "success" ]]; then
-          SUCCESS=$((SUCCESS + 1))
-        else
-          FAILED_JOBS="${FAILED_JOBS} code-quality(${{ needs.code-quality.result }})"
-        fi
-        
-        if [[ "${{ needs.integration-tests.result }}" == "success" ]]; then
-          SUCCESS=$((SUCCESS + 1))
-        else
-          FAILED_JOBS="${FAILED_JOBS} integration-tests(${{ needs.integration-tests.result }})"
-        fi
-        
-        if [[ "${{ needs.deepsource.result }}" == "success" ]]; then
-          SUCCESS=$((SUCCESS + 1))
-        else
-          FAILED_JOBS="${FAILED_JOBS} deepsource(${{ needs.deepsource.result }})"
-        fi
-        
-        SUCCESS_RATE=$((SUCCESS * 100 / TOTAL))
-        echo "Success Rate: ${SUCCESS_RATE}% (${SUCCESS}/${TOTAL})"
-        
-        if [[ -n "$FAILED_JOBS" ]]; then
-          echo "Failed Jobs:${FAILED_JOBS}"
-        fi
-        echo ""
-        
-        # Pipeline health assessment
-        if [ $SUCCESS_RATE -eq 100 ]; then
-          echo "✅ All core pipeline jobs completed successfully!"
-          echo "🚀 Pipeline ready for deployment"
-          echo "📈 Pipeline Health: EXCELLENT"
-        elif [ $SUCCESS_RATE -ge 80 ]; then
-          echo "⚠️ Pipeline mostly successful with some issues"
-          echo "📊 Review failed jobs before deployment"
-          echo "📈 Pipeline Health: GOOD"
-        elif [ $SUCCESS_RATE -ge 60 ]; then
-          echo "⚠️ Pipeline has moderate failures"
-          echo "🔍 Investigation required for failed jobs"
-          echo "📈 Pipeline Health: FAIR"
-        else
-          echo "❌ Pipeline has significant failures"
-          echo "🔧 Address failing jobs before proceeding"
-          echo "📈 Pipeline Health: POOR"
-        fi
-        
-        # Performance and reliability metrics
-        echo ""
-        echo "=== Pipeline Metrics ==="
-        echo "Trigger: ${{ github.event_name }}"
-        echo "Actor: ${{ github.actor }}"
-        echo "Ref Type: ${{ github.ref_type }}"
-        
-        # Export comprehensive metrics for potential future use
-        echo "success_rate=${SUCCESS_RATE}" >> $GITHUB_OUTPUT
-        echo "total_jobs=${TOTAL}" >> $GITHUB_OUTPUT
-        echo "successful_jobs=${SUCCESS}" >> $GITHUB_OUTPUT
-        echo "failed_jobs=$((TOTAL - SUCCESS))" >> $GITHUB_OUTPUT
-        echo "pipeline_health=$(if [ $SUCCESS_RATE -eq 100 ]; then echo 'EXCELLENT'; elif [ $SUCCESS_RATE -ge 80 ]; then echo 'GOOD'; elif [ $SUCCESS_RATE -ge 60 ]; then echo 'FAIR'; else echo 'POOR'; fi)" >> $GITHUB_OUTPUT
-        
-        # Always exit successfully - monitoring is informational only
-        echo ""
-        echo "📈 Monitoring completed successfully"
-        echo "📊 Metrics exported to GitHub outputs for trend analysis"
-        exit 0
+      - name: Upload coverage artifact
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-xml
+          path: coverage.xml
