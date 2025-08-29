@@ -114,8 +114,8 @@ class TestDatabaseIsolation:
         """Test that session is properly cleaned after errors"""
         # Intentionally cause an error and ensure cleanup works
         try:
-            # Create an invalid plant (this should work, but let's test error handling)
-            plant = Plant(name="")  # Empty name might cause validation error
+            # Create an invalid plant by omitting a required field to guarantee an error
+            plant = Plant(common_name="Should Fail", category="ErrorTest")  # Missing 'name' field
             db.session.add(plant)
             db.session.commit()
         except Exception:
