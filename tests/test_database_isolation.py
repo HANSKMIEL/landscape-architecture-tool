@@ -4,6 +4,7 @@ Test database isolation and data contamination prevention
 """
 
 import pytest
+
 from src.models.landscape import Plant
 from src.models.user import db
 
@@ -14,19 +15,19 @@ class TestDatabaseIsolation:
     def test_database_starts_clean(self, app_context):
         """Test that database starts with no data"""
         plant_count = db.session.query(Plant).count()
-        assert plant_count == 0, f"Database should start clean but found {plant_count} plants"
+        assert (
+            plant_count == 0
+        ), f"Database should start clean but found {plant_count} plants"
 
     def test_create_plant_isolated_1(self, app_context):
         """First test creating a plant - should not affect other tests"""
         # Create a plant
         plant = Plant(
-            name="Test Plant 1",
-            common_name="Isolated Test Plant 1",
-            category="Test"
+            name="Test Plant 1", common_name="Isolated Test Plant 1", category="Test"
         )
         db.session.add(plant)
         db.session.commit()
-        
+
         # Verify it exists
         count = db.session.query(Plant).count()
         assert count == 1
@@ -35,17 +36,17 @@ class TestDatabaseIsolation:
         """Second test creating a plant - should start with clean database"""
         # Database should start clean
         initial_count = db.session.query(Plant).count()
-        assert initial_count == 0, f"Database should start clean but found {initial_count} plants"
-        
+        assert (
+            initial_count == 0
+        ), f"Database should start clean but found {initial_count} plants"
+
         # Create a different plant
         plant = Plant(
-            name="Test Plant 2",
-            common_name="Isolated Test Plant 2",
-            category="Test"
+            name="Test Plant 2", common_name="Isolated Test Plant 2", category="Test"
         )
         db.session.add(plant)
         db.session.commit()
-        
+
         # Verify only this plant exists
         count = db.session.query(Plant).count()
         assert count == 1
@@ -54,7 +55,9 @@ class TestDatabaseIsolation:
         """Third test to verify isolation is working"""
         # Database should start clean again
         initial_count = db.session.query(Plant).count()
-        assert initial_count == 0, f"Database isolation failed - found {initial_count} plants"
+        assert (
+            initial_count == 0
+        ), f"Database isolation failed - found {initial_count} plants"
 
     def test_concurrent_operations_simulation(self, app_context):
         """Test simulating concurrent database operations"""
@@ -64,22 +67,22 @@ class TestDatabaseIsolation:
             plant = Plant(
                 name=f"Concurrent Plant {i}",
                 common_name=f"Concurrent Test Plant {i}",
-                category="Concurrent"
+                category="Concurrent",
             )
             plants.append(plant)
             db.session.add(plant)
-        
+
         db.session.commit()
-        
+
         # Verify all were created
         count = db.session.query(Plant).count()
         assert count == 5
-        
+
         # Clean up explicitly (conftest should handle this too)
         for plant in plants:
             db.session.delete(plant)
         db.session.commit()
-        
+
         # Verify cleanup
         final_count = db.session.query(Plant).count()
         assert final_count == 0
@@ -91,17 +94,17 @@ class TestDatabaseIsolation:
             plant = Plant(
                 name="Rollback Test Plant",
                 common_name="Should Not Persist",
-                category="Rollback"
+                category="Rollback",
             )
             db.session.add(plant)
-            
+
             # Force a rollback
             db.session.rollback()
-            
+
             # Verify nothing was committed
             count = db.session.query(Plant).count()
             assert count == 0
-            
+
         except Exception:
             # Ensure session is clean even if exception occurs
             db.session.rollback()
@@ -118,20 +121,20 @@ class TestDatabaseIsolation:
         except Exception:
             # Rollback and continue - session should be clean
             db.session.rollback()
-        
+
         # Database should be in a clean state
         count = db.session.query(Plant).count()
         assert count == 0
-        
+
         # Should be able to create a valid plant after error
         valid_plant = Plant(
             name="Valid Plant After Error",
             common_name="Recovery Test",
-            category="Recovery"
+            category="Recovery",
         )
         db.session.add(valid_plant)
         db.session.commit()
-        
+
         count = db.session.query(Plant).count()
         assert count == 1
 

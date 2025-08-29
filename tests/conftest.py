@@ -50,9 +50,9 @@ def app():
                 "echo": False,  # Disable SQL logging in tests for performance
                 "connect_args": (
                     {
-                        "connect_timeout": 15, 
+                        "connect_timeout": 15,
                         "application_name": "landscape_test",
-                        "options": "-c statement_timeout=30000"  # 30 second statement timeout
+                        "options": "-c statement_timeout=30000",  # 30 second statement timeout
                     }
                     if database_url and "postgresql" in database_url
                     else {"timeout": 10}  # SQLite timeout
@@ -76,12 +76,12 @@ def ensure_clean_database(app):
     with app.app_context():
         # Ensure tables exist
         db.create_all()
-        
+
         # Clean before test
         _cleanup_database()
-        
+
         yield
-        
+
         # Clean after test
         _cleanup_database()
 
@@ -95,9 +95,9 @@ def app_context(app, ensure_clean_database):
 
 def _cleanup_database():
     """Enhanced helper function to clean up database consistently with timeout handling"""
-    import threading
     import gc
-    
+    import threading
+
     # Force garbage collection before cleanup to free memory
     gc.collect()
 
@@ -141,13 +141,13 @@ def _cleanup_database():
 
 def _perform_database_cleanup():
     """Enhanced database cleanup operations with better isolation and error handling"""
-    import time
     import gc
+    import time
 
     try:
         # Force garbage collection before database operations
         gc.collect()
-        
+
         # Close any active transactions first with enhanced error handling
         try:
             if hasattr(db.session, "is_active") and db.session.is_active:
@@ -174,7 +174,7 @@ def _perform_database_cleanup():
                 with db.engine.connect() as conn:
                     # Set statement timeout for PostgreSQL operations
                     conn.execute(text("SET statement_timeout = '15s'"))
-                    
+
                     # Get all table names (excluding system tables)
                     result = conn.execute(
                         text(
@@ -218,7 +218,7 @@ def _perform_database_cleanup():
 
                     # Start new transaction for cleanup operations
                     db.session.begin()
-                    
+
                     # Delete in order to respect foreign key constraints with timeout control
                     cleanup_start = time.time()
                     for model in [
@@ -233,18 +233,22 @@ def _perform_database_cleanup():
                     ]:
                         try:
                             # Check if cleanup is taking too long
-                            if time.time() - cleanup_start > 8:  # 8 second total timeout
+                            if (
+                                time.time() - cleanup_start > 8
+                            ):  # 8 second total timeout
                                 break
-                                
+
                             # Add timeout for each delete operation
                             operation_start = time.time()
                             # Use more efficient bulk delete
                             deleted_count = db.session.query(model).delete()
-                            
+
                             # Break if individual operation takes too long
-                            if time.time() - operation_start > 2:  # 2 second timeout per operation
+                            if (
+                                time.time() - operation_start > 2
+                            ):  # 2 second timeout per operation
                                 break
-                                
+
                         except Exception:
                             # Continue with other models if one fails
                             try:
@@ -254,13 +258,13 @@ def _perform_database_cleanup():
                                 pass
 
                     db.session.commit()
-                    
+
                 except Exception:
                     # If individual cleanup fails, try drop/recreate as last resort
                     try:
                         # Drop all tables
                         db.drop_all()
-                        # Recreate all tables 
+                        # Recreate all tables
                         db.create_all()
                         # Commit the changes
                         db.session.commit()
@@ -285,7 +289,7 @@ def _perform_database_cleanup():
                 db.session.remove()
         except Exception:
             pass
-            
+
         # Final garbage collection
         gc.collect()
 
@@ -327,11 +331,11 @@ def clean_db(app_context):
     """Provide a clean database for each test with enhanced cleanup"""
     # Force cleanup before test
     _cleanup_database()
-    
+
     # Start fresh transaction
     db.session.begin()
     yield db
-    
+
     # Cleanup after test
     try:
         db.session.rollback()
