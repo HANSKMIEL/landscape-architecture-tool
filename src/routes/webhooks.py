@@ -9,7 +9,6 @@ from datetime import datetime, timezone
 import requests
 from flask import Blueprint, current_app, jsonify, request
 
-from src.models.landscape import db
 from src.utils.error_handlers import handle_errors
 
 logger = logging.getLogger(__name__)
@@ -36,7 +35,8 @@ def trigger_n8n_workflow(webhook_url, data):
             return True
         else:
             logger.error(
-                f"Failed to trigger N8n workflow: {webhook_url}, Status: {response.status_code}"
+                f"Failed to trigger N8n workflow: {webhook_url}, "
+                f"Status: {response.status_code}"
             )
             return False
 

@@ -10,7 +10,7 @@ from functools import wraps
 
 from flask import Blueprint, current_app, jsonify, request
 
-from src.models.landscape import Client, Project, db
+from src.models.landscape import Project
 from src.utils.error_handlers import handle_errors
 
 logger = logging.getLogger(__name__)
@@ -153,7 +153,8 @@ def receive_external_data():
 
     source_system = data["source_system"]
     data_type = data.get("data_type")
-    payload = data.get("payload", {})
+    # Process payload data if needed in future implementations
+    # payload = data.get("payload", {})
 
     # Process data based on source system and type
     if source_system == "crm" and data_type == "new_lead":
