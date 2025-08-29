@@ -44,12 +44,12 @@ class TestTimeoutHandling:
     def test_database_cleanup_with_connection_error(self, app):
         """Test cleanup behavior when database connection fails"""
         with app.app_context():
-        # Mock a database connection error
-        with patch.object(db.session, "query") as mock_query:
-            mock_query.side_effect = Exception("Connection lost")
+            # Mock a database connection error
+            with patch.object(db.session, "query") as mock_query:
+                mock_query.side_effect = Exception("Connection lost")
 
-            # Should not raise exception despite database error
-            _cleanup_database()
+                # Should not raise exception despite database error
+                _cleanup_database()
 
     def test_database_cleanup_with_rollback_error(self, app_context):
         """Test cleanup behavior when rollback fails"""
