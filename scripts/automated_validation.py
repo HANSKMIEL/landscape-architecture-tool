@@ -266,51 +266,108 @@ print('Database initialized')
             return False
 
     def _parse_test_output(self, output):
-        """Parse pytest output to extract test summary"""
+        """Parse pytest output to extract test summary with improved robustness"""
         if not output:
             return {"total": 0, "passed": 0, "failed": 0, "errors": 0}
 
         lines = output.split("\n")
         summary_line = None
 
-        for line in lines:
-            if "passed" in line and ("failed" in line or "error" in line or "warning" in line):
-                summary_line = line
-                break
-            elif line.strip().endswith("passed"):
-                summary_line = line
+        # Try multiple patterns to find the summary line
+        patterns = [
+            # Standard pytest summary patterns
+            lambda line: "passed" in line and any(keyword in line for keyword in ["failed", "error", "warning", "skipped"]),
+            lambda line: line.strip().endswith("passed"),
+            lambda line: line.strip().endswith("failed"),
+            lambda line: " passed," in line or " failed," in line,
+            # Handle different pytest output formats
+            lambda line: "==" in line and any(keyword in line for keyword in ["passed", "failed", "error"]),
+        ]
+
+        for pattern in patterns:
+            for line in lines:
+                try:
+                    if pattern(line):
+                        summary_line = line
+                        break
+                except (AttributeError, TypeError):
+                    continue
+            if summary_line:
                 break
 
         if summary_line:
-            # Simple parsing - could be improved
-            parts = summary_line.split()
-            summary = {"raw": summary_line}
-
-            for part in parts:
-                if "passed" in part:
+            # Robust parsing with multiple extraction methods
+            summary = {"raw": summary_line.strip()}
+            
+            # Try regex-based extraction
+            import re
+            numbers = re.findall(r'(\d+)\s*(passed|failed|error|skipped)', summary_line, re.IGNORECASE)
+            
+            for count, status in numbers:
+                try:
+                    summary[status.lower()] = int(count)
+                except (ValueError, KeyError):
+                    pass
+            
+            # Fallback to simple word-based parsing
+            if not any(key in summary for key in ["passed", "failed"]):
+                parts = summary_line.split()
+                for i, part in enumerate(parts):
                     try:
-                        summary["passed"] = int(part.split()[0]) if part.split() else 0
+                        if part.isdigit():
+                            next_part = parts[i + 1] if i + 1 < len(parts) else ""
+                            if "passed" in next_part.lower():
+                                summary["passed"] = int(part)
+                            elif "failed" in next_part.lower():
+                                summary["failed"] = int(part)
+                            elif "error" in next_part.lower():
+                                summary["errors"] = int(part)
                     except (ValueError, IndexError):
-                        pass
-                elif "failed" in part:
-                    try:
-                        summary["failed"] = int(part.split()[0]) if part.split() else 0
-                    except (ValueError, IndexError):
-                        pass
+                        continue
 
             return summary
 
         return {"raw": "Could not parse test output", "total": 0}
 
     def _parse_vitest_output(self, output):
-        """Parse vitest output to extract test summary"""
+        """Parse vitest output to extract test summary with improved robustness"""
         if not output:
             return {"total": 0, "passed": 0, "failed": 0}
 
         lines = output.split("\n")
+        
+        # Try multiple patterns for vitest output
+        patterns = [
+            "Test Files",
+            "Tests",
+            "✓",
+            "✗",
+            "passed",
+            "failed",
+        ]
+        
+        summary_lines = []
         for line in lines:
-            if "Test Files" in line or "Tests" in line:
-                return {"raw": line.strip()}
+            line = line.strip()
+            if any(pattern in line for pattern in patterns):
+                summary_lines.append(line)
+        
+        if summary_lines:
+            # Find the most informative summary line
+            for line in summary_lines:
+                if any(word in line.lower() for word in ["test files", "tests"]) and any(char.isdigit() for char in line):
+                    # Extract numbers from the line
+                    import re
+                    numbers = re.findall(r'\d+', line)
+                    if numbers:
+                        return {
+                            "raw": line,
+                            "total": int(numbers[0]) if numbers else 0,
+                            "passed": int(numbers[1]) if len(numbers) > 1 else int(numbers[0]) if numbers else 0,
+                        }
+            
+            # Fallback to first informative line
+            return {"raw": summary_lines[0]}
 
         return {"raw": "Could not parse vitest output"}
 

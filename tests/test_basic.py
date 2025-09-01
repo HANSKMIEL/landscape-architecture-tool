@@ -5,12 +5,14 @@ Basic test suite for the Landscape Architecture Management System
 
 import os
 import sys
+from pathlib import Path
 from unittest.mock import patch
 
 import pytest
 
-# Add project root to Python path
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+# Add project root to Python path using relative paths
+project_root = Path(__file__).parent.parent
+sys.path.insert(0, str(project_root))
 
 from src.main import create_app  # noqa: E402
 

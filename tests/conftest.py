@@ -57,15 +57,21 @@ def connection(engine):
             # Roll back to ensure clean state for next session
             if conn.in_transaction():
                 conn.rollback()
+            # Ensure connection is properly closed
+            if not conn.closed:
+                conn.close()
     else:
         # Start a new transaction
         outer_tx = conn.begin()
         try:
             yield conn
         finally:
-            outer_tx.rollback()
-
-    conn.close()
+            # Rollback transaction and ensure proper cleanup
+            if outer_tx.is_active:
+                outer_tx.rollback()
+            # Ensure connection is properly closed
+            if not conn.closed:
+                conn.close()
 
 
 @pytest.fixture(scope="session")
