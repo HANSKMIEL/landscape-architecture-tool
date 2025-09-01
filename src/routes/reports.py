@@ -437,8 +437,8 @@ def generate_project_report(project_id):
                 "spent": 0,  # No spent field in current model
                 "location": project.location,
                 "area_size": (float(project.area_size) if project.area_size else 0),
-                "start_date": project.start_date,  # Already a string in ISO format
-                "end_date": project.end_date,  # Already a string in ISO format
+                "start_date": (project.start_date.isoformat() if project.start_date else None),
+                "end_date": (project.end_date.isoformat() if project.end_date else None),
                 "notes": project.notes,
                 "created_at": (project.created_at.isoformat() if project.created_at else None),
             },

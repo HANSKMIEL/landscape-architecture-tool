@@ -184,8 +184,23 @@ def supplier_factory(db_session):
 @pytest.fixture
 def product_factory(db_session):
     """Factory for creating products with proper session binding"""
-    ProductFactory._meta.sqlalchemy_session = db_session
-    return ProductFactory
+
+    class TestSupplierFactory(SupplierFactory):
+        class Meta:
+            model = Supplier
+            sqlalchemy_session = db_session
+            sqlalchemy_session_persistence = "commit"
+
+    class TestProductFactory(ProductFactory):
+        class Meta:
+            model = Product
+            sqlalchemy_session = db_session
+            sqlalchemy_session_persistence = "commit"
+
+        # Use the test-specific supplier factory
+        supplier = factory.SubFactory(TestSupplierFactory)
+
+    return TestProductFactory
 
 
 @pytest.fixture
@@ -197,8 +212,10 @@ def plant_factory(db_session):
             model = Plant
             sqlalchemy_session = db_session
             sqlalchemy_session_persistence = "commit"
+
         # Remove supplier field to avoid session conflicts
         supplier = None
+
     return TestPlantFactory
 
 
@@ -212,15 +229,62 @@ def client_factory(db_session):
 @pytest.fixture
 def project_factory(db_session):
     """Factory for creating projects with proper session binding"""
-    ProjectFactory._meta.sqlalchemy_session = db_session
-    return ProjectFactory
+
+    class TestClientFactory(ClientFactory):
+        class Meta:
+            model = Client
+            sqlalchemy_session = db_session
+            sqlalchemy_session_persistence = "commit"
+
+    class TestProjectFactory(ProjectFactory):
+        class Meta:
+            model = Project
+            sqlalchemy_session = db_session
+            sqlalchemy_session_persistence = "commit"
+
+        # Use the test-specific client factory
+        client = factory.SubFactory(TestClientFactory)
+
+    return TestProjectFactory
 
 
 @pytest.fixture
 def project_plant_factory(db_session):
     """Factory for creating project plants with proper session binding"""
-    ProjectPlantFactory._meta.sqlalchemy_session = db_session
-    return ProjectPlantFactory
+
+    class TestClientFactory(ClientFactory):
+        class Meta:
+            model = Client
+            sqlalchemy_session = db_session
+            sqlalchemy_session_persistence = "commit"
+
+    class TestProjectFactory(ProjectFactory):
+        class Meta:
+            model = Project
+            sqlalchemy_session = db_session
+            sqlalchemy_session_persistence = "commit"
+
+        client = factory.SubFactory(TestClientFactory)
+
+    class TestPlantFactory(PlantFactory):
+        class Meta:
+            model = Plant
+            sqlalchemy_session = db_session
+            sqlalchemy_session_persistence = "commit"
+
+        # Remove supplier field to avoid session conflicts
+        supplier = None
+
+    class TestProjectPlantFactory(ProjectPlantFactory):
+        class Meta:
+            model = ProjectPlant
+            sqlalchemy_session = db_session
+            sqlalchemy_session_persistence = "commit"
+
+        project = factory.SubFactory(TestProjectFactory)
+        plant = factory.SubFactory(TestPlantFactory)
+
+    return TestProjectPlantFactory
 
 
 @pytest.fixture

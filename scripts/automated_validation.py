@@ -133,7 +133,7 @@ class AutomatedValidator:
         )
 
         # Run frontend tests
-        frontend_test = self.run_command("cd frontend && npm run test:vitest:run", timeout=60)
+        frontend_test = self.run_command("cd frontend && npm run test:run", timeout=60)
 
         # Parse test results
         backend_passed = backend_test["success"]
@@ -166,7 +166,7 @@ class AutomatedValidator:
 
         if not frontend_passed:
             self.results["recommendations"].append(
-                "Frontend tests failing. Run 'cd frontend && npm run test:vitest:run' for details."
+                "Frontend tests failing. Run 'cd frontend && npm run test:run' for details."
             )
 
         return overall_status == "healthy"
