@@ -143,7 +143,7 @@ def handle_errors(f):
             raise  # Let Flask handle HTTP exceptions
         except KeyError as e:
             logger.warning(f"Missing key error in {f.__name__}: {str(e)}")
-            return jsonify({"error": "Missing required field", "message": f"Required field missing: {str(e)}"}), 400
+            return jsonify({"error": "Missing required field", "message": "One or more required fields are missing."}), 400
         except TypeError as e:
             logger.warning(f"Type error in {f.__name__}: {str(e)}")
             return jsonify({"error": "Invalid data type", "message": "One or more fields have invalid data types"}), 400
