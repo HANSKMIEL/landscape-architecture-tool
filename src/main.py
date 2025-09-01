@@ -7,7 +7,7 @@ Refactored modular version with persistent database
 import logging
 import os
 import sys
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 # Add project root to Python path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -20,9 +20,16 @@ from flask_migrate import Migrate
 from pydantic import ValidationError
 from sqlalchemy import and_, distinct, func, or_, text
 
+try:
+    import redis
+except ImportError:
+    redis = None
+
 from src.config import get_config
 from src.models.landscape import Plant, Product, Supplier
 from src.models.user import db
+from src.routes import n8n_receivers, webhooks
+from src.routes.performance import performance_bp
 from src.routes.plant_recommendations import plant_recommendations_bp
 from src.routes.project_plants import project_plants_bp
 from src.routes.reports import reports_bp
@@ -107,8 +114,6 @@ def create_app():
     if storage_url.startswith("redis://"):
         # Try Redis connection, fall back to memory if Redis unavailable
         try:
-            import redis
-
             # Test Redis connection
             r = redis.from_url(storage_url)
             r.ping()
@@ -153,13 +158,9 @@ def create_app():
     app.register_blueprint(reports_bp)
 
     # Register performance monitoring blueprint
-    from src.routes.performance import performance_bp
-
     app.register_blueprint(performance_bp)
 
     # Register N8n integration blueprints
-    from src.routes import n8n_receivers, webhooks
-
     app.register_blueprint(webhooks.bp)
     app.register_blueprint(n8n_receivers.bp)
 
@@ -325,8 +326,6 @@ def create_app():
 
         if not start_date or not end_date:
             # Default to last 12 months
-            from datetime import datetime, timedelta
-
             end_date = datetime.now().isoformat()
             start_date = (datetime.now() - timedelta(days=365)).isoformat()
 
