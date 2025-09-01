@@ -6,11 +6,15 @@ on:
 
 permissions:
   contents: read
-  actions: write
+  actions: read
+  security-events: read
 
 jobs:
   test:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
     services:
       postgres:
         image: postgres:16
