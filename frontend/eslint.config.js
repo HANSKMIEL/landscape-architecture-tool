@@ -4,6 +4,9 @@ import hooksPlugin from "eslint-plugin-react-hooks";
 import reactRefresh from "eslint-plugin-react-refresh";
 
 export default [
+  {
+    ignores: ["dist/**", "coverage-vitest/**", "node_modules/**"]
+  },
   js.configs.recommended,
   {
     files: ["**/*.{js,jsx}"],
@@ -34,6 +37,10 @@ export default [
         confirm: "readonly",
         module: "readonly",
         require: "readonly",
+        Blob: "readonly",
+        HTMLElement: "readonly",
+        FormData: "readonly",
+        IntersectionObserver: "readonly",
         // Test globals
         describe: "readonly",
         it: "readonly",
