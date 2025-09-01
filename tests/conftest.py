@@ -81,18 +81,24 @@ def Session(connection):
 
 
 @pytest.fixture(autouse=True)
-def db_session(Session, connection):
+def db_session(Session, connection, app):
     # Each test runs inside a nested transaction (SAVEPOINT) and rolls it back after the test
     nested = connection.begin_nested()
 
-    try:
-        yield Session
-    finally:
-        # Clean up the session first
-        Session.remove()
-        # Then rollback the nested transaction
-        if nested.is_active:
-            nested.rollback()
+    # Bind the Flask app's db session to our test session for proper isolation
+    from src.models.user import db as flask_db
+    with app.app_context():
+        # Replace the Flask-SQLAlchemy session with our test session
+        flask_db.session = Session
+
+        try:
+            yield Session
+        finally:
+            # Clean up the session first
+            Session.remove()
+            # Then rollback the nested transaction
+            if nested.is_active:
+                nested.rollback()
 
 
 @pytest.fixture(scope="session")

@@ -131,7 +131,7 @@ const Projects = ({ language }) => {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
       </div>
-      <h3 className="text-lg font-semibold text-red-800 mb-2">Error Loading Projects</h3>
+      <h2 className="text-lg font-semibold text-red-800 mb-2">Error Loading Projects</h2>
       <p className="text-red-600 mb-4">{error}</p>
       <Button onClick={fetchProjects} variant="destructive">
         Try Again
@@ -177,7 +177,7 @@ const Projects = ({ language }) => {
           <CardContent className="p-12">
             <div className="text-center">
               <FolderOpen className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">{t.noProjects}</h3>
+              <h2 className="text-lg font-semibold text-gray-900 mb-2">{t.noProjects}</h2>
               <p className="text-gray-500 mb-6">{t.createFirst}</p>
               <Button>
                 <Plus className="h-4 w-4 mr-2" />
