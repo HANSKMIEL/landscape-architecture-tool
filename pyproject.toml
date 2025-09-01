@@ -57,7 +57,10 @@ addopts = [
     "--tb=short",
     "--strict-markers",
     "--disable-warnings",
-    "--maxfail=5"
+    "--maxfail=10",
+    "--durations=10",
+    "--timeout=30",
+    "--timeout-method=thread"
 ]
 markers = [
     "slow: marks tests as slow (deselect with '-m \"not slow\"')",
@@ -65,7 +68,18 @@ markers = [
     "unit: marks tests as unit tests",
     "api: marks tests as API tests",
     "service: marks tests as service layer tests",
-    "database: marks tests as database tests"
+    "database: marks tests as database tests",
+    "flaky: marks tests as potentially flaky (may need retries)",
+    "stability: marks tests that check system stability",
+    "performance: marks tests that check performance metrics",
+    "retry: marks tests that should be retried on failure"
+]
+timeout = 30
+timeout_method = "thread"
+filterwarnings = [
+    "ignore::DeprecationWarning",
+    "ignore::PendingDeprecationWarning",
+    "ignore::pytest.PytestUnraisableExceptionWarning"
 ]
 
 [tool.coverage.run]
