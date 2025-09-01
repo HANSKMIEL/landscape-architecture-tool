@@ -2,7 +2,7 @@
 # File location: src/routes/clients.py
 # This file handles all client management operations
 
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from flask import Blueprint, jsonify, request
 
@@ -278,8 +278,6 @@ def get_client_stats():
         )
 
         # Recent clients (last 30 days)
-        from datetime import datetime, timedelta
-
         thirty_days_ago = datetime.utcnow() - timedelta(days=30)
         recent_clients = Client.query.filter(Client.created_at >= thirty_days_ago).count()
 

@@ -8,6 +8,7 @@ import hmac
 import logging
 from functools import wraps
 
+import requests
 from flask import Blueprint, current_app, jsonify, request
 
 from src.models.landscape import Client, Project, db  # noqa: F401
@@ -183,8 +184,6 @@ def n8n_integration_status():
     Check N8n integration status and connectivity
     """
     try:
-        import requests
-
         n8n_base_url = current_app.config.get("N8N_BASE_URL", "http://localhost:5678")  # noqa: E501
 
         # Try to ping N8n
