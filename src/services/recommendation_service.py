@@ -3,6 +3,7 @@ Recommendation Service
 Wrapper service for plant recommendations that provides a simplified interface
 """
 
+import json
 from typing import Dict, List
 
 from src.services.plant_recommendation import (
@@ -218,7 +219,5 @@ class RecommendationService:
 
     def _create_cache_key(self, criteria: Dict, max_results: int, min_score: float) -> str:
         """Create cache key from criteria"""
-        import json
-
         criteria_str = json.dumps(criteria, sort_keys=True)
         return f"{criteria_str}_{max_results}_{min_score}"
