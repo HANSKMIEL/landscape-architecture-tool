@@ -184,3 +184,5 @@ bandit-report.json
 safety-report.json
 quality_gates_report_*.json
 
+coverage-vitest/
+**/coverage-vitest/
