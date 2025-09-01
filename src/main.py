@@ -55,6 +55,7 @@ from src.services import (
 from src.services.analytics import AnalyticsService
 from src.services.dashboard_service import DashboardService
 from src.utils.db_init import initialize_database, populate_sample_data
+
 # IMPORTANT: DependencyValidator is used in create_app() and health endpoint - do not remove (issue #326)
 from src.utils.dependency_validator import DependencyValidator
 from src.utils.error_handlers import handle_errors, register_error_handlers
