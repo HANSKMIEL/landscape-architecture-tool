@@ -29,9 +29,7 @@ class LandscapeValidationError(LandscapeError):
     """Exception for validation errors"""
 
     def __init__(self, message, errors=None):
-        super().__init__(
-            message, status_code=400, payload={"validation_errors": errors}
-        )
+        super().__init__(message, status_code=400, payload={"validation_errors": errors})
 
 
 class NotFoundError(LandscapeError):

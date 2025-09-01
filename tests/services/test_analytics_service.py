@@ -30,9 +30,7 @@ class TestAnalyticsService(DatabaseTestMixin):
         assert result["total_plants_used"] == 0
         assert result["total_projects_with_plants"] == 0
 
-    def test_get_plant_usage_analytics_with_data(
-        self, app_context, plant_factory, project_factory, client_factory
-    ):
+    def test_get_plant_usage_analytics_with_data(self, app_context, plant_factory, project_factory, client_factory):
         """Test getting plant usage analytics with sample data"""
         analytics = AnalyticsService()
 
@@ -96,18 +94,12 @@ class TestAnalyticsService(DatabaseTestMixin):
 
         # Create projects at different dates
         now = datetime.now(UTC)
-        old_project = project_factory(
-            client=client, created_at=now - timedelta(days=60)
-        )
-        recent_project = project_factory(
-            client=client, created_at=now - timedelta(days=10)
-        )
+        old_project = project_factory(client=client, created_at=now - timedelta(days=60))
+        recent_project = project_factory(client=client, created_at=now - timedelta(days=10))
 
         # Add plant to both projects
         old_project_plant = ProjectPlant(project=old_project, plant=plant, quantity=10)
-        recent_project_plant = ProjectPlant(
-            project=recent_project, plant=plant, quantity=5
-        )
+        recent_project_plant = ProjectPlant(project=recent_project, plant=plant, quantity=5)
         db.session.add(old_project_plant)
         db.session.add(recent_project_plant)
         db.session.commit()
@@ -133,9 +125,7 @@ class TestAnalyticsService(DatabaseTestMixin):
         assert result["average_duration"] == 0
         assert result["projects_by_status"] == {}
 
-    def test_get_project_performance_analytics_with_data(
-        self, app_context, project_factory, client_factory
-    ):
+    def test_get_project_performance_analytics_with_data(self, app_context, project_factory, client_factory):
         """Test getting project performance analytics with sample data"""
         analytics = AnalyticsService()
 
@@ -194,9 +184,7 @@ class TestAnalyticsService(DatabaseTestMixin):
         assert result["top_clients_by_budget"] == []
         assert result["client_distribution"] == {}
 
-    def test_get_client_analytics_with_data(
-        self, app_context, client_factory, project_factory
-    ):
+    def test_get_client_analytics_with_data(self, app_context, client_factory, project_factory):
         """Test getting client analytics with sample data"""
         analytics = AnalyticsService()
 
@@ -282,9 +270,7 @@ class TestAnalyticsService(DatabaseTestMixin):
         assert result["plant_usage_by_season"] == {}
         assert result["peak_seasons"] == []
 
-    def test_get_seasonal_analytics_with_data(
-        self, app_context, plant_factory, project_factory, client_factory
-    ):
+    def test_get_seasonal_analytics_with_data(self, app_context, plant_factory, project_factory, client_factory):
         """Test getting seasonal analytics with sample data"""
         analytics = AnalyticsService()
 
@@ -297,31 +283,19 @@ class TestAnalyticsService(DatabaseTestMixin):
 
         # Create projects in different months
         now = datetime.now(UTC)
-        spring_project = project_factory(
-            client=client, created_at=datetime(now.year, 3, 15)
-        )  # March
-        summer_project = project_factory(
-            client=client, created_at=datetime(now.year, 7, 15)
-        )  # July
+        spring_project = project_factory(client=client, created_at=datetime(now.year, 3, 15))  # March
+        summer_project = project_factory(client=client, created_at=datetime(now.year, 7, 15))  # July
 
         # Add seasonal plants to projects
-        db.session.add(
-            ProjectPlant(project=spring_project, plant=spring_plant, quantity=10)
-        )
-        db.session.add(
-            ProjectPlant(project=summer_project, plant=summer_plant, quantity=15)
-        )
-        db.session.add(
-            ProjectPlant(project=summer_project, plant=fall_plant, quantity=5)
-        )
+        db.session.add(ProjectPlant(project=spring_project, plant=spring_plant, quantity=10))
+        db.session.add(ProjectPlant(project=summer_project, plant=summer_plant, quantity=15))
+        db.session.add(ProjectPlant(project=summer_project, plant=fall_plant, quantity=5))
         db.session.commit()
 
         result = analytics.get_seasonal_analytics()
 
         # Check projects by month
-        projects_by_month = {
-            item["month"]: item["count"] for item in result["projects_by_month"]
-        }
+        projects_by_month = {item["month"]: item["count"] for item in result["projects_by_month"]}
         assert projects_by_month.get("March", 0) == 1
         assert projects_by_month.get("July", 0) == 1
 
@@ -340,9 +314,7 @@ class TestAnalyticsService(DatabaseTestMixin):
         assert result["regional_plant_preferences"] == {}
         assert result["coverage_areas"] == []
 
-    def test_get_geographic_analytics_with_data(
-        self, app_context, project_factory, client_factory, plant_factory
-    ):
+    def test_get_geographic_analytics_with_data(self, app_context, project_factory, client_factory, plant_factory):
         """Test getting geographic analytics with sample data"""
         analytics = AnalyticsService()
 
@@ -361,9 +333,7 @@ class TestAnalyticsService(DatabaseTestMixin):
 
         # Add plants to projects
         project_plant_1 = ProjectPlant(project=projects[0], plant=oak_tree, quantity=5)
-        project_plant_2 = ProjectPlant(
-            project=projects[1], plant=maple_tree, quantity=3
-        )
+        project_plant_2 = ProjectPlant(project=projects[1], plant=maple_tree, quantity=3)
         project_plant_3 = ProjectPlant(project=projects[2], plant=oak_tree, quantity=8)
 
         db.session.add(project_plant_1)
@@ -384,9 +354,7 @@ class TestAnalyticsService(DatabaseTestMixin):
 class TestAnalyticsServiceIntegration(DatabaseTestMixin):
     """Integration tests for Analytics Service"""
 
-    def test_comprehensive_analytics_workflow(
-        self, app_context, client_factory, project_factory, plant_factory
-    ):
+    def test_comprehensive_analytics_workflow(self, app_context, client_factory, project_factory, plant_factory):
         """Test comprehensive analytics workflow with realistic data"""
         analytics = AnalyticsService()
 
@@ -395,18 +363,10 @@ class TestAnalyticsServiceIntegration(DatabaseTestMixin):
 
         # Create plants with diverse characteristics
         plants = [
-            plant_factory(
-                name="Red Oak", category="Tree", bloom_time="spring", native=True
-            ),
-            plant_factory(
-                name="Rose Bush", category="Shrub", bloom_time="summer", native=False
-            ),
-            plant_factory(
-                name="Tulip", category="Perennial", bloom_time="spring", native=False
-            ),
-            plant_factory(
-                name="Maple Tree", category="Tree", bloom_time="fall", native=True
-            ),
+            plant_factory(name="Red Oak", category="Tree", bloom_time="spring", native=True),
+            plant_factory(name="Rose Bush", category="Shrub", bloom_time="summer", native=False),
+            plant_factory(name="Tulip", category="Perennial", bloom_time="spring", native=False),
+            plant_factory(name="Maple Tree", category="Tree", bloom_time="fall", native=True),
         ]
 
         # Create projects across different time periods
@@ -417,14 +377,8 @@ class TestAnalyticsServiceIntegration(DatabaseTestMixin):
                 client=clients[i % 3],
                 status="completed" if i < 4 else "active",
                 created_at=now - timedelta(days=30 * i),
-                start_date=(
-                    now - timedelta(days=30 * i + 5)
-                    if i < 4
-                    else now - timedelta(days=15)
-                ),
-                actual_completion_date=(
-                    now - timedelta(days=30 * i - 20) if i < 4 else None
-                ),
+                start_date=(now - timedelta(days=30 * i + 5) if i < 4 else now - timedelta(days=15)),
+                actual_completion_date=(now - timedelta(days=30 * i - 20) if i < 4 else None),
                 budget=5000.0 + i * 1000,
                 location=f"City {i % 2}",
             )
@@ -443,9 +397,7 @@ class TestAnalyticsServiceIntegration(DatabaseTestMixin):
         ]
 
         for project, plant, quantity in relationships:
-            project_plant = ProjectPlant(
-                project=project, plant=plant, quantity=quantity
-            )
+            project_plant = ProjectPlant(project=project, plant=plant, quantity=quantity)
             db.session.add(project_plant)
         db.session.commit()
 
@@ -461,9 +413,7 @@ class TestAnalyticsServiceIntegration(DatabaseTestMixin):
         # Test project performance analytics
         project_analytics = analytics.get_project_performance_analytics()
         assert project_analytics["total_projects"] == 6
-        assert project_analytics["completion_rate"] == pytest.approx(
-            66.67, rel=1e-2
-        )  # 4 out of 6 completed
+        assert project_analytics["completion_rate"] == pytest.approx(66.67, rel=1e-2)  # 4 out of 6 completed
 
         # Test client analytics
         client_analytics = analytics.get_client_analytics()
@@ -490,9 +440,7 @@ class TestAnalyticsServiceIntegration(DatabaseTestMixin):
         assert "City 0" in locations
         assert "City 1" in locations
 
-    def test_analytics_with_date_filtering(
-        self, app_context, client_factory, project_factory, plant_factory
-    ):
+    def test_analytics_with_date_filtering(self, app_context, client_factory, project_factory, plant_factory):
         """Test analytics with various date range filters"""
         analytics = AnalyticsService()
 
@@ -501,18 +449,12 @@ class TestAnalyticsServiceIntegration(DatabaseTestMixin):
         now = datetime.now(UTC)
 
         # Create projects at specific dates
-        old_project = project_factory(
-            client=client, created_at=now - timedelta(days=100)
-        )
-        recent_project = project_factory(
-            client=client, created_at=now - timedelta(days=10)
-        )
+        old_project = project_factory(client=client, created_at=now - timedelta(days=100))
+        recent_project = project_factory(client=client, created_at=now - timedelta(days=10))
 
         # Add plants to projects
         old_project_plant = ProjectPlant(project=old_project, plant=plant, quantity=5)
-        recent_project_plant = ProjectPlant(
-            project=recent_project, plant=plant, quantity=10
-        )
+        recent_project_plant = ProjectPlant(project=recent_project, plant=plant, quantity=10)
         db.session.add(old_project_plant)
         db.session.add(recent_project_plant)
         db.session.commit()
@@ -523,18 +465,14 @@ class TestAnalyticsServiceIntegration(DatabaseTestMixin):
         start_30 = (now - timedelta(days=30)).isoformat()
         end_30 = now.isoformat()
 
-        analytics_30 = analytics.get_plant_usage_analytics(
-            date_range=(start_30, end_30)
-        )
+        analytics_30 = analytics.get_plant_usage_analytics(date_range=(start_30, end_30))
         assert analytics_30["most_used_plants"][0]["total_quantity"] == 10
 
         # Last 120 days - should include both projects
         start_120 = (now - timedelta(days=120)).isoformat()
         end_120 = now.isoformat()
 
-        analytics_120 = analytics.get_plant_usage_analytics(
-            date_range=(start_120, end_120)
-        )
+        analytics_120 = analytics.get_plant_usage_analytics(date_range=(start_120, end_120))
         assert analytics_120["most_used_plants"][0]["total_quantity"] == 15
 
     def test_analytics_performance_with_large_dataset(
@@ -556,9 +494,7 @@ class TestAnalyticsServiceIntegration(DatabaseTestMixin):
             num_plants = random.randint(1, 5)
             selected_plants = random.sample(plants, num_plants)
             for plant in selected_plants:
-                project_plant = ProjectPlant(
-                    project=project, plant=plant, quantity=random.randint(1, 20)
-                )
+                project_plant = ProjectPlant(project=project, plant=plant, quantity=random.randint(1, 20))
                 db.session.add(project_plant)
         db.session.commit()
 

@@ -212,9 +212,7 @@ class TestPlantService:
             mock_pagination.has_prev = False
 
             mock_filtered_query = Mock()
-            mock_filtered_query.order_by.return_value.paginate.return_value = (
-                mock_pagination
-            )
+            mock_filtered_query.order_by.return_value.paginate.return_value = mock_pagination
             mock_query.filter.return_value = mock_filtered_query
 
             result = plant_service.get_all(search="Rose")
@@ -245,13 +243,9 @@ class TestPlantService:
             assert result["total"] == 25
             assert result["pages"] == 3
             assert result["current_page"] == 1
-            mock_query.order_by.return_value.paginate.assert_called_once_with(
-                page=1, per_page=10, error_out=False
-            )
+            mock_query.order_by.return_value.paginate.assert_called_once_with(page=1, per_page=10, error_out=False)
 
-    def test_database_error_handling(
-        self, app_context, plant_service, sample_plant_data
-    ):
+    def test_database_error_handling(self, app_context, plant_service, sample_plant_data):
         """Test database error handling"""
         with patch("src.models.user.db.session") as mock_session:
 

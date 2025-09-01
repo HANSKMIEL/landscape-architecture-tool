@@ -41,9 +41,7 @@ def db_setup(app):
         plants = [
             create_test_plant(name="Test Rose", common_name="Rose", category="Shrub"),
             create_test_plant(name="Test Oak", common_name="Oak", category="Tree"),
-            create_test_plant(
-                name="Test Lavender", common_name="Lavender", category="Perennial"
-            ),
+            create_test_plant(name="Test Lavender", common_name="Lavender", category="Perennial"),
         ]
 
         for plant in plants:
@@ -92,9 +90,7 @@ class TestPlantRecommendationHistoryRoute:
     def test_get_history_with_user_id(self, client, app, db_setup):
         """Test getting history filtered by user_id"""
         with app.app_context():
-            response = client.get(
-                "/api/plant-recommendations/history?user_id=test_user"
-            )
+            response = client.get("/api/plant-recommendations/history?user_id=test_user")
             assert response.status_code == 200
 
             data = json.loads(response.data)
@@ -103,9 +99,7 @@ class TestPlantRecommendationHistoryRoute:
     def test_get_history_with_pagination(self, client, app, db_setup):
         """Test history pagination"""
         with app.app_context():
-            response = client.get(
-                "/api/plant-recommendations/history?limit=5&offset=10"
-            )
+            response = client.get("/api/plant-recommendations/history?limit=5&offset=10")
             assert response.status_code == 200
 
             data = json.loads(response.data)
@@ -124,9 +118,7 @@ class TestPlantRecommendationHistoryRoute:
     def test_get_history_with_invalid_params(self, client, app, db_setup):
         """Test history with invalid parameters"""
         with app.app_context():
-            response = client.get(
-                "/api/plant-recommendations/history?limit=invalid&offset=abc"
-            )
+            response = client.get("/api/plant-recommendations/history?limit=invalid&offset=abc")
             # Should handle invalid params gracefully
             assert response.status_code in [200, 400]  # Either works or returns error
 
@@ -432,10 +424,7 @@ class TestPlantRecommendationErrorHandling:
     def test_feedback_database_error(self, client, app, db_setup):
         """Test feedback endpoint with database error"""
         with app.app_context():
-            patch_path = (
-                "src.routes.plant_recommendations."
-                "recommendation_engine.save_user_feedback"
-            )
+            patch_path = "src.routes.plant_recommendations." "recommendation_engine.save_user_feedback"
             with patch(patch_path) as mock_save:
                 mock_save.side_effect = Exception("Database error")
 
@@ -453,10 +442,7 @@ class TestPlantRecommendationIntegration:
     def test_recommendation_with_logging_failure(self, client, app, db_setup):
         """Test recommendations when logging fails but recommendations succeed"""
         with app.app_context():
-            patch_path = (
-                "src.routes.plant_recommendations."
-                "recommendation_engine.log_recommendation_request"
-            )
+            patch_path = "src.routes.plant_recommendations." "recommendation_engine.log_recommendation_request"
             with patch(patch_path) as mock_log:
                 mock_log.side_effect = Exception("Logging error")
 
@@ -469,9 +455,7 @@ class TestPlantRecommendationIntegration:
 
                 data = json.loads(response.data)
                 assert "recommendations" in data
-                assert (
-                    data["request_id"] is None
-                )  # Should be None due to logging failure
+                assert data["request_id"] is None  # Should be None due to logging failure
 
     def test_session_handling(self, client, app, db_setup):
         """Test session ID generation and handling"""

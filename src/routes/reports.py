@@ -104,9 +104,7 @@ def generate_business_summary():
             db.session.query(
                 Plant.name,
                 Plant.common_name,
-                db.func.count(ProjectPlant.project_id.distinct()).label(
-                    "project_count"
-                ),
+                db.func.count(ProjectPlant.project_id.distinct()).label("project_count"),
             )
             .join(ProjectPlant, Plant.id == ProjectPlant.plant_id)
             .join(Project, ProjectPlant.project_id == Project.id)
@@ -147,9 +145,7 @@ def generate_business_summary():
                     "total_budget": total_budget,
                     "total_spent": total_spent,
                     "avg_budget": avg_budget,
-                    "utilization_rate": (
-                        (total_spent / total_budget * 100) if total_budget > 0 else 0
-                    ),
+                    "utilization_rate": ((total_spent / total_budget * 100) if total_budget > 0 else 0),
                 },
             },
             "top_clients": top_clients_data,
@@ -188,18 +184,14 @@ def generate_business_summary_pdf(data):
         # Generation info
         story.append(
             Paragraph(
-                (
-                    f"Generated: "
-                    f"{datetime.now(timezone.utc).strftime('%B %d, %Y at %H:%M')}"
-                ),
+                (f"Generated: " f"{datetime.now(timezone.utc).strftime('%B %d, %Y at %H:%M')}"),
                 styles["Normal"],
             )
         )
         if data["period"]["start_date"] and data["period"]["end_date"]:
             story.append(
                 Paragraph(
-                    f"Period: {data['period']['start_date']} "
-                    f"to {data['period']['end_date']}",
+                    f"Period: {data['period']['start_date']} " f"to {data['period']['end_date']}",
                     styles["Normal"],
                 )
             )
@@ -317,11 +309,7 @@ def generate_business_summary_pdf(data):
                         client["name"],
                         client["client_type"] or "-",
                         str(client["project_count"]),
-                        (
-                            f"€{client['total_budget']:,.2f}"
-                            if client["total_budget"]
-                            else "€0.00"
-                        ),
+                        (f"€{client['total_budget']:,.2f}" if client["total_budget"] else "€0.00"),
                     ]
                 )
 
@@ -392,9 +380,7 @@ def generate_business_summary_pdf(data):
         return send_file(
             buffer,
             as_attachment=True,
-            download_name=(
-                f'business_summary_{datetime.now(timezone.utc).strftime("%Y%m%d")}.pdf'
-            ),
+            download_name=(f'business_summary_{datetime.now(timezone.utc).strftime("%Y%m%d")}.pdf'),
             mimetype="application/pdf",
         )
 
@@ -454,9 +440,7 @@ def generate_project_report(project_id):
                 "start_date": project.start_date,  # Already a string in ISO format
                 "end_date": project.end_date,  # Already a string in ISO format
                 "notes": project.notes,
-                "created_at": (
-                    project.created_at.isoformat() if project.created_at else None
-                ),
+                "created_at": (project.created_at.isoformat() if project.created_at else None),
             },
             "client": {
                 "name": project.client.name if project.client else "Unknown",
@@ -700,8 +684,7 @@ def generate_project_report_pdf(data):
             buffer,
             as_attachment=True,
             download_name=(
-                f'project_{project["name"].replace(" ", "_")}_'
-                f'{datetime.now(timezone.utc).strftime("%Y%m%d")}.pdf'
+                f'project_{project["name"].replace(" ", "_")}_' f'{datetime.now(timezone.utc).strftime("%Y%m%d")}.pdf'
             ),
             mimetype="application/pdf",
         )
@@ -720,9 +703,7 @@ def generate_plant_usage_report():
                 Plant.name,
                 Plant.common_name,
                 Plant.category,
-                db.func.count(db.distinct(ProjectPlant.project_id)).label(
-                    "project_count"
-                ),
+                db.func.count(db.distinct(ProjectPlant.project_id)).label("project_count"),
             )
             .join(ProjectPlant, Plant.id == ProjectPlant.plant_id)
             .group_by(Plant.id, Plant.name, Plant.common_name, Plant.category)
@@ -745,9 +726,7 @@ def generate_plant_usage_report():
         category_stats = (
             db.session.query(
                 Plant.category,
-                db.func.count(db.distinct(ProjectPlant.project_id)).label(
-                    "project_count"
-                ),
+                db.func.count(db.distinct(ProjectPlant.project_id)).label("project_count"),
             )
             .join(ProjectPlant, Plant.id == ProjectPlant.plant_id)
             .filter(Plant.category.isnot(None))

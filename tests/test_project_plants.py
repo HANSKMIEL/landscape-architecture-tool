@@ -49,9 +49,7 @@ def init_database(app):
         db.session.flush()
 
         # Create test client
-        test_client = Client(
-            name="Test Client", email="client@test.com", phone="555-0456"
-        )
+        test_client = Client(name="Test Client", email="client@test.com", phone="555-0456")
         db.session.add(test_client)
         db.session.flush()
 
@@ -124,9 +122,7 @@ class TestProjectPlantService:
             data = init_database
 
             # Add plant first time
-            service.add_plant_to_project(
-                project_id=data["project_id"], plant_id=data["plant1_id"], quantity=3
-            )
+            service.add_plant_to_project(project_id=data["project_id"], plant_id=data["plant1_id"], quantity=3)
 
             # Add same plant again
             project_plant = service.add_plant_to_project(
@@ -143,9 +139,7 @@ class TestProjectPlantService:
             data = init_database
 
             # Add plant to project
-            service.add_plant_to_project(
-                project_id=data["project_id"], plant_id=data["plant1_id"], quantity=5
-            )
+            service.add_plant_to_project(project_id=data["project_id"], plant_id=data["plant1_id"], quantity=5)
 
             # Update quantity
             updated = service.update_plant_quantity(
@@ -163,9 +157,7 @@ class TestProjectPlantService:
             data = init_database
 
             # Add plant to project
-            service.add_plant_to_project(
-                project_id=data["project_id"], plant_id=data["plant1_id"], quantity=5
-            )
+            service.add_plant_to_project(project_id=data["project_id"], plant_id=data["plant1_id"], quantity=5)
 
             # Update status
             updated = service.update_plant_status(
@@ -245,14 +237,10 @@ class TestProjectPlantService:
             data = init_database
 
             # Add plant to project
-            service.add_plant_to_project(
-                project_id=data["project_id"], plant_id=data["plant1_id"], quantity=5
-            )
+            service.add_plant_to_project(project_id=data["project_id"], plant_id=data["plant1_id"], quantity=5)
 
             # Remove plant
-            result = service.remove_plant_from_project(
-                project_id=data["project_id"], plant_id=data["plant1_id"]
-            )
+            result = service.remove_plant_from_project(project_id=data["project_id"], plant_id=data["plant1_id"])
 
             assert result is True
 
@@ -275,9 +263,7 @@ class TestProjectPlantService:
                 service.add_plant_to_project(data["project_id"], 999, 1)
 
             # Add a plant first for testing updates
-            service.add_plant_to_project(
-                project_id=data["project_id"], plant_id=data["plant1_id"], quantity=5
-            )
+            service.add_plant_to_project(project_id=data["project_id"], plant_id=data["plant1_id"], quantity=5)
 
             # Test invalid quantity
             with pytest.raises(ValueError, match="Quantity must be greater than 0"):
@@ -285,9 +271,7 @@ class TestProjectPlantService:
 
             # Test invalid status
             with pytest.raises(ValueError, match="Invalid status"):
-                service.update_plant_status(
-                    data["project_id"], data["plant1_id"], "invalid"
-                )
+                service.update_plant_status(data["project_id"], data["plant1_id"], "invalid")
 
 
 class TestProjectPlantAPI:
@@ -364,9 +348,7 @@ class TestProjectPlantAPI:
         # Add plants first
         client.post(
             f'/api/projects/{data["project_id"]}/plants',
-            data=json.dumps(
-                {"plant_id": data["plant1_id"], "quantity": 5, "unit_cost": 25.99}
-            ),
+            data=json.dumps({"plant_id": data["plant1_id"], "quantity": 5, "unit_cost": 25.99}),
             content_type="application/json",
         )
 
@@ -385,9 +367,7 @@ class TestProjectPlantAPI:
         # Add plants first
         client.post(
             f'/api/projects/{data["project_id"]}/plants',
-            data=json.dumps(
-                {"plant_id": data["plant1_id"], "quantity": 5, "unit_cost": 25.99}
-            ),
+            data=json.dumps({"plant_id": data["plant1_id"], "quantity": 5, "unit_cost": 25.99}),
             content_type="application/json",
         )
 
@@ -411,9 +391,7 @@ class TestProjectPlantAPI:
         )
 
         # Remove plant
-        response = client.delete(
-            f'/api/projects/{data["project_id"]}/plants/{data["plant1_id"]}'
-        )
+        response = client.delete(f'/api/projects/{data["project_id"]}/plants/{data["plant1_id"]}')
 
         assert response.status_code == 200
 

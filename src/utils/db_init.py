@@ -266,9 +266,7 @@ def populate_sample_data():
         projects_data = [
             {
                 "name": "Vondelpark Renovatie Fase 2",
-                "description": (
-                    "Herinrichting van de zuidelijke zone van het Vondelpark"
-                ),
+                "description": ("Herinrichting van de zuidelijke zone van het Vondelpark"),
                 "client_id": clients[1].id,
                 "status": "In uitvoering",
                 "start_date": "2024-04-01",

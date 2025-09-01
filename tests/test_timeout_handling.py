@@ -71,9 +71,7 @@ class TestTimeoutHandling:
             db_url = app.config.get("SQLALCHEMY_DATABASE_URI", "")
             if "postgresql" in db_url:
                 # For PostgreSQL, timeout params should be in the URL
-                assert (
-                    "pool_size" in db_url or "SQLALCHEMY_ENGINE_OPTIONS" in app.config
-                )
+                assert "pool_size" in db_url or "SQLALCHEMY_ENGINE_OPTIONS" in app.config
 
             # Check engine options if they exist
             config = app.config.get("SQLALCHEMY_ENGINE_OPTIONS", {})
@@ -142,9 +140,7 @@ class TestTimeoutHandling:
         while not results.empty():
             result_type, result_value = results.get()
             if result_type == "success":
-                assert (
-                    result_value < 30
-                ), f"Cleanup took too long: {result_value} seconds"
+                assert result_value < 30, f"Cleanup took too long: {result_value} seconds"
             else:
                 pytest.fail(f"Cleanup failed: {result_value}")
 

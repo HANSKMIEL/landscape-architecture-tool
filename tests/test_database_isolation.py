@@ -16,9 +16,7 @@ class TestDatabaseIsolation:
         """Test that database starts with no data"""
         with app.app_context():
             plant_count = db.session.query(Plant).count()
-            assert (
-                plant_count == 0
-            ), f"Database should start clean but found {plant_count} plants"
+            assert plant_count == 0, f"Database should start clean but found {plant_count} plants"
 
     def test_create_plant_isolated_1(self, app):
         """First test creating a plant - should not affect other tests"""
@@ -41,9 +39,7 @@ class TestDatabaseIsolation:
         with app.app_context():
             # Database should start clean
             initial_count = db.session.query(Plant).count()
-            assert (
-                initial_count == 0
-            ), f"Database should start clean but found {initial_count} plants"
+            assert initial_count == 0, f"Database should start clean but found {initial_count} plants"
 
             # Create a different plant
             plant = Plant(
@@ -63,9 +59,7 @@ class TestDatabaseIsolation:
         with app.app_context():
             # Database should start clean again
             initial_count = db.session.query(Plant).count()
-            assert (
-                initial_count == 0
-            ), f"Database isolation failed - found {initial_count} plants"
+            assert initial_count == 0, f"Database isolation failed - found {initial_count} plants"
 
     def test_concurrent_operations_simulation(self, app):
         """Test simulating concurrent database operations"""
@@ -126,9 +120,7 @@ class TestDatabaseIsolation:
             # Intentionally cause an error and ensure cleanup works
             try:
                 # Create an invalid plant by omitting a required field to guarantee an error
-                plant = Plant(
-                    common_name="Should Fail", category="ErrorTest"
-                )  # Missing 'name' field
+                plant = Plant(common_name="Should Fail", category="ErrorTest")  # Missing 'name' field
                 db.session.add(plant)
                 db.session.commit()
             except Exception:

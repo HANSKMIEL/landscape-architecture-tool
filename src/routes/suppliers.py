@@ -23,9 +23,7 @@ def get_suppliers():
                 | Supplier.city.contains(search)
             )
 
-        suppliers = query.order_by(Supplier.name).paginate(
-            page=page, per_page=per_page, error_out=False
-        )
+        suppliers = query.order_by(Supplier.name).paginate(page=page, per_page=per_page, error_out=False)
 
         return jsonify(
             {

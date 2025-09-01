@@ -9,9 +9,6 @@ import os
 import sys
 from datetime import datetime, timedelta, timezone
 
-# Add project root to Python path
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from flask_limiter import Limiter
@@ -25,15 +22,18 @@ try:
 except ImportError:
     redis = None
 
-from src.config import get_config
-from src.models.landscape import Plant, Product, Supplier
-from src.models.user import db
-from src.routes import n8n_receivers, webhooks
-from src.routes.performance import performance_bp
-from src.routes.plant_recommendations import plant_recommendations_bp
-from src.routes.project_plants import project_plants_bp
-from src.routes.reports import reports_bp
-from src.schemas import (
+# Add project root to Python path before importing local modules
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from src.config import get_config  # noqa: E402
+from src.models.landscape import Plant, Product, Supplier  # noqa: E402
+from src.models.user import db  # noqa: E402
+from src.routes import n8n_receivers, webhooks  # noqa: E402
+from src.routes.performance import performance_bp  # noqa: E402
+from src.routes.plant_recommendations import plant_recommendations_bp  # noqa: E402
+from src.routes.project_plants import project_plants_bp  # noqa: E402
+from src.routes.reports import reports_bp  # noqa: E402
+from src.schemas import (  # noqa: E402
     ClientCreateSchema,
     ClientUpdateSchema,
     PlantCreateSchema,
@@ -45,20 +45,20 @@ from src.schemas import (
     SupplierCreateSchema,
     SupplierUpdateSchema,
 )
-from src.services import (
+from src.services import (  # noqa: E402
     ClientService,
     PlantService,
     ProductService,
     ProjectService,
     SupplierService,
 )
-from src.services.analytics import AnalyticsService
-from src.services.dashboard_service import DashboardService
-from src.utils.db_init import initialize_database, populate_sample_data
+from src.services.analytics import AnalyticsService  # noqa: E402
+from src.services.dashboard_service import DashboardService  # noqa: E402
+from src.utils.db_init import initialize_database, populate_sample_data  # noqa: E402
 
-# IMPORTANT: DependencyValidator is used in create_app() and health endpoint - do not remove (issue #326)
-from src.utils.dependency_validator import DependencyValidator
-from src.utils.error_handlers import handle_errors, register_error_handlers
+# IMPORTANT: DependencyValidator is used in create_app() and health endpoint - do not remove (issue #326)  # noqa: E501
+from src.utils.dependency_validator import DependencyValidator  # noqa: E402
+from src.utils.error_handlers import handle_errors, register_error_handlers  # noqa: E402
 
 # Define version for health endpoint
 __version__ = "2.0.0"
@@ -73,7 +73,7 @@ def configure_logging(app):
         # Production logging
         logging.basicConfig(
             level=log_level,
-            format="%(asctime)s %(levelname)s %(name)s %(threadName)s : %(message)s",
+            format="%(asctime)s %(levelname)s %(name)s %(threadName)s : " "%(message)s",
         )
     else:
         # Development logging
@@ -185,9 +185,7 @@ def create_app():
         """
         validator = DependencyValidator()
         critical_ok, missing_critical = validator.validate_critical_dependencies()
-        available_optional, missing_optional = (
-            validator.validate_optional_dependencies()
-        )
+        available_optional, missing_optional = validator.validate_optional_dependencies()
 
         # Database connectivity check
         db_status = "unknown"
@@ -203,17 +201,14 @@ def create_app():
             "status": "healthy" if critical_ok else "unhealthy",
             "timestamp": datetime.now(timezone.utc).isoformat(),
             "version": __version__,  # Added for test compatibility
-            "environment": os.environ.get(
-                "FLASK_ENV", "development"
-            ),  # Added for test compatibility
+            "environment": os.environ.get("FLASK_ENV", "development"),  # Added for test compatibility
             "database_status": db_status,  # Added for test compatibility
             "dependencies": {
                 "critical": {
                     "status": "ok" if critical_ok else "missing",
                     "missing": missing_critical,
                     "total": len(validator.CRITICAL_DEPENDENCIES),
-                    "available": len(validator.CRITICAL_DEPENDENCIES)
-                    - len(missing_critical),
+                    "available": len(validator.CRITICAL_DEPENDENCIES) - len(missing_critical),
                 },
                 "optional": {
                     "total": len(validator.OPTIONAL_DEPENDENCIES),
@@ -230,14 +225,10 @@ def create_app():
 
         if not critical_ok:
             # Return 503 Service Unavailable if critical dependencies are missing
-            health_data["message"] = (
-                "Critical dependencies missing - application may not function properly"
-            )
+            health_data["message"] = "Critical dependencies missing - application may not function properly"
             return jsonify(health_data), 503
         elif missing_optional:
-            health_data["message"] = (
-                "Some optional features may be limited due to missing dependencies"
-            )
+            health_data["message"] = "Some optional features may be limited due to missing dependencies"
 
         return jsonify(health_data)
 
@@ -261,9 +252,7 @@ def create_app():
                         "project_performance": "/api/analytics/project-performance",
                         "client_insights": "/api/analytics/client-insights",
                         "financial": "/api/analytics/financial",
-                        "recommendation_effectiveness": (
-                            "/api/analytics/recommendation-effectiveness"
-                        ),
+                        "recommendation_effectiveness": ("/api/analytics/recommendation-effectiveness"),
                     },
                     "suppliers": "/api/suppliers",
                     "plants": "/api/plants",
@@ -272,9 +261,7 @@ def create_app():
                     "projects": "/api/projects",
                     "plant_recommendations": {
                         "recommendations": "/api/plant-recommendations",
-                        "criteria_options": (
-                            "/api/plant-recommendations/criteria-options"
-                        ),
+                        "criteria_options": ("/api/plant-recommendations/criteria-options"),
                         "feedback": "/api/plant-recommendations/feedback",
                         "history": "/api/plant-recommendations/history",
                         "export": "/api/plant-recommendations/export",
@@ -382,9 +369,7 @@ def create_app():
 
             query = query.filter(Supplier.specialization.ilike(f"%{specialization}%"))
 
-            paginated = query.order_by(Supplier.name).paginate(
-                page=page, per_page=per_page, error_out=False
-            )
+            paginated = query.order_by(Supplier.name).paginate(page=page, per_page=per_page, error_out=False)
 
             result = {
                 "suppliers": [supplier.to_dict() for supplier in paginated.items],
@@ -393,9 +378,7 @@ def create_app():
                 "current_page": page,
             }
         else:
-            result = supplier_service.get_all(
-                search=search, page=page, per_page=per_page
-            )
+            result = supplier_service.get_all(search=search, page=page, per_page=per_page)
 
         return jsonify(result)
 
@@ -428,9 +411,7 @@ def create_app():
             # Convert Pydantic errors to string format for consistency
             error_messages = [error.get("msg", str(error)) for error in e.errors()]
             return (
-                jsonify(
-                    {"error": "Validation failed", "validation_errors": error_messages}
-                ),
+                jsonify({"error": "Validation failed", "validation_errors": error_messages}),
                 422,
             )
         except ValueError as e:
@@ -461,9 +442,7 @@ def create_app():
             # Convert Pydantic errors to string format for consistency
             error_messages = [error.get("msg", str(error)) for error in e.errors()]
             return (
-                jsonify(
-                    {"error": "Validation failed", "validation_errors": error_messages}
-                ),
+                jsonify({"error": "Validation failed", "validation_errors": error_messages}),
                 422,
             )
         except ValueError as e:
@@ -523,9 +502,7 @@ def create_app():
             # Convert Pydantic errors to string format for consistency
             error_messages = [error.get("msg", str(error)) for error in e.errors()]
             return (
-                jsonify(
-                    {"error": "Validation failed", "validation_errors": error_messages}
-                ),
+                jsonify({"error": "Validation failed", "validation_errors": error_messages}),
                 422,
             )
 
@@ -556,21 +533,15 @@ def create_app():
 
         # Calculate inventory value (products only, since they have stock_quantity)
         products = Product.query.filter_by(supplier_id=supplier_id).all()
-        total_inventory_value = sum(
-            (product.price or 0) * (product.stock_quantity or 0) for product in products
-        )
+        total_inventory_value = sum((product.price or 0) * (product.stock_quantity or 0) for product in products)
 
         # Calculate average prices
         product_prices = [product.price for product in products if product.price]
-        average_product_price = (
-            sum(product_prices) / len(product_prices) if product_prices else 0
-        )
+        average_product_price = sum(product_prices) / len(product_prices) if product_prices else 0
 
         plants = Plant.query.filter_by(supplier_id=supplier_id).all()
         plant_prices = [plant.price for plant in plants if plant.price]
-        average_plant_price = (
-            sum(plant_prices) / len(plant_prices) if plant_prices else 0
-        )
+        average_plant_price = sum(plant_prices) / len(plant_prices) if plant_prices else 0
 
         return jsonify(
             {
@@ -593,9 +564,7 @@ def create_app():
         """Get all unique supplier specializations"""
 
         specializations = (
-            db.session.query(distinct(Supplier.specialization))
-            .filter(Supplier.specialization.isnot(None))
-            .all()
+            db.session.query(distinct(Supplier.specialization)).filter(Supplier.specialization.isnot(None)).all()
         )
 
         return jsonify({"specializations": [spec[0] for spec in specializations]})
@@ -611,18 +580,14 @@ def create_app():
 
         # Subquery for product counts
         product_counts = (
-            db.session.query(
-                Product.supplier_id, func.count(Product.id).label("product_count")
-            )
+            db.session.query(Product.supplier_id, func.count(Product.id).label("product_count"))
             .group_by(Product.supplier_id)
             .subquery()
         )
 
         # Subquery for plant counts
         plant_counts = (
-            db.session.query(
-                Plant.supplier_id, func.count(Plant.id).label("plant_count")
-            )
+            db.session.query(Plant.supplier_id, func.count(Plant.id).label("plant_count"))
             .group_by(Plant.supplier_id)
             .subquery()
         )
@@ -637,10 +602,7 @@ def create_app():
             .outerjoin(product_counts, Supplier.id == product_counts.c.supplier_id)
             .outerjoin(plant_counts, Supplier.id == plant_counts.c.supplier_id)
             .order_by(
-                (
-                    func.coalesce(product_counts.c.product_count, 0)
-                    + func.coalesce(plant_counts.c.plant_count, 0)
-                ).desc()
+                (func.coalesce(product_counts.c.product_count, 0) + func.coalesce(plant_counts.c.plant_count, 0)).desc()
             )
             .limit(limit)
             .all()
@@ -770,9 +732,7 @@ def create_app():
         filters = []
         if search:
             filters.append(
-                Plant.name.contains(search)
-                | Plant.common_name.contains(search)
-                | Plant.category.contains(search)
+                Plant.name.contains(search) | Plant.common_name.contains(search) | Plant.category.contains(search)
             )
 
         if category:
@@ -788,9 +748,7 @@ def create_app():
             query = query.filter(and_(*filters))
 
         # Apply pagination
-        paginated = query.order_by(Plant.name).paginate(
-            page=page, per_page=per_page, error_out=False
-        )
+        paginated = query.order_by(Plant.name).paginate(page=page, per_page=per_page, error_out=False)
 
         result = {
             "plants": [plant.to_dict() for plant in paginated.items],
@@ -828,9 +786,7 @@ def create_app():
             # Convert Pydantic errors to string format for consistency
             error_messages = [error.get("msg", str(error)) for error in e.errors()]
             return (
-                jsonify(
-                    {"error": "Validation failed", "validation_errors": error_messages}
-                ),
+                jsonify({"error": "Validation failed", "validation_errors": error_messages}),
                 422,
             )
 
@@ -866,9 +822,7 @@ def create_app():
             # Convert Pydantic errors to string format for consistency
             error_messages = [error.get("msg", str(error)) for error in e.errors()]
             return (
-                jsonify(
-                    {"error": "Validation failed", "validation_errors": error_messages}
-                ),
+                jsonify({"error": "Validation failed", "validation_errors": error_messages}),
                 422,
             )
         except ValueError as e:
@@ -891,11 +845,7 @@ def create_app():
     def get_plant_categories():
         """Get unique plant categories"""
 
-        categories = (
-            db.session.query(distinct(Plant.category))
-            .filter(Plant.category.isnot(None))
-            .all()
-        )
+        categories = db.session.query(distinct(Plant.category)).filter(Plant.category.isnot(None)).all()
 
         return jsonify({"categories": [cat[0] for cat in categories]})
 
@@ -1010,9 +960,7 @@ def create_app():
             # Convert Pydantic errors to string format for consistency
             error_messages = [error.get("msg", str(error)) for error in e.errors()]
             return (
-                jsonify(
-                    {"error": "Validation failed", "validation_errors": error_messages}
-                ),
+                jsonify({"error": "Validation failed", "validation_errors": error_messages}),
                 422,
             )
 
@@ -1037,9 +985,7 @@ def create_app():
             # Convert Pydantic errors to string format for consistency
             error_messages = [error.get("msg", str(error)) for error in e.errors()]
             return (
-                jsonify(
-                    {"error": "Validation failed", "validation_errors": error_messages}
-                ),
+                jsonify({"error": "Validation failed", "validation_errors": error_messages}),
                 422,
             )
 
@@ -1079,9 +1025,7 @@ def create_app():
 
             # Add registration date if not provided
             if "registration_date" not in validated_data:
-                validated_data["registration_date"] = datetime.now().strftime(
-                    "%Y-%m-%d"
-                )
+                validated_data["registration_date"] = datetime.now().strftime("%Y-%m-%d")
 
             client = client_service.create(validated_data)
             return jsonify(client), 201
@@ -1089,9 +1033,7 @@ def create_app():
             # Convert Pydantic errors to string format for consistency
             error_messages = [error.get("msg", str(error)) for error in e.errors()]
             return (
-                jsonify(
-                    {"error": "Validation failed", "validation_errors": error_messages}
-                ),
+                jsonify({"error": "Validation failed", "validation_errors": error_messages}),
                 422,
             )
 
@@ -1116,9 +1058,7 @@ def create_app():
             # Convert Pydantic errors to string format for consistency
             error_messages = [error.get("msg", str(error)) for error in e.errors()]
             return (
-                jsonify(
-                    {"error": "Validation failed", "validation_errors": error_messages}
-                ),
+                jsonify({"error": "Validation failed", "validation_errors": error_messages}),
                 422,
             )
 
@@ -1144,9 +1084,7 @@ def create_app():
         per_page = request.args.get("per_page", 50, type=int)
         client_id = int(client_id) if client_id else None
 
-        result = project_service.get_all(
-            search=search, client_id=client_id, page=page, per_page=per_page
-        )
+        result = project_service.get_all(search=search, client_id=client_id, page=page, per_page=per_page)
         return jsonify(result)
 
     @app.route("/api/projects", methods=["POST"])
@@ -1167,9 +1105,7 @@ def create_app():
             # Convert Pydantic errors to string format for consistency
             error_messages = [error.get("msg", str(error)) for error in e.errors()]
             return (
-                jsonify(
-                    {"error": "Validation failed", "validation_errors": error_messages}
-                ),
+                jsonify({"error": "Validation failed", "validation_errors": error_messages}),
                 422,
             )
 
@@ -1194,9 +1130,7 @@ def create_app():
             # Convert Pydantic errors to string format for consistency
             error_messages = [error.get("msg", str(error)) for error in e.errors()]
             return (
-                jsonify(
-                    {"error": "Validation failed", "validation_errors": error_messages}
-                ),
+                jsonify({"error": "Validation failed", "validation_errors": error_messages}),
                 422,
             )
 
@@ -1218,9 +1152,7 @@ def create_app():
         response.headers["X-Frame-Options"] = "DENY"
         response.headers["X-XSS-Protection"] = "1; mode=block"
         if app.config.get("SESSION_COOKIE_SECURE"):
-            response.headers["Strict-Transport-Security"] = (
-                "max-age=31536000; includeSubDomains"
-            )
+            response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
         return response
 
     return app
@@ -1268,10 +1200,7 @@ def main():
             logger.info(f"Starting Flask server on {host}:{port} (env: {flask_env})")
             app.run(host=host, port=port, debug=debug_mode, use_reloader=use_reloader)
         else:
-            logger.warning(
-                "Use a production WSGI server (like Gunicorn) instead of "
-                "Flask dev server"
-            )
+            logger.warning("Use a production WSGI server (like Gunicorn) instead of " "Flask dev server")
             print("For production, use: gunicorn -c gunicorn.conf.py wsgi:application")
 
     except Exception as e:
