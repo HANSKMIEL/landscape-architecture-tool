@@ -35,8 +35,8 @@ jobs:
           --health-retries=12
 
     env:
-      DATABASE_URL: postgresql+psycopg://postgres:postgres@localhost:5432/app_test
-      TEST_DATABASE_URL: postgresql+psycopg://postgres:postgres@localhost:5432/app_test
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/app_test
+      TEST_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/app_test
       PIP_DISABLE_PIP_VERSION_CHECK: 1
       PYTHONUNBUFFERED: "1"
       CI: "true"
@@ -65,7 +65,7 @@ jobs:
             python -m pip install --upgrade pip
             if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
             if [ -f requirements-dev.txt ]; then pip install -r requirements-dev.txt; fi
-            pip install --upgrade pytest pytest-cov ruff black isort SQLAlchemy psycopg[binary]
+            pip install --upgrade pytest pytest-cov ruff black isort SQLAlchemy psycopg2-binary
           fi
 
       - name: Setup Node.js

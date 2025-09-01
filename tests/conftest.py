@@ -5,6 +5,9 @@ from sqlalchemy import create_engine, text
 from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy.pool import StaticPool
 
+# Import test data fixtures to make them available to all tests
+from tests.fixtures.test_data import *  # noqa: F401,F403
+
 # Use a dedicated test DB URL and NEVER touch prod/dev DBs.
 TEST_DATABASE_URL = os.getenv("TEST_DATABASE_URL") or os.getenv("DATABASE_URL", "sqlite+pysqlite:///:memory:")
 
@@ -147,7 +150,3 @@ def runner(app):
 def app_context(app):
     """Create application context for tests that need it"""
     return app
-
-
-# Import test data fixtures to make them available to all tests
-from tests.fixtures.test_data import *  # noqa: F401,F403
