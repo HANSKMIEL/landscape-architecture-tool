@@ -9,9 +9,6 @@ import os
 import sys
 from datetime import datetime, timedelta, timezone
 
-# Add project root to Python path
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from flask_limiter import Limiter
@@ -25,15 +22,18 @@ try:
 except ImportError:
     redis = None
 
-from src.config import get_config
-from src.models.landscape import Plant, Product, Supplier
-from src.models.user import db
-from src.routes import n8n_receivers, webhooks
-from src.routes.performance import performance_bp
-from src.routes.plant_recommendations import plant_recommendations_bp
-from src.routes.project_plants import project_plants_bp
-from src.routes.reports import reports_bp
-from src.schemas import (
+# Add project root to Python path before importing local modules
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from src.config import get_config  # noqa: E402
+from src.models.landscape import Plant, Product, Supplier  # noqa: E402
+from src.models.user import db  # noqa: E402
+from src.routes import n8n_receivers, webhooks  # noqa: E402
+from src.routes.performance import performance_bp  # noqa: E402
+from src.routes.plant_recommendations import plant_recommendations_bp  # noqa: E402
+from src.routes.project_plants import project_plants_bp  # noqa: E402
+from src.routes.reports import reports_bp  # noqa: E402
+from src.schemas import (  # noqa: E402
     ClientCreateSchema,
     ClientUpdateSchema,
     PlantCreateSchema,
@@ -45,20 +45,20 @@ from src.schemas import (
     SupplierCreateSchema,
     SupplierUpdateSchema,
 )
-from src.services import (
+from src.services import (  # noqa: E402
     ClientService,
     PlantService,
     ProductService,
     ProjectService,
     SupplierService,
 )
-from src.services.analytics import AnalyticsService
-from src.services.dashboard_service import DashboardService
-from src.utils.db_init import initialize_database, populate_sample_data
+from src.services.analytics import AnalyticsService  # noqa: E402
+from src.services.dashboard_service import DashboardService  # noqa: E402
+from src.utils.db_init import initialize_database, populate_sample_data  # noqa: E402
 
-# IMPORTANT: DependencyValidator is used in create_app() and health endpoint - do not remove (issue #326)
-from src.utils.dependency_validator import DependencyValidator
-from src.utils.error_handlers import handle_errors, register_error_handlers
+# IMPORTANT: DependencyValidator is used in create_app() and health endpoint - do not remove (issue #326)  # noqa: E501
+from src.utils.dependency_validator import DependencyValidator  # noqa: E402
+from src.utils.error_handlers import handle_errors, register_error_handlers  # noqa: E402
 
 # Define version for health endpoint
 __version__ = "2.0.0"
@@ -73,7 +73,7 @@ def configure_logging(app):
         # Production logging
         logging.basicConfig(
             level=log_level,
-            format="%(asctime)s %(levelname)s %(name)s %(threadName)s : %(message)s",
+            format="%(asctime)s %(levelname)s %(name)s %(threadName)s : " "%(message)s",
         )
     else:
         # Development logging

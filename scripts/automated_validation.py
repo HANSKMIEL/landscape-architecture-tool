@@ -277,9 +277,8 @@ print('Database initialized')
         # Try multiple patterns to find the summary line
         patterns = [
             # Standard pytest summary patterns
-            lambda line: "passed" in line and any(
-                keyword in line for keyword in ["failed", "error", "warning", "skipped"]
-            ),
+            lambda line: "passed" in line
+            and any(keyword in line for keyword in ["failed", "error", "warning", "skipped"]),
             lambda line: line.strip().endswith("passed"),
             lambda line: line.strip().endswith("failed"),
             lambda line: " passed," in line or " failed," in line,
@@ -301,16 +300,16 @@ print('Database initialized')
         if summary_line:
             # Robust parsing with multiple extraction methods
             summary = {"raw": summary_line.strip()}
-            
+
             # Try regex-based extraction
-            numbers = re.findall(r'(\d+)\s*(passed|failed|error|skipped)', summary_line, re.IGNORECASE)
-            
+            numbers = re.findall(r"(\d+)\s*(passed|failed|error|skipped)", summary_line, re.IGNORECASE)
+
             for count, status in numbers:
                 try:
                     summary[status.lower()] = int(count)
                 except (ValueError, KeyError):
                     pass
-            
+
             # Fallback to simple word-based parsing
             if not any(key in summary for key in ["passed", "failed"]):
                 parts = summary_line.split()
@@ -337,7 +336,7 @@ print('Database initialized')
             return {"total": 0, "passed": 0, "failed": 0}
 
         lines = output.split("\n")
-        
+
         # Try multiple patterns for vitest output
         patterns = [
             "Test Files",
@@ -347,13 +346,13 @@ print('Database initialized')
             "passed",
             "failed",
         ]
-        
+
         summary_lines = []
         for line in lines:
             line = line.strip()
             if any(pattern in line for pattern in patterns):
                 summary_lines.append(line)
-        
+
         if summary_lines:
             # Find the most informative summary line
             for line in summary_lines:
@@ -361,14 +360,14 @@ print('Database initialized')
                     char.isdigit() for char in line
                 ):
                     # Extract numbers from the line
-                    numbers = re.findall(r'\d+', line)
+                    numbers = re.findall(r"\d+", line)
                     if numbers:
                         return {
                             "raw": line,
                             "total": int(numbers[0]) if numbers else 0,
                             "passed": int(numbers[1]) if len(numbers) > 1 else int(numbers[0]) if numbers else 0,
                         }
-            
+
             # Fallback to first informative line
             return {"raw": summary_lines[0]}
 
