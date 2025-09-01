@@ -92,8 +92,9 @@ class TestCIStability:
                     with app.app_context():
                         # Use a fresh session for each worker to avoid conflicts
                         from src.models.user import db as flask_db
+
                         worker_session = flask_db.session
-                        
+
                         # Each worker creates and cleans up data
                         plant = Plant(
                             name=f"Concurrent Worker {worker_id}",

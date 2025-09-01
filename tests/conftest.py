@@ -44,7 +44,7 @@ def connection(engine):
 
     # Create database tables for the test session
     from src.models.user import db as flask_db
-    
+
     # Create all tables in the test database
     flask_db.metadata.create_all(bind=engine)
 
