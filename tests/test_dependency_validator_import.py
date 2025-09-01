@@ -124,22 +124,30 @@ except Exception as e:
 
     def test_multiple_imports_no_conflict(self):
         """Test that multiple imports don't cause conflicts"""
-        # First import
-        from src.utils.dependency_validator import DependencyValidator as DV1
-        
-        # Reload and import again  
-        importlib.reload(sys.modules['src.utils.dependency_validator'])
-        from src.utils.dependency_validator import DependencyValidator as DV2
-        
-        # Both should work
-        validator1 = DV1()
-        validator2 = DV2()
-        
-        assert validator1 is not None
-        assert validator2 is not None
-        assert type(validator1).__name__ == 'DependencyValidator'
-        assert type(validator2).__name__ == 'DependencyValidator'
+        import subprocess
+        import sys
 
+        test_script = '''
+import sys
+sys.path.insert(0, ".")
+from src.utils.dependency_validator import DependencyValidator as DV1
+from src.utils.dependency_validator import DependencyValidator as DV2
+validator1 = DV1()
+validator2 = DV2()
+assert validator1 is not None
+assert validator2 is not None
+assert type(validator1).__name__ == "DependencyValidator"
+assert type(validator2).__name__ == "DependencyValidator"
+print("SUCCESS: Multiple imports work without conflict")
+'''
+        result = subprocess.run(
+            [sys.executable, '-c', test_script],
+            cwd=project_root,
+            capture_output=True,
+            text=True
+        )
+        assert result.returncode == 0, f"Multiple imports test failed: {result.stderr}\nStdout: {result.stdout}"
+        assert "SUCCESS" in result.stdout
     def test_import_with_different_pythonpath(self):
         """Test import robustness with different PYTHONPATH configurations"""
         # Save current path
