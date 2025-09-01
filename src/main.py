@@ -7,20 +7,29 @@ Refactored modular version with persistent database
 import logging
 import os
 import sys
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 # Add project root to Python path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 from flask_cors import CORS
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_migrate import Migrate
-from sqlalchemy import text
+from pydantic import ValidationError
+from sqlalchemy import and_, distinct, func, or_, text
+
+try:
+    import redis
+except ImportError:
+    redis = None
 
 from src.config import get_config
+from src.models.landscape import Plant, Product, Supplier
 from src.models.user import db
+from src.routes import n8n_receivers, webhooks
+from src.routes.performance import performance_bp
 from src.routes.plant_recommendations import plant_recommendations_bp
 from src.routes.project_plants import project_plants_bp
 from src.routes.reports import reports_bp
@@ -105,8 +114,6 @@ def create_app():
     if storage_url.startswith("redis://"):
         # Try Redis connection, fall back to memory if Redis unavailable
         try:
-            import redis
-
             # Test Redis connection
             r = redis.from_url(storage_url)
             r.ping()
@@ -151,13 +158,9 @@ def create_app():
     app.register_blueprint(reports_bp)
 
     # Register performance monitoring blueprint
-    from src.routes.performance import performance_bp
-
     app.register_blueprint(performance_bp)
 
     # Register N8n integration blueprints
-    from src.routes import n8n_receivers, webhooks
-
     app.register_blueprint(webhooks.bp)
     app.register_blueprint(n8n_receivers.bp)
 
@@ -178,8 +181,6 @@ def create_app():
         Enhanced health check endpoint that validates both system health
         and critical dependency availability.
         """
-        from src.utils.dependency_validator import DependencyValidator
-
         validator = DependencyValidator()
         critical_ok, missing_critical = validator.validate_critical_dependencies()
         available_optional, missing_optional = validator.validate_optional_dependencies()
@@ -290,8 +291,6 @@ def create_app():
     @handle_errors
     def get_plant_usage_analytics():
         """Get plant usage analytics"""
-        from flask import request
-
         start_date = request.args.get("start_date")
         end_date = request.args.get("end_date")
         date_range = (start_date, end_date) if start_date or end_date else None
@@ -303,7 +302,6 @@ def create_app():
     @handle_errors
     def get_project_performance_analytics():
         """Get project performance analytics"""
-        from flask import request
 
         project_id = request.args.get("project_id")
         project_id = int(project_id) if project_id else None
@@ -322,15 +320,12 @@ def create_app():
     @handle_errors
     def get_financial_analytics():
         """Get financial analytics"""
-        from flask import request
 
         start_date = request.args.get("start_date")
         end_date = request.args.get("end_date")
 
         if not start_date or not end_date:
             # Default to last 12 months
-            from datetime import datetime, timedelta
-
             end_date = datetime.now().isoformat()
             start_date = (datetime.now() - timedelta(days=365)).isoformat()
 
@@ -349,7 +344,6 @@ def create_app():
     @handle_errors
     def get_suppliers():
         """Get all suppliers"""
-        from flask import request
 
         search = request.args.get("search", "")
         specialization = request.args.get("specialization", "")
@@ -359,10 +353,6 @@ def create_app():
         # Handle specialization filter
         if specialization:
             # Filter suppliers by specialization manually for now
-            from sqlalchemy import or_
-
-            from src.models.landscape import Supplier
-
             query = Supplier.query
             if search:
                 search_term = f"%{search}%"
@@ -394,7 +384,6 @@ def create_app():
     @handle_errors
     def get_supplier(supplier_id):
         """Get specific supplier by ID"""
-        from src.models.landscape import Supplier
 
         supplier = db.session.get(Supplier, supplier_id)
         if not supplier:
@@ -406,8 +395,6 @@ def create_app():
     @handle_errors
     def create_supplier():
         """Create new supplier"""
-        from flask import request
-        from pydantic import ValidationError
 
         data = request.get_json()
 
@@ -436,8 +423,6 @@ def create_app():
     @handle_errors
     def update_supplier(supplier_id):
         """Update supplier"""
-        from flask import request
-        from pydantic import ValidationError
 
         data = request.get_json()
 
@@ -482,8 +467,6 @@ def create_app():
     @handle_errors
     def get_supplier_products(supplier_id):
         """Get products for a specific supplier"""
-        from src.models.landscape import Product, Supplier
-
         supplier = db.session.get(Supplier, supplier_id)
         if not supplier:
             return jsonify({"error": "Supplier not found"}), 404
@@ -495,10 +478,7 @@ def create_app():
     @handle_errors
     def add_product_to_supplier(supplier_id):
         """Add a product to a specific supplier"""
-        from flask import request
-        from pydantic import ValidationError
 
-        from src.models.landscape import Supplier
 
         # Check if supplier exists
         supplier = db.session.get(Supplier, supplier_id)
@@ -529,7 +509,6 @@ def create_app():
     @handle_errors
     def get_supplier_plants(supplier_id):
         """Get plants for a specific supplier"""
-        from src.models.landscape import Plant, Supplier
 
         supplier = db.session.get(Supplier, supplier_id)
         if not supplier:
@@ -542,9 +521,7 @@ def create_app():
     @handle_errors
     def get_supplier_statistics(supplier_id):
         """Get statistics for a specific supplier"""
-        from sqlalchemy import func  # noqa: F401
 
-        from src.models.landscape import Plant, Product, Supplier
 
         supplier = db.session.get(Supplier, supplier_id)
         if not supplier:
@@ -585,9 +562,7 @@ def create_app():
     @handle_errors
     def get_supplier_specializations():
         """Get all unique supplier specializations"""
-        from sqlalchemy import distinct
 
-        from src.models.landscape import Supplier
 
         specializations = (
             db.session.query(distinct(Supplier.specialization)).filter(Supplier.specialization.isnot(None)).all()
@@ -599,10 +574,7 @@ def create_app():
     @handle_errors
     def get_top_suppliers():
         """Get top suppliers by product/plant count"""
-        from flask import request
-        from sqlalchemy import func  # noqa: F401
 
-        from src.models.landscape import Plant, Product, Supplier
 
         limit = request.args.get("limit", 10, type=int)
 
@@ -655,7 +627,6 @@ def create_app():
     @handle_errors
     def get_supplier_contact(supplier_id):
         """Get contact information for a specific supplier"""
-        from src.models.landscape import Supplier
 
         supplier = db.session.get(Supplier, supplier_id)
         if not supplier:
@@ -695,7 +666,6 @@ def create_app():
     @handle_errors
     def export_suppliers():
         """Export suppliers data"""
-        from flask import request
 
         format_type = request.args.get("format", "json").lower()
         suppliers = supplier_service.get_all()
@@ -709,8 +679,6 @@ def create_app():
     @handle_errors
     def bulk_import_suppliers():
         """Bulk import suppliers"""
-        from flask import request
-        from pydantic import ValidationError
 
         data = request.get_json()
 
@@ -747,10 +715,7 @@ def create_app():
     @handle_errors
     def get_plants():
         """Get all plants"""
-        from flask import request
-        from sqlalchemy import and_
 
-        from src.models.landscape import Plant
 
         search = request.args.get("search", "")
         category = request.args.get("category", "")
@@ -802,8 +767,6 @@ def create_app():
     @handle_errors
     def create_plant():
         """Create new plant"""
-        from flask import request
-        from pydantic import ValidationError
 
         try:
             data = request.get_json()
@@ -834,7 +797,6 @@ def create_app():
     @handle_errors
     def get_plant(plant_id):
         """Get specific plant by ID"""
-        from src.models.landscape import Plant
 
         plant = db.session.get(Plant, plant_id)
         if not plant:
@@ -846,8 +808,6 @@ def create_app():
     @handle_errors
     def update_plant(plant_id):
         """Update plant"""
-        from flask import request
-        from pydantic import ValidationError
 
         data = request.get_json()
 
@@ -887,9 +847,7 @@ def create_app():
     @handle_errors
     def get_plant_categories():
         """Get unique plant categories"""
-        from sqlalchemy import distinct
 
-        from src.models.landscape import Plant
 
         categories = db.session.query(distinct(Plant.category)).filter(Plant.category.isnot(None)).all()
 
@@ -899,10 +857,7 @@ def create_app():
     @handle_errors
     def plant_search_suggestions():
         """Get plant search suggestions"""
-        from flask import request
-        from sqlalchemy import or_
 
-        from src.models.landscape import Plant
 
         query = request.args.get("q", "")
         if not query:
@@ -936,7 +891,6 @@ def create_app():
     @handle_errors
     def export_plants():
         """Export plants data"""
-        from flask import request
 
         format_type = request.args.get("format", "json").lower()
         plants = plant_service.get_all(per_page=1000)  # Get all plants
@@ -950,8 +904,6 @@ def create_app():
     @handle_errors
     def bulk_import_plants():
         """Bulk import plants"""
-        from flask import request
-        from pydantic import ValidationError
 
         data = request.get_json()
 
@@ -988,7 +940,6 @@ def create_app():
     @handle_errors
     def get_products():
         """Get all products"""
-        from flask import request
 
         search = request.args.get("search", "")
         page = request.args.get("page", 1, type=int)
@@ -1000,8 +951,6 @@ def create_app():
     @handle_errors
     def create_product():
         """Create new product"""
-        from flask import request
-        from pydantic import ValidationError
 
         data = request.get_json()
 
@@ -1024,8 +973,6 @@ def create_app():
     @handle_errors
     def update_product(product_id):
         """Update product"""
-        from flask import request
-        from pydantic import ValidationError
 
         data = request.get_json()
 
@@ -1062,7 +1009,6 @@ def create_app():
     @handle_errors
     def get_clients():
         """Get all clients"""
-        from flask import request
 
         search = request.args.get("search", "")
         page = request.args.get("page", 1, type=int)
@@ -1074,8 +1020,6 @@ def create_app():
     @handle_errors
     def create_client():
         """Create new client"""
-        from flask import request
-        from pydantic import ValidationError
 
         data = request.get_json()
 
@@ -1102,8 +1046,6 @@ def create_app():
     @handle_errors
     def update_client(client_id):
         """Update client"""
-        from flask import request
-        from pydantic import ValidationError
 
         data = request.get_json()
 
@@ -1140,7 +1082,6 @@ def create_app():
     @handle_errors
     def get_projects():
         """Get all projects"""
-        from flask import request
 
         search = request.args.get("search", "")
         client_id = request.args.get("client_id")
@@ -1155,8 +1096,6 @@ def create_app():
     @handle_errors
     def create_project():
         """Create new project"""
-        from flask import request
-        from pydantic import ValidationError
 
         data = request.get_json()
 
@@ -1179,8 +1118,6 @@ def create_app():
     @handle_errors
     def update_project(project_id):
         """Update project"""
-        from flask import request
-        from pydantic import ValidationError
 
         data = request.get_json()
 
