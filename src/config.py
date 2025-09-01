@@ -12,7 +12,9 @@ class Config:
 
     SECRET_KEY = os.environ.get("SECRET_KEY") or "dev-secret-key-change-in-production"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URL") or "sqlite:///landscape_architecture.db"
+    SQLALCHEMY_DATABASE_URI = (
+        os.environ.get("DATABASE_URL") or "sqlite:///landscape_architecture.db"
+    )
 
     # Security configurations
     SESSION_COOKIE_SECURE = True
@@ -27,7 +29,9 @@ class Config:
     RATELIMIT_STRATEGY = "moving-window"
 
     # CORS settings
-    CORS_ORIGINS = os.environ.get("CORS_ORIGINS", "http://localhost:5174,http://127.0.0.1:5174").split(",")
+    CORS_ORIGINS = os.environ.get(
+        "CORS_ORIGINS", "http://localhost:5174,http://127.0.0.1:5174"
+    ).split(",")
 
     # Logging
     LOG_LEVEL = os.environ.get("LOG_LEVEL", "INFO")
@@ -56,7 +60,9 @@ class ProductionConfig(Config):
     SECRET_KEY = os.environ.get("SECRET_KEY")
 
     # Production database - use SQLite for demo, PostgreSQL in real production
-    SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URL") or "sqlite:///landscape_architecture_prod.db"
+    SQLALCHEMY_DATABASE_URI = (
+        os.environ.get("DATABASE_URL") or "sqlite:///landscape_architecture_prod.db"
+    )
 
     # Enhanced security for production
     SESSION_COOKIE_SECURE = True

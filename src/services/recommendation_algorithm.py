@@ -117,7 +117,9 @@ class RecommendationAlgorithm:
                 # Calculate overlap score
                 overlap_min = max(plant_min, criteria_min)
                 overlap_max = min(plant_max, criteria_max)
-                overlap = overlap_max - overlap_min + 1  # +1 because zones are inclusive
+                overlap = (
+                    overlap_max - overlap_min + 1
+                )  # +1 because zones are inclusive
 
                 plant_range = plant_max - plant_min + 1
                 criteria_range = criteria_max - criteria_min + 1
@@ -165,7 +167,10 @@ class RecommendationAlgorithm:
     def _is_soil_field(self, plant_value: str, criteria_value: str) -> bool:
         """Check if values are soil type related"""
         soil_values = ["well_drained", "moist", "wet", "dry", "sandy", "clay", "loam"]
-        return any(soil in plant_value.lower() or soil in criteria_value.lower() for soil in soil_values)
+        return any(
+            soil in plant_value.lower() or soil in criteria_value.lower()
+            for soil in soil_values
+        )
 
     def _score_sun_compatibility(self, plant_sun: str, criteria_sun: str) -> float:
         """Score sun requirement compatibility with partial matches"""
@@ -199,7 +204,10 @@ class RecommendationAlgorithm:
         plant_key = plant_sun.lower().replace(" ", "_")
         criteria_key = criteria_sun.lower().replace(" ", "_")
 
-        if plant_key in sun_compatibility and criteria_key in sun_compatibility[plant_key]:
+        if (
+            plant_key in sun_compatibility
+            and criteria_key in sun_compatibility[plant_key]
+        ):
             return sun_compatibility[plant_key][criteria_key]
 
         return 0.5  # Default for unknown combinations

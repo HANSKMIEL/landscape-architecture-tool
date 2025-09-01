@@ -149,7 +149,9 @@ class TestPlantFactory:
 
         for field in boolean_fields:
             value = getattr(plant, field)
-            assert isinstance(value, bool), f"{field} should be boolean, got {type(value)}"
+            assert isinstance(
+                value, bool
+            ), f"{field} should be boolean, got {type(value)}"
 
     def test_create_test_plant_choice_fields(self):
         """Test fields with specific choice values"""

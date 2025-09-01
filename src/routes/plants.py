@@ -42,7 +42,9 @@ def get_plants():
         if native_only:
             query = query.filter(Plant.native_to_netherlands.is_(True))
 
-        plants = query.order_by(Plant.name).paginate(page=page, per_page=per_page, error_out=False)
+        plants = query.order_by(Plant.name).paginate(
+            page=page, per_page=per_page, error_out=False
+        )
 
         return jsonify(
             {
@@ -96,7 +98,8 @@ def get_plant_recommendations():
 
         # Create AI prompt
         prompt_parts = [
-            "As a landscape architecture expert, recommend the best plants " "for this project:",
+            "As a landscape architecture expert, recommend the best plants "
+            "for this project:",
             "",
             context,
             "",
@@ -110,7 +113,8 @@ def get_plant_recommendations():
             "3. Design considerations",
             "4. Maintenance requirements",
             "",
-            "Focus on plants that are suitable for Dutch climate and the " "specified conditions.",
+            "Focus on plants that are suitable for Dutch climate and the "
+            "specified conditions.",
         ]
         prompt = "\n".join(prompt_parts)
 
@@ -141,7 +145,8 @@ def get_plant_recommendations():
                 # Simple matching logic - in production, this would be more
                 # sophisticated
                 if any(
-                    keyword in plant.name.lower() or keyword in plant.scientific_name.lower()
+                    keyword in plant.name.lower()
+                    or keyword in plant.scientific_name.lower()
                     for keyword in ai_recommendations.lower().split()
                 ):
                     recommended_plants.append(plant.to_dict())
@@ -165,9 +170,13 @@ def get_plant_recommendations():
 
             # Apply basic filtering based on conditions
             if site_conditions.get("sun_exposure") == "Full Sun":
-                query = query.filter(Plant.sun_requirements.in_(["Full Sun", "Partial Sun"]))
+                query = query.filter(
+                    Plant.sun_requirements.in_(["Full Sun", "Partial Sun"])
+                )
             elif site_conditions.get("sun_exposure") == "Shade":
-                query = query.filter(Plant.sun_requirements.in_(["Shade", "Partial Sun"]))
+                query = query.filter(
+                    Plant.sun_requirements.in_(["Shade", "Partial Sun"])
+                )
 
             if preferences.get("native_preferred"):
                 query = query.filter(Plant.native_to_netherlands.is_(True))
@@ -177,7 +186,8 @@ def get_plant_recommendations():
             return jsonify(
                 {
                     "recommendations": (
-                        "AI recommendations temporarily unavailable. Here are plants " "matching your basic criteria."
+                        "AI recommendations temporarily unavailable. Here are plants "
+                        "matching your basic criteria."
                     ),
                     "matching_plants": [plant.to_dict() for plant in fallback_plants],
                     "criteria_used": {

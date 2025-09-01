@@ -78,7 +78,9 @@ class TestRecommendationPerformance:
         memory_growth = final_memory - initial_memory
 
         # Memory growth should be reasonable (less than 50MB)
-        assert memory_growth < 50 * 1024 * 1024, f"Memory grew by {memory_growth / 1024 / 1024:.1f}MB"
+        assert (
+            memory_growth < 50 * 1024 * 1024
+        ), f"Memory grew by {memory_growth / 1024 / 1024:.1f}MB"
 
     def test_concurrent_recommendation_requests(self, large_plant_dataset):
         """Test handling of concurrent recommendation requests"""
@@ -95,7 +97,9 @@ class TestRecommendationPerformance:
             start_time = time.time()
             recommendations = service.get_recommendations(criteria)
             end_time = time.time()
-            results.append({"time": end_time - start_time, "count": len(recommendations)})
+            results.append(
+                {"time": end_time - start_time, "count": len(recommendations)}
+            )
 
         # All requests should succeed
         assert len(results) == 10, "Not all requests completed"

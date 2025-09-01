@@ -2,7 +2,7 @@
 import { screen, waitFor } from '@testing-library/react'
 import { axe, toHaveNoViolations } from 'jest-axe'
 import { renderWithLanguage } from '../../test/utils/render.jsx'
-import { createMockProjects, createApiResponse } from '../../test/utils/mockData.js'
+import { createMockProjects } from '../../test/utils/mockData.js'
 import { clearAllMocks, createMockFn } from '../../test/utils/test-helpers.js'
 import Projects from '../Projects'
 

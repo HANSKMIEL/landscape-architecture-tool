@@ -220,7 +220,9 @@ class TestPlantRecommendationEngine:
 
             # Should be sorted by score
             for i in range(len(recommendations) - 1):
-                assert recommendations[i].total_score >= recommendations[i + 1].total_score
+                assert (
+                    recommendations[i].total_score >= recommendations[i + 1].total_score
+                )
 
             # Each recommendation should have required attributes
             for rec in recommendations:
@@ -237,7 +239,9 @@ class TestPlantRecommendationEngine:
             engine = PlantRecommendationEngine()
 
             # Test for small plants suitable for containers
-            criteria = RecommendationCriteria(desired_height_max=1.0, container_planting=True, maintenance_level="Low")
+            criteria = RecommendationCriteria(
+                desired_height_max=1.0, container_planting=True, maintenance_level="Low"
+            )
 
             recommendations = engine.get_recommendations(criteria)
 
@@ -250,7 +254,9 @@ class TestPlantRecommendationEngine:
 
             assert lavender_rec is not None
             assert lavender_rec.total_score > 0.5
-            assert any("container" in reason.lower() for reason in lavender_rec.match_reasons)
+            assert any(
+                "container" in reason.lower() for reason in lavender_rec.match_reasons
+            )
 
     def test_native_preference(self, app, db_setup):
         """Test native plant preference scoring"""
@@ -272,7 +278,9 @@ class TestPlantRecommendationEngine:
             db.session.commit()
 
             # Test with native preference
-            criteria = RecommendationCriteria(native_preference=True, maintenance_level="Low")
+            criteria = RecommendationCriteria(
+                native_preference=True, maintenance_level="Low"
+            )
 
             recommendations = engine.get_recommendations(criteria)
 
@@ -288,14 +296,19 @@ class TestPlantRecommendationEngine:
 
             if native_rec and non_native_rec:
                 # Native plant should have higher special criteria score
-                assert native_rec.criteria_scores["special"] > non_native_rec.criteria_scores["special"]
+                assert (
+                    native_rec.criteria_scores["special"]
+                    > non_native_rec.criteria_scores["special"]
+                )
 
     def test_recommendation_logging(self, app, db_setup):
         """Test that recommendation requests are logged properly"""
         with app.app_context():
             engine = PlantRecommendationEngine()
 
-            criteria = RecommendationCriteria(hardiness_zone="5-8", sun_exposure="Full Sun")
+            criteria = RecommendationCriteria(
+                hardiness_zone="5-8", sun_exposure="Full Sun"
+            )
 
             recommendations = engine.get_recommendations(criteria)
 
@@ -323,7 +336,9 @@ class TestPlantRecommendationEngine:
             # Create a logged request first
             criteria = RecommendationCriteria(hardiness_zone="5-8")
             recommendations = engine.get_recommendations(criteria)
-            logged_request = engine.log_recommendation_request(criteria, recommendations)
+            logged_request = engine.log_recommendation_request(
+                criteria, recommendations
+            )
 
             # Save feedback
             feedback = {
@@ -332,12 +347,16 @@ class TestPlantRecommendationEngine:
                 "comments": "Great recommendations!",
             }
 
-            success = engine.save_user_feedback(request_id=logged_request.id, feedback=feedback, rating=4)
+            success = engine.save_user_feedback(
+                request_id=logged_request.id, feedback=feedback, rating=4
+            )
 
             assert success
 
             # Verify feedback was saved
-            updated_request = db.session.get(PlantRecommendationRequest, logged_request.id)
+            updated_request = db.session.get(
+                PlantRecommendationRequest, logged_request.id
+            )
             assert updated_request.user_feedback == feedback
             assert updated_request.feedback_rating == 4
 
@@ -449,7 +468,9 @@ class TestPlantRecommendationAPI:
         """Test handling of invalid requests"""
         with app.app_context():
             # Test empty request
-            response = client.post("/api/plant-recommendations", data="", content_type="application/json")
+            response = client.post(
+                "/api/plant-recommendations", data="", content_type="application/json"
+            )
             assert response.status_code == 400
 
             # Test invalid feedback request
@@ -508,7 +529,9 @@ class TestRecommendationIntegration:
             assert feedback_response.status_code == 200
 
             # 4. Verify data persistence
-            request_record = db.session.get(PlantRecommendationRequest, rec_data["request_id"])
+            request_record = db.session.get(
+                PlantRecommendationRequest, rec_data["request_id"]
+            )
             assert request_record is not None
             assert request_record.feedback_rating == 4
             assert "improvements" in request_record.user_feedback

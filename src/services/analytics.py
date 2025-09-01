@@ -31,9 +31,13 @@ class AnalyticsService:
             if date_range and len(date_range) == 2:
                 start_date, end_date = date_range
                 if start_date:
-                    date_filter.append(Project.created_at >= datetime.fromisoformat(start_date))
+                    date_filter.append(
+                        Project.created_at >= datetime.fromisoformat(start_date)
+                    )
                 if end_date:
-                    date_filter.append(Project.created_at <= datetime.fromisoformat(end_date))
+                    date_filter.append(
+                        Project.created_at <= datetime.fromisoformat(end_date)
+                    )
 
             # Most used plants by project count
             plant_usage = (
@@ -42,7 +46,9 @@ class AnalyticsService:
                     Plant.name,
                     Plant.common_name,
                     Plant.category,
-                    func.count(ProjectPlant.project_id.distinct()).label("project_count"),
+                    func.count(ProjectPlant.project_id.distinct()).label(
+                        "project_count"
+                    ),
                     func.sum(ProjectPlant.quantity).label("total_quantity"),
                     func.avg(ProjectPlant.unit_cost).label("avg_cost"),
                 )
@@ -80,7 +86,9 @@ class AnalyticsService:
             category_stats = (
                 db.session.query(
                     Plant.category,
-                    func.count(ProjectPlant.project_id.distinct()).label("project_count"),
+                    func.count(ProjectPlant.project_id.distinct()).label(
+                        "project_count"
+                    ),
                     func.sum(ProjectPlant.quantity).label("total_quantity"),
                 )
                 .join(ProjectPlant, Plant.id == ProjectPlant.plant_id)
@@ -125,9 +133,17 @@ class AnalyticsService:
             ]
 
             # Total statistics
-            total_plants_used = db.session.query(func.sum(ProjectPlant.quantity)).filter(*date_filter).scalar() or 0
+            total_plants_used = (
+                db.session.query(func.sum(ProjectPlant.quantity))
+                .filter(*date_filter)
+                .scalar()
+                or 0
+            )
             total_projects_with_plants = (
-                db.session.query(func.count(func.distinct(ProjectPlant.project_id))).filter(*date_filter).scalar() or 0
+                db.session.query(func.count(func.distinct(ProjectPlant.project_id)))
+                .filter(*date_filter)
+                .scalar()
+                or 0
             )
 
             return {
@@ -162,7 +178,9 @@ class AnalyticsService:
 
             # Status distribution
             status_stats = (
-                db.session.query(Project.status, func.count(Project.id).label("count")).group_by(Project.status).all()
+                db.session.query(Project.status, func.count(Project.id).label("count"))
+                .group_by(Project.status)
+                .all()
             )
 
             status_distribution = {status: count for status, count in status_stats}
@@ -213,7 +231,9 @@ class AnalyticsService:
                                 "name": project.name,
                                 "duration_days": duration,
                                 "status": project.status,
-                                "budget": (float(project.budget) if project.budget else 0),
+                                "budget": (
+                                    float(project.budget) if project.budget else 0
+                                ),
                             }
                         )
                     except (ValueError, TypeError, AttributeError):
@@ -243,11 +263,23 @@ class AnalyticsService:
             return {
                 "status_distribution": status_distribution,
                 "budget_analysis": {
-                    "total_budget": (float(budget_stats.total_budget) if budget_stats.total_budget else 0),
-                    "avg_budget": (float(budget_stats.avg_budget) if budget_stats.avg_budget else 0),
-                    "min_budget": (float(budget_stats.min_budget) if budget_stats.min_budget else 0),
-                    "max_budget": (float(budget_stats.max_budget) if budget_stats.max_budget else 0),
-                    "project_count": (budget_stats.project_count if budget_stats.project_count else 0),
+                    "total_budget": (
+                        float(budget_stats.total_budget)
+                        if budget_stats.total_budget
+                        else 0
+                    ),
+                    "avg_budget": (
+                        float(budget_stats.avg_budget) if budget_stats.avg_budget else 0
+                    ),
+                    "min_budget": (
+                        float(budget_stats.min_budget) if budget_stats.min_budget else 0
+                    ),
+                    "max_budget": (
+                        float(budget_stats.max_budget) if budget_stats.max_budget else 0
+                    ),
+                    "project_count": (
+                        budget_stats.project_count if budget_stats.project_count else 0
+                    ),
                 },
                 "timeline_analysis": timeline_stats,
                 "type_performance": type_stats,
@@ -284,8 +316,12 @@ class AnalyticsService:
                     "client_type": client_type,
                     "project_count": project_count,
                     "total_value": float(total_value) if total_value else 0,
-                    "avg_project_value": (float(avg_project_value) if avg_project_value else 0),
-                    "last_project_date": (last_project_date.isoformat() if last_project_date else None),
+                    "avg_project_value": (
+                        float(avg_project_value) if avg_project_value else 0
+                    ),
+                    "last_project_date": (
+                        last_project_date.isoformat() if last_project_date else None
+                    ),
                 }
                 for (
                     client_id,
@@ -300,13 +336,17 @@ class AnalyticsService:
 
             # Client type distribution
             type_distribution = (
-                db.session.query(Client.client_type, func.count(Client.id).label("count"))
+                db.session.query(
+                    Client.client_type, func.count(Client.id).label("count")
+                )
                 .filter(Client.client_type.isnot(None))
                 .group_by(Client.client_type)
                 .all()
             )
 
-            client_type_stats = {client_type: count for client_type, count in type_distribution}
+            client_type_stats = {
+                client_type: count for client_type, count in type_distribution
+            }
 
             # Geographic distribution
             geographic_distribution = (
@@ -318,7 +358,10 @@ class AnalyticsService:
                 .all()
             )
 
-            geographic_stats = [{"city": city, "client_count": count} for city, count in geographic_distribution]
+            geographic_stats = [
+                {"city": city, "client_count": count}
+                for city, count in geographic_distribution
+            ]
 
             return {
                 "top_clients": client_analytics,
@@ -338,9 +381,13 @@ class AnalyticsService:
             # Build date filter
             date_filter = []
             if start_date:
-                date_filter.append(Project.created_at >= datetime.fromisoformat(start_date))
+                date_filter.append(
+                    Project.created_at >= datetime.fromisoformat(start_date)
+                )
             if end_date:
-                date_filter.append(Project.created_at <= datetime.fromisoformat(end_date))
+                date_filter.append(
+                    Project.created_at <= datetime.fromisoformat(end_date)
+                )
 
             # Revenue analytics
             revenue_stats = (
@@ -379,7 +426,11 @@ class AnalyticsService:
 
             # Cost analysis (from project plants)
             cost_analysis = (
-                db.session.query(func.sum(ProjectPlant.quantity * ProjectPlant.unit_cost).label("total_plant_costs"))
+                db.session.query(
+                    func.sum(ProjectPlant.quantity * ProjectPlant.unit_cost).label(
+                        "total_plant_costs"
+                    )
+                )
                 .join(Project)
                 .filter(*date_filter)
                 .filter(ProjectPlant.unit_cost.isnot(None))
@@ -405,23 +456,39 @@ class AnalyticsService:
                     "project_type": project_type,
                     "revenue": float(revenue) if revenue else 0,
                     "project_count": project_count,
-                    "avg_revenue": (float(revenue / project_count) if revenue and project_count > 0 else 0),
+                    "avg_revenue": (
+                        float(revenue / project_count)
+                        if revenue and project_count > 0
+                        else 0
+                    ),
                 }
                 for project_type, revenue, project_count in profitability_by_type
             ]
 
             return {
                 "revenue_summary": {
-                    "total_revenue": (float(revenue_stats.total_revenue) if revenue_stats.total_revenue else 0),
-                    "project_count": (revenue_stats.project_count if revenue_stats.project_count else 0),
+                    "total_revenue": (
+                        float(revenue_stats.total_revenue)
+                        if revenue_stats.total_revenue
+                        else 0
+                    ),
+                    "project_count": (
+                        revenue_stats.project_count
+                        if revenue_stats.project_count
+                        else 0
+                    ),
                     "avg_project_value": (
-                        float(revenue_stats.avg_project_value) if revenue_stats.avg_project_value else 0
+                        float(revenue_stats.avg_project_value)
+                        if revenue_stats.avg_project_value
+                        else 0
                     ),
                 },
                 "revenue_trends": revenue_trends,
                 "cost_analysis": {
                     "total_plant_costs": (
-                        float(cost_analysis.total_plant_costs) if cost_analysis.total_plant_costs else 0
+                        float(cost_analysis.total_plant_costs)
+                        if cost_analysis.total_plant_costs
+                        else 0
                     )
                 },
                 "profitability_by_type": profitability_stats,
@@ -476,13 +543,16 @@ class AnalyticsService:
             )
 
             criteria_stats = [
-                {"project_type": project_type, "request_count": count} for project_type, count in popular_criteria
+                {"project_type": project_type, "request_count": count}
+                for project_type, count in popular_criteria
             ]
 
             # Usage trends
             usage_trends = (
                 db.session.query(
-                    func.strftime("%Y-%m", PlantRecommendationRequest.created_at).label("month"),
+                    func.strftime("%Y-%m", PlantRecommendationRequest.created_at).label(
+                        "month"
+                    ),
                     func.count(PlantRecommendationRequest.id).label("request_count"),
                 )
                 .group_by(func.strftime("%Y-%m", PlantRecommendationRequest.created_at))
@@ -498,7 +568,11 @@ class AnalyticsService:
             return {
                 "total_requests": total_requests,
                 "requests_with_feedback": requests_with_feedback,
-                "feedback_rate": ((requests_with_feedback / total_requests * 100) if total_requests > 0 else 0),
+                "feedback_rate": (
+                    (requests_with_feedback / total_requests * 100)
+                    if total_requests > 0
+                    else 0
+                ),
                 "average_rating": float(avg_rating) if avg_rating else 0,
                 "rating_distribution": rating_stats,
                 "popular_criteria": criteria_stats,
@@ -508,7 +582,9 @@ class AnalyticsService:
         except Exception as e:
             return {"error": str(e)}
 
-    def get_project_performance_analytics(self, project_id: Optional[int] = None) -> Dict:
+    def get_project_performance_analytics(
+        self, project_id: Optional[int] = None
+    ) -> Dict:
         """Get project performance analytics (alias for compatibility)"""
         result = self.get_project_performance_metrics(project_id)
 
@@ -528,10 +604,16 @@ class AnalyticsService:
         # Calculate completion rate
         total_projects = sum(status_dist.values())
         completed_projects = status_dist.get("completed", 0)
-        completion_rate = (completed_projects / total_projects * 100) if total_projects > 0 else 0
+        completion_rate = (
+            (completed_projects / total_projects * 100) if total_projects > 0 else 0
+        )
 
         # Calculate average duration from timeline analysis
-        durations = [p["duration_days"] for p in timeline_analysis if p.get("duration_days", 0) > 0]
+        durations = [
+            p["duration_days"]
+            for p in timeline_analysis
+            if p.get("duration_days", 0) > 0
+        ]
         average_duration = sum(durations) / len(durations) if durations else 0
 
         return {
@@ -561,17 +643,23 @@ class AnalyticsService:
             top_clients = insights.get("top_clients", [])
 
             # Sort by project count for top_clients_by_projects
-            top_by_projects = sorted(top_clients, key=lambda x: x["project_count"], reverse=True)[:10]
+            top_by_projects = sorted(
+                top_clients, key=lambda x: x["project_count"], reverse=True
+            )[:10]
             # Add client_name field for backward compatibility
             for client in top_by_projects:
                 client["client_name"] = client["name"]
 
             # Sort by total value for top_clients_by_budget
-            top_by_budget = sorted(top_clients, key=lambda x: x["total_value"], reverse=True)[:10]
+            top_by_budget = sorted(
+                top_clients, key=lambda x: x["total_value"], reverse=True
+            )[:10]
             # Add client_name field for backward compatibility
             for client in top_by_budget:
                 client["client_name"] = client["name"]
-                client["total_budget"] = client["total_value"]  # Add expected field name
+                client["total_budget"] = client[
+                    "total_value"
+                ]  # Add expected field name
 
             return {
                 "total_clients": insights.get("total_clients", 0),
@@ -679,7 +767,9 @@ class AnalyticsService:
             }
 
             # Identify peak seasons (months with most projects)
-            peak_seasons = sorted(monthly_data, key=lambda x: x["count"], reverse=True)[:3]
+            peak_seasons = sorted(monthly_data, key=lambda x: x["count"], reverse=True)[
+                :3
+            ]
 
             return {
                 "projects_by_month": monthly_data,
@@ -745,7 +835,11 @@ class AnalyticsService:
 
             # Coverage areas (unique cities with projects)
             coverage_areas = (
-                db.session.query(Client.city).join(Project).filter(Client.city.isnot(None)).distinct().all()
+                db.session.query(Client.city)
+                .join(Project)
+                .filter(Client.city.isnot(None))
+                .distinct()
+                .all()
             )
 
             coverage_list = [city[0] for city in coverage_areas]

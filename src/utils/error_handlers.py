@@ -29,7 +29,9 @@ class LandscapeValidationError(LandscapeError):
     """Exception for validation errors"""
 
     def __init__(self, message, errors=None):
-        super().__init__(message, status_code=400, payload={"validation_errors": errors})
+        super().__init__(
+            message, status_code=400, payload={"validation_errors": errors}
+        )
 
 
 class NotFoundError(LandscapeError):
@@ -118,6 +120,7 @@ def register_error_handlers(app):
 
 def handle_errors(f):
     """Decorator for handling errors in route functions with improved specificity"""
+
     @wraps(f)
     def wrapper(*args, **kwargs):
         try:
@@ -131,44 +134,69 @@ def handle_errors(f):
         except IntegrityError as e:
             logger.warning(f"Database integrity error in {f.__name__}: {str(e)}")
             return (
-                jsonify({
-                    "error": "Data integrity violation", 
-                    "message": "The operation conflicts with existing data"
-                }), 
-                409
+                jsonify(
+                    {
+                        "error": "Data integrity violation",
+                        "message": "The operation conflicts with existing data",
+                    }
+                ),
+                409,
             )
         except DataError as e:
             logger.warning(f"Database data error in {f.__name__}: {str(e)}")
-            return jsonify({"error": "Invalid data format", "message": "The provided data format is invalid"}), 400
+            return (
+                jsonify(
+                    {
+                        "error": "Invalid data format",
+                        "message": "The provided data format is invalid",
+                    }
+                ),
+                400,
+            )
         except SQLAlchemyError as e:
             logger.error(f"Database error in {f.__name__}: {str(e)}")
-            return jsonify({"error": "Database error", "message": "A database operation failed"}), 500
+            return (
+                jsonify(
+                    {
+                        "error": "Database error",
+                        "message": "A database operation failed",
+                    }
+                ),
+                500,
+            )
         except HTTPException as e:
             logger.info(f"HTTP exception in {f.__name__}: {e.code} - {e.description}")
             raise  # Let Flask handle HTTP exceptions
         except KeyError as e:
             logger.warning(f"Missing key error in {f.__name__}: {str(e)}")
             return (
-                jsonify({
-                    "error": "Missing required field", 
-                    "message": "One or more required fields are missing."
-                }), 
-                400
+                jsonify(
+                    {
+                        "error": "Missing required field",
+                        "message": "One or more required fields are missing.",
+                    }
+                ),
+                400,
             )
         except TypeError as e:
             logger.warning(f"Type error in {f.__name__}: {str(e)}")
             return (
-                jsonify({
-                    "error": "Invalid data type", 
-                    "message": "One or more fields have invalid data types"
-                }), 
-                400
+                jsonify(
+                    {
+                        "error": "Invalid data type",
+                        "message": "One or more fields have invalid data types",
+                    }
+                ),
+                400,
             )
         except ValueError as e:
             logger.warning(f"Value error in {f.__name__}: {str(e)}")
             return jsonify({"error": "Invalid value", "message": str(e)}), 400
         except Exception as e:
-            logger.error(f"Unexpected error in {f.__name__}: {type(e).__name__}: {str(e)}", exc_info=True)
+            logger.error(
+                f"Unexpected error in {f.__name__}: {type(e).__name__}: {str(e)}",
+                exc_info=True,
+            )
             return handle_generic_error(e)
 
     return wrapper

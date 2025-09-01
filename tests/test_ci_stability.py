@@ -49,7 +49,9 @@ class TestCIStability:
             memory_increase = final_memory - initial_memory
 
             # Memory increase should be reasonable (less than 50MB for this test)
-            assert memory_increase < 50, f"Memory usage increased by {memory_increase:.2f}MB"
+            assert (
+                memory_increase < 50
+            ), f"Memory usage increased by {memory_increase:.2f}MB"
 
     def test_database_cleanup_performance(self, app):
         """Test database cleanup performance"""
@@ -74,12 +76,16 @@ class TestCIStability:
             cleanup_time = time.time() - start_time
 
             # Cleanup should complete quickly (under 1 second with transaction rollback)
-            assert cleanup_time < 1, f"Database cleanup took {cleanup_time:.2f}s (too slow)"
+            assert (
+                cleanup_time < 1
+            ), f"Database cleanup took {cleanup_time:.2f}s (too slow)"
 
             # Note: In transaction-based isolation, data is automatically cleaned up
             # between tests via SAVEPOINT rollback, so this test verifies the rollback is fast
 
-    @pytest.mark.skip(reason="SQLite doesn't support true concurrent access - test is not reliable in CI environment")
+    @pytest.mark.skip(
+        reason="SQLite doesn't support true concurrent access - test is not reliable in CI environment"
+    )
     def test_concurrent_test_simulation(self, app, db_session):
         """Simulate concurrent test execution"""
         with app.app_context():
@@ -105,7 +111,11 @@ class TestCIStability:
                         worker_session.commit()
 
                         # Verify creation
-                        count = worker_session.query(Plant).filter_by(name=f"Concurrent Worker {worker_id}").count()
+                        count = (
+                            worker_session.query(Plant)
+                            .filter_by(name=f"Concurrent Worker {worker_id}")
+                            .count()
+                        )
                         results.append((worker_id, count))
 
                         # Clean up this worker's data
@@ -143,7 +153,9 @@ class TestCIStability:
         if is_ci:
             # In CI, verify specific optimizations are in place
             assert "PYTHONPATH" in os.environ, "PYTHONPATH should be set in CI"
-            assert os.environ.get("FLASK_ENV") == "testing", "FLASK_ENV should be testing in CI"
+            assert (
+                os.environ.get("FLASK_ENV") == "testing"
+            ), "FLASK_ENV should be testing in CI"
 
             # Check for CI-specific timeout configurations
             app = create_app()
@@ -151,8 +163,12 @@ class TestCIStability:
 
             if "postgresql" in str(app.config.get("SQLALCHEMY_DATABASE_URI", "")):
                 # PostgreSQL-specific CI checks
-                assert "pool_timeout" in engine_options, "PostgreSQL should have pool_timeout configured"
-                assert engine_options.get("pool_pre_ping") is True, "PostgreSQL should have pool_pre_ping enabled"
+                assert (
+                    "pool_timeout" in engine_options
+                ), "PostgreSQL should have pool_timeout configured"
+                assert (
+                    engine_options.get("pool_pre_ping") is True
+                ), "PostgreSQL should have pool_pre_ping enabled"
 
     def test_timeout_resilience(self, app):
         """Test timeout resilience under various conditions"""
@@ -181,7 +197,9 @@ class TestCIStability:
 
             total_time = time.time() - start_time
             # Operations should complete in reasonable time (under 5 seconds)
-            assert total_time < 5, f"Database operations took {total_time:.2f}s (too slow)"
+            assert (
+                total_time < 5
+            ), f"Database operations took {total_time:.2f}s (too slow)"
 
     def test_error_recovery(self, app, db_session):
         """Test error recovery and cleanup"""
@@ -191,7 +209,11 @@ class TestCIStability:
             # Test 1: Session error recovery
             try:
                 # Force a session error
-                with patch.object(db_session, "commit", side_effect=Exception("Simulated commit error")):
+                with patch.object(
+                    db_session,
+                    "commit",
+                    side_effect=Exception("Simulated commit error"),
+                ):
                     plant = Plant(name="Error Test", category="Error")
                     db_session.add(plant)
                     db_session.commit()
@@ -242,7 +264,9 @@ class TestCIStability:
 
             # All operations should be fast (under 1 second each)
             for operation, duration in operations:
-                assert duration < 1.0, f"{operation} operation took {duration:.3f}s (too slow)"
+                assert (
+                    duration < 1.0
+                ), f"{operation} operation took {duration:.3f}s (too slow)"
 
 
 if __name__ == "__main__":

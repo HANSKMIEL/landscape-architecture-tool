@@ -277,7 +277,9 @@ print('Database initialized')
         # Try multiple patterns to find the summary line
         patterns = [
             # Standard pytest summary patterns
-            lambda line: "passed" in line and any(keyword in line for keyword in ["failed", "error", "warning", "skipped"]),
+            lambda line: "passed" in line and any(
+                keyword in line for keyword in ["failed", "error", "warning", "skipped"]
+            ),
             lambda line: line.strip().endswith("passed"),
             lambda line: line.strip().endswith("failed"),
             lambda line: " passed," in line or " failed," in line,
@@ -355,7 +357,9 @@ print('Database initialized')
         if summary_lines:
             # Find the most informative summary line
             for line in summary_lines:
-                if any(word in line.lower() for word in ["test files", "tests"]) and any(char.isdigit() for char in line):
+                if any(word in line.lower() for word in ["test files", "tests"]) and any(
+                    char.isdigit() for char in line
+                ):
                     # Extract numbers from the line
                     numbers = re.findall(r'\d+', line)
                     if numbers:

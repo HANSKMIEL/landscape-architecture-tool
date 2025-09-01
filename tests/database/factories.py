@@ -95,7 +95,9 @@ def create_test_plant(
         bloom_time = random.choice(["spring", "summer", "fall", "winter"])
 
     if bloom_color is None:
-        bloom_color = random.choice(["white", "pink", "red", "yellow", "purple", "blue"])
+        bloom_color = random.choice(
+            ["white", "pink", "red", "yellow", "purple", "blue"]
+        )
 
     if foliage_color is None:
         foliage_color = random.choice(["green", "variegated", "purple", "silver"])

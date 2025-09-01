@@ -44,7 +44,10 @@ class TestTransactionHandlingConsistency:
         # This test verifies the fix: both paths should now have try/finally blocks
 
         # Read the conftest.py file and verify both paths have cleanup
-        conftest_path = "/home/runner/work/landscape-architecture-tool/" "landscape-architecture-tool/tests/conftest.py"
+        conftest_path = (
+            "/home/runner/work/landscape-architecture-tool/"
+            "landscape-architecture-tool/tests/conftest.py"
+        )
         with open(conftest_path, "r") as f:
             content = f.read()
 
@@ -79,7 +82,11 @@ class TestTransactionHandlingConsistency:
                         if "finally:" in lines[j]:
                             else_has_finally = True
                             break
-                        if line.strip() and not line.startswith(" ") and not line.startswith("\t"):
+                        if (
+                            line.strip()
+                            and not line.startswith(" ")
+                            and not line.startswith("\t")
+                        ):
                             break
 
                 # Exit when we reach the next fixture
@@ -89,7 +96,9 @@ class TestTransactionHandlingConsistency:
         # Verify both paths have cleanup mechanisms
         assert found_if_transaction, "Could not find if conn.in_transaction() path"
         assert found_else_path, "Could not find else path"
-        assert if_has_finally, "The if conn.in_transaction() path should have a finally block for cleanup"
+        assert (
+            if_has_finally
+        ), "The if conn.in_transaction() path should have a finally block for cleanup"
         assert else_has_finally, "The else path should have a finally block for cleanup"
 
 

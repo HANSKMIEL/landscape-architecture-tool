@@ -8,11 +8,11 @@ import sys
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
+from src.main import create_app
+
 # Add project root to Python path using relative paths
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
-
-from src.main import create_app
 
 
 class TestCoverageBoost:

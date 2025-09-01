@@ -46,7 +46,9 @@ class ProjectService:
             query = query.filter(Project.client_id == client_id)
 
         # Execute query with pagination
-        projects = query.order_by(Project.created_at.desc()).paginate(page=page, per_page=per_page, error_out=False)
+        projects = query.order_by(Project.created_at.desc()).paginate(
+            page=page, per_page=per_page, error_out=False
+        )
 
         return {
             "projects": [project.to_dict() for project in projects.items],
@@ -98,15 +100,25 @@ class ProjectService:
     @staticmethod
     def get_projects_by_client(client_id: int) -> List[Project]:
         """Get all projects for a specific client"""
-        return Project.query.filter_by(client_id=client_id).order_by(Project.created_at.desc()).all()
+        return (
+            Project.query.filter_by(client_id=client_id)
+            .order_by(Project.created_at.desc())
+            .all()
+        )
 
     @staticmethod
     def get_projects_by_status(status: str) -> List[Project]:
         """Get all projects with a specific status"""
-        return Project.query.filter_by(status=status).order_by(Project.created_at.desc()).all()
+        return (
+            Project.query.filter_by(status=status)
+            .order_by(Project.created_at.desc())
+            .all()
+        )
 
     @staticmethod
-    def add_plant_to_project(project_id: int, plant_id: int, quantity: int, unit_cost: float = None) -> bool:
+    def add_plant_to_project(
+        project_id: int, plant_id: int, quantity: int, unit_cost: float = None
+    ) -> bool:
         """Add a plant to a project"""
         project = db.session.get(Project, project_id)
         plant = db.session.get(Plant, plant_id)
@@ -115,7 +127,9 @@ class ProjectService:
             return False
 
         # Check if plant already exists in project
-        existing = ProjectPlant.query.filter_by(project_id=project_id, plant_id=plant_id).first()
+        existing = ProjectPlant.query.filter_by(
+            project_id=project_id, plant_id=plant_id
+        ).first()
 
         if existing:
             existing.quantity += quantity
@@ -134,7 +148,9 @@ class ProjectService:
     @staticmethod
     def remove_plant_from_project(project_id: int, plant_id: int) -> bool:
         """Remove a plant from a project"""
-        project_plant = ProjectPlant.query.filter_by(project_id=project_id, plant_id=plant_id).first()
+        project_plant = ProjectPlant.query.filter_by(
+            project_id=project_id, plant_id=plant_id
+        ).first()
 
         if not project_plant:
             return False
@@ -155,7 +171,8 @@ class ProjectService:
                 {
                     "quantity": project_plant.quantity,
                     "unit_cost": project_plant.unit_cost,
-                    "total_price": project_plant.quantity * (project_plant.unit_cost or 0),
+                    "total_price": project_plant.quantity
+                    * (project_plant.unit_cost or 0),
                     "notes": project_plant.notes,
                 }
             )

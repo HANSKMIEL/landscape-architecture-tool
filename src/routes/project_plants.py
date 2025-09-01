@@ -47,7 +47,9 @@ def add_plant_to_project(project_id):
         return jsonify({"error": "Internal server error"}), 500
 
 
-@project_plants_bp.route("/api/projects/<int:project_id>/plants/<int:plant_id>", methods=["PUT"])
+@project_plants_bp.route(
+    "/api/projects/<int:project_id>/plants/<int:plant_id>", methods=["PUT"]
+)
 @handle_errors
 def update_project_plant(project_id, plant_id):
     """Update plant details in project"""
@@ -60,11 +62,17 @@ def update_project_plant(project_id, plant_id):
 
         # Handle different update operations
         if "quantity" in validated_data:
-            project_plant = service.update_plant_quantity(project_id, plant_id, validated_data["quantity"])
+            project_plant = service.update_plant_quantity(
+                project_id, plant_id, validated_data["quantity"]
+            )
         elif "status" in validated_data:
-            project_plant = service.update_plant_status(project_id, plant_id, validated_data["status"])
+            project_plant = service.update_plant_status(
+                project_id, plant_id, validated_data["status"]
+            )
         elif "unit_cost" in validated_data:
-            project_plant = service.update_plant_cost(project_id, plant_id, validated_data["unit_cost"])
+            project_plant = service.update_plant_cost(
+                project_id, plant_id, validated_data["unit_cost"]
+            )
         else:
             return jsonify({"error": "No valid update fields provided"}), 400
 
@@ -77,7 +85,9 @@ def update_project_plant(project_id, plant_id):
         return jsonify({"error": "Internal server error"}), 500
 
 
-@project_plants_bp.route("/api/projects/<int:project_id>/plants/<int:plant_id>", methods=["DELETE"])
+@project_plants_bp.route(
+    "/api/projects/<int:project_id>/plants/<int:plant_id>", methods=["DELETE"]
+)
 @handle_errors
 def remove_plant_from_project(project_id, plant_id):
     """Remove a plant from a project"""
@@ -110,7 +120,9 @@ def get_project_plants(project_id):
         return jsonify({"error": "Internal server error"}), 500
 
 
-@project_plants_bp.route("/api/projects/<int:project_id>/cost-analysis", methods=["GET"])
+@project_plants_bp.route(
+    "/api/projects/<int:project_id>/cost-analysis", methods=["GET"]
+)
 @handle_errors
 def get_project_cost_analysis(project_id):
     """Get project cost breakdown"""
@@ -125,7 +137,9 @@ def get_project_cost_analysis(project_id):
         return jsonify({"error": "Internal server error"}), 500
 
 
-@project_plants_bp.route("/api/projects/<int:project_id>/plant-order-list", methods=["GET"])
+@project_plants_bp.route(
+    "/api/projects/<int:project_id>/plant-order-list", methods=["GET"]
+)
 @handle_errors
 def get_plant_order_list(project_id):
     """Generate plant order list for suppliers"""
@@ -140,7 +154,9 @@ def get_plant_order_list(project_id):
         return jsonify({"error": "Internal server error"}), 500
 
 
-@project_plants_bp.route("/api/projects/<int:project_id>/plants/batch", methods=["POST"])
+@project_plants_bp.route(
+    "/api/projects/<int:project_id>/plants/batch", methods=["POST"]
+)
 @handle_errors
 def add_multiple_plants_to_project(project_id):
     """Add multiple plants to a project at once"""
