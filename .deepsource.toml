@@ -1,8 +1,11 @@
 version = 1
 
-# Ensure DeepSource knows where tests live
+# Comprehensive test and source patterns for accurate analysis
 test_patterns = [
   "tests/**",
+  "**/tests/**",
+  "**/test_*.py",
+  "**/*_test.py",
 ]
 
 exclude_patterns = [
@@ -11,22 +14,62 @@ exclude_patterns = [
   ".venv/**",
   "dist/**",
   "build/**",
+  "node_modules/**",
   "**/__pycache__/**",
+  "**/migrations/**",
+  "frontend/coverage/**",
+  "frontend/coverage-vitest/**",
+  "scripts/temp/**",
+  "tmp/**",
+  ".pytest_cache/**",
+  ".coverage",
+  "*.egg-info/**",
 ]
 
 [[analyzers]]
 name = "python"
 enabled = true
-runtime_version = "3.x.x"
+runtime_version = "3.12.x"
 
+# Enhanced Python analysis configuration for strictest standards
 [analyzers.meta]
 max_line_length = 120
+skip_doc_coverage = [
+  "tests/**",
+  "**/tests/**", 
+  "migrations/**",
+]
 
+# Enable comprehensive Python security and quality checks
+[[analyzers]]
+name = "secrets"
+enabled = true
+
+[[analyzers]]
+name = "docker"
+enabled = true
+
+[[analyzers]]
+name = "javascript"
+enabled = true
+environment = [
+  {
+    "NODE_VERSION" = "20"
+  }
+]
+
+# Enhanced transformers for automatic code quality improvements
 [transformers]
   [transformers.black]
     enabled = true
+    skip = ["migrations/**"]
   [transformers.isort]
     enabled = true
+    skip = ["migrations/**"]
+  [transformers.autopep8]
+    enabled = true
+    skip = ["migrations/**"]
 
+# Comprehensive reporting with security and coverage metrics
 [reports]
 coverage = { tool = "coverage.py", path = "coverage.xml" }

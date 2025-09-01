@@ -80,7 +80,7 @@ def handle_landscape_error(error):
 
 def handle_generic_error(error):
     """Handle generic exceptions"""
-    logger.error(f"Unexpected error: {str(error)}")
+    logger.error(f"Unexpected error: {error!s}")
     return (
         jsonify(
             {
@@ -124,13 +124,13 @@ def handle_errors(f):
         try:
             return f(*args, **kwargs)
         except LandscapeError as e:
-            logger.info(f"Business logic error in {f.__name__}: {str(e)}")
+            logger.info(f"Business logic error in {f.__name__}: {e!s}")
             return handle_landscape_error(e)
         except ValidationError as e:
-            logger.info(f"Validation error in {f.__name__}: {str(e)}")
+            logger.info(f"Validation error in {f.__name__}: {e!s}")
             return handle_validation_error(e)
         except IntegrityError as e:
-            logger.warning(f"Database integrity error in {f.__name__}: {str(e)}")
+            logger.warning(f"Database integrity error in {f.__name__}: {e!s}")
             return (
                 jsonify(
                     {
@@ -141,7 +141,7 @@ def handle_errors(f):
                 409,
             )
         except DataError as e:
-            logger.warning(f"Database data error in {f.__name__}: {str(e)}")
+            logger.warning(f"Database data error in {f.__name__}: {e!s}")
             return (
                 jsonify(
                     {
@@ -152,7 +152,7 @@ def handle_errors(f):
                 400,
             )
         except SQLAlchemyError as e:
-            logger.error(f"Database error in {f.__name__}: {str(e)}")
+            logger.error(f"Database error in {f.__name__}: {e!s}")
             return (
                 jsonify(
                     {
@@ -166,7 +166,7 @@ def handle_errors(f):
             logger.info(f"HTTP exception in {f.__name__}: {e.code} - {e.description}")
             raise  # Let Flask handle HTTP exceptions
         except KeyError as e:
-            logger.warning(f"Missing key error in {f.__name__}: {str(e)}")
+            logger.warning(f"Missing key error in {f.__name__}: {e!s}")
             return (
                 jsonify(
                     {
@@ -177,7 +177,7 @@ def handle_errors(f):
                 400,
             )
         except TypeError as e:
-            logger.warning(f"Type error in {f.__name__}: {str(e)}")
+            logger.warning(f"Type error in {f.__name__}: {e!s}")
             return (
                 jsonify(
                     {
@@ -188,11 +188,11 @@ def handle_errors(f):
                 400,
             )
         except ValueError as e:
-            logger.warning(f"Value error in {f.__name__}: {str(e)}")
+            logger.warning(f"Value error in {f.__name__}: {e!s}")
             return jsonify({"error": "Invalid value", "message": str(e)}), 400
         except Exception as e:
             logger.error(
-                f"Unexpected error in {f.__name__}: {type(e).__name__}: {str(e)}",
+                f"Unexpected error in {f.__name__}: {type(e).__name__}: {e!s}",
                 exc_info=True,
             )
             return handle_generic_error(e)

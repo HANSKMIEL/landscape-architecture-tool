@@ -146,15 +146,32 @@ jobs:
             npm run build
           fi
 
-      - name: Lint
-        timeout-minutes: 3
+      - name: Lint with enhanced security and quality checks
+        timeout-minutes: 5
         run: |
           set -euxo pipefail
-          ruff check .
-          black --check .
-          isort --check-only .
+          echo "🔍 Running comprehensive code quality checks..."
+          
+          # Python linting with enhanced security checks
+          echo "🐍 Python security and quality analysis..."
+          ruff check . --output-format=github
+          black --check . --diff
+          isort --check-only . --diff
+          
+          # Security scanning with bandit
+          echo "🔒 Security vulnerability scanning..."
+          bandit -r src/ -f json -o bandit-report.json || echo "⚠️ Security issues detected - check bandit-report.json"
+          
+          # Safety check for known vulnerabilities
+          echo "🛡️ Dependency vulnerability check..."
+          safety check --json --output safety-report.json || echo "⚠️ Vulnerable dependencies detected - check safety-report.json"
+          
+          # Frontend linting
+          echo "🌐 Frontend quality analysis..."
           cd frontend
           npm run lint
+          
+          echo "✅ All quality checks completed"
 
       - name: Backend tests
         timeout-minutes: 4
@@ -173,12 +190,14 @@ jobs:
           cd frontend
           npm run test:coverage
 
-      - name: Upload coverage (if present)
+      - name: Upload security and quality reports
         if: ${{ always() }}
         uses: actions/upload-artifact@v4
         with:
-          name: coverage-and-logs
+          name: security-and-quality-reports
           path: |
+            bandit-report.json
+            safety-report.json
             coverage.xml
             .coverage
             frontend/coverage

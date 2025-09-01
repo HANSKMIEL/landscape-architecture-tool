@@ -11,7 +11,7 @@ from functools import wraps
 import requests
 from flask import Blueprint, current_app, jsonify, request
 
-from src.models.landscape import Client, Project, db  # noqa: F401
+from src.models.landscape import Project
 from src.utils.error_handlers import handle_errors
 
 logger = logging.getLogger(__name__)
@@ -27,10 +27,7 @@ def validate_n8n_signature(f):
     def decorated_function(*args, **kwargs):
         if not current_app.config.get("N8N_WEBHOOK_SECRET"):
             # If no secret is configured, skip validation (development only)
-            logger.warning(
-                "N8N_WEBHOOK_SECRET not configured - "  # noqa: E501
-                "skipping signature validation"
-            )
+            logger.warning("N8N_WEBHOOK_SECRET not configured - " "skipping signature validation")
             return f(*args, **kwargs)
 
         signature = request.headers.get("X-N8N-Signature")
@@ -82,10 +79,10 @@ def receive_email_notification():
         if project:
             # Update project with email notification info
             # This could be stored in a separate notifications table
-            logger.info(f"Email {data.get('status', 'unknown')} for project {project.id}")  # noqa: E501
+            logger.info(f"Email {data.get('status', 'unknown')} for project {project.id}")
 
     return (
-        jsonify({"status": "received", "message": "Email notification processed"}),  # noqa: E501
+        jsonify({"status": "received", "message": "Email notification processed"}),
         200,
     )
 
@@ -122,7 +119,7 @@ def receive_task_completion():
         if project_id:
             project = Project.query.get(project_id)
             if project:
-                logger.info(f"Document generation completed for project {project.id}")  # noqa: E501
+                logger.info(f"Document generation completed for project {project.id}")
                 # Update project status or add notification
 
     elif task_type == "invoice_processing" and status == "completed":
@@ -131,9 +128,9 @@ def receive_task_completion():
         # Update financial records or project billing status
 
     return (
-        jsonify({"status": "received", "message": "Task completion processed"}),  # noqa: E501
+        jsonify({"status": "received", "message": "Task completion processed"}),
         200,
-    )  # noqa: E501
+    )
 
 
 @bp.route("/receive/external-data", methods=["POST"])
@@ -174,7 +171,7 @@ def receive_external_data():
     return (
         jsonify({"status": "received", "message": "External data processed"}),
         200,
-    )  # noqa: E501
+    )
 
 
 @bp.route("/status", methods=["GET"])
@@ -184,14 +181,14 @@ def n8n_integration_status():
     Check N8n integration status and connectivity
     """
     try:
-        n8n_base_url = current_app.config.get("N8N_BASE_URL", "http://localhost:5678")  # noqa: E501
+        n8n_base_url = current_app.config.get("N8N_BASE_URL", "http://localhost:5678")
 
         # Try to ping N8n
         response = requests.get(f"{n8n_base_url}/healthz", timeout=5)
         n8n_available = response.status_code == 200
 
     except Exception as e:
-        logger.error(f"Error checking N8n status: {str(e)}")
+        logger.error(f"Error checking N8n status: {e!s}")
         n8n_available = False
 
     return (

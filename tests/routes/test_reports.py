@@ -240,10 +240,10 @@ class TestReportsRoutes(DatabaseTestMixin):
         assert "utilization_rate" in budget_stats
 
         # Check data types
-        assert isinstance(budget_stats["total_budget"], (int, float))
-        assert isinstance(budget_stats["total_spent"], (int, float))
-        assert isinstance(budget_stats["avg_budget"], (int, float))
-        assert isinstance(budget_stats["utilization_rate"], (int, float))
+        assert isinstance(budget_stats["total_budget"], int | float)
+        assert isinstance(budget_stats["total_spent"], int | float)
+        assert isinstance(budget_stats["avg_budget"], int | float)
+        assert isinstance(budget_stats["utilization_rate"], int | float)
 
     def test_report_generation_timestamps(self, client, app_context):
         """Test that reports include proper timestamps"""
@@ -280,7 +280,7 @@ class TestReportsRoutes(DatabaseTestMixin):
 
             # Check data types
             assert isinstance(client_entry["project_count"], int)
-            assert isinstance(client_entry["total_budget"], (int, float))
+            assert isinstance(client_entry["total_budget"], int | float)
 
     def test_plant_usage_data_structure(self, client, app_context):
         """Test plant usage data structure"""

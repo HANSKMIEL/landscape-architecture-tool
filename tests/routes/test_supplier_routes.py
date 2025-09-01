@@ -44,10 +44,10 @@ class TestSupplierRoutes(DatabaseTestMixin):
         _ = supplier_factory(name="Alpha Nursery", contact_person="John Alpha")
         supplier2 = supplier_factory(  # noqa: F841
             name="Beta Plants", city="Springfield", contact_person="Bob Springfield"
-        )  # noqa: F841
+        )
         supplier3 = supplier_factory(  # noqa: F841
             name="Gamma Gardens", email="info@gamma.com", contact_person="Charlie Gamma"
-        )  # noqa: F841
+        )
 
         # Search by name
         response = client.get("/api/suppliers?search=Alpha")
@@ -294,10 +294,10 @@ class TestSupplierRoutes(DatabaseTestMixin):
 
     def test_get_supplier_products(self, client, app_context, sample_supplier, product_factory):
         """Test getting products for a specific supplier"""
-        product_factory(supplier=sample_supplier, name="Product 1")  # noqa: F841  # noqa: F841
-        product_factory(supplier=sample_supplier, name="Product 2")  # noqa: F841  # noqa: F841
+        product_factory(supplier=sample_supplier, name="Product 1")
+        product_factory(supplier=sample_supplier, name="Product 2")
         other_supplier = product_factory().supplier
-        product_factory(supplier=other_supplier, name="Product 3")  # noqa: F841  # noqa: F841
+        product_factory(supplier=other_supplier, name="Product 3")
 
         response = client.get(f"/api/suppliers/{sample_supplier.id}/products")
 
@@ -406,7 +406,7 @@ class TestSupplierRoutes(DatabaseTestMixin):
         """Test searching suppliers by specialization"""
         supplier1 = supplier_factory(specialization="Native Plants")  # noqa: F841
         supplier2 = supplier_factory(specialization="Garden Tools")  # noqa: F841
-        supplier_factory(specialization="Native Plants and Trees")  # noqa: F841  # noqa: F841
+        supplier_factory(specialization="Native Plants and Trees")
 
         response = client.get("/api/suppliers?specialization=Native Plants")
 

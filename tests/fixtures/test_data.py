@@ -168,38 +168,123 @@ class ProjectPlantFactory(factory.alchemy.SQLAlchemyModelFactory):
 
 # Pytest fixtures for factories
 @pytest.fixture
-def user_factory():
+def user_factory(db_session):
+    """Factory for creating users with proper session binding"""
+    UserFactory._meta.sqlalchemy_session = db_session
     return UserFactory
 
 
 @pytest.fixture
-def supplier_factory():
+def supplier_factory(db_session):
+    """Factory for creating suppliers with proper session binding"""
+    SupplierFactory._meta.sqlalchemy_session = db_session
     return SupplierFactory
 
 
 @pytest.fixture
-def product_factory():
-    return ProductFactory
+def product_factory(db_session):
+    """Factory for creating products with proper session binding"""
+
+    class TestSupplierFactory(SupplierFactory):
+        class Meta:
+            model = Supplier
+            sqlalchemy_session = db_session
+            sqlalchemy_session_persistence = "commit"
+
+    class TestProductFactory(ProductFactory):
+        class Meta:
+            model = Product
+            sqlalchemy_session = db_session
+            sqlalchemy_session_persistence = "commit"
+
+        # Use the test-specific supplier factory
+        supplier = factory.SubFactory(TestSupplierFactory)
+
+    return TestProductFactory
 
 
 @pytest.fixture
-def plant_factory():
-    return PlantFactory
+def plant_factory(db_session):
+    """Factory for creating plants with proper session binding, omitting supplier field"""
+
+    class TestPlantFactory(PlantFactory):
+        class Meta:
+            model = Plant
+            sqlalchemy_session = db_session
+            sqlalchemy_session_persistence = "commit"
+
+        # Remove supplier field to avoid session conflicts
+        supplier = None
+
+    return TestPlantFactory
 
 
 @pytest.fixture
-def client_factory():
+def client_factory(db_session):
+    """Factory for creating clients with proper session binding"""
+    ClientFactory._meta.sqlalchemy_session = db_session
     return ClientFactory
 
 
 @pytest.fixture
-def project_factory():
-    return ProjectFactory
+def project_factory(db_session):
+    """Factory for creating projects with proper session binding"""
+
+    class TestClientFactory(ClientFactory):
+        class Meta:
+            model = Client
+            sqlalchemy_session = db_session
+            sqlalchemy_session_persistence = "commit"
+
+    class TestProjectFactory(ProjectFactory):
+        class Meta:
+            model = Project
+            sqlalchemy_session = db_session
+            sqlalchemy_session_persistence = "commit"
+
+        # Use the test-specific client factory
+        client = factory.SubFactory(TestClientFactory)
+
+    return TestProjectFactory
 
 
 @pytest.fixture
-def project_plant_factory():
-    return ProjectPlantFactory
+def project_plant_factory(db_session):
+    """Factory for creating project plants with proper session binding"""
+
+    class TestClientFactory(ClientFactory):
+        class Meta:
+            model = Client
+            sqlalchemy_session = db_session
+            sqlalchemy_session_persistence = "commit"
+
+    class TestProjectFactory(ProjectFactory):
+        class Meta:
+            model = Project
+            sqlalchemy_session = db_session
+            sqlalchemy_session_persistence = "commit"
+
+        client = factory.SubFactory(TestClientFactory)
+
+    class TestPlantFactory(PlantFactory):
+        class Meta:
+            model = Plant
+            sqlalchemy_session = db_session
+            sqlalchemy_session_persistence = "commit"
+
+        # Remove supplier field to avoid session conflicts
+        supplier = None
+
+    class TestProjectPlantFactory(ProjectPlantFactory):
+        class Meta:
+            model = ProjectPlant
+            sqlalchemy_session = db_session
+            sqlalchemy_session_persistence = "commit"
+
+        project = factory.SubFactory(TestProjectFactory)
+        plant = factory.SubFactory(TestPlantFactory)
+
+    return TestProjectPlantFactory
 
 
 @pytest.fixture
@@ -245,9 +330,12 @@ def sample_project_plant(project_plant_factory):
 
 
 @pytest.fixture
-def sample_plants(plant_factory):
+def sample_plants(plant_factory, db_session):
     """Create multiple sample plants for testing"""
-    return [plant_factory() for _ in range(5)]
+    plants = [plant_factory() for _ in range(5)]
+    # Ensure all plants are committed to the test session
+    db_session.commit()
+    return plants
 
 
 @pytest.fixture

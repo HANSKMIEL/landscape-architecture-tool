@@ -4,8 +4,6 @@ Plant Service
 Handles all plant-related business logic and database operations.
 """
 
-from typing import Dict, List, Optional
-
 from sqlalchemy import or_
 
 from src.models.landscape import Plant
@@ -24,7 +22,7 @@ class PlantService:
         native_only: bool = False,
         page: int = 1,
         per_page: int = 50,
-    ) -> Dict:
+    ) -> dict:
         """Get all plants with optional filtering and pagination"""
         query = Plant.query
 
@@ -57,12 +55,12 @@ class PlantService:
         }
 
     @staticmethod
-    def get_plant_by_id(plant_id: int) -> Optional[Plant]:
+    def get_plant_by_id(plant_id: int) -> Plant | None:
         """Get a plant by ID"""
         return db.session.get(Plant, plant_id)
 
     @staticmethod
-    def create_plant(plant_data: Dict) -> Plant:
+    def create_plant(plant_data: dict) -> Plant:
         """Create a new plant"""
         plant = Plant(**plant_data)
         db.session.add(plant)
@@ -70,7 +68,7 @@ class PlantService:
         return plant
 
     @staticmethod
-    def update_plant(plant_id: int, plant_data: Dict) -> Optional[Plant]:
+    def update_plant(plant_id: int, plant_data: dict) -> Plant | None:
         """Update an existing plant"""
         plant = db.session.get(Plant, plant_id)
         if not plant:
@@ -95,12 +93,12 @@ class PlantService:
         return True
 
     @staticmethod
-    def get_plants_by_category(category: str) -> List[Plant]:
+    def get_plants_by_category(category: str) -> list[Plant]:
         """Get all plants in a specific category"""
         return Plant.query.filter_by(category=category).order_by(Plant.name).all()
 
     @staticmethod
-    def search_plants(search_term: str) -> List[Plant]:
+    def search_plants(search_term: str) -> list[Plant]:
         """Search plants by name or common name"""
         search_term = f"%{search_term}%"
         return (
@@ -110,13 +108,13 @@ class PlantService:
         )
 
     @staticmethod
-    def get_plant_categories() -> List[str]:
+    def get_plant_categories() -> list[str]:
         """Get all unique plant categories"""
         categories = db.session.query(Plant.category).distinct().all()
         return [category[0] for category in categories if category[0]]
 
     @staticmethod
-    def validate_plant_data(plant_data: Dict) -> List[str]:
+    def validate_plant_data(plant_data: dict) -> list[str]:
         """Validate plant data and return list of validation errors"""
         errors = []
 

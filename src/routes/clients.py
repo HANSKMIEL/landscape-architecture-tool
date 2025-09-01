@@ -303,7 +303,7 @@ def get_client_stats():
             .all()
         )
 
-        location_distribution = {city: count for city, count in location_stats}
+        location_distribution = dict(location_stats)
 
         return jsonify(
             {

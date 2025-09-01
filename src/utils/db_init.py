@@ -12,7 +12,7 @@ def initialize_database():
         db.create_all()
         logger.info("Database tables created successfully")
     except Exception as e:
-        logger.error(f"Error creating database tables: {str(e)}")
+        logger.error(f"Error creating database tables: {e!s}")
         raise
 
 
@@ -323,5 +323,5 @@ def populate_sample_data():
 
     except Exception as e:
         db.session.rollback()
-        logger.error(f"Error populating sample data: {str(e)}")
+        logger.error(f"Error populating sample data: {e!s}")
         raise

@@ -5,7 +5,6 @@ Handles all project-related business logic and database operations.
 """
 
 from datetime import datetime
-from typing import Dict, List, Optional
 
 from sqlalchemy import or_
 
@@ -20,10 +19,10 @@ class ProjectService:
     def get_all_projects(
         search: str = "",
         status: str = "",
-        client_id: int = None,
+        client_id: int | None = None,
         page: int = 1,
         per_page: int = 50,
-    ) -> Dict:
+    ) -> dict:
         """Get all projects with optional filtering and pagination"""
         query = Project.query.join(Client)
 
@@ -57,12 +56,12 @@ class ProjectService:
         }
 
     @staticmethod
-    def get_project_by_id(project_id: int) -> Optional[Project]:
+    def get_project_by_id(project_id: int) -> Project | None:
         """Get a project by ID"""
         return db.session.get(Project, project_id)
 
     @staticmethod
-    def create_project(project_data: Dict) -> Project:
+    def create_project(project_data: dict) -> Project:
         """Create a new project"""
         project = Project(**project_data)
         db.session.add(project)
@@ -70,7 +69,7 @@ class ProjectService:
         return project
 
     @staticmethod
-    def update_project(project_id: int, project_data: Dict) -> Optional[Project]:
+    def update_project(project_id: int, project_data: dict) -> Project | None:
         """Update an existing project"""
         project = db.session.get(Project, project_id)
         if not project:
@@ -96,17 +95,17 @@ class ProjectService:
         return True
 
     @staticmethod
-    def get_projects_by_client(client_id: int) -> List[Project]:
+    def get_projects_by_client(client_id: int) -> list[Project]:
         """Get all projects for a specific client"""
         return Project.query.filter_by(client_id=client_id).order_by(Project.created_at.desc()).all()
 
     @staticmethod
-    def get_projects_by_status(status: str) -> List[Project]:
+    def get_projects_by_status(status: str) -> list[Project]:
         """Get all projects with a specific status"""
         return Project.query.filter_by(status=status).order_by(Project.created_at.desc()).all()
 
     @staticmethod
-    def add_plant_to_project(project_id: int, plant_id: int, quantity: int, unit_cost: float = None) -> bool:
+    def add_plant_to_project(project_id: int, plant_id: int, quantity: int, unit_cost: float | None = None) -> bool:
         """Add a plant to a project"""
         project = db.session.get(Project, project_id)
         plant = db.session.get(Plant, plant_id)
@@ -144,7 +143,7 @@ class ProjectService:
         return True
 
     @staticmethod
-    def get_project_plants(project_id: int) -> List[Dict]:
+    def get_project_plants(project_id: int) -> list[dict]:
         """Get all plants associated with a project"""
         project_plants = ProjectPlant.query.filter_by(project_id=project_id).all()
         result = []
@@ -164,7 +163,7 @@ class ProjectService:
         return result
 
     @staticmethod
-    def calculate_project_cost(project_id: int) -> Dict:
+    def calculate_project_cost(project_id: int) -> dict:
         """Calculate total cost for a project"""
         project_plants = ProjectPlant.query.filter_by(project_id=project_id).all()
 
@@ -192,7 +191,7 @@ class ProjectService:
         }
 
     @staticmethod
-    def update_project_status(project_id: int, status: str) -> Optional[Project]:
+    def update_project_status(project_id: int, status: str) -> Project | None:
         """Update project status"""
         project = db.session.get(Project, project_id)
         if not project:
@@ -209,7 +208,7 @@ class ProjectService:
         return project
 
     @staticmethod
-    def validate_project_data(project_data: Dict) -> List[str]:
+    def validate_project_data(project_data: dict) -> list[str]:
         """Validate project data and return list of validation errors"""
         errors = []
 

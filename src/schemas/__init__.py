@@ -1,20 +1,19 @@
 import re
-from typing import Optional
 
 from pydantic import BaseModel, EmailStr, Field, HttpUrl, field_validator
 
 
 class SupplierCreateSchema(BaseModel):
     name: str = Field(..., min_length=1, max_length=100)
-    contact_person: Optional[str] = Field(None, max_length=100)
-    email: Optional[EmailStr] = None
-    phone: Optional[str] = Field(None, max_length=20)
-    address: Optional[str] = None
-    city: Optional[str] = Field(None, max_length=50)
-    postal_code: Optional[str] = Field(None, max_length=10)
-    specialization: Optional[str] = None
-    website: Optional[HttpUrl] = Field(None, max_length=200)
-    notes: Optional[str] = None
+    contact_person: str | None = Field(None, max_length=100)
+    email: EmailStr | None = None
+    phone: str | None = Field(None, max_length=20)
+    address: str | None = None
+    city: str | None = Field(None, max_length=50)
+    postal_code: str | None = Field(None, max_length=10)
+    specialization: str | None = None
+    website: HttpUrl | None = Field(None, max_length=200)
+    notes: str | None = None
 
     @field_validator("phone")
     @classmethod
@@ -36,16 +35,16 @@ class SupplierCreateSchema(BaseModel):
 
 
 class SupplierUpdateSchema(BaseModel):
-    name: Optional[str] = Field(None, min_length=1, max_length=100)
-    contact_person: Optional[str] = Field(None, max_length=100)
-    email: Optional[EmailStr] = None
-    phone: Optional[str] = Field(None, max_length=20)
-    address: Optional[str] = None
-    city: Optional[str] = Field(None, max_length=50)
-    postal_code: Optional[str] = Field(None, max_length=10)
-    specialization: Optional[str] = None
-    website: Optional[HttpUrl] = Field(None, max_length=200)
-    notes: Optional[str] = None
+    name: str | None = Field(None, min_length=1, max_length=100)
+    contact_person: str | None = Field(None, max_length=100)
+    email: EmailStr | None = None
+    phone: str | None = Field(None, max_length=20)
+    address: str | None = None
+    city: str | None = Field(None, max_length=50)
+    postal_code: str | None = Field(None, max_length=10)
+    specialization: str | None = None
+    website: HttpUrl | None = Field(None, max_length=200)
+    notes: str | None = None
 
     @field_validator("phone")
     @classmethod
@@ -68,145 +67,145 @@ class SupplierUpdateSchema(BaseModel):
 
 class PlantCreateSchema(BaseModel):
     name: str = Field(..., min_length=1, max_length=200)
-    common_name: Optional[str] = Field(None, max_length=200)
-    category: Optional[str] = Field(None, max_length=50)
-    height_min: Optional[float] = Field(None, ge=0)
-    height_max: Optional[float] = Field(None, ge=0)
-    width_min: Optional[float] = Field(None, ge=0)
-    width_max: Optional[float] = Field(None, ge=0)
-    sun_requirements: Optional[str] = Field(None, max_length=50)
-    soil_type: Optional[str] = Field(None, max_length=100)
-    water_needs: Optional[str] = Field(None, max_length=50)
-    hardiness_zone: Optional[str] = Field(None, max_length=20)
-    bloom_time: Optional[str] = Field(None, max_length=100)
-    bloom_color: Optional[str] = Field(None, max_length=100)
-    foliage_color: Optional[str] = Field(None, max_length=100)
-    native: Optional[bool] = False
-    supplier_id: Optional[int] = Field(None, gt=0)
-    price: Optional[float] = Field(None, ge=0)
-    availability: Optional[str] = None
-    planting_season: Optional[str] = None
-    maintenance: Optional[str] = None
-    notes: Optional[str] = None
+    common_name: str | None = Field(None, max_length=200)
+    category: str | None = Field(None, max_length=50)
+    height_min: float | None = Field(None, ge=0)
+    height_max: float | None = Field(None, ge=0)
+    width_min: float | None = Field(None, ge=0)
+    width_max: float | None = Field(None, ge=0)
+    sun_requirements: str | None = Field(None, max_length=50)
+    soil_type: str | None = Field(None, max_length=100)
+    water_needs: str | None = Field(None, max_length=50)
+    hardiness_zone: str | None = Field(None, max_length=20)
+    bloom_time: str | None = Field(None, max_length=100)
+    bloom_color: str | None = Field(None, max_length=100)
+    foliage_color: str | None = Field(None, max_length=100)
+    native: bool | None = False
+    supplier_id: int | None = Field(None, gt=0)
+    price: float | None = Field(None, ge=0)
+    availability: str | None = None
+    planting_season: str | None = None
+    maintenance: str | None = None
+    notes: str | None = None
 
 
 class PlantUpdateSchema(BaseModel):
-    name: Optional[str] = Field(None, min_length=1, max_length=200)
-    common_name: Optional[str] = Field(None, max_length=200)
-    category: Optional[str] = Field(None, max_length=50)
-    height_min: Optional[float] = Field(None, ge=0)
-    height_max: Optional[float] = Field(None, ge=0)
-    width_min: Optional[float] = Field(None, ge=0)
-    width_max: Optional[float] = Field(None, ge=0)
-    sun_requirements: Optional[str] = Field(None, max_length=50)
-    soil_type: Optional[str] = Field(None, max_length=100)
-    water_needs: Optional[str] = Field(None, max_length=50)
-    hardiness_zone: Optional[str] = Field(None, max_length=20)
-    bloom_time: Optional[str] = Field(None, max_length=100)
-    bloom_color: Optional[str] = Field(None, max_length=100)
-    foliage_color: Optional[str] = Field(None, max_length=100)
-    native: Optional[bool] = None
-    supplier_id: Optional[int] = Field(None, gt=0)
-    price: Optional[float] = Field(None, ge=0)
-    availability: Optional[str] = None
-    planting_season: Optional[str] = None
-    maintenance: Optional[str] = None
-    notes: Optional[str] = None
+    name: str | None = Field(None, min_length=1, max_length=200)
+    common_name: str | None = Field(None, max_length=200)
+    category: str | None = Field(None, max_length=50)
+    height_min: float | None = Field(None, ge=0)
+    height_max: float | None = Field(None, ge=0)
+    width_min: float | None = Field(None, ge=0)
+    width_max: float | None = Field(None, ge=0)
+    sun_requirements: str | None = Field(None, max_length=50)
+    soil_type: str | None = Field(None, max_length=100)
+    water_needs: str | None = Field(None, max_length=50)
+    hardiness_zone: str | None = Field(None, max_length=20)
+    bloom_time: str | None = Field(None, max_length=100)
+    bloom_color: str | None = Field(None, max_length=100)
+    foliage_color: str | None = Field(None, max_length=100)
+    native: bool | None = None
+    supplier_id: int | None = Field(None, gt=0)
+    price: float | None = Field(None, ge=0)
+    availability: str | None = None
+    planting_season: str | None = None
+    maintenance: str | None = None
+    notes: str | None = None
 
 
 class ProductCreateSchema(BaseModel):
     name: str = Field(..., min_length=1, max_length=200)
-    description: Optional[str] = None
-    category: Optional[str] = Field(None, max_length=50)
-    price: Optional[float] = Field(None, ge=0)
-    unit: Optional[str] = Field(None, max_length=20)
-    supplier_id: Optional[int] = Field(None, gt=0)
-    stock_quantity: Optional[int] = Field(None, ge=0)
-    sku: Optional[str] = Field(None, max_length=50)
-    weight: Optional[float] = Field(None, ge=0)
-    dimensions: Optional[str] = None
-    notes: Optional[str] = None
+    description: str | None = None
+    category: str | None = Field(None, max_length=50)
+    price: float | None = Field(None, ge=0)
+    unit: str | None = Field(None, max_length=20)
+    supplier_id: int | None = Field(None, gt=0)
+    stock_quantity: int | None = Field(None, ge=0)
+    sku: str | None = Field(None, max_length=50)
+    weight: float | None = Field(None, ge=0)
+    dimensions: str | None = None
+    notes: str | None = None
 
 
 class ProductUpdateSchema(BaseModel):
-    name: Optional[str] = Field(None, min_length=1, max_length=200)
-    description: Optional[str] = None
-    category: Optional[str] = Field(None, max_length=50)
-    price: Optional[float] = Field(None, ge=0)
-    unit: Optional[str] = Field(None, max_length=20)
-    supplier_id: Optional[int] = Field(None, gt=0)
-    stock_quantity: Optional[int] = Field(None, ge=0)
-    sku: Optional[str] = Field(None, max_length=50)
-    weight: Optional[float] = Field(None, ge=0)
-    dimensions: Optional[str] = None
-    notes: Optional[str] = None
+    name: str | None = Field(None, min_length=1, max_length=200)
+    description: str | None = None
+    category: str | None = Field(None, max_length=50)
+    price: float | None = Field(None, ge=0)
+    unit: str | None = Field(None, max_length=20)
+    supplier_id: int | None = Field(None, gt=0)
+    stock_quantity: int | None = Field(None, ge=0)
+    sku: str | None = Field(None, max_length=50)
+    weight: float | None = Field(None, ge=0)
+    dimensions: str | None = None
+    notes: str | None = None
 
 
 class ClientCreateSchema(BaseModel):
     name: str = Field(..., min_length=1, max_length=100)
-    contact_person: Optional[str] = Field(None, max_length=100)
-    email: Optional[EmailStr] = None
-    phone: Optional[str] = Field(None, max_length=20)
-    address: Optional[str] = None
-    city: Optional[str] = Field(None, max_length=50)
-    postal_code: Optional[str] = Field(None, max_length=10)
-    client_type: Optional[str] = Field(None, max_length=50)
-    budget_range: Optional[str] = None
-    notes: Optional[str] = None
+    contact_person: str | None = Field(None, max_length=100)
+    email: EmailStr | None = None
+    phone: str | None = Field(None, max_length=20)
+    address: str | None = None
+    city: str | None = Field(None, max_length=50)
+    postal_code: str | None = Field(None, max_length=10)
+    client_type: str | None = Field(None, max_length=50)
+    budget_range: str | None = None
+    notes: str | None = None
 
 
 class ClientUpdateSchema(BaseModel):
-    name: Optional[str] = Field(None, min_length=1, max_length=100)
-    contact_person: Optional[str] = Field(None, max_length=100)
-    email: Optional[EmailStr] = None
-    phone: Optional[str] = Field(None, max_length=20)
-    address: Optional[str] = None
-    city: Optional[str] = Field(None, max_length=50)
-    postal_code: Optional[str] = Field(None, max_length=10)
-    client_type: Optional[str] = Field(None, max_length=50)
-    budget_range: Optional[str] = None
-    notes: Optional[str] = None
+    name: str | None = Field(None, min_length=1, max_length=100)
+    contact_person: str | None = Field(None, max_length=100)
+    email: EmailStr | None = None
+    phone: str | None = Field(None, max_length=20)
+    address: str | None = None
+    city: str | None = Field(None, max_length=50)
+    postal_code: str | None = Field(None, max_length=10)
+    client_type: str | None = Field(None, max_length=50)
+    budget_range: str | None = None
+    notes: str | None = None
 
 
 class ProjectCreateSchema(BaseModel):
     name: str = Field(..., min_length=1, max_length=200)
-    description: Optional[str] = None
+    description: str | None = None
     client_id: int = Field(..., gt=0)
-    status: Optional[str] = Field("Planning", max_length=50)
-    start_date: Optional[str] = None  # ISO date string
-    end_date: Optional[str] = None  # ISO date string
-    budget: Optional[float] = Field(None, ge=0)
-    location: Optional[str] = None
-    project_type: Optional[str] = Field(None, max_length=50)
-    area_size: Optional[float] = Field(None, ge=0)
-    notes: Optional[str] = None
-    project_manager: Optional[str] = Field("Hans Kmiel", max_length=100)
+    status: str | None = Field("Planning", max_length=50)
+    start_date: str | None = None  # ISO date string
+    end_date: str | None = None  # ISO date string
+    budget: float | None = Field(None, ge=0)
+    location: str | None = None
+    project_type: str | None = Field(None, max_length=50)
+    area_size: float | None = Field(None, ge=0)
+    notes: str | None = None
+    project_manager: str | None = Field("Hans Kmiel", max_length=100)
 
 
 class ProjectUpdateSchema(BaseModel):
-    name: Optional[str] = Field(None, min_length=1, max_length=200)
-    description: Optional[str] = None
-    client_id: Optional[int] = Field(None, gt=0)
-    status: Optional[str] = Field(None, max_length=50)
-    start_date: Optional[str] = None  # ISO date string
-    end_date: Optional[str] = None  # ISO date string
-    budget: Optional[float] = Field(None, ge=0)
-    location: Optional[str] = None
-    project_type: Optional[str] = Field(None, max_length=50)
-    area_size: Optional[float] = Field(None, ge=0)
-    notes: Optional[str] = None
-    project_manager: Optional[str] = Field(None, max_length=100)
+    name: str | None = Field(None, min_length=1, max_length=200)
+    description: str | None = None
+    client_id: int | None = Field(None, gt=0)
+    status: str | None = Field(None, max_length=50)
+    start_date: str | None = None  # ISO date string
+    end_date: str | None = None  # ISO date string
+    budget: float | None = Field(None, ge=0)
+    location: str | None = None
+    project_type: str | None = Field(None, max_length=50)
+    area_size: float | None = Field(None, ge=0)
+    notes: str | None = None
+    project_manager: str | None = Field(None, max_length=100)
 
 
 class ProjectPlantCreateSchema(BaseModel):
     plant_id: int = Field(..., gt=0)
     quantity: int = Field(..., gt=0)
-    unit_cost: Optional[float] = Field(None, ge=0)
-    notes: Optional[str] = None
+    unit_cost: float | None = Field(None, ge=0)
+    notes: str | None = None
 
 
 class ProjectPlantUpdateSchema(BaseModel):
-    quantity: Optional[int] = Field(None, gt=0)
-    unit_cost: Optional[float] = Field(None, ge=0)
-    status: Optional[str] = Field(None, max_length=50)
-    notes: Optional[str] = None
+    quantity: int | None = Field(None, gt=0)
+    unit_cost: float | None = Field(None, ge=0)
+    status: str | None = Field(None, max_length=50)
+    notes: str | None = None

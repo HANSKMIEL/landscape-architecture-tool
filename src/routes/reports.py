@@ -3,7 +3,7 @@
 # This file handles all report generation operations
 
 import io
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from flask import Blueprint, jsonify, request, send_file
 from reportlab.lib import colors
@@ -56,7 +56,7 @@ def generate_business_summary():
             .all()
         )
 
-        status_distribution = {status: count for status, count in status_stats}
+        status_distribution = dict(status_stats)
 
         # Budget statistics
         budget_stats = (
@@ -130,7 +130,7 @@ def generate_business_summary():
         product_usage_data = []
 
         report_data = {
-            "generated_at": datetime.now(timezone.utc).isoformat(),
+            "generated_at": datetime.now(UTC).isoformat(),
             "period": {"start_date": start_date, "end_date": end_date},
             "summary": {
                 "total_projects": total_projects,
@@ -184,7 +184,7 @@ def generate_business_summary_pdf(data):
         # Generation info
         story.append(
             Paragraph(
-                (f"Generated: " f"{datetime.now(timezone.utc).strftime('%B %d, %Y at %H:%M')}"),
+                (f"Generated: " f"{datetime.now(UTC).strftime('%B %d, %Y at %H:%M')}"),
                 styles["Normal"],
             )
         )
@@ -380,12 +380,12 @@ def generate_business_summary_pdf(data):
         return send_file(
             buffer,
             as_attachment=True,
-            download_name=(f'business_summary_{datetime.now(timezone.utc).strftime("%Y%m%d")}.pdf'),
+            download_name=(f'business_summary_{datetime.now(UTC).strftime("%Y%m%d")}.pdf'),
             mimetype="application/pdf",
         )
 
     except Exception as e:
-        return jsonify({"error": f"PDF generation failed: {str(e)}"}), 500
+        return jsonify({"error": f"PDF generation failed: {e!s}"}), 500
 
 
 @reports_bp.route("/api/reports/project/<int:project_id>", methods=["GET"])
@@ -427,7 +427,7 @@ def generate_project_report(project_id):
         total_product_cost = 0
 
         report_data = {
-            "generated_at": datetime.now(timezone.utc).isoformat(),
+            "generated_at": datetime.now(UTC).isoformat(),
             "project": {
                 "id": project.id,
                 "name": project.name,
@@ -437,8 +437,8 @@ def generate_project_report(project_id):
                 "spent": 0,  # No spent field in current model
                 "location": project.location,
                 "area_size": (float(project.area_size) if project.area_size else 0),
-                "start_date": project.start_date,  # Already a string in ISO format
-                "end_date": project.end_date,  # Already a string in ISO format
+                "start_date": (project.start_date.isoformat() if project.start_date else None),
+                "end_date": (project.end_date.isoformat() if project.end_date else None),
                 "notes": project.notes,
                 "created_at": (project.created_at.isoformat() if project.created_at else None),
             },
@@ -684,13 +684,13 @@ def generate_project_report_pdf(data):
             buffer,
             as_attachment=True,
             download_name=(
-                f'project_{project["name"].replace(" ", "_")}_' f'{datetime.now(timezone.utc).strftime("%Y%m%d")}.pdf'
+                f'project_{project["name"].replace(" ", "_")}_' f'{datetime.now(UTC).strftime("%Y%m%d")}.pdf'
             ),
             mimetype="application/pdf",
         )
 
     except Exception as e:
-        return jsonify({"error": f"PDF generation failed: {str(e)}"}), 500
+        return jsonify({"error": f"PDF generation failed: {e!s}"}), 500
 
 
 @reports_bp.route("/api/reports/plant-usage", methods=["GET"])
@@ -735,11 +735,11 @@ def generate_plant_usage_report():
             .all()
         )
 
-        category_distribution = {category: count for category, count in category_stats}
+        category_distribution = dict(category_stats)
 
         return jsonify(
             {
-                "generated_at": datetime.now(timezone.utc).isoformat(),
+                "generated_at": datetime.now(UTC).isoformat(),
                 "plant_usage": usage_data,
                 "category_distribution": category_distribution,
                 "total_unique_plants": len(usage_data),
@@ -798,7 +798,7 @@ def generate_supplier_performance_report():
 
         return jsonify(
             {
-                "generated_at": datetime.now(timezone.utc).isoformat(),
+                "generated_at": datetime.now(UTC).isoformat(),
                 "suppliers": supplier_data,
                 "total_suppliers": len(supplier_data),
                 "top_supplier": supplier_data[0] if supplier_data else None,

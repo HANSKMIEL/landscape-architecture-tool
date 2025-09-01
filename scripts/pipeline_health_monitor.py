@@ -9,7 +9,7 @@ import json
 import os
 import subprocess
 import sys
-from typing import Any, Dict
+from typing import Any
 
 
 class PipelineHealthMonitor:
@@ -23,7 +23,7 @@ class PipelineHealthMonitor:
             "max_consecutive_failures": 3,
         }
 
-    def check_system_health(self) -> Dict[str, Any]:
+    def check_system_health(self) -> dict[str, Any]:
         """Check overall system health."""
         checks = {
             "git_status": self._check_git_status,
@@ -52,10 +52,10 @@ class PipelineHealthMonitor:
             "checks": results,
         }
 
-    def _check_git_status(self) -> Dict[str, Any]:
+    def _check_git_status(self) -> dict[str, Any]:
         """Check Git repository status."""
         try:
-            result = subprocess.run(["git", "status", "--porcelain"], capture_output=True, text=True)
+            result = subprocess.run(["git", "status", "--porcelain"], check=False, capture_output=True, text=True)
             uncommitted = result.stdout.strip().split("\n") if result.stdout.strip() else []
 
             return {
@@ -65,10 +65,10 @@ class PipelineHealthMonitor:
         except OSError as e:
             return {"status": "error", "error": str(e)}
 
-    def _check_dependencies(self) -> Dict[str, Any]:
+    def _check_dependencies(self) -> dict[str, Any]:
         """Check dependency health."""
         try:
-            result = subprocess.run(["pip", "check"], capture_output=True, text=True)
+            result = subprocess.run(["pip", "check"], check=False, capture_output=True, text=True)
             return {
                 "status": "healthy" if result.returncode == 0 else "error",
                 "conflicts": result.returncode != 0,
@@ -76,7 +76,7 @@ class PipelineHealthMonitor:
         except Exception as e:
             return {"status": "error", "error": str(e)}
 
-    def _check_database(self) -> Dict[str, Any]:
+    def _check_database(self) -> dict[str, Any]:
         """Check database connectivity."""
         try:
             # Test basic import
@@ -116,12 +116,13 @@ class PipelineHealthMonitor:
         except Exception as e:
             return {"status": "error", "error": str(e)}
 
-    def _check_code_quality(self) -> Dict[str, Any]:
+    def _check_code_quality(self) -> dict[str, Any]:
         """Check code quality tools."""
         try:
-            black_result = subprocess.run(["black", "--check", "."], capture_output=True)
+            black_result = subprocess.run(["black", "--check", "."], check=False, capture_output=True)
             isort_result = subprocess.run(
                 ["isort", "--check-only", "--profile", "black", "."],
+                check=False,
                 capture_output=True,
             )
 
@@ -140,11 +141,12 @@ class PipelineHealthMonitor:
         except Exception as e:
             return {"status": "error", "error": str(e)}
 
-    def _check_tests(self) -> Dict[str, Any]:
+    def _check_tests(self) -> dict[str, Any]:
         """Check basic test functionality."""
         try:
             result = subprocess.run(
                 ["python", "-m", "pytest", "tests/", "-q", "--maxfail=5"],
+                check=False,
                 capture_output=True,
                 text=True,
                 timeout=300,

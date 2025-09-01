@@ -16,20 +16,19 @@ def run_command(cmd, description):
     print("=" * 60)
 
     try:
-        result = subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=120)
+        result = subprocess.run(cmd, check=False, shell=True, capture_output=True, text=True, timeout=120)
 
         if result.returncode == 0:
             print(f"✅ PASSED: {description}")
             if result.stdout.strip():
                 print(f"Output: {result.stdout.strip()}")
             return True, result.stdout
-        else:
-            print(f"❌ FAILED: {description}")
-            if result.stdout.strip():
-                print(f"Output: {result.stdout.strip()}")
-            if result.stderr.strip():
-                print(f"Error: {result.stderr.strip()}")
-            return False, result.stderr
+        print(f"❌ FAILED: {description}")
+        if result.stdout.strip():
+            print(f"Output: {result.stdout.strip()}")
+        if result.stderr.strip():
+            print(f"Error: {result.stderr.strip()}")
+        return False, result.stderr
 
     except subprocess.TimeoutExpired:
         print(f"⏰ TIMEOUT: {description}")
@@ -106,9 +105,8 @@ def main():
     if passed == total:
         print("🎉 All code quality checks passed!")
         return 0
-    else:
-        print("⚠️  Some code quality issues detected")
-        return 1
+    print("⚠️  Some code quality issues detected")
+    return 1
 
 
 if __name__ == "__main__":

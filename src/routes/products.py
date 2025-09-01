@@ -224,7 +224,7 @@ def get_product_stats():
             .all()
         )
 
-        category_distribution = {cat: count for cat, count in category_stats}
+        category_distribution = dict(category_stats)
 
         # Price statistics
         price_stats = (
@@ -354,7 +354,7 @@ def import_products():
                 imported_count += 1
 
             except Exception as e:
-                errors.append(f"Row {index + 1}: {str(e)}")
+                errors.append(f"Row {index + 1}: {e!s}")
 
         db.session.commit()
 

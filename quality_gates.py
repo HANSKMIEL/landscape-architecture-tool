@@ -97,7 +97,7 @@ def check_code_quality():
 
     for check_name, command in quality_checks:
         try:
-            result = subprocess.run(command, capture_output=True, text=True, timeout=60)
+            result = subprocess.run(command, check=False, capture_output=True, text=True, timeout=60)
             if result.returncode == 0:
                 print(f"✅ {check_name}")
             else:
@@ -134,6 +134,7 @@ def check_test_results():
         # Run basic tests to ensure core functionality works
         result = subprocess.run(
             ["python", "-m", "pytest", "tests/test_basic.py", "-v", "--tb=short", "-q"],
+            check=False,
             capture_output=True,
             text=True,
             timeout=300,
@@ -143,10 +144,9 @@ def check_test_results():
         if result.returncode == 0:
             print("✅ Basic tests pass")
             return True
-        else:
-            print("⚠️ Basic tests have failures")
-            print(f"   Output: {result.stdout[:200]}...")  # First 200 chars
-            return False
+        print("⚠️ Basic tests have failures")
+        print(f"   Output: {result.stdout[:200]}...")  # First 200 chars
+        return False
 
     except subprocess.TimeoutExpired:
         print("⚠️ Basic tests timed out")
@@ -192,10 +192,9 @@ def main():
     if all_passed:
         print("🎉 All quality gates passed!")
         return 0
-    else:
-        print("⚠️ Some quality gates have warnings - review recommended")
-        print("ℹ️ Warnings do not block deployment but should be addressed")
-        return 0  # Don't fail pipeline for warnings, just notify
+    print("⚠️ Some quality gates have warnings - review recommended")
+    print("ℹ️ Warnings do not block deployment but should be addressed")
+    return 0  # Don't fail pipeline for warnings, just notify
 
 
 if __name__ == "__main__":

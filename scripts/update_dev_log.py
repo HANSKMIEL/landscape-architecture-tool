@@ -33,7 +33,7 @@ class DevLogManager:
 
     def create_log_header(self):
         """Create the header for a new development log file"""
-        header = """# Development Log - Landscape Architecture Tool
+        return """# Development Log - Landscape Architecture Tool
 
 This file tracks development activities, changes, and progress for the Landscape Architecture Management Tool.
 
@@ -48,7 +48,6 @@ Each entry follows this format:
 ---
 
 """
-        return header
 
     def format_log_entry(self, action, description, author, impact=None):
         """Format a new log entry
@@ -103,7 +102,7 @@ Each entry follows this format:
             entry = self.format_log_entry(action, description, author, impact)
 
             # Read existing content
-            with open(self.log_file, "r") as f:
+            with open(self.log_file) as f:
                 content = f.read()
 
             # Insert new entry after the header (before first existing entry)
@@ -122,7 +121,7 @@ Each entry follows this format:
             return True
 
         except Exception as e:
-            print(f"Error adding entry to development log: {str(e)}")
+            print(f"Error adding entry to development log: {e!s}")
             return False
 
     def list_entries(self, limit=10):
@@ -136,7 +135,7 @@ Each entry follows this format:
                 print("Development log file does not exist yet.")
                 return
 
-            with open(self.log_file, "r") as f:
+            with open(self.log_file) as f:
                 content = f.read()
 
             # Extract entries (looking for ## [timestamp] patterns)
@@ -167,7 +166,7 @@ Each entry follows this format:
                 print("No entries found in development log.")
 
         except Exception as e:
-            print(f"Error reading development log: {str(e)}")
+            print(f"Error reading development log: {e!s}")
 
     def get_stats(self):
         """Get statistics about the development log"""
@@ -175,7 +174,7 @@ Each entry follows this format:
             if not self.log_file.exists():
                 return {"total_entries": 0, "actions": {}}
 
-            with open(self.log_file, "r") as f:
+            with open(self.log_file) as f:
                 content = f.read()
 
             # Count entries by action type
@@ -191,7 +190,7 @@ Each entry follows this format:
             return {"total_entries": total_entries, "actions": action_counts}
 
         except Exception as e:
-            print(f"Error getting log statistics: {str(e)}")
+            print(f"Error getting log statistics: {e!s}")
             return {"total_entries": 0, "actions": {}}
 
 
@@ -259,12 +258,11 @@ Examples:
             log_manager.list_entries(3)
         else:
             sys.exit(1)
-    else:
-        if not args.list and not args.stats:
-            print("Error: Missing required arguments for adding an entry.")
-            print("Required: --action, --description, --author")
-            print("Use --help for more information.")
-            sys.exit(1)
+    elif not args.list and not args.stats:
+        print("Error: Missing required arguments for adding an entry.")
+        print("Required: --action, --description, --author")
+        print("Use --help for more information.")
+        sys.exit(1)
 
 
 if __name__ == "__main__":

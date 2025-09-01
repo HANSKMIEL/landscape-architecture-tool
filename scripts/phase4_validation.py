@@ -15,25 +15,22 @@ def check_file_exists(filepath, description, optional=False):
     if path.exists():
         print(f"✅ {description} exists: {filepath}")
         return True
-    else:
-        if optional:
-            print(f"ℹ️  {description} missing (optional): {filepath}")
-            return True  # Optional files don't count as failures
-        else:
-            print(f"❌ {description} missing: {filepath}")
-            return False
+    if optional:
+        print(f"ℹ️  {description} missing (optional): {filepath}")
+        return True  # Optional files don't count as failures
+    print(f"❌ {description} missing: {filepath}")
+    return False
 
 
 def run_command_check(command, description):
     """Run a command and check if it succeeds."""
     try:
-        result = subprocess.run(command, shell=True, capture_output=True, text=True, timeout=60)
+        result = subprocess.run(command, check=False, shell=True, capture_output=True, text=True, timeout=60)
         if result.returncode == 0:
             print(f"✅ {description}")
             return True
-        else:
-            print(f"⚠️ {description} - issues detected")
-            return False
+        print(f"⚠️ {description} - issues detected")
+        return False
     except subprocess.TimeoutExpired:
         print(f"⚠️ {description} - timed out")
         return False
@@ -55,7 +52,7 @@ def main():
 
     # Check if pre-commit is installed with consistent error handling
     try:
-        result = subprocess.run(["pre-commit", "--version"], capture_output=True, text=True, timeout=10)
+        result = subprocess.run(["pre-commit", "--version"], check=False, capture_output=True, text=True, timeout=10)
         if result.returncode == 0:
             print("✅ Pre-commit framework installed")
             validation_results.append(True)
@@ -143,14 +140,13 @@ def main():
         print("🎉 Phase 4 validation passed!")
         print("Prevention measures successfully implemented.")
         return 0
-    elif success_rate >= 60:
+    if success_rate >= 60:
         print("⚠️ Phase 4 validation partially successful.")
         print("Some prevention measures need attention.")
         return 1
-    else:
-        print("❌ Phase 4 validation failed.")
-        print("Major issues need to be resolved.")
-        return 2
+    print("❌ Phase 4 validation failed.")
+    print("Major issues need to be resolved.")
+    return 2
 
 
 if __name__ == "__main__":

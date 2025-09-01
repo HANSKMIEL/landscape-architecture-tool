@@ -8,8 +8,7 @@ Based on recommendations from the comprehensive handover document
 import json
 import os
 import sys
-from datetime import datetime, timezone
-from typing import Dict, List, Optional, Tuple
+from datetime import UTC, datetime
 
 
 class PipelineHealthMonitor:
@@ -23,21 +22,20 @@ class PipelineHealthMonitor:
         """Assess pipeline health based on success rate"""
         if success_rate >= self.health_thresholds["excellent"]:
             return "EXCELLENT"
-        elif success_rate >= self.health_thresholds["good"]:
+        if success_rate >= self.health_thresholds["good"]:
             return "GOOD"
-        elif success_rate >= self.health_thresholds["fair"]:
+        if success_rate >= self.health_thresholds["fair"]:
             return "FAIR"
-        else:
-            return "POOR"
+        return "POOR"
 
-    def calculate_success_rate(self, job_results: Dict[str, str]) -> Tuple[float, int, int]:
+    def calculate_success_rate(self, job_results: dict[str, str]) -> tuple[float, int, int]:
         """Calculate success rate from job results"""
         total_jobs = len(job_results)
         successful_jobs = sum(1 for result in job_results.values() if result == "success")
         success_rate = (successful_jobs / total_jobs * 100) if total_jobs > 0 else 0
         return success_rate, successful_jobs, total_jobs
 
-    def identify_failed_jobs(self, job_results: Dict[str, str]) -> List[str]:
+    def identify_failed_jobs(self, job_results: dict[str, str]) -> list[str]:
         """Identify which jobs failed and their status"""
         failed_jobs = []
         for job_name, result in job_results.items():
@@ -45,14 +43,14 @@ class PipelineHealthMonitor:
                 failed_jobs.append(f"{job_name}({result})")
         return failed_jobs
 
-    def generate_health_report(self, job_results: Dict[str, str], workflow_info: Optional[Dict] = None) -> Dict:
+    def generate_health_report(self, job_results: dict[str, str], workflow_info: dict | None = None) -> dict:
         """Generate comprehensive pipeline health report"""
         success_rate, successful_jobs, total_jobs = self.calculate_success_rate(job_results)
         health_status = self.assess_pipeline_health(success_rate)
         failed_jobs = self.identify_failed_jobs(job_results)
 
         report = {
-            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
             "pipeline_health": health_status,
             "success_rate": success_rate,
             "total_jobs": total_jobs,
@@ -67,7 +65,7 @@ class PipelineHealthMonitor:
 
         return report
 
-    def get_health_recommendations(self, health_status: str, failed_jobs: List[str]) -> List[str]:
+    def get_health_recommendations(self, health_status: str, failed_jobs: list[str]) -> list[str]:
         """Get recommendations based on pipeline health"""
         recommendations = []
 
@@ -120,7 +118,7 @@ class PipelineHealthMonitor:
 
         return recommendations
 
-    def export_metrics_for_github(self, report: Dict) -> None:
+    def export_metrics_for_github(self, report: dict) -> None:
         """Export metrics in GitHub Actions output format"""
         github_output = os.environ.get("GITHUB_OUTPUT")
         if not github_output:
@@ -138,7 +136,7 @@ class PipelineHealthMonitor:
         except Exception as e:
             print(f"Warning: Could not write to GitHub output: {e}")
 
-    def print_detailed_report(self, report: Dict) -> None:
+    def print_detailed_report(self, report: dict) -> None:
         """Print detailed health report to console"""
         print("=== CI/CD Pipeline Health Report ===")
         print(f"Timestamp: {report['timestamp']}")
@@ -171,7 +169,7 @@ class PipelineHealthMonitor:
 
         print("\n=== End Pipeline Health Report ===")
 
-    def save_report_to_file(self, report: Dict, filename: Optional[str] = None) -> str:
+    def save_report_to_file(self, report: dict, filename: str | None = None) -> str:
         """Save detailed report to JSON file"""
         if not filename:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")

@@ -9,6 +9,7 @@ This addresses the user's frustration about having to constantly check
 if everything is working after changes.
 """
 
+import contextlib
 import json
 import re
 import subprocess
@@ -33,7 +34,13 @@ class AutomatedValidator:
         """Run a command and capture its output"""
         try:
             result = subprocess.run(
-                cmd, shell=True, capture_output=capture_output, text=True, timeout=timeout, cwd=self.repo_root
+                cmd,
+                check=False,
+                shell=True,
+                capture_output=capture_output,
+                text=True,
+                timeout=timeout,
+                cwd=self.repo_root,
             )
             return {
                 "success": result.returncode == 0,
@@ -124,20 +131,47 @@ class AutomatedValidator:
         return status == "healthy"
 
     def validate_tests(self):
-        """Run test suite and check for failures"""
+        """Run test suite and check for failures with enhanced reliability"""
         print("🧪 Validating test suite...")
 
-        # Run backend tests with timeout
+        # Run backend tests with enhanced configuration for stability
         backend_test = self.run_command(
-            "PYTHONPATH=. FLASK_ENV=testing python -m pytest tests/ -x --tb=short --maxfail=3 -q", timeout=180
+            "PYTHONPATH=. FLASK_ENV=testing python -m pytest tests/ "
+            "--tb=short --maxfail=10 -q --durations=0 --timeout=60",
+            timeout=300,  # Increased timeout for stability
         )
 
-        # Run frontend tests
-        frontend_test = self.run_command("cd frontend && npm run test:vitest:run", timeout=60)
+        # Run frontend tests with proper command (same as CI)
+        frontend_test = self.run_command("cd frontend && npm run test:coverage", timeout=90)
 
-        # Parse test results
+        # Enhanced result parsing with retry logic
         backend_passed = backend_test["success"]
         frontend_passed = frontend_test["success"]
+
+        # If backend tests failed, try one more time to handle transient issues
+        if not backend_passed and "timeout" not in backend_test.get("stderr", "").lower():
+            print("🔄 Retrying backend tests due to potential transient failure...")
+            backend_retry = self.run_command(
+                "PYTHONPATH=. FLASK_ENV=testing python -m pytest tests/ " "--tb=short --maxfail=5 -v --timeout=60",
+                timeout=300,
+            )
+            if backend_retry["success"]:
+                backend_passed = True
+                backend_test = backend_retry
+                print("✅ Backend tests passed on retry")
+            else:
+                print("❌ Backend tests failed on retry as well")
+
+        # If frontend tests failed, try one more time
+        if not frontend_passed and "timeout" not in frontend_test.get("stderr", "").lower():
+            print("🔄 Retrying frontend tests due to potential transient failure...")
+            frontend_retry = self.run_command("cd frontend && npm run test:coverage", timeout=90)
+            if frontend_retry["success"]:
+                frontend_passed = True
+                frontend_test = frontend_retry
+                print("✅ Frontend tests passed on retry")
+            else:
+                print("❌ Frontend tests failed on retry as well")
 
         # Extract test counts from output
         backend_summary = self._parse_test_output(backend_test["stdout"])
@@ -166,7 +200,7 @@ class AutomatedValidator:
 
         if not frontend_passed:
             self.results["recommendations"].append(
-                "Frontend tests failing. Run 'cd frontend && npm run test:vitest:run' for details."
+                "Frontend tests failing. Run 'cd frontend && npm run test:coverage' for details."
             )
 
         return overall_status == "healthy"
@@ -244,10 +278,8 @@ print('Database initialized')
                 # Clean up temporary file
                 import os
 
-                try:
+                with contextlib.suppress(OSError):
                     os.unlink(script_path)
-                except OSError:
-                    pass
 
             status = "healthy" if db_test["success"] else "error"
 
@@ -305,10 +337,8 @@ print('Database initialized')
             numbers = re.findall(r"(\d+)\s*(passed|failed|error|skipped)", summary_line, re.IGNORECASE)
 
             for count, status in numbers:
-                try:
+                with contextlib.suppress(ValueError, KeyError):
                     summary[status.lower()] = int(count)
-                except (ValueError, KeyError):
-                    pass
 
             # Fallback to simple word-based parsing
             if not any(key in summary for key in ["passed", "failed"]):

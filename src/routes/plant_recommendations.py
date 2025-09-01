@@ -9,7 +9,7 @@ import csv
 import io
 import logging
 import uuid
-from typing import Any, Dict
+from typing import Any
 
 from flask import Blueprint, Response, jsonify, request, session
 
@@ -163,16 +163,16 @@ def get_criteria_options():
         plants = Plant.query.all()
 
         options = {
-            "hardiness_zones": sorted(list(set(filter(None, [p.hardiness_zone for p in plants])))),
+            "hardiness_zones": sorted(set(filter(None, [p.hardiness_zone for p in plants]))),
             "sun_exposures": ["Full Sun", "Partial Sun", "Partial Shade", "Full Shade"],
-            "soil_types": sorted(list(set(filter(None, [p.soil_type for p in plants])))),
+            "soil_types": sorted(set(filter(None, [p.soil_type for p in plants]))),
             "maintenance_levels": ["Low", "Medium", "High"],
             "moisture_levels": ["Low", "Medium", "High"],
             "budget_ranges": ["Low", "Medium", "High", "Premium"],
-            "plant_categories": sorted(list(set(filter(None, [p.category for p in plants])))),
-            "bloom_colors": sorted(list(set(filter(None, [p.bloom_color for p in plants])))),
-            "foliage_colors": sorted(list(set(filter(None, [p.foliage_color for p in plants])))),
-            "bloom_seasons": sorted(list(set(filter(None, [p.bloom_time for p in plants])))),
+            "plant_categories": sorted(set(filter(None, [p.category for p in plants]))),
+            "bloom_colors": sorted(set(filter(None, [p.bloom_color for p in plants]))),
+            "foliage_colors": sorted(set(filter(None, [p.foliage_color for p in plants]))),
+            "bloom_seasons": sorted(set(filter(None, [p.bloom_time for p in plants]))),
             "project_types": [
                 "Garden",
                 "Landscape",
@@ -185,7 +185,7 @@ def get_criteria_options():
         return jsonify(options)
 
     except Exception as e:
-        return jsonify({"error": f"Failed to get criteria options: {str(e)}"}), 500
+        return jsonify({"error": f"Failed to get criteria options: {e!s}"}), 500
 
 
 @plant_recommendations_bp.route("/api/plant-recommendations/feedback", methods=["POST"])
@@ -222,11 +222,10 @@ def submit_feedback():
 
         if success:
             return jsonify({"message": "Feedback saved successfully"})
-        else:
-            return jsonify({"error": "Failed to save feedback"}), 404
+        return jsonify({"error": "Failed to save feedback"}), 404
 
     except Exception as e:
-        return jsonify({"error": f"Failed to submit feedback: {str(e)}"}), 500
+        return jsonify({"error": f"Failed to submit feedback: {e!s}"}), 500
 
 
 @plant_recommendations_bp.route("/api/plant-recommendations/history", methods=["GET"])
@@ -287,7 +286,7 @@ def get_recommendation_history():
         )
 
     except Exception as e:
-        return jsonify({"error": f"Failed to get history: {str(e)}"}), 500
+        return jsonify({"error": f"Failed to get history: {e!s}"}), 500
 
 
 @plant_recommendations_bp.route("/api/plant-recommendations/export", methods=["POST"])
@@ -387,7 +386,7 @@ def export_recommendations():
         )
 
     except Exception as e:
-        return jsonify({"error": f"Failed to export recommendations: {str(e)}"}), 500
+        return jsonify({"error": f"Failed to export recommendations: {e!s}"}), 500
 
 
 @plant_recommendations_bp.route("/api/plant-recommendations/import", methods=["POST"])
@@ -476,7 +475,7 @@ def import_plant_data():
                 imported_plants.append(plant.name)
 
             except Exception as e:
-                logging.error(f"Error processing row {row_num}: {str(e)}")
+                logging.exception(f"Error processing row {row_num}: {e!s}")
                 errors.append(f"Row {row_num}: An error occurred while processing this row")
 
         # Commit if no errors
@@ -488,21 +487,20 @@ def import_plant_data():
                     "imported_plants": imported_plants,
                 }
             )
-        else:
-            db.session.rollback()
-            return (
-                jsonify(
-                    {
-                        "error": "Import failed due to errors",
-                        "errors": errors[:10],  # Limit error messages
-                        "total_errors": len(errors),
-                    }
-                ),
-                400,
-            )
+        db.session.rollback()
+        return (
+            jsonify(
+                {
+                    "error": "Import failed due to errors",
+                    "errors": errors[:10],  # Limit error messages
+                    "total_errors": len(errors),
+                }
+            ),
+            400,
+        )
 
     except Exception as e:
-        logging.error(f"Failed to import plant data: {str(e)}")
+        logging.exception(f"Failed to import plant data: {e!s}")
         return (
             jsonify({"error": "An internal error occurred while importing plant data"}),
             500,
@@ -510,7 +508,7 @@ def import_plant_data():
 
 
 # Helper functions
-def _format_criteria_summary(criteria: RecommendationCriteria) -> Dict[str, Any]:
+def _format_criteria_summary(criteria: RecommendationCriteria) -> dict[str, Any]:
     """Format criteria for summary display"""
     summary = {}
 
@@ -533,7 +531,7 @@ def _format_criteria_summary(criteria: RecommendationCriteria) -> Dict[str, Any]
     return summary
 
 
-def _format_request_criteria(req: PlantRecommendationRequest) -> Dict[str, Any]:
+def _format_request_criteria(req: PlantRecommendationRequest) -> dict[str, Any]:
     """Format stored request criteria for display"""
     summary = {}
 

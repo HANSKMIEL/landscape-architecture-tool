@@ -85,8 +85,7 @@ def remove_plant_from_project(project_id, plant_id):
         success = service.remove_plant_from_project(project_id, plant_id)
         if success:
             return jsonify({"message": "Plant removed from project successfully"})
-        else:
-            return jsonify({"error": "Failed to remove plant from project"}), 500
+        return jsonify({"error": "Failed to remove plant from project"}), 500
 
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
@@ -182,8 +181,7 @@ def add_multiple_plants_to_project(project_id):
 
         if errors:
             return jsonify(response), 207  # Multi-status
-        else:
-            return jsonify(response), 201
+        return jsonify(response), 201
 
     except Exception as e:
         logger.error(f"Error adding multiple plants to project: {e}")

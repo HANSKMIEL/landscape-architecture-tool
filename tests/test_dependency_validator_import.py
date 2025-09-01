@@ -113,6 +113,7 @@ except Exception as e:
 
         result = subprocess.run(
             [sys.executable, "-c", test_script],
+            check=False,
             cwd=project_root,
             capture_output=True,
             text=True,
@@ -142,6 +143,7 @@ print("SUCCESS: Multiple imports work without conflict")
 """
         result = subprocess.run(
             [sys.executable, "-c", test_script],
+            check=False,
             cwd=project_root,
             capture_output=True,
             text=True,
@@ -190,12 +192,13 @@ print("SUCCESS: Multiple imports work without conflict")
         # Find the import statement
         dependency_validator_import = None
         for node in ast.walk(tree):
-            if isinstance(node, ast.ImportFrom):
-                if node.module == "src.utils.dependency_validator" and any(
-                    alias.name == "DependencyValidator" for alias in node.names
-                ):
-                    dependency_validator_import = node
-                    break
+            if (
+                isinstance(node, ast.ImportFrom)
+                and node.module == "src.utils.dependency_validator"
+                and any(alias.name == "DependencyValidator" for alias in node.names)
+            ):
+                dependency_validator_import = node
+                break
 
         assert dependency_validator_import is not None, "DependencyValidator import not found"
 
