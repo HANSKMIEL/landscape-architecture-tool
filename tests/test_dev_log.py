@@ -13,8 +13,9 @@ from unittest.mock import patch
 
 import pytest
 
-# Add project root to Python path
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+# Add project root to Python path using relative paths
+project_root = Path(__file__).parent.parent
+sys.path.insert(0, str(project_root))
 
 from scripts.update_dev_log import DevLogManager  # noqa: E402
 
@@ -216,7 +217,7 @@ class TestDevLogScript:
             [sys.executable, "scripts/update_dev_log.py", "--help"],
             capture_output=True,
             text=True,
-            cwd=os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+            cwd=str(project_root),
         )
 
         assert result.returncode == 0
@@ -233,7 +234,7 @@ class TestDevLogScript:
             [sys.executable, "scripts/update_dev_log.py", "--action", "feature_added"],
             capture_output=True,
             text=True,
-            cwd=os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+            cwd=str(project_root),
         )
 
         assert result.returncode == 1

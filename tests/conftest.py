@@ -57,15 +57,21 @@ def connection(engine):
             # Roll back to ensure clean state for next session
             if conn.in_transaction():
                 conn.rollback()
+            # Ensure connection is properly closed
+            if not conn.closed:
+                conn.close()
     else:
         # Start a new transaction
         outer_tx = conn.begin()
         try:
             yield conn
         finally:
-            outer_tx.rollback()
-
-    conn.close()
+            # Rollback transaction and ensure proper cleanup
+            if outer_tx.is_active:
+                outer_tx.rollback()
+            # Ensure connection is properly closed
+            if not conn.closed:
+                conn.close()
 
 
 @pytest.fixture(scope="session")
@@ -75,18 +81,24 @@ def Session(connection):
 
 
 @pytest.fixture(autouse=True)
-def db_session(Session, connection):
+def db_session(Session, connection, app):
     # Each test runs inside a nested transaction (SAVEPOINT) and rolls it back after the test
     nested = connection.begin_nested()
 
-    try:
-        yield Session
-    finally:
-        # Clean up the session first
-        Session.remove()
-        # Then rollback the nested transaction
-        if nested.is_active:
-            nested.rollback()
+    # Bind the Flask app's db session to our test session for proper isolation
+    from src.models.user import db as flask_db
+    with app.app_context():
+        # Replace the Flask-SQLAlchemy session with our test session
+        flask_db.session = Session
+
+        try:
+            yield Session
+        finally:
+            # Clean up the session first
+            Session.remove()
+            # Then rollback the nested transaction
+            if nested.is_active:
+                nested.rollback()
 
 
 @pytest.fixture(scope="session")

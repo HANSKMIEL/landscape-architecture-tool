@@ -176,3 +176,11 @@ draft_*.py
 .black_cache/
 .isort.cfg
 
+# Generated reports and validation artifacts
+*_report_*.json
+automated_validation_report_*.json
+pipeline_health_report_*.json
+bandit-report.json
+safety-report.json
+quality_gates_report_*.json
+

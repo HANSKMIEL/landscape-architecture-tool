@@ -7,11 +7,13 @@ These tests simulate the CI integration test scenarios using Flask test client
 import os
 import sys
 import warnings
+from pathlib import Path
 
 import pytest
 
-# Add project root to Python path
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+# Add project root to Python path using relative paths
+project_root = Path(__file__).parent.parent
+sys.path.insert(0, str(project_root))
 
 from src.main import create_app  # noqa: E402
 from src.models.user import db  # noqa: E402

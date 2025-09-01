@@ -8,9 +8,11 @@ import ast
 import os
 import subprocess
 import sys
+from pathlib import Path
 
-# Add project root to Python path
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+# Add project root to Python path using relative paths
+project_root = Path(__file__).parent.parent
+sys.path.insert(0, str(project_root))
 
 
 class TestDependencyValidationFix:
@@ -18,7 +20,7 @@ class TestDependencyValidationFix:
 
     def setup_method(self):
         """Setup method called before each test method"""
-        self.PROJECT_ROOT = os.path.dirname(os.path.dirname(__file__))
+        self.PROJECT_ROOT = project_root
 
     def test_module_import_without_validation(self):
         """Test that the main module can be imported without triggering validation"""
@@ -78,7 +80,7 @@ except Exception as e:
 
     def test_app_creation_in_subprocess(self):
         """Test app creation in subprocess to verify validation runs"""
-        current_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        current_dir = str(project_root)
         result = subprocess.run(
             [
                 sys.executable,
@@ -115,11 +117,7 @@ except Exception as e:
     def test_no_module_level_validation_code(self):
         """Test that the problematic module-level validation code is removed"""
         # Read the main.py file to verify the fix
-        main_py_path = os.path.join(
-            os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-            "src",
-            "main.py",
-        )
+        main_py_path = project_root / "src" / "main.py"
 
         with open(main_py_path, "r") as f:
             content = f.read()
