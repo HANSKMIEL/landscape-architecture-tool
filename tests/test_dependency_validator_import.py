@@ -13,11 +13,14 @@ from pathlib import Path
 
 import pytest
 
-# Add project root to Python path
+# Add project root to Python path (for test isolation, use fixture below)
 project_root = Path(__file__).parent.parent
-sys.path.insert(0, str(project_root))
 
 
+@pytest.fixture(autouse=True)
+def add_project_root_to_syspath(monkeypatch):
+    """Ensure project root is in sys.path for each test, with proper isolation."""
+    monkeypatch.syspath_prepend(str(project_root))
 class TestDependencyValidatorImportRobustness:
     """Comprehensive tests for DependencyValidator import stability"""
 
