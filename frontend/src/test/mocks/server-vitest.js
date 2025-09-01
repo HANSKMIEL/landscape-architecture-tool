@@ -11,7 +11,7 @@ const server = {
 };
 
 // Mock the global fetch for basic API mocking
-global.fetch = vi.fn((url) => {
+const fetchMock = vi.fn((url) => {
   // Simple mock responses for dashboard endpoints
   if (url.includes('/api/dashboard/stats')) {
     return Promise.resolve({
@@ -64,21 +64,5 @@ global.fetch = vi.fn((url) => {
   });
 });
 
-// Establish API mocking before all tests
-beforeAll(() => {
-  server.listen();
-});
-
-// Reset handlers between tests to ensure clean state
-afterEach(() => {
-  server.resetHandlers();
-  vi.clearAllMocks();
-});
-
-// Clean up after tests are finished
-afterAll(() => {
-  server.close();
-});
-
 // Export for Vitest compatibility
-export { server };
+export { server, fetchMock };

@@ -147,3 +147,7 @@ def runner(app):
 def app_context(app):
     """Create application context for tests that need it"""
     return app
+
+
+# Import test data fixtures to make them available to all tests
+from tests.fixtures.test_data import *  # noqa: F401,F403

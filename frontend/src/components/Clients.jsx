@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Building2, Plus, Upload, Edit, Trash2, Search, FolderPlus, Eye } from 'lucide-react';
+import { Building2, Plus, Upload, Edit, Trash2, Search, Eye } from 'lucide-react';
 import ApiService from '../services/api';
 
 const Clients = ({ language }) => {

@@ -1,5 +1,6 @@
 // MSW handlers for Jest testing (CommonJS format)
 const { http, HttpResponse } = require('msw');
+const { URL } = require('url');
 
 // Mock data factories (inline to avoid import issues in Jest)
 const createMockDashboardStats = () => ({

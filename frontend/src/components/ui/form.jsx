@@ -132,7 +132,7 @@ function FormMessage({
 }
 
 export { 
-  useFormField, // eslint-disable-line react-refresh/only-export-components
+  useFormField,
   Form,
   FormItem,
   FormLabel,

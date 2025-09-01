@@ -1,7 +1,7 @@
 // Global DOM matchers and fetch polyfill
 import '@testing-library/jest-dom';
 import 'whatwg-fetch';
-import { vi } from 'vitest';
+import { vi, beforeAll, afterEach, afterAll } from 'vitest';
 
 // Set up TextEncoder/TextDecoder if missing
 if (typeof globalThis.TextEncoder === 'undefined') {
@@ -41,15 +41,40 @@ global.ResizeObserver = class ResizeObserver {
   unobserve() {}
 };
 
-// Optional MSW server support (no-op if not present)
+// Set up API mocking
+let server;
+let fetchMock;
+
 try {
-  const mod = await import('./mocks/server.js');
-  if (mod.server && typeof mod.server.listen === 'function') {
-    mod.server.listen({ onUnhandledRequest: 'warn' });
-    const { afterAll, afterEach } = await import('vitest');
-    afterEach(() => mod.server.resetHandlers());
-    afterAll(() => mod.server.close());
-  }
+  const mod = await import('./mocks/server-vitest.js');
+  server = mod.server;
+  fetchMock = mod.fetchMock;
+  
+  // Set the global fetch to our mock
+  global.fetch = fetchMock;
 } catch {
-  // MSW server not used; proceed
+  // Fallback to basic fetch mock if server module not available
+  global.fetch = vi.fn();
 }
+
+// Establish API mocking before all tests
+beforeAll(() => {
+  if (server) {
+    server.listen();
+  }
+});
+
+// Reset handlers between tests to ensure clean state
+afterEach(() => {
+  if (server) {
+    server.resetHandlers();
+  }
+  vi.clearAllMocks();
+});
+
+// Clean up after tests are finished
+afterAll(() => {
+  if (server) {
+    server.close();
+  }
+});
