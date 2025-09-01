@@ -43,7 +43,7 @@ class TestProjectService(DatabaseTestMixin):
             description="Project description",
             location="City A",
             client=client,
-        )  # noqa: F841
+        )
         project_factory(
             name="Landscape Design",
             description="Different description",
@@ -55,7 +55,7 @@ class TestProjectService(DatabaseTestMixin):
             description="Another description",
             location="City C",
             client=client,
-        )  # noqa: F841
+        )
 
         # Search by project name - should find one project
         result = ProjectService.get_all_projects(search="Garden")

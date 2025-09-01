@@ -144,8 +144,8 @@ test-performance: install frontend-install
 	@cd frontend && npm run test:run --silent || true
 	@echo "✅ Performance test suite complete"
 
-# Test frontend only
-frontend-test: frontend-install
+# Test frontend only (optimized configuration)
+frontend-test-optimized: frontend-install
 	@echo "Running frontend tests with enhanced configuration..."
 	@cd frontend && \
 	export NODE_OPTIONS="--max-old-space-size=4096" && \

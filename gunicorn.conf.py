@@ -55,7 +55,6 @@ def worker_exit(server, worker):
 
 def pre_fork(server, worker):
     """Called before each worker is forked"""
-    pass
 
 
 def post_fork(server, worker):

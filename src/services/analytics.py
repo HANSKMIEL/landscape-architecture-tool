@@ -6,7 +6,6 @@ and business intelligence reporting.
 """
 
 from datetime import datetime
-from typing import Dict, Optional
 
 from sqlalchemy import func
 
@@ -23,7 +22,7 @@ from src.models.user import db
 class AnalyticsService:
     """Service for generating analytics and reports"""
 
-    def get_plant_usage_analytics(self, date_range: Optional[tuple] = None) -> Dict:
+    def get_plant_usage_analytics(self, date_range: tuple | None = None) -> dict:
         """Get plant usage statistics and trends"""
         try:
             # Build date filter
@@ -151,7 +150,7 @@ class AnalyticsService:
                 "total_projects_with_plants": 0,
             }
 
-    def get_project_performance_metrics(self, project_id: Optional[int] = None) -> Dict:
+    def get_project_performance_metrics(self, project_id: int | None = None) -> dict:
         """Get project performance and timeline analytics"""
         try:
             query = db.session.query(Project)
@@ -165,7 +164,7 @@ class AnalyticsService:
                 db.session.query(Project.status, func.count(Project.id).label("count")).group_by(Project.status).all()
             )
 
-            status_distribution = {status: count for status, count in status_stats}
+            status_distribution = dict(status_stats)
 
             # Budget analysis
             budget_stats = (
@@ -194,10 +193,7 @@ class AnalyticsService:
                         else:
                             start = start_date_val
 
-                        if isinstance(end_date_val, str):
-                            end = datetime.fromisoformat(end_date_val)
-                        else:
-                            end = end_date_val
+                        end = datetime.fromisoformat(end_date_val) if isinstance(end_date_val, str) else end_date_val
 
                         # Convert to dates if they're datetimes
                         if hasattr(start, "date"):
@@ -256,7 +252,7 @@ class AnalyticsService:
         except Exception as e:
             return {"error": str(e)}
 
-    def get_client_relationship_insights(self) -> Dict:
+    def get_client_relationship_insights(self) -> dict:
         """Get client relationship and business analytics"""
         try:
             # Top clients by project count and value
@@ -306,7 +302,7 @@ class AnalyticsService:
                 .all()
             )
 
-            client_type_stats = {client_type: count for client_type, count in type_distribution}
+            client_type_stats = dict(type_distribution)
 
             # Geographic distribution
             geographic_distribution = (
@@ -330,7 +326,7 @@ class AnalyticsService:
         except Exception as e:
             return {"error": str(e)}
 
-    def get_financial_reporting(self, date_range: tuple) -> Dict:
+    def get_financial_reporting(self, date_range: tuple) -> dict:
         """Get financial performance and budget analytics"""
         try:
             start_date, end_date = date_range
@@ -431,7 +427,7 @@ class AnalyticsService:
         except Exception as e:
             return {"error": str(e)}
 
-    def get_recommendation_effectiveness(self) -> Dict:
+    def get_recommendation_effectiveness(self) -> dict:
         """Get plant recommendation system effectiveness metrics"""
         try:
             # Total recommendation requests
@@ -460,7 +456,7 @@ class AnalyticsService:
                 .all()
             )
 
-            rating_stats = {rating: count for rating, count in rating_distribution}
+            rating_stats = dict(rating_distribution)
 
             # Popular criteria
             popular_criteria = (
@@ -508,7 +504,7 @@ class AnalyticsService:
         except Exception as e:
             return {"error": str(e)}
 
-    def get_project_performance_analytics(self, project_id: Optional[int] = None) -> Dict:
+    def get_project_performance_analytics(self, project_id: int | None = None) -> dict:
         """Get project performance analytics (alias for compatibility)"""
         result = self.get_project_performance_metrics(project_id)
 
@@ -544,7 +540,7 @@ class AnalyticsService:
             "average_budget": result.get("budget_analysis", {}).get("avg_budget", 0),
         }
 
-    def get_client_analytics(self) -> Dict:
+    def get_client_analytics(self) -> dict:
         """Get client analytics"""
         try:
             insights = self.get_client_relationship_insights()
@@ -590,7 +586,7 @@ class AnalyticsService:
                 "error": str(e),
             }
 
-    def get_recommendation_analytics(self) -> Dict:
+    def get_recommendation_analytics(self) -> dict:
         """Get recommendation analytics (alias for compatibility)"""
         try:
             result = self.get_recommendation_effectiveness()
@@ -622,7 +618,7 @@ class AnalyticsService:
                 "error": str(e),
             }
 
-    def get_seasonal_analytics(self) -> Dict:
+    def get_seasonal_analytics(self) -> dict:
         """Get seasonal analytics"""
         try:
             # Projects by month
@@ -695,7 +691,7 @@ class AnalyticsService:
                 "error": str(e),
             }
 
-    def get_geographic_analytics(self) -> Dict:
+    def get_geographic_analytics(self) -> dict:
         """Get geographic analytics"""
         try:
             # Projects by location

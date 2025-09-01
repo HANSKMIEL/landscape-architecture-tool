@@ -7,7 +7,6 @@ Enhanced with performance caching for improved response times.
 
 import logging
 from datetime import UTC, datetime, timedelta
-from typing import Dict
 
 from sqlalchemy import desc, func
 
@@ -31,7 +30,7 @@ class DashboardService:
 
     @staticmethod
     @monitor_db_performance
-    def get_dashboard_summary() -> Dict:
+    def get_dashboard_summary() -> dict:
         """Get main dashboard summary statistics"""
         # Try to get cached result first
 
@@ -57,7 +56,7 @@ class DashboardService:
         # Projects by status
         projects_by_status = db.session.query(Project.status, func.count(Project.id)).group_by(Project.status).all()
 
-        status_counts = {status: count for status, count in projects_by_status}
+        status_counts = dict(projects_by_status)
 
         # Recent activity (last 30 days)
         thirty_days_ago = datetime.now(UTC) - timedelta(days=30)
@@ -98,7 +97,7 @@ class DashboardService:
         return result
 
     @staticmethod
-    def get_project_analytics(days: int = 30) -> Dict:
+    def get_project_analytics(days: int = 30) -> dict:
         """Get project analytics for the specified number of days"""
         cutoff_date = datetime.now(UTC) - timedelta(days=days)
 
@@ -141,7 +140,7 @@ class DashboardService:
         return result
 
     @staticmethod
-    def get_plant_analytics() -> Dict:
+    def get_plant_analytics() -> dict:
         """Get plant usage analytics"""
         # Most used plants
         most_used_plants = (
@@ -199,7 +198,7 @@ class DashboardService:
         return result
 
     @staticmethod
-    def get_financial_analytics() -> Dict:
+    def get_financial_analytics() -> dict:
         """Get financial analytics"""
         # Total project value
         total_project_value = db.session.query(func.sum(Project.budget)).scalar() or 0
@@ -264,7 +263,7 @@ class DashboardService:
         return result
 
     @staticmethod
-    def get_supplier_analytics() -> Dict:
+    def get_supplier_analytics() -> dict:
         """Get supplier analytics"""
         # Total suppliers
         total_suppliers = Supplier.query.count()
@@ -339,7 +338,7 @@ class DashboardService:
     @staticmethod
     @cache_dashboard_stats
     @monitor_db_performance
-    def get_recent_activity(limit: int = 10) -> Dict:
+    def get_recent_activity(limit: int = 10) -> dict:
         """Get recent activity across the system"""
         # Recent projects
         recent_projects = Project.query.order_by(desc(Project.created_at)).limit(limit).all()
@@ -390,7 +389,7 @@ class DashboardService:
         return result
 
     @staticmethod
-    def get_performance_metrics() -> Dict:
+    def get_performance_metrics() -> dict:
         """Get system performance metrics"""
         # Calculate completion rates
         total_projects = Project.query.count()
@@ -452,6 +451,6 @@ class DashboardService:
         return result
 
     @staticmethod
-    def get_stats() -> Dict:
+    def get_stats() -> dict:
         """Get dashboard statistics (alias for get_dashboard_summary)"""
         return DashboardService.get_dashboard_summary()

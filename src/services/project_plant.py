@@ -6,7 +6,6 @@ quantities, costs, status tracking, and project plant lists.
 """
 
 import logging
-from typing import Dict, List
 
 from sqlalchemy.exc import IntegrityError
 
@@ -24,8 +23,8 @@ class ProjectPlantService:
         project_id: int,
         plant_id: int,
         quantity: int,
-        unit_cost: float = None,
-        notes: str = None,
+        unit_cost: float | None = None,
+        notes: str | None = None,
     ) -> ProjectPlant:
         """Add a plant to a project with quantity and cost"""
         try:
@@ -125,7 +124,7 @@ class ProjectPlantService:
             logger.error(f"Error updating plant status: {e}")
             raise
 
-    def get_project_plant_list(self, project_id: int) -> List[Dict]:
+    def get_project_plant_list(self, project_id: int) -> list[dict]:
         """Get complete plant list for a project"""
         try:
             project = db.session.get(Project, project_id)
@@ -140,7 +139,7 @@ class ProjectPlantService:
             logger.error(f"Error getting project plant list: {e}")
             raise
 
-    def calculate_project_cost(self, project_id: int) -> Dict:
+    def calculate_project_cost(self, project_id: int) -> dict:
         """Calculate total project cost breakdown"""
         try:
             project = db.session.get(Project, project_id)
@@ -199,7 +198,7 @@ class ProjectPlantService:
             logger.error(f"Error calculating project cost: {e}")
             raise
 
-    def generate_plant_order_list(self, project_id: int) -> List[Dict]:
+    def generate_plant_order_list(self, project_id: int) -> list[dict]:
         """Generate plant order list for suppliers"""
         try:
             project = db.session.get(Project, project_id)

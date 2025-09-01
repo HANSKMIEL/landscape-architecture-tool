@@ -6,7 +6,6 @@ based on environmental conditions, design requirements, and project context.
 """
 
 from dataclasses import dataclass
-from typing import Dict, List, Optional
 
 from src.models.landscape import Plant, PlantRecommendationRequest
 from src.models.user import db
@@ -17,23 +16,23 @@ class RecommendationCriteria:
     """Data class for recommendation criteria with weights"""
 
     # Environmental criteria
-    hardiness_zone: Optional[str] = None
-    sun_exposure: Optional[str] = None
-    soil_type: Optional[str] = None
-    soil_ph: Optional[float] = None
-    moisture_level: Optional[str] = None
+    hardiness_zone: str | None = None
+    sun_exposure: str | None = None
+    soil_type: str | None = None
+    soil_ph: float | None = None
+    moisture_level: str | None = None
 
     # Design criteria
-    desired_height_min: Optional[float] = None
-    desired_height_max: Optional[float] = None
-    desired_width_min: Optional[float] = None
-    desired_width_max: Optional[float] = None
-    color_preferences: Optional[List[str]] = None
-    bloom_season: Optional[str] = None
+    desired_height_min: float | None = None
+    desired_height_max: float | None = None
+    desired_width_min: float | None = None
+    desired_width_max: float | None = None
+    color_preferences: list[str] | None = None
+    bloom_season: str | None = None
 
     # Maintenance criteria
-    maintenance_level: Optional[str] = None
-    budget_range: Optional[str] = None
+    maintenance_level: str | None = None
+    budget_range: str | None = None
 
     # Special requirements
     native_preference: bool = False
@@ -49,7 +48,7 @@ class RecommendationCriteria:
     slope_planting: bool = False
 
     # Criteria weights (sum should be 1.0)
-    weights: Dict[str, float] = None
+    weights: dict[str, float] = None
 
     def __post_init__(self):
         if self.weights is None:
@@ -71,9 +70,9 @@ class PlantScore:
 
     plant: Plant
     total_score: float
-    criteria_scores: Dict[str, float]
-    match_reasons: List[str]
-    warnings: List[str]
+    criteria_scores: dict[str, float]
+    match_reasons: list[str]
+    warnings: list[str]
 
 
 class PlantRecommendationEngine:
@@ -107,7 +106,7 @@ class PlantRecommendationEngine:
         criteria: RecommendationCriteria,
         max_results: int = 10,
         min_score: float = 0.5,
-    ) -> List[PlantScore]:
+    ) -> list[PlantScore]:
         """
         Get plant recommendations based on criteria
 
@@ -192,8 +191,8 @@ class PlantRecommendationEngine:
         self,
         plant: Plant,
         criteria: RecommendationCriteria,
-        match_reasons: List[str],
-        warnings: List[str],
+        match_reasons: list[str],
+        warnings: list[str],
     ) -> float:
         """Score environmental compatibility"""
         score = 0.0
@@ -261,8 +260,8 @@ class PlantRecommendationEngine:
         self,
         plant: Plant,
         criteria: RecommendationCriteria,
-        match_reasons: List[str],
-        warnings: List[str],
+        match_reasons: list[str],
+        warnings: list[str],
     ) -> float:
         """Score design compatibility"""
         score = 0.0
@@ -342,8 +341,8 @@ class PlantRecommendationEngine:
         self,
         plant: Plant,
         criteria: RecommendationCriteria,
-        match_reasons: List[str],
-        warnings: List[str],
+        match_reasons: list[str],
+        warnings: list[str],
     ) -> float:
         """Score maintenance compatibility"""
         score = 0.0
@@ -397,8 +396,8 @@ class PlantRecommendationEngine:
         self,
         plant: Plant,
         criteria: RecommendationCriteria,
-        match_reasons: List[str],
-        warnings: List[str],
+        match_reasons: list[str],
+        warnings: list[str],
     ) -> float:
         """Score special requirements"""
         score = 0.0
@@ -452,8 +451,8 @@ class PlantRecommendationEngine:
         self,
         plant: Plant,
         criteria: RecommendationCriteria,
-        match_reasons: List[str],
-        warnings: List[str],
+        match_reasons: list[str],
+        warnings: list[str],
     ) -> float:
         """Score project context compatibility"""
         score = 0.0
@@ -534,10 +533,10 @@ class PlantRecommendationEngine:
 
     def _size_compatible(
         self,
-        criteria_min: Optional[float],
-        criteria_max: Optional[float],
-        plant_min: Optional[float],
-        plant_max: Optional[float],
+        criteria_min: float | None,
+        criteria_max: float | None,
+        plant_min: float | None,
+        plant_max: float | None,
     ) -> bool:
         """Check if size ranges are compatible"""
         if not any([criteria_min, criteria_max, plant_min, plant_max]):
@@ -551,27 +550,25 @@ class PlantRecommendationEngine:
         # Check if ranges overlap
         return not (criteria_max < plant_min or criteria_min > plant_max)
 
-    def _get_average_size(self, min_val: Optional[float], max_val: Optional[float]) -> float:
+    def _get_average_size(self, min_val: float | None, max_val: float | None) -> float:
         """Get average of min/max values"""
         if min_val is not None and max_val is not None:
             return (min_val + max_val) / 2
-        elif min_val is not None:
+        if min_val is not None:
             return min_val
-        elif max_val is not None:
+        if max_val is not None:
             return max_val
-        else:
-            return 0
+        return 0
 
-    def _get_average_range(self, min_val: Optional[float], max_val: Optional[float]) -> float:
+    def _get_average_range(self, min_val: float | None, max_val: float | None) -> float:
         """Get average of criteria range"""
         if min_val is not None and max_val is not None:
             return (min_val + max_val) / 2
-        elif min_val is not None:
+        if min_val is not None:
             return min_val
-        elif max_val is not None:
+        if max_val is not None:
             return max_val
-        else:
-            return 0
+        return 0
 
     def _check_budget_compatibility(self, budget_range: str, plant_price: float) -> bool:
         """Check if plant price fits within budget range"""
@@ -592,10 +589,10 @@ class PlantRecommendationEngine:
     def log_recommendation_request(
         self,
         criteria: RecommendationCriteria,
-        results: List[PlantScore],
-        user_id: Optional[str] = None,
-        session_id: Optional[str] = None,
-        ip_address: Optional[str] = None,
+        results: list[PlantScore],
+        user_id: str | None = None,
+        session_id: str | None = None,
+        ip_address: str | None = None,
     ) -> PlantRecommendationRequest:
         """
         Log a recommendation request for analytics and learning
@@ -659,7 +656,7 @@ class PlantRecommendationEngine:
             db.session.rollback()
             raise e
 
-    def save_user_feedback(self, request_id: int, feedback: Dict, rating: Optional[int] = None) -> bool:
+    def save_user_feedback(self, request_id: int, feedback: dict, rating: int | None = None) -> bool:
         """
         Save user feedback for a recommendation request
 

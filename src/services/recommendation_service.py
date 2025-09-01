@@ -4,7 +4,6 @@ Wrapper service for plant recommendations that provides a simplified interface
 """
 
 import json
-from typing import Dict, List
 
 from src.services.plant_recommendation import (
     PlantRecommendationEngine,
@@ -22,7 +21,7 @@ class RecommendationService:
         self.engine = PlantRecommendationEngine()
         self._cache = {}
 
-    def get_recommendations(self, criteria: Dict, max_results: int = 10, min_score: float = 0.0) -> List[Dict]:
+    def get_recommendations(self, criteria: dict, max_results: int = 10, min_score: float = 0.0) -> list[dict]:
         """
         Get plant recommendations based on criteria
 
@@ -64,7 +63,7 @@ class RecommendationService:
 
         return recommendations
 
-    def _convert_criteria(self, criteria: Dict) -> RecommendationCriteria:
+    def _convert_criteria(self, criteria: dict) -> RecommendationCriteria:
         """Convert dictionary criteria to RecommendationCriteria object"""
         # Map between test criteria names and RecommendationCriteria fields
         field_mapping = {
@@ -119,7 +118,7 @@ class RecommendationService:
 
         return RecommendationCriteria(**kwargs)
 
-    def _plant_to_dict(self, plant) -> Dict:
+    def _plant_to_dict(self, plant) -> dict:
         """Convert plant object to dictionary"""
         return {
             "id": plant.id,
@@ -145,7 +144,7 @@ class RecommendationService:
             "price": plant.price,
         }
 
-    def _create_criteria_match(self, plant_score, criteria: Dict) -> Dict:
+    def _create_criteria_match(self, plant_score, criteria: dict) -> dict:
         """Create criteria match dictionary based on plant score and criteria"""
         match = {}
 
@@ -186,12 +185,12 @@ class RecommendationService:
         if not plant_soil or not criteria_soil:
             return False
         # Split soil types into sets of individual components
-        plant_soil_set = set(soil.strip().lower() for soil in plant_soil.split(","))
-        criteria_soil_set = set(soil.strip().lower() for soil in criteria_soil.split(","))
+        plant_soil_set = {soil.strip().lower() for soil in plant_soil.split(",")}
+        criteria_soil_set = {soil.strip().lower() for soil in criteria_soil.split(",")}
         # Check for any intersection between the two sets
         return not plant_soil_set.isdisjoint(criteria_soil_set)
 
-    def _check_height_match(self, plant_min: float, plant_max: float, height_range: List) -> bool:
+    def _check_height_match(self, plant_min: float, plant_max: float, height_range: list) -> bool:
         """Check if height ranges overlap"""
         if not plant_min or not plant_max or not height_range or len(height_range) < 2:
             return False
@@ -217,7 +216,7 @@ class RecommendationService:
             # Fallback to string comparison if parsing fails
             return plant_zone == criteria_zone
 
-    def _create_cache_key(self, criteria: Dict, max_results: int, min_score: float) -> str:
+    def _create_cache_key(self, criteria: dict, max_results: int, min_score: float) -> str:
         """Create cache key from criteria"""
         criteria_str = json.dumps(criteria, sort_keys=True)
         return f"{criteria_str}_{max_results}_{min_score}"

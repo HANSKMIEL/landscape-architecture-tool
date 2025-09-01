@@ -104,6 +104,7 @@ class TestStabilityEnhancer:
                     time.sleep(delay * (2**attempt))  # Exponential backoff
                 else:
                     raise
+        return None
 
     @staticmethod
     def ensure_clean_test_state():
@@ -111,7 +112,7 @@ class TestStabilityEnhancer:
         # Clear any cached imports that might cause issues
         import sys
 
-        modules_to_clear = [m for m in sys.modules.keys() if m.startswith("tests.")]
+        modules_to_clear = [m for m in sys.modules if m.startswith("tests.")]
         for module in modules_to_clear[:]:  # Create a copy to avoid dictionary changes during iteration
             if module in sys.modules:
                 del sys.modules[module]
@@ -260,7 +261,7 @@ def stability_enhancer():
     return TestStabilityEnhancer()
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture
 def isolated_test_execution():
     """Ensure isolated test execution with proper cleanup."""
     # Set up synchronization

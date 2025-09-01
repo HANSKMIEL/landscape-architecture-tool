@@ -69,6 +69,7 @@ except Exception as e:
     sys.exit(2)
             """,
             ],
+            check=False,
             capture_output=True,
             text=True,
         )
@@ -106,6 +107,7 @@ except Exception as e:
     sys.exit(2)
             """,
             ],
+            check=False,
             capture_output=True,
             text=True,
         )
@@ -119,7 +121,7 @@ except Exception as e:
         # Read the main.py file to verify the fix
         main_py_path = project_root / "src" / "main.py"
 
-        with open(main_py_path, "r") as f:
+        with open(main_py_path) as f:
             content = f.read()
 
         # Parse the file using ast

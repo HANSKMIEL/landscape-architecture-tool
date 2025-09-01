@@ -45,7 +45,7 @@ class TestTransactionHandlingConsistency:
 
         # Read the conftest.py file and verify both paths have cleanup
         conftest_path = "/home/runner/work/landscape-architecture-tool/" "landscape-architecture-tool/tests/conftest.py"
-        with open(conftest_path, "r") as f:
+        with open(conftest_path) as f:
             content = f.read()
 
         # Look for the connection fixture

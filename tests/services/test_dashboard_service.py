@@ -60,7 +60,7 @@ class TestDashboardService(DatabaseTestMixin):
 
         # Create test data
         clients = [client_factory() for _ in range(3)]
-        suppliers = [supplier_factory() for _ in range(2)]  # noqa: F841
+        suppliers = [supplier_factory() for _ in range(2)]
         plants = [plant_factory(supplier=suppliers[0]) for _ in range(5)]  # noqa: F841
 
         # Create projects with different statuses
@@ -537,7 +537,7 @@ class TestDashboardServiceIntegration(DatabaseTestMixin):
         now = datetime.utcnow()
 
         # Create projects at different times
-        project_factory(client=client, created_at=now - timedelta(days=100), budget=5000.0)  # noqa: F841
+        project_factory(client=client, created_at=now - timedelta(days=100), budget=5000.0)
         recent_project = project_factory(  # noqa: F841
             client=client, created_at=now - timedelta(days=10), budget=8000.0
         )
@@ -547,11 +547,11 @@ class TestDashboardServiceIntegration(DatabaseTestMixin):
 
         # Test 30-day analytics (should include 2 recent projects)
         analytics_30 = DashboardService.get_project_analytics(days=30)
-        assert len([p for p in analytics_30["projects_over_time"]]) >= 0  # May vary by date grouping
+        assert len(list(analytics_30["projects_over_time"])) >= 0  # May vary by date grouping
 
         # Test 7-day analytics (should include 1 very recent project)
         analytics_7 = DashboardService.get_project_analytics(days=7)
-        assert len([p for p in analytics_7["projects_over_time"]]) >= 0  # May vary by date grouping
+        assert len(list(analytics_7["projects_over_time"])) >= 0  # May vary by date grouping
 
         # Test dashboard summary recent activity
         summary = DashboardService.get_dashboard_summary()
@@ -561,8 +561,8 @@ class TestDashboardServiceIntegration(DatabaseTestMixin):
         """Test dashboard service edge cases and error handling"""
         # Test with projects having null budgets
         client = client_factory()
-        project_factory(client=client, budget=5000.0)  # noqa: F841  # noqa: F841
-        project_factory(client=client, budget=None)  # noqa: F841  # noqa: F841
+        project_factory(client=client, budget=5000.0)
+        project_factory(client=client, budget=None)
 
         financial_analytics = DashboardService.get_financial_analytics()
         assert financial_analytics["total_project_value"] == 5000.0

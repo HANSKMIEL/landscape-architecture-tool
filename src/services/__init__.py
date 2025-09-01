@@ -1,6 +1,6 @@
 import logging
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from src.models.landscape import Client, Plant, Product, Project, Supplier
 from src.models.user import db
@@ -14,7 +14,7 @@ class BaseService:
     def __init__(self, model_class):
         self.model_class = model_class
 
-    def get_all(self, search: str = None, page: int = 1, per_page: int = 50) -> Dict[str, Any]:
+    def get_all(self, search: str | None = None, page: int = 1, per_page: int = 50) -> dict[str, Any]:
         """Get all entities with optional search and pagination"""
         try:
             query = self.model_class.query
@@ -33,19 +33,19 @@ class BaseService:
                 "has_prev": paginated.has_prev,
             }
         except Exception as e:
-            logger.error(f"Error getting all {self.model_class.__name__}: {str(e)}")
+            logger.error(f"Error getting all {self.model_class.__name__}: {e!s}")
             raise
 
-    def get_by_id(self, entity_id: int) -> Optional[Any]:
+    def get_by_id(self, entity_id: int) -> Any | None:
         """Get entity by ID"""
         try:
             entity = db.session.get(self.model_class, entity_id)
             return entity.to_dict() if entity else None
         except Exception as e:
-            logger.error(f"Error getting {self.model_class.__name__} by ID {entity_id}: {str(e)}")
+            logger.error(f"Error getting {self.model_class.__name__} by ID {entity_id}: {e!s}")
             raise
 
-    def create(self, data: Dict[str, Any]) -> Dict[str, Any]:
+    def create(self, data: dict[str, Any]) -> dict[str, Any]:
         """Create new entity"""
         try:
             entity = self.model_class(**data)
@@ -55,10 +55,10 @@ class BaseService:
             return entity.to_dict()
         except Exception as e:
             db.session.rollback()
-            logger.error(f"Error creating {self.model_class.__name__}: {str(e)}")
+            logger.error(f"Error creating {self.model_class.__name__}: {e!s}")
             raise
 
-    def update(self, entity_id: int, data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    def update(self, entity_id: int, data: dict[str, Any]) -> dict[str, Any] | None:
         """Update entity"""
         try:
             entity = db.session.get(self.model_class, entity_id)
@@ -74,7 +74,7 @@ class BaseService:
             return entity.to_dict()
         except Exception as e:
             db.session.rollback()
-            logger.error(f"Error updating {self.model_class.__name__} {entity_id}: {str(e)}")
+            logger.error(f"Error updating {self.model_class.__name__} {entity_id}: {e!s}")
             raise
 
     def delete(self, entity_id: int) -> bool:
@@ -90,9 +90,9 @@ class BaseService:
             return True
         except Exception as e:
             db.session.rollback()
-            logger.error(f"Error deleting {self.model_class.__name__} {entity_id}: {str(e)}")
+            logger.error(f"Error deleting {self.model_class.__name__} {entity_id}: {e!s}")
             raise
-            logger.error(f"Error deleting {self.model_class.__name__} {entity_id}: {str(e)}")
+            logger.error(f"Error deleting {self.model_class.__name__} {entity_id}: {e!s}")
             raise
 
 
@@ -102,7 +102,7 @@ class SupplierService(BaseService):
     def __init__(self):
         super().__init__(Supplier)
 
-    def create(self, data: Dict[str, Any]) -> Dict[str, Any]:
+    def create(self, data: dict[str, Any]) -> dict[str, Any]:
         """Create new supplier with email uniqueness validation"""
         try:
             # Check for duplicate email if email is provided
@@ -114,13 +114,13 @@ class SupplierService(BaseService):
             # Use the parent create method
             return super().create(data)
         except ValueError as e:
-            logger.error(f"Business validation error: {str(e)}")
+            logger.error(f"Business validation error: {e!s}")
             raise
         except Exception as e:
-            logger.error(f"Error creating supplier: {str(e)}")
+            logger.error(f"Error creating supplier: {e!s}")
             raise
 
-    def update(self, entity_id: int, data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    def update(self, entity_id: int, data: dict[str, Any]) -> dict[str, Any] | None:
         """Update supplier with email uniqueness validation"""
         try:
             # Check for duplicate email if email is being updated
@@ -134,10 +134,10 @@ class SupplierService(BaseService):
             # Use the parent update method
             return super().update(entity_id, data)
         except ValueError as e:
-            logger.error(f"Business validation error: {str(e)}")
+            logger.error(f"Business validation error: {e!s}")
             raise
         except Exception as e:
-            logger.error(f"Error updating supplier: {str(e)}")
+            logger.error(f"Error updating supplier: {e!s}")
             raise
 
     def delete(self, entity_id: int) -> bool:
@@ -157,13 +157,13 @@ class SupplierService(BaseService):
             # Use the parent delete method
             return super().delete(entity_id)
         except ValueError as e:
-            logger.error(f"Business validation error: {str(e)}")
+            logger.error(f"Business validation error: {e!s}")
             raise
         except Exception as e:
-            logger.error(f"Error deleting supplier: {str(e)}")
+            logger.error(f"Error deleting supplier: {e!s}")
             raise
 
-    def get_all(self, search: str = None, page: int = 1, per_page: int = 50) -> Dict[str, Any]:
+    def get_all(self, search: str | None = None, page: int = 1, per_page: int = 50) -> dict[str, Any]:
         """Get all suppliers with search functionality"""
         try:
             query = Supplier.query
@@ -184,7 +184,7 @@ class SupplierService(BaseService):
                 "current_page": page,
             }
         except Exception as e:
-            logger.error(f"Error getting suppliers: {str(e)}")
+            logger.error(f"Error getting suppliers: {e!s}")
             raise
 
 
@@ -194,7 +194,7 @@ class PlantService(BaseService):
     def __init__(self):
         super().__init__(Plant)
 
-    def update(self, entity_id: int, data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    def update(self, entity_id: int, data: dict[str, Any]) -> dict[str, Any] | None:
         """Update plant with business logic validation"""
         try:
             # Check height constraints
@@ -202,9 +202,8 @@ class PlantService(BaseService):
             height_max = data.get("height_max")
 
             # If both are provided, validate that min <= max
-            if height_min is not None and height_max is not None:
-                if height_min > height_max:
-                    raise ValueError("height_min cannot be greater than height_max")
+            if height_min is not None and height_max is not None and height_min > height_max:
+                raise ValueError("height_min cannot be greater than height_max")
 
             # If only one is provided, check against existing value
             if entity_id:
@@ -220,13 +219,13 @@ class PlantService(BaseService):
             # Use the parent update method
             return super().update(entity_id, data)
         except ValueError as e:
-            logger.error(f"Business validation error: {str(e)}")
+            logger.error(f"Business validation error: {e!s}")
             raise
         except Exception as e:
-            logger.error(f"Error updating plant: {str(e)}")
+            logger.error(f"Error updating plant: {e!s}")
             raise
 
-    def get_all(self, search: str = None, page: int = 1, per_page: int = 50) -> Dict[str, Any]:
+    def get_all(self, search: str | None = None, page: int = 1, per_page: int = 50) -> dict[str, Any]:
         """Get all plants with search functionality"""
         try:
             query = Plant.query
@@ -245,7 +244,7 @@ class PlantService(BaseService):
                 "current_page": page,
             }
         except Exception as e:
-            logger.error(f"Error getting plants: {str(e)}")
+            logger.error(f"Error getting plants: {e!s}")
             raise
 
 
@@ -255,7 +254,7 @@ class ProductService(BaseService):
     def __init__(self):
         super().__init__(Product)
 
-    def get_all(self, search: str = None, page: int = 1, per_page: int = 50) -> Dict[str, Any]:
+    def get_all(self, search: str | None = None, page: int = 1, per_page: int = 50) -> dict[str, Any]:
         """Get all products with search functionality"""
         try:
             query = Product.query
@@ -276,7 +275,7 @@ class ProductService(BaseService):
                 "current_page": page,
             }
         except Exception as e:
-            logger.error(f"Error getting products: {str(e)}")
+            logger.error(f"Error getting products: {e!s}")
             raise
 
 
@@ -286,7 +285,7 @@ class ClientService(BaseService):
     def __init__(self):
         super().__init__(Client)
 
-    def get_all(self, search: str = None, page: int = 1, per_page: int = 50) -> Dict[str, Any]:
+    def get_all(self, search: str | None = None, page: int = 1, per_page: int = 50) -> dict[str, Any]:
         """Get all clients with search functionality"""
         try:
             query = Client.query
@@ -305,7 +304,7 @@ class ClientService(BaseService):
                 "current_page": page,
             }
         except Exception as e:
-            logger.error(f"Error getting clients: {str(e)}")
+            logger.error(f"Error getting clients: {e!s}")
             raise
 
 
@@ -317,11 +316,11 @@ class ProjectService(BaseService):
 
     def get_all(
         self,
-        search: str = None,
-        client_id: int = None,
+        search: str | None = None,
+        client_id: int | None = None,
         page: int = 1,
         per_page: int = 50,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Get all projects with search and client filtering"""
         try:
             query = Project.query
@@ -345,7 +344,7 @@ class ProjectService(BaseService):
                 "current_page": page,
             }
         except Exception as e:
-            logger.error(f"Error getting projects: {str(e)}")
+            logger.error(f"Error getting projects: {e!s}")
             raise
 
 
@@ -353,7 +352,7 @@ class DashboardService:
     """Service for dashboard statistics and data"""
 
     @staticmethod
-    def get_stats() -> Dict[str, Any]:
+    def get_stats() -> dict[str, Any]:
         """Get dashboard statistics"""
         try:
             stats = {
@@ -370,16 +369,16 @@ class DashboardService:
             logger.info("Dashboard stats generated successfully")
             return stats
         except Exception as e:
-            logger.error(f"Error getting dashboard stats: {str(e)}")
+            logger.error(f"Error getting dashboard stats: {e!s}")
             raise
 
     @staticmethod
-    def get_recent_activity() -> List[Dict[str, Any]]:
+    def get_recent_activity() -> list[dict[str, Any]]:
         """Get recent activity for dashboard"""
         try:
             # For now, return static activity data
             # In a real implementation, this would come from an activity log table
-            activities = [
+            return [
                 {
                     "id": 1,
                     "type": "project_update",
@@ -405,7 +404,6 @@ class DashboardService:
                     "user": "Hans Kmiel",
                 },
             ]
-            return activities
         except Exception as e:
-            logger.error(f"Error getting recent activity: {str(e)}")
+            logger.error(f"Error getting recent activity: {e!s}")
             raise

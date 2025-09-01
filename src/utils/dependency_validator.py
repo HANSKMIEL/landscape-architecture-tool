@@ -9,7 +9,6 @@ import importlib.util
 import logging
 import sys
 import warnings
-from typing import Dict, List, Tuple
 
 logger = logging.getLogger(__name__)
 
@@ -45,9 +44,9 @@ class DependencyValidator:
     }
 
     def __init__(self):
-        self.missing_critical: List[str] = []
-        self.missing_optional: List[str] = []
-        self.validation_results: Dict[str, bool] = {}
+        self.missing_critical: list[str] = []
+        self.missing_optional: list[str] = []
+        self.validation_results: dict[str, bool] = {}
 
     def _check_dependency(self, dependency_name: str) -> bool:
         """
@@ -78,7 +77,7 @@ class DependencyValidator:
         except (ImportError, ValueError, AttributeError):
             return False
 
-    def validate_critical_dependencies(self) -> Tuple[bool, List[str]]:
+    def validate_critical_dependencies(self) -> tuple[bool, list[str]]:
         """
         Validate all critical dependencies required for application functionality.
 
@@ -106,7 +105,7 @@ class DependencyValidator:
 
         return success, self.missing_critical
 
-    def validate_optional_dependencies(self) -> Tuple[int, List[str]]:
+    def validate_optional_dependencies(self) -> tuple[int, list[str]]:
         """
         Validate optional dependencies and warn about missing ones.
 

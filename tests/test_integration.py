@@ -19,7 +19,7 @@ from src.main import create_app  # noqa: E402
 from src.models.user import db  # noqa: E402
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture
 def integration_app():
     """Create and configure a test app that simulates the CI environment"""
     # Set testing environment
@@ -55,7 +55,7 @@ def integration_app():
         db.drop_all()
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture
 def integration_client(integration_app):
     """Create a test client for integration testing"""
     return integration_app.test_client()

@@ -5,7 +5,6 @@ Handles all client-related business logic and database operations.
 """
 
 from datetime import UTC, datetime
-from typing import Dict, List, Optional
 
 from sqlalchemy import or_
 
@@ -17,7 +16,7 @@ class ClientService:
     """Service class for client operations"""
 
     @staticmethod
-    def get_all_clients(search: str = "", page: int = 1, per_page: int = 50) -> Dict:
+    def get_all_clients(search: str = "", page: int = 1, per_page: int = 50) -> dict:
         """Get all clients with optional filtering and pagination"""
         query = Client.query
 
@@ -53,12 +52,12 @@ class ClientService:
         }
 
     @staticmethod
-    def get_client_by_id(client_id: int) -> Optional[Client]:
+    def get_client_by_id(client_id: int) -> Client | None:
         """Get a client by ID"""
         return db.session.get(Client, client_id)
 
     @staticmethod
-    def create_client(client_data: Dict) -> Client:
+    def create_client(client_data: dict) -> Client:
         """Create a new client"""
         client = Client(**client_data)
         db.session.add(client)
@@ -66,7 +65,7 @@ class ClientService:
         return client
 
     @staticmethod
-    def update_client(client_id: int, client_data: Dict) -> Optional[Client]:
+    def update_client(client_id: int, client_data: dict) -> Client | None:
         """Update an existing client"""
         client = db.session.get(Client, client_id)
         if not client:
@@ -98,12 +97,12 @@ class ClientService:
         return True
 
     @staticmethod
-    def get_client_projects(client_id: int) -> List[Project]:
+    def get_client_projects(client_id: int) -> list[Project]:
         """Get all projects for a specific client"""
         return Project.query.filter_by(client_id=client_id).order_by(Project.created_at.desc()).all()
 
     @staticmethod
-    def get_client_statistics(client_id: int) -> Dict:
+    def get_client_statistics(client_id: int) -> dict:
         """Get statistical information for a client"""
         client = db.session.get(Client, client_id)
         if not client:
@@ -130,7 +129,7 @@ class ClientService:
         }
 
     @staticmethod
-    def search_clients(search_term: str) -> List[Client]:
+    def search_clients(search_term: str) -> list[Client]:
         """Search clients by name, email, company, or phone"""
         search_term = f"%{search_term}%"
         return (
@@ -147,7 +146,7 @@ class ClientService:
         )
 
     @staticmethod
-    def validate_client_data(client_data: Dict) -> List[str]:
+    def validate_client_data(client_data: dict) -> list[str]:
         """Validate client data and return list of validation errors"""
         errors = []
 
@@ -177,12 +176,12 @@ class ClientService:
         return errors
 
     @staticmethod
-    def get_clients_by_company(company: str) -> List[Client]:
+    def get_clients_by_company(company: str) -> list[Client]:
         """Get all clients from a specific company"""
         return Client.query.filter_by(company=company).order_by(Client.name).all()
 
     @staticmethod
-    def get_top_clients_by_projects(limit: int = 10) -> List[Dict]:
+    def get_top_clients_by_projects(limit: int = 10) -> list[dict]:
         """Get top clients by number of projects"""
         clients = Client.query.all()
         client_stats = []
@@ -197,7 +196,7 @@ class ClientService:
         return client_stats[:limit]
 
     @staticmethod
-    def get_top_clients_by_budget(limit: int = 10) -> List[Dict]:
+    def get_top_clients_by_budget(limit: int = 10) -> list[dict]:
         """Get top clients by total project budget"""
         clients = Client.query.all()
         client_stats = []

@@ -3,12 +3,14 @@ Performance optimization utilities for the landscape architecture tool.
 Provides caching, query optimization, and performance monitoring capabilities.
 """
 
+import contextlib
 import functools
 import json
 import logging
 import os
 import time
-from typing import Any, Callable, Dict, Optional
+from collections.abc import Callable
+from typing import Any
 
 import redis
 from flask import current_app, request
@@ -40,7 +42,7 @@ class PerformanceCache:
                 # Silently fall back to memory cache in development
                 self.redis_client = None
 
-    def get(self, key: str) -> Optional[Any]:
+    def get(self, key: str) -> Any | None:
         """Get value from cache."""
         # Try Redis first
         if self.redis_client:
@@ -75,10 +77,8 @@ class PerformanceCache:
         """Delete key from cache."""
         try:
             if self.redis_client:
-                try:
+                with contextlib.suppress(Exception):
                     self.redis_client.delete(key)
-                except Exception:
-                    pass
 
             _memory_cache.pop(key, None)
             return True
@@ -89,10 +89,8 @@ class PerformanceCache:
         """Clear all cache."""
         try:
             if self.redis_client:
-                try:
+                with contextlib.suppress(Exception):
                     self.redis_client.flushdb()
-                except Exception:
-                    pass
 
             _memory_cache.clear()
             return True
@@ -100,7 +98,7 @@ class PerformanceCache:
             return False
 
 
-def cached(cache: PerformanceCache, timeout: int = 300, key_prefix: str = None):
+def cached(cache: PerformanceCache, timeout: int = 300, key_prefix: str | None = None):
     """
     Decorator for caching function results.
 
@@ -207,12 +205,10 @@ class QueryPerformanceMonitor:
             except Exception as e:
                 execution_time = time.time() - start_time
                 try:
-                    current_app.logger.error(
-                        f"Query error in {func.__name__} after " f"{execution_time:.3f}s: {str(e)}"
-                    )
+                    current_app.logger.error(f"Query error in {func.__name__} after " f"{execution_time:.3f}s: {e!s}")
                 except RuntimeError:
                     logging.getLogger(__name__).error(
-                        f"Query error in {func.__name__} after " f"{execution_time:.3f}s: {str(e)}"
+                        f"Query error in {func.__name__} after " f"{execution_time:.3f}s: {e!s}"
                     )
                 raise
 
@@ -223,7 +219,7 @@ class QueryPerformanceMonitor:
 monitor_db_performance = QueryPerformanceMonitor.monitor_db_performance
 
 
-def get_cache_stats() -> Dict[str, Any]:
+def get_cache_stats() -> dict[str, Any]:
     """Get cache performance statistics."""
     stats = {
         "redis_available": cache.redis_client is not None,
@@ -265,7 +261,7 @@ def clear_cache_by_pattern(pattern: str) -> bool:
                 pass
 
         # Clear memory cache entries (simple pattern matching)
-        keys_to_delete = [k for k in _memory_cache.keys() if pattern.replace("*", "") in k]
+        keys_to_delete = [k for k in _memory_cache if pattern.replace("*", "") in k]
         for key in keys_to_delete:
             del _memory_cache[key]
 

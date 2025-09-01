@@ -211,10 +211,10 @@ class TestSupplierService(DatabaseTestMixin):
 
     def test_get_supplier_products(self, app_context, sample_supplier, product_factory):
         """Test getting products for a supplier"""
-        product_factory(supplier=sample_supplier, name="Product 1")  # noqa: F841  # noqa: F841
-        product_factory(supplier=sample_supplier, name="Product 2")  # noqa: F841  # noqa: F841
+        product_factory(supplier=sample_supplier, name="Product 1")
+        product_factory(supplier=sample_supplier, name="Product 2")
         other_supplier = product_factory().supplier
-        product_factory(supplier=other_supplier, name="Product 3")  # noqa: F841  # noqa: F841
+        product_factory(supplier=other_supplier, name="Product 3")
 
         supplier_products = SupplierService.get_supplier_products(sample_supplier.id)
 
@@ -278,19 +278,19 @@ class TestSupplierService(DatabaseTestMixin):
             contact_person="John Alpha",
             email="alpha@nursery.com",
             city="Alphaville",
-        )  # noqa: F841
+        )
         supplier2 = supplier_factory(  # noqa: F841
             name="Beta Plants",
             contact_person="Beta Manager",
             email="beta@test.com",
             city="Betatown",
-        )  # noqa: F841
+        )
         supplier3 = supplier_factory(  # noqa: F841
             name="Gamma Gardens",
             contact_person="Gamma Owner",
             email="gamma@gardens.com",
             city="Springfield",
-        )  # noqa: F841
+        )
 
         # Search by name
         results = SupplierService.search_suppliers("Alpha")
@@ -311,7 +311,7 @@ class TestSupplierService(DatabaseTestMixin):
         """Test getting suppliers by specialization"""
         supplier1 = supplier_factory(specialization="Native Plants")  # noqa: F841
         supplier2 = supplier_factory(specialization="Garden Tools")  # noqa: F841
-        supplier_factory(specialization="Native Plants and Trees")  # noqa: F841  # noqa: F841
+        supplier_factory(specialization="Native Plants and Trees")
 
         native_suppliers = SupplierService.get_suppliers_by_specialization("Native Plants")
         assert len(native_suppliers) == 2  # Includes partial matches

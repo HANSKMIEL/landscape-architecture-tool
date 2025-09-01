@@ -44,8 +44,7 @@ def clear_cache():
         success = cache.clear()
         if success:
             return jsonify({"message": "Cache cleared successfully", "success": True})
-        else:
-            return jsonify({"error": "Failed to clear cache", "success": False}), 500
+        return jsonify({"error": "Failed to clear cache", "success": False}), 500
     except Exception:
         current_app.logger.exception("Failed to clear cache")
         return jsonify({"error": "Failed to clear cache"}), 500
@@ -56,10 +55,7 @@ def invalidate_cache():
     """Invalidate specific cache patterns."""
     try:
         # Handle both JSON and form data requests
-        if request.is_json:
-            data = request.get_json() or {}
-        else:
-            data = request.form.to_dict() or {}
+        data = request.get_json() or {} if request.is_json else request.form.to_dict() or {}
         cache_type = data.get("type", "all")
 
         if cache_type == "dashboard":

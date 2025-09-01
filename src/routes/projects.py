@@ -359,7 +359,7 @@ def get_project_stats():
         # Status distribution
         status_stats = db.session.query(Project.status, db.func.count(Project.id)).group_by(Project.status).all()
 
-        status_distribution = {status: count for status, count in status_stats}
+        status_distribution = dict(status_stats)
 
         # Budget statistics
         budget_stats = (

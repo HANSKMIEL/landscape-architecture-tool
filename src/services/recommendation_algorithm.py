@@ -3,8 +3,6 @@ Recommendation Algorithm
 Core algorithm logic for scoring and ranking plant recommendations
 """
 
-from typing import Dict
-
 
 class RecommendationAlgorithm:
     """
@@ -21,7 +19,7 @@ class RecommendationAlgorithm:
             "water_requirements": 0.05,
         }
 
-    def calculate_score(self, plant_data: Dict, criteria: Dict) -> float:
+    def calculate_score(self, plant_data: dict, criteria: dict) -> float:
         """
         Calculate overall compatibility score for a plant against criteria
 
@@ -60,7 +58,7 @@ class RecommendationAlgorithm:
         # Return normalized score
         return total_score / total_weight if total_weight > 0 else 0.0
 
-    def _score_height_range(self, plant_data: Dict, criteria: Dict) -> float:
+    def _score_height_range(self, plant_data: dict, criteria: dict) -> float:
         """Score height range compatibility"""
         height_range = criteria.get("height_range")
         if not height_range or len(height_range) < 2:
@@ -95,7 +93,7 @@ class RecommendationAlgorithm:
         # No overlap
         return 0.0
 
-    def _score_hardiness_zone(self, plant_data: Dict, criteria: Dict) -> float:
+    def _score_hardiness_zone(self, plant_data: dict, criteria: dict) -> float:
         """Score hardiness zone compatibility"""
         plant_zone = plant_data.get("hardiness_zone")
         criteria_zone = criteria.get("hardiness_zone")
@@ -204,6 +202,6 @@ class RecommendationAlgorithm:
 
         return 0.5  # Default for unknown combinations
 
-    def get_criteria_weights(self) -> Dict[str, float]:
+    def get_criteria_weights(self) -> dict[str, float]:
         """Get the criteria importance weights"""
         return self.criteria_weights.copy()

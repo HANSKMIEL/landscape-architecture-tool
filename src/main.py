@@ -7,7 +7,7 @@ Refactored modular version with persistent database
 import logging
 import os
 import sys
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 from flask import Flask, jsonify, request
 from flask_cors import CORS
@@ -25,15 +25,15 @@ except ImportError:
 # Add project root to Python path before importing local modules
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from src.config import get_config  # noqa: E402
-from src.models.landscape import Plant, Product, Supplier  # noqa: E402
-from src.models.user import db  # noqa: E402
-from src.routes import n8n_receivers, webhooks  # noqa: E402
-from src.routes.performance import performance_bp  # noqa: E402
-from src.routes.plant_recommendations import plant_recommendations_bp  # noqa: E402
-from src.routes.project_plants import project_plants_bp  # noqa: E402
-from src.routes.reports import reports_bp  # noqa: E402
-from src.schemas import (  # noqa: E402
+from src.config import get_config
+from src.models.landscape import Plant, Product, Supplier
+from src.models.user import db
+from src.routes import n8n_receivers, webhooks
+from src.routes.performance import performance_bp
+from src.routes.plant_recommendations import plant_recommendations_bp
+from src.routes.project_plants import project_plants_bp
+from src.routes.reports import reports_bp
+from src.schemas import (
     ClientCreateSchema,
     ClientUpdateSchema,
     PlantCreateSchema,
@@ -45,20 +45,20 @@ from src.schemas import (  # noqa: E402
     SupplierCreateSchema,
     SupplierUpdateSchema,
 )
-from src.services import (  # noqa: E402
+from src.services import (
     ClientService,
     PlantService,
     ProductService,
     ProjectService,
     SupplierService,
 )
-from src.services.analytics import AnalyticsService  # noqa: E402
-from src.services.dashboard_service import DashboardService  # noqa: E402
-from src.utils.db_init import initialize_database, populate_sample_data  # noqa: E402
+from src.services.analytics import AnalyticsService
+from src.services.dashboard_service import DashboardService
+from src.utils.db_init import initialize_database, populate_sample_data
 
-# IMPORTANT: DependencyValidator is used in create_app() and health endpoint - do not remove (issue #326)  # noqa: E501
-from src.utils.dependency_validator import DependencyValidator  # noqa: E402
-from src.utils.error_handlers import handle_errors, register_error_handlers  # noqa: E402
+# IMPORTANT: DependencyValidator is used in create_app() and health endpoint - do not remove (issue #326)
+from src.utils.dependency_validator import DependencyValidator
+from src.utils.error_handlers import handle_errors, register_error_handlers
 
 # Define version for health endpoint
 __version__ = "2.0.0"
@@ -199,7 +199,7 @@ def create_app():
 
         health_data = {
             "status": "healthy" if critical_ok else "unhealthy",
-            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
             "version": __version__,  # Added for test compatibility
             "environment": os.environ.get("FLASK_ENV", "development"),  # Added for test compatibility
             "database_status": db_status,  # Added for test compatibility
@@ -227,7 +227,7 @@ def create_app():
             # Return 503 Service Unavailable if critical dependencies are missing
             health_data["message"] = "Critical dependencies missing - application may not function properly"
             return jsonify(health_data), 503
-        elif missing_optional:
+        if missing_optional:
             health_data["message"] = "Some optional features may be limited due to missing dependencies"
 
         return jsonify(health_data)
@@ -670,8 +670,7 @@ def create_app():
 
         if format_type == "json":
             return jsonify(suppliers)
-        else:
-            return jsonify({"error": "Unsupported format"}), 400
+        return jsonify({"error": "Unsupported format"}), 400
 
     @app.route("/api/suppliers/bulk-import", methods=["POST"])
     @handle_errors
@@ -892,8 +891,7 @@ def create_app():
 
         if format_type == "json":
             return jsonify({"plants": plants["plants"]})
-        else:
-            return jsonify({"error": "Unsupported format"}), 400
+        return jsonify({"error": "Unsupported format"}), 400
 
     @app.route("/api/plants/bulk-import", methods=["POST"])
     @handle_errors
@@ -1180,7 +1178,7 @@ def main():
                 initialize_database()
                 logger.info("Database initialized successfully")
             except Exception as e:
-                logger.error(f"Failed to initialize database: {str(e)}")
+                logger.error(f"Failed to initialize database: {e!s}")
                 raise
 
             # Populate with sample data if empty
@@ -1188,9 +1186,8 @@ def main():
                 populate_sample_data()
                 logger.info("Sample data population completed")
             except Exception as e:
-                logger.error(f"Failed to populate sample data: {str(e)}")
+                logger.error(f"Failed to populate sample data: {e!s}")
                 # Don't fail if sample data population fails
-                pass
 
         # Start the Flask development server (development or integration testing)
         if flask_env in ["development", "testing"]:
@@ -1204,7 +1201,7 @@ def main():
             print("For production, use: gunicorn -c gunicorn.conf.py wsgi:application")
 
     except Exception as e:
-        logger.error(f"Failed to start application: {str(e)}")
+        logger.error(f"Failed to start application: {e!s}")
         raise
 
 

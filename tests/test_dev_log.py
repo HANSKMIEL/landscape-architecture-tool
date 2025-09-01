@@ -48,7 +48,7 @@ class TestDevLogManager:
             "docs_updated": "DOCS_UPDATED",
             "config_changed": "CONFIG_CHANGED",
         }
-        assert log_manager.VALID_ACTIONS == expected_actions
+        assert expected_actions == log_manager.VALID_ACTIONS
 
     def test_create_log_header(self, log_manager):
         """Test log header creation"""
@@ -103,7 +103,7 @@ class TestDevLogManager:
         assert log_manager.log_file.exists()
 
         # Verify file content
-        with open(log_manager.log_file, "r") as f:
+        with open(log_manager.log_file) as f:
             content = f.read()
 
         assert "Development Log - Landscape Architecture Tool" in content
@@ -120,7 +120,7 @@ class TestDevLogManager:
         log_manager.add_entry("bug_fixed", "Fixed bug", "dev2")
 
         # Verify both entries exist and are in correct order (newest first)
-        with open(log_manager.log_file, "r") as f:
+        with open(log_manager.log_file) as f:
             content = f.read()
 
         # Find positions of entries
@@ -215,6 +215,7 @@ class TestDevLogScript:
 
         result = subprocess.run(
             [sys.executable, "scripts/update_dev_log.py", "--help"],
+            check=False,
             capture_output=True,
             text=True,
             cwd=str(project_root),
@@ -232,6 +233,7 @@ class TestDevLogScript:
 
         result = subprocess.run(
             [sys.executable, "scripts/update_dev_log.py", "--action", "feature_added"],
+            check=False,
             capture_output=True,
             text=True,
             cwd=str(project_root),
@@ -258,7 +260,7 @@ class TestLogFormatValidation:
         log_file = project_root / "dev_log.md"
 
         if log_file.exists():
-            with open(log_file, "r") as f:
+            with open(log_file) as f:
                 content = f.read()
 
             # Check for required format elements
@@ -284,7 +286,7 @@ class TestLogFormatValidation:
 
         assert roadmap_file.exists(), "PLANNED_DEVELOPMENT_ROADMAP.md file is missing"
 
-        with open(roadmap_file, "r") as f:
+        with open(roadmap_file) as f:
             content = f.read()
 
         # Check for required sections
@@ -299,7 +301,7 @@ class TestLogFormatValidation:
         project_root = Path(__file__).parent.parent
         roadmap_file = project_root / "PLANNED_DEVELOPMENT_ROADMAP.md"
 
-        with open(roadmap_file, "r") as f:
+        with open(roadmap_file) as f:
             roadmap_content = f.read()
 
         # Check that documented actions match actual valid actions

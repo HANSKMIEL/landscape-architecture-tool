@@ -5,7 +5,6 @@ Handles all supplier-related business logic and database operations.
 """
 
 from datetime import UTC, datetime
-from typing import Dict, List, Optional
 
 from sqlalchemy import or_
 
@@ -17,7 +16,7 @@ class SupplierService:
     """Service class for supplier operations"""
 
     @staticmethod
-    def get_all_suppliers(search: str = "", specialization: str = "", page: int = 1, per_page: int = 50) -> Dict:
+    def get_all_suppliers(search: str = "", specialization: str = "", page: int = 1, per_page: int = 50) -> dict:
         """Get all suppliers with optional filtering and pagination"""
         query = Supplier.query
 
@@ -48,12 +47,12 @@ class SupplierService:
         }
 
     @staticmethod
-    def get_supplier_by_id(supplier_id: int) -> Optional[Supplier]:
+    def get_supplier_by_id(supplier_id: int) -> Supplier | None:
         """Get a supplier by ID"""
         return db.session.get(Supplier, supplier_id)
 
     @staticmethod
-    def create_supplier(supplier_data: Dict) -> Supplier:
+    def create_supplier(supplier_data: dict) -> Supplier:
         """Create a new supplier"""
         supplier = Supplier(**supplier_data)
         db.session.add(supplier)
@@ -61,7 +60,7 @@ class SupplierService:
         return supplier
 
     @staticmethod
-    def update_supplier(supplier_id: int, supplier_data: Dict) -> Optional[Supplier]:
+    def update_supplier(supplier_id: int, supplier_data: dict) -> Supplier | None:
         """Update an existing supplier"""
         supplier = db.session.get(Supplier, supplier_id)
         if not supplier:
@@ -94,17 +93,17 @@ class SupplierService:
         return True
 
     @staticmethod
-    def get_supplier_products(supplier_id: int) -> List[Product]:
+    def get_supplier_products(supplier_id: int) -> list[Product]:
         """Get all products for a specific supplier"""
         return Product.query.filter_by(supplier_id=supplier_id).order_by(Product.name).all()
 
     @staticmethod
-    def get_supplier_plants(supplier_id: int) -> List[Plant]:
+    def get_supplier_plants(supplier_id: int) -> list[Plant]:
         """Get all plants for a specific supplier"""
         return Plant.query.filter_by(supplier_id=supplier_id).order_by(Plant.name).all()
 
     @staticmethod
-    def get_supplier_statistics(supplier_id: int) -> Dict:
+    def get_supplier_statistics(supplier_id: int) -> dict:
         """Get statistical information for a supplier"""
         supplier = db.session.get(Supplier, supplier_id)
         if not supplier:
@@ -131,7 +130,7 @@ class SupplierService:
         }
 
     @staticmethod
-    def search_suppliers(search_term: str) -> List[Supplier]:
+    def search_suppliers(search_term: str) -> list[Supplier]:
         """Search suppliers by name, contact person, email, or city"""
         search_term = f"%{search_term}%"
         return (
@@ -148,18 +147,18 @@ class SupplierService:
         )
 
     @staticmethod
-    def get_suppliers_by_specialization(specialization: str) -> List[Supplier]:
+    def get_suppliers_by_specialization(specialization: str) -> list[Supplier]:
         """Get suppliers by specialization"""
         return Supplier.query.filter(Supplier.specialization.ilike(f"%{specialization}%")).order_by(Supplier.name).all()
 
     @staticmethod
-    def get_supplier_specializations() -> List[str]:
+    def get_supplier_specializations() -> list[str]:
         """Get all unique supplier specializations"""
         specializations = db.session.query(Supplier.specialization).distinct().all()
         return [spec[0] for spec in specializations if spec[0]]
 
     @staticmethod
-    def validate_supplier_data(supplier_data: Dict) -> List[str]:
+    def validate_supplier_data(supplier_data: dict) -> list[str]:
         """Validate supplier data and return list of validation errors"""
         errors = []
 
@@ -189,13 +188,13 @@ class SupplierService:
         # Website validation
         if supplier_data.get("website"):
             website = supplier_data["website"]
-            if not (website.startswith("http://") or website.startswith("https://")):
+            if not (website.startswith(("http://", "https://"))):
                 errors.append("Website must start with http:// or https://")
 
         return errors
 
     @staticmethod
-    def add_product_to_supplier(supplier_id: int, product_data: Dict) -> Optional[Product]:
+    def add_product_to_supplier(supplier_id: int, product_data: dict) -> Product | None:
         """Add a product to a supplier"""
         supplier = db.session.get(Supplier, supplier_id)
         if not supplier:
@@ -208,7 +207,7 @@ class SupplierService:
         return product
 
     @staticmethod
-    def get_top_suppliers_by_products(limit: int = 10) -> List[Dict]:
+    def get_top_suppliers_by_products(limit: int = 10) -> list[dict]:
         """Get top suppliers by number of products"""
         suppliers = Supplier.query.all()
         supplier_stats = []
@@ -233,7 +232,7 @@ class SupplierService:
         return supplier_stats[:limit]
 
     @staticmethod
-    def get_supplier_contact_info(supplier_id: int) -> Dict:
+    def get_supplier_contact_info(supplier_id: int) -> dict:
         """Get formatted contact information for a supplier"""
         supplier = db.session.get(Supplier, supplier_id)
         if not supplier:

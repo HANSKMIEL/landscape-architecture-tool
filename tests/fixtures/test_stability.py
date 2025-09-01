@@ -7,8 +7,9 @@ import logging
 import sys
 import time
 import traceback
+from collections.abc import Callable
 from contextlib import contextmanager
-from typing import Any, Callable, Dict
+from typing import Any
 
 import pytest
 from sqlalchemy.exc import SQLAlchemyError
@@ -45,7 +46,7 @@ def retry_on_failure(max_retries: int = 3, delay: float = 0.5, backoff: float = 
                     logger.warning(f"Test {func.__name__} failed on attempt {attempt + 1}/{max_retries + 1}: {e}")
 
                     # Only retry certain types of exceptions
-                    if isinstance(e, (SQLAlchemyError, ConnectionError, TimeoutError)):
+                    if isinstance(e, SQLAlchemyError | ConnectionError | TimeoutError):
                         time.sleep(current_delay)
                         current_delay *= backoff
                     else:
@@ -80,7 +81,7 @@ def error_recovery_context(operation_name: str = "test operation"):
         pass
 
 
-def validate_test_environment() -> Dict[str, bool]:
+def validate_test_environment() -> dict[str, bool]:
     """
     Validate that the test environment is properly set up.
 
@@ -146,7 +147,7 @@ class TestExecutionMonitor:
         """Record a test retry."""
         self.retry_counts[test_name] = self.retry_counts.get(test_name, 0) + 1
 
-    def get_performance_report(self) -> Dict[str, Any]:
+    def get_performance_report(self) -> dict[str, Any]:
         """Generate a performance report."""
         report = {
             "total_tests": len(self.execution_times),
@@ -259,7 +260,7 @@ def cleanup_test_data():
         logger.error(f"Test data cleanup failed: {e}")
 
 
-@pytest.fixture(scope="function", autouse=True)
+@pytest.fixture(autouse=True)
 def auto_cleanup():
     """Automatically clean up test data after each test."""
     yield

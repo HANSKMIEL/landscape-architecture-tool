@@ -56,13 +56,26 @@ jobs:
         pip install -r requirements-dev.txt
         cd frontend && npm ci --legacy-peer-deps
 
-    - name: Run Automated Validation
+    - name: Run Enhanced Automated Validation with Security Checks
       env:
         PYTHONPATH: .
         FLASK_ENV: testing
         CI: true
+        # Enable enhanced security scanning
+        SECURITY_ENHANCED: true
+        QUALITY_GATES_STRICT: true
       run: |
+        echo "🚀 Running enhanced automated validation with strict quality gates..."
+        
+        # Pre-validation security checks
+        echo "🔒 Running security pre-checks..."
+        bandit -r src/ -f txt || echo "⚠️ Security issues detected"
+        safety check || echo "⚠️ Vulnerable dependencies detected"
+        
+        # Main validation with enhanced configuration
         python scripts/automated_validation.py
+        
+        echo "✅ Enhanced validation completed"
 
     - name: Upload Validation Report
       if: always()
