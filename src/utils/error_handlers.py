@@ -1,7 +1,10 @@
 import logging
+from functools import wraps
 
 from flask import jsonify
 from pydantic import ValidationError
+from sqlalchemy.exc import DataError, IntegrityError, SQLAlchemyError
+from werkzeug.exceptions import HTTPException
 
 logger = logging.getLogger(__name__)
 
@@ -115,9 +118,6 @@ def register_error_handlers(app):
 
 def handle_errors(f):
     """Decorator for handling errors in route functions with improved specificity"""
-    from functools import wraps
-    from sqlalchemy.exc import SQLAlchemyError, IntegrityError, DataError
-    from werkzeug.exceptions import HTTPException
     
     @wraps(f)
     def wrapper(*args, **kwargs):
