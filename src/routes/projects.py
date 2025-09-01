@@ -2,7 +2,7 @@
 # File location: src/routes/projects.py
 # This file handles all project management operations
 
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from flask import Blueprint, jsonify, request
 
@@ -377,8 +377,6 @@ def get_project_stats():
         avg_budget = float(budget_stats[2]) if budget_stats[2] else 0
 
         # Recent projects (last 30 days)
-        from datetime import timedelta
-
         thirty_days_ago = datetime.utcnow() - timedelta(days=30)
         recent_projects = Project.query.filter(Project.created_at >= thirty_days_ago).count()
 

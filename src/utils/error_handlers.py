@@ -1,7 +1,10 @@
 import logging
+from functools import wraps
 
 from flask import jsonify
 from pydantic import ValidationError
+from sqlalchemy.exc import DataError, IntegrityError, SQLAlchemyError
+from werkzeug.exceptions import HTTPException
 
 logger = logging.getLogger(__name__)
 
@@ -115,10 +118,6 @@ def register_error_handlers(app):
 
 def handle_errors(f):
     """Decorator for handling errors in route functions with improved specificity"""
-    from functools import wraps
-    from sqlalchemy.exc import SQLAlchemyError, IntegrityError, DataError
-    from werkzeug.exceptions import HTTPException
-    
     @wraps(f)
     def wrapper(*args, **kwargs):
         try:
@@ -131,7 +130,13 @@ def handle_errors(f):
             return handle_validation_error(e)
         except IntegrityError as e:
             logger.warning(f"Database integrity error in {f.__name__}: {str(e)}")
-            return jsonify({"error": "Data integrity violation", "message": "The operation conflicts with existing data"}), 409
+            return (
+                jsonify({
+                    "error": "Data integrity violation", 
+                    "message": "The operation conflicts with existing data"
+                }), 
+                409
+            )
         except DataError as e:
             logger.warning(f"Database data error in {f.__name__}: {str(e)}")
             return jsonify({"error": "Invalid data format", "message": "The provided data format is invalid"}), 400
@@ -143,10 +148,22 @@ def handle_errors(f):
             raise  # Let Flask handle HTTP exceptions
         except KeyError as e:
             logger.warning(f"Missing key error in {f.__name__}: {str(e)}")
-            return jsonify({"error": "Missing required field", "message": "One or more required fields are missing."}), 400
+            return (
+                jsonify({
+                    "error": "Missing required field", 
+                    "message": "One or more required fields are missing."
+                }), 
+                400
+            )
         except TypeError as e:
             logger.warning(f"Type error in {f.__name__}: {str(e)}")
-            return jsonify({"error": "Invalid data type", "message": "One or more fields have invalid data types"}), 400
+            return (
+                jsonify({
+                    "error": "Invalid data type", 
+                    "message": "One or more fields have invalid data types"
+                }), 
+                400
+            )
         except ValueError as e:
             logger.warning(f"Value error in {f.__name__}: {str(e)}")
             return jsonify({"error": "Invalid value", "message": str(e)}), 400
