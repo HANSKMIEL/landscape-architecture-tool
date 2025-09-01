@@ -652,9 +652,7 @@ class TestSupplierRoutesIntegration(DatabaseTestMixin):
             assert response.status_code == 201
 
         # Add plants directly via factory (as there might not be an API endpoint)
-        [
-            plant_factory(supplier=supplier, name=f"Plant {i}") for i in range(2)
-        ]  # noqa: F841  # noqa: F841
+        ]  # noqa: F841
 
         # Get supplier products
         response = client.get(f"/api/suppliers/{supplier.id}/products")
