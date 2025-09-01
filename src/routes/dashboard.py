@@ -50,12 +50,17 @@ def get_recent_activity():
         activities = []
 
         # Get recent projects
-        recent_projects = Project.query.order_by(Project.created_at.desc()).limit(5).all()
+        recent_projects = (
+            Project.query.order_by(Project.created_at.desc()).limit(5).all()
+        )
         for project in recent_projects:
             activities.append(
                 {
                     "type": "project",
-                    "message": (f'New project "{project.name}" created for ' f"{project.client.name}"),
+                    "message": (
+                        f'New project "{project.name}" created for '
+                        f"{project.client.name}"
+                    ),
                     "timestamp": project.created_at.isoformat(),
                     "icon": "folder",
                 }

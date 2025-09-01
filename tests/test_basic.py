@@ -3,7 +3,6 @@
 Basic test suite for the Landscape Architecture Management System
 """
 
-import os
 import sys
 from pathlib import Path
 from unittest.mock import patch

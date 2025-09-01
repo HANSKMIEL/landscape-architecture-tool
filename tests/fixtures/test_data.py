@@ -53,7 +53,9 @@ class ProductFactory(factory.alchemy.SQLAlchemyModelFactory):
         sqlalchemy_session_persistence = "commit"
 
     name = factory.Faker("word")
-    category = factory.Faker("random_element", elements=["Tools", "Fertilizer", "Seeds", "Equipment"])
+    category = factory.Faker(
+        "random_element", elements=["Tools", "Fertilizer", "Seeds", "Equipment"]
+    )
     description = factory.Faker("text", max_nb_chars=200)
     price = factory.Faker("pyfloat", left_digits=2, right_digits=2, positive=True)
     unit = factory.Faker("random_element", elements=["piece", "kg", "liter", "meter"])
@@ -75,15 +77,25 @@ class PlantFactory(factory.alchemy.SQLAlchemyModelFactory):
 
     name = factory.Faker("word")
     common_name = factory.Faker("word")
-    category = factory.Faker("random_element", elements=["Tree", "Shrub", "Perennial", "Annual"])
+    category = factory.Faker(
+        "random_element", elements=["Tree", "Shrub", "Perennial", "Annual"]
+    )
     height_min = factory.Faker("random_int", min=10, max=100)
     height_max = factory.Faker("random_int", min=100, max=500)
     width_min = factory.Faker("random_int", min=10, max=100)
     width_max = factory.Faker("random_int", min=100, max=300)
-    hardiness_zone = factory.Faker("random_element", elements=["3a", "3b", "4a", "4b", "5a", "5b"])
-    sun_requirements = factory.Faker("random_element", elements=["full_sun", "partial_shade", "full_shade"])
-    sun_exposure = factory.Faker("random_element", elements=["full_sun", "partial_shade", "full_shade"])
-    soil_type = factory.Faker("random_element", elements=["clay", "sand", "loam", "silt"])
+    hardiness_zone = factory.Faker(
+        "random_element", elements=["3a", "3b", "4a", "4b", "5a", "5b"]
+    )
+    sun_requirements = factory.Faker(
+        "random_element", elements=["full_sun", "partial_shade", "full_shade"]
+    )
+    sun_exposure = factory.Faker(
+        "random_element", elements=["full_sun", "partial_shade", "full_shade"]
+    )
+    soil_type = factory.Faker(
+        "random_element", elements=["clay", "sand", "loam", "silt"]
+    )
     soil_ph_min = factory.Faker(
         "pyfloat",
         left_digits=1,
@@ -101,7 +113,9 @@ class PlantFactory(factory.alchemy.SQLAlchemyModelFactory):
         max_value=9.0,
     )
     moisture_level = factory.Faker("random_element", elements=["low", "medium", "high"])
-    bloom_time = factory.Faker("random_element", elements=["spring", "summer", "fall", "winter"])
+    bloom_time = factory.Faker(
+        "random_element", elements=["spring", "summer", "fall", "winter"]
+    )
     bloom_color = factory.Faker("color_name")
     maintenance = factory.Faker("random_element", elements=["low", "medium", "high"])
     price = factory.Faker("pyfloat", left_digits=2, right_digits=2, positive=True)
@@ -144,7 +158,9 @@ class ProjectFactory(factory.alchemy.SQLAlchemyModelFactory):
     location = factory.Faker("address")
     area_size = factory.Faker("pyfloat", left_digits=3, right_digits=2, positive=True)
     budget = factory.Faker("pyfloat", left_digits=5, right_digits=2, positive=True)
-    status = factory.Faker("random_element", elements=["planning", "active", "completed", "on_hold"])
+    status = factory.Faker(
+        "random_element", elements=["planning", "active", "completed", "on_hold"]
+    )
     start_date = factory.Faker("date_this_year")
     target_completion_date = factory.Faker("date_this_year")
     client = factory.SubFactory(ClientFactory)

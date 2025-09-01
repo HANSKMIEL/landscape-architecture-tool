@@ -18,10 +18,14 @@ class Supplier(db.Model):
     website = db.Column(db.String(200))
     notes = db.Column(db.Text)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    updated_at = db.Column(
+        db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
+    )
 
     # Relationships
-    products = db.relationship("Product", backref="supplier", lazy=True, cascade="all, delete-orphan")
+    products = db.relationship(
+        "Product", backref="supplier", lazy=True, cascade="all, delete-orphan"
+    )
     plants = db.relationship("Plant", backref="supplier", lazy=True)
 
     def to_dict(self):
@@ -59,7 +63,9 @@ class Product(db.Model):
     dimensions = db.Column(db.String(100))
     notes = db.Column(db.Text)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    updated_at = db.Column(
+        db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
+    )
 
     def to_dict(self):
         return {
@@ -157,7 +163,9 @@ class Plant(db.Model):
     planting_season = db.Column(db.String(100))
     notes = db.Column(db.Text)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    updated_at = db.Column(
+        db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
+    )
 
     def to_dict(self):
         return {
@@ -272,7 +280,9 @@ class PlantRecommendationRequest(db.Model):
 
     # Request metadata
     user_id = db.Column(db.String(100))  # Optional user identifier
-    client_id = db.Column(db.Integer, db.ForeignKey("clients.id"))  # Optional client association
+    client_id = db.Column(
+        db.Integer, db.ForeignKey("clients.id")
+    )  # Optional client association
     session_id = db.Column(db.String(100))  # Session tracking
     ip_address = db.Column(db.String(45))  # For analytics
 
@@ -282,7 +292,9 @@ class PlantRecommendationRequest(db.Model):
     feedback_rating = db.Column(db.Integer)  # Overall rating 1-5
 
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    updated_at = db.Column(
+        db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
+    )
 
     def to_dict(self):
         return {
@@ -339,10 +351,14 @@ class Client(db.Model):
     notes = db.Column(db.Text)
     registration_date = db.Column(db.String(20))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    updated_at = db.Column(
+        db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
+    )
 
     # Relationships
-    projects = db.relationship("Project", backref="client", lazy=True, cascade="all, delete-orphan")
+    projects = db.relationship(
+        "Project", backref="client", lazy=True, cascade="all, delete-orphan"
+    )
 
     def to_dict(self):
         return {
@@ -384,10 +400,14 @@ class Project(db.Model):
     notes = db.Column(db.Text)
     project_manager = db.Column(db.String(100))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    updated_at = db.Column(
+        db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
+    )
 
     # Relationships
-    project_plants = db.relationship("ProjectPlant", backref="project", lazy=True, cascade="all, delete-orphan")
+    project_plants = db.relationship(
+        "ProjectPlant", backref="project", lazy=True, cascade="all, delete-orphan"
+    )
 
     def to_dict(self):
         return {
@@ -401,10 +421,14 @@ class Project(db.Model):
             "start_date": self.start_date,
             "end_date": self.end_date,
             "target_completion_date": (
-                self.target_completion_date.isoformat() if self.target_completion_date else None
+                self.target_completion_date.isoformat()
+                if self.target_completion_date
+                else None
             ),
             "actual_completion_date": (
-                self.actual_completion_date.isoformat() if self.actual_completion_date else None
+                self.actual_completion_date.isoformat()
+                if self.actual_completion_date
+                else None
             ),
             "budget": self.budget,
             "location": self.location,
@@ -426,16 +450,22 @@ class ProjectPlant(db.Model):
     plant_id = db.Column(db.Integer, db.ForeignKey("plants.id"), nullable=False)
     quantity = db.Column(db.Integer, nullable=False, default=1)
     unit_cost = db.Column(db.Float)  # Cost per plant
-    status = db.Column(db.String(50), default="planned")  # planned, ordered, planted, completed
+    status = db.Column(
+        db.String(50), default="planned"
+    )  # planned, ordered, planted, completed
     notes = db.Column(db.Text)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    updated_at = db.Column(
+        db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
+    )
 
     # Relationships
     plant = db.relationship("Plant", backref="project_plants", lazy=True)
 
     # Unique constraint to prevent duplicate plant entries per project
-    __table_args__ = (db.UniqueConstraint("project_id", "plant_id", name="unique_project_plant"),)
+    __table_args__ = (
+        db.UniqueConstraint("project_id", "plant_id", name="unique_project_plant"),
+    )
 
     def to_dict(self):
         return {
@@ -459,7 +489,9 @@ class ProjectPlant(db.Model):
 # Plant indexes for search and filtering
 plant_name_idx = db.Index("idx_plant_name", Plant.name)
 plant_category_idx = db.Index("idx_plant_category", Plant.category)
-plant_sun_requirements_idx = db.Index("idx_plant_sun_requirements", Plant.sun_requirements)
+plant_sun_requirements_idx = db.Index(
+    "idx_plant_sun_requirements", Plant.sun_requirements
+)
 plant_water_needs_idx = db.Index("idx_plant_water_needs", Plant.water_needs)
 plant_hardiness_zone_idx = db.Index("idx_plant_hardiness_zone", Plant.hardiness_zone)
 plant_native_idx = db.Index("idx_plant_native", Plant.native)
@@ -467,8 +499,12 @@ plant_supplier_idx = db.Index("idx_plant_supplier_id", Plant.supplier_id)
 plant_price_idx = db.Index("idx_plant_price", Plant.price)
 
 # Composite indexes for common query patterns
-plant_category_sun_idx = db.Index("idx_plant_category_sun", Plant.category, Plant.sun_requirements)
-plant_native_category_idx = db.Index("idx_plant_native_category", Plant.native, Plant.category)
+plant_category_sun_idx = db.Index(
+    "idx_plant_category_sun", Plant.category, Plant.sun_requirements
+)
+plant_native_category_idx = db.Index(
+    "idx_plant_native_category", Plant.native, Plant.category
+)
 
 # Project indexes for filtering and search
 project_client_idx = db.Index("idx_project_client_id", Project.client_id)
@@ -478,13 +514,19 @@ project_start_date_idx = db.Index("idx_project_start_date", Project.start_date)
 project_budget_idx = db.Index("idx_project_budget", Project.budget)
 
 # Composite indexes for project queries
-project_status_client_idx = db.Index("idx_project_status_client", Project.status, Project.client_id)
-project_type_status_idx = db.Index("idx_project_type_status", Project.project_type, Project.status)
+project_status_client_idx = db.Index(
+    "idx_project_status_client", Project.status, Project.client_id
+)
+project_type_status_idx = db.Index(
+    "idx_project_type_status", Project.project_type, Project.status
+)
 
 # Supplier indexes
 supplier_name_idx = db.Index("idx_supplier_name", Supplier.name)
 supplier_city_idx = db.Index("idx_supplier_city", Supplier.city)
-supplier_specialization_idx = db.Index("idx_supplier_specialization", Supplier.specialization)
+supplier_specialization_idx = db.Index(
+    "idx_supplier_specialization", Supplier.specialization
+)
 
 # Client indexes
 client_name_idx = db.Index("idx_client_name", Client.name)
@@ -492,6 +534,8 @@ client_city_idx = db.Index("idx_client_city", Client.city)
 client_type_idx = db.Index("idx_client_type", Client.client_type)
 
 # ProjectPlant indexes for relationships
-project_plant_project_idx = db.Index("idx_project_plant_project", ProjectPlant.project_id)
+project_plant_project_idx = db.Index(
+    "idx_project_plant_project", ProjectPlant.project_id
+)
 project_plant_plant_idx = db.Index("idx_project_plant_plant", ProjectPlant.plant_id)
 project_plant_status_idx = db.Index("idx_project_plant_status", ProjectPlant.status)

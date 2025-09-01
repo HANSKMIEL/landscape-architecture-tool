@@ -340,14 +340,18 @@ class TestPlantServiceIntegration(DatabaseTestMixin):
     def test_complex_filtering_scenario(self, app_context, plant_factory):
         """Test complex filtering scenarios"""
         # Create diverse plants
-        tree1 = plant_factory(name="Oak Tree", category="Tree", sun_exposure="full_sun", native=True)  # noqa: F841
+        plant_factory(
+            name="Oak Tree", category="Tree", sun_exposure="full_sun", native=True
+        )  # noqa: F841
         tree2 = plant_factory(  # noqa: F841
             name="Maple Tree",
             category="Tree",
             sun_exposure="partial_shade",
             native=False,
         )
-        shrub1 = plant_factory(name="Rose Bush", category="Shrub", sun_exposure="full_sun", native=True)  # noqa: F841
+        plant_factory(
+            name="Rose Bush", category="Shrub", sun_exposure="full_sun", native=True
+        )  # noqa: F841
 
         # Filter by category and native status
         result = PlantService.get_all_plants(category="Tree", native_only=True)

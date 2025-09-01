@@ -72,7 +72,9 @@ class TestPlantRoutes(DatabaseTestMixin):
         assert len(data["plants"]) == 2
         assert all(plant["category"] == "Tree" for plant in data["plants"])
 
-    def test_get_plants_with_sun_requirements_filter(self, client, app_context, plant_factory):
+    def test_get_plants_with_sun_requirements_filter(
+        self, client, app_context, plant_factory
+    ):
         """Test getting plants with sun requirements filter"""
         plant1 = plant_factory(sun_exposure="full_sun")  # noqa: F841
         plant2 = plant_factory(sun_exposure="partial_shade")  # noqa: F841
@@ -119,7 +121,9 @@ class TestPlantRoutes(DatabaseTestMixin):
 
     def test_get_plants_combined_filters(self, client, app_context, plant_factory):
         """Test getting plants with multiple filters combined"""
-        plant1 = plant_factory(name="Native Oak", category="Tree", native=True, sun_exposure="full_sun")  # noqa: F841
+        _ = plant_factory(
+            name="Native Oak", category="Tree", native=True, sun_exposure="full_sun"
+        )
         plant2 = plant_factory(  # noqa: F841
             name="Import Rose", category="Shrub", native=False, sun_exposure="full_sun"
         )
@@ -135,7 +139,9 @@ class TestPlantRoutes(DatabaseTestMixin):
         assert response.status_code == 200
         data = response.get_json()
         assert len(data["plants"]) == 2
-        assert all(plant["category"] == "Tree" and plant["native"] for plant in data["plants"])
+        assert all(
+            plant["category"] == "Tree" and plant["native"] for plant in data["plants"]
+        )
 
     def test_create_plant_success(self, client, app_context, sample_supplier):
         """Test creating a plant successfully"""
@@ -150,7 +156,9 @@ class TestPlantRoutes(DatabaseTestMixin):
             "supplier_id": sample_supplier.id,
         }
 
-        response = client.post("/api/plants", data=json.dumps(plant_data), content_type="application/json")
+        response = client.post(
+            "/api/plants", data=json.dumps(plant_data), content_type="application/json"
+        )
 
         assert response.status_code == 201
         data = response.get_json()
@@ -166,7 +174,9 @@ class TestPlantRoutes(DatabaseTestMixin):
         """Test creating plant with minimal required data"""
         plant_data = {"name": "Minimal Plant", "category": "Tree"}
 
-        response = client.post("/api/plants", data=json.dumps(plant_data), content_type="application/json")
+        response = client.post(
+            "/api/plants", data=json.dumps(plant_data), content_type="application/json"
+        )
 
         assert response.status_code == 201
         data = response.get_json()
@@ -177,7 +187,9 @@ class TestPlantRoutes(DatabaseTestMixin):
         """Test creating plant with missing required fields"""
         plant_data = {"common_name": "Missing Name Plant"}
 
-        response = client.post("/api/plants", data=json.dumps(plant_data), content_type="application/json")
+        response = client.post(
+            "/api/plants", data=json.dumps(plant_data), content_type="application/json"
+        )
 
         assert response.status_code == 422
         data = response.get_json()
@@ -192,7 +204,9 @@ class TestPlantRoutes(DatabaseTestMixin):
             "price": "invalid_price",
         }
 
-        response = client.post("/api/plants", data=json.dumps(plant_data), content_type="application/json")
+        response = client.post(
+            "/api/plants", data=json.dumps(plant_data), content_type="application/json"
+        )
 
         assert response.status_code == 422
         data = response.get_json()
@@ -376,7 +390,9 @@ class TestPlantRoutes(DatabaseTestMixin):
     def test_plants_error_handling(self, client, app_context):
         """Test API error handling"""
         # Test invalid JSON
-        response = client.post("/api/plants", data="invalid json", content_type="application/json")
+        response = client.post(
+            "/api/plants", data="invalid json", content_type="application/json"
+        )
 
         assert response.status_code == 400
 
@@ -395,7 +411,9 @@ class TestPlantRoutes(DatabaseTestMixin):
             "price": "not_a_number",
         }
 
-        response = client.post("/api/plants", data=json.dumps(plant_data), content_type="application/json")
+        response = client.post(
+            "/api/plants", data=json.dumps(plant_data), content_type="application/json"
+        )
 
         assert response.status_code == 422
         data = response.get_json()
@@ -425,7 +443,9 @@ class TestPlantRoutesIntegration(DatabaseTestMixin):
         }
 
         # 1. Create plant
-        response = client.post("/api/plants", data=json.dumps(plant_data), content_type="application/json")
+        response = client.post(
+            "/api/plants", data=json.dumps(plant_data), content_type="application/json"
+        )
         assert response.status_code == 201
         created_plant = response.get_json()
         plant_id = created_plant["id"]
@@ -466,7 +486,9 @@ class TestPlantRoutesIntegration(DatabaseTestMixin):
         """Test various combinations of plant filters"""
         # Create diverse plants
         plants = [  # noqa: F841
-            plant_factory(name="Native Oak", category="Tree", native=True, sun_exposure="full_sun"),
+            plant_factory(
+                name="Native Oak", category="Tree", native=True, sun_exposure="full_sun"
+            ),
             plant_factory(
                 name="Import Rose",
                 category="Shrub",

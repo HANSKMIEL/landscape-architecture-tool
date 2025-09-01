@@ -6,7 +6,9 @@ from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy.pool import StaticPool
 
 # Use a dedicated test DB URL and NEVER touch prod/dev DBs.
-TEST_DATABASE_URL = os.getenv("TEST_DATABASE_URL") or os.getenv("DATABASE_URL", "sqlite+pysqlite:///:memory:")
+TEST_DATABASE_URL = os.getenv("TEST_DATABASE_URL") or os.getenv(
+    "DATABASE_URL", "sqlite+pysqlite:///:memory:"
+)
 
 
 def _make_engine(url: str):
@@ -27,7 +29,9 @@ def _make_engine(url: str):
 @pytest.fixture(scope="session")
 def engine():
     # Basic safety check to prevent running against a production DB
-    assert "prod" not in TEST_DATABASE_URL.lower(), "Refusing to run tests against a DB that looks like production"
+    assert (
+        "prod" not in TEST_DATABASE_URL.lower()
+    ), "Refusing to run tests against a DB that looks like production"
     eng = _make_engine(TEST_DATABASE_URL)
     return eng
 
@@ -77,7 +81,11 @@ def connection(engine):
 @pytest.fixture(scope="session")
 def Session(connection):
     # Bind a sessionmaker to a single connection to enable SAVEPOINT-based isolation per test
-    return scoped_session(sessionmaker(bind=connection, expire_on_commit=False, autoflush=False, future=True))
+    return scoped_session(
+        sessionmaker(
+            bind=connection, expire_on_commit=False, autoflush=False, future=True
+        )
+    )
 
 
 @pytest.fixture(autouse=True)
@@ -87,6 +95,7 @@ def db_session(Session, connection, app):
 
     # Bind the Flask app's db session to our test session for proper isolation
     from src.models.user import db as flask_db
+
     with app.app_context():
         # Replace the Flask-SQLAlchemy session with our test session
         flask_db.session = Session

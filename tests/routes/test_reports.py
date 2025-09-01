@@ -61,7 +61,9 @@ class TestReportsRoutes(DatabaseTestMixin):
 
     def test_generate_business_summary_pdf_format(self, client, app_context):
         """Test business summary report in PDF format"""
-        response = client.get("/api/reports/business-summary", query_string={"format": "pdf"})
+        response = client.get(
+            "/api/reports/business-summary", query_string={"format": "pdf"}
+        )
 
         assert response.status_code == 200
         assert response.content_type == "application/pdf"
@@ -74,13 +76,17 @@ class TestReportsRoutes(DatabaseTestMixin):
     def test_generate_business_summary_error_handling(self, client, app_context):
         """Test business summary error handling"""
         # Test with invalid date format
-        response = client.get("/api/reports/business-summary", query_string={"start_date": "invalid-date"})
+        response = client.get(
+            "/api/reports/business-summary", query_string={"start_date": "invalid-date"}
+        )
 
         assert response.status_code == 500
         data = response.get_json()
         assert "error" in data
 
-    def test_generate_project_report_json_format(self, client, app_context, sample_project):
+    def test_generate_project_report_json_format(
+        self, client, app_context, sample_project
+    ):
         """Test project report in JSON format"""
         # Use the sample project
         response = client.get(f"/api/reports/project/{sample_project.id}")
@@ -111,9 +117,13 @@ class TestReportsRoutes(DatabaseTestMixin):
         assert "name" in client_data
         assert "email" in client_data
 
-    def test_generate_project_report_pdf_format(self, client, app_context, sample_project):
+    def test_generate_project_report_pdf_format(
+        self, client, app_context, sample_project
+    ):
         """Test project report in PDF format"""
-        response = client.get(f"/api/reports/project/{sample_project.id}", query_string={"format": "pdf"})
+        response = client.get(
+            f"/api/reports/project/{sample_project.id}", query_string={"format": "pdf"}
+        )
 
         if response.status_code == 404:
             pytest.skip("No sample project available")
@@ -174,7 +184,9 @@ class TestReportsRoutes(DatabaseTestMixin):
         # Mock PDF generation to raise an exception
         mock_pdf_gen.side_effect = Exception("PDF generation failed")
 
-        response = client.get("/api/reports/business-summary", query_string={"format": "pdf"})
+        response = client.get(
+            "/api/reports/business-summary", query_string={"format": "pdf"}
+        )
 
         # Should return error response
         assert response.status_code == 500
@@ -342,7 +354,9 @@ class TestReportsPDFGeneration(DatabaseTestMixin):
         """Test business summary PDF generation structure"""
         # Set up minimal test data
         client_obj = client_factory(name="Test Client")
-        project_factory(name="Test Project", client=client_obj, status="active", budget=1000.0)
+        project_factory(
+            name="Test Project", client=client_obj, status="active", budget=1000.0
+        )
 
         # Mock the PDF components
         mock_doc_instance = MagicMock()
@@ -358,11 +372,14 @@ class TestReportsPDFGeneration(DatabaseTestMixin):
         }
         mock_send_file.return_value = MagicMock()
 
-        response = client.get("/api/reports/business-summary", query_string={"format": "pdf"})
+        response = client.get(
+            "/api/reports/business-summary", query_string={"format": "pdf"}
+        )
 
         # Debug: Check if response is successful
         assert response.status_code == 200, (
-            f"Expected 200, got {response.status_code}: " f"{response.get_data(as_text=True)}"
+            f"Expected 200, got {response.status_code}: "
+            f"{response.get_data(as_text=True)}"
         )
 
         # Should attempt to create PDF

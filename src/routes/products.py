@@ -26,7 +26,9 @@ def get_products():
         per_page = int(request.args.get("per_page", 50))
 
         # Build query
-        query = Product.query.join(Supplier, Product.supplier_id == Supplier.id, isouter=True)
+        query = Product.query.join(
+            Supplier, Product.supplier_id == Supplier.id, isouter=True
+        )
 
         # Apply filters
         if search:
@@ -64,9 +66,15 @@ def get_products():
                     "sku": product.sku,
                     "in_stock": product.in_stock,
                     "supplier_id": product.supplier_id,
-                    "supplier_name": (product.supplier.name if product.supplier else None),
-                    "created_at": (product.created_at.isoformat() if product.created_at else None),
-                    "updated_at": (product.updated_at.isoformat() if product.updated_at else None),
+                    "supplier_name": (
+                        product.supplier.name if product.supplier else None
+                    ),
+                    "created_at": (
+                        product.created_at.isoformat() if product.created_at else None
+                    ),
+                    "updated_at": (
+                        product.updated_at.isoformat() if product.updated_at else None
+                    ),
                 }
             )
 
@@ -154,7 +162,9 @@ def update_product(product_id):
         if "in_stock" in data:
             product.in_stock = data["in_stock"]
         if "supplier_id" in data:
-            product.supplier_id = int(data["supplier_id"]) if data["supplier_id"] else None
+            product.supplier_id = (
+                int(data["supplier_id"]) if data["supplier_id"] else None
+            )
 
         product.updated_at = datetime.utcnow()
 
@@ -311,8 +321,12 @@ def import_products():
 
                 # Find or create supplier
                 supplier_id = None
-                if product_data.get("supplier") and not pd.isna(product_data["supplier"]):
-                    supplier = Supplier.query.filter_by(name=str(product_data["supplier"])).first()
+                if product_data.get("supplier") and not pd.isna(
+                    product_data["supplier"]
+                ):
+                    supplier = Supplier.query.filter_by(
+                        name=str(product_data["supplier"])
+                    ).first()
                     if supplier:
                         supplier_id = supplier.id
 
@@ -321,27 +335,32 @@ def import_products():
                     name=str(product_data["name"]),
                     description=(
                         str(product_data.get("description", ""))
-                        if product_data.get("description") and not pd.isna(product_data.get("description"))
+                        if product_data.get("description")
+                        and not pd.isna(product_data.get("description"))
                         else None
                     ),
                     category=(
                         str(product_data.get("category", ""))
-                        if product_data.get("category") and not pd.isna(product_data.get("category"))
+                        if product_data.get("category")
+                        and not pd.isna(product_data.get("category"))
                         else None
                     ),
                     price=(
                         float(product_data["price"])
-                        if product_data.get("price") and not pd.isna(product_data["price"])
+                        if product_data.get("price")
+                        and not pd.isna(product_data["price"])
                         else None
                     ),
                     unit=(
                         str(product_data.get("unit", ""))
-                        if product_data.get("unit") and not pd.isna(product_data.get("unit"))
+                        if product_data.get("unit")
+                        and not pd.isna(product_data.get("unit"))
                         else None
                     ),
                     sku=(
                         str(product_data.get("sku", ""))
-                        if product_data.get("sku") and not pd.isna(product_data.get("sku"))
+                        if product_data.get("sku")
+                        and not pd.isna(product_data.get("sku"))
                         else None
                     ),
                     supplier_id=supplier_id,
@@ -375,7 +394,9 @@ def import_products():
 def export_products():
     """Export all products to JSON"""
     try:
-        products = Product.query.join(Supplier, Product.supplier_id == Supplier.id, isouter=True).all()
+        products = Product.query.join(
+            Supplier, Product.supplier_id == Supplier.id, isouter=True
+        ).all()
 
         products_data = []
         for product in products:
@@ -388,8 +409,12 @@ def export_products():
                     "unit": product.unit,
                     "sku": product.sku,
                     "in_stock": product.in_stock,
-                    "supplier_name": (product.supplier.name if product.supplier else None),
-                    "created_at": (product.created_at.isoformat() if product.created_at else None),
+                    "supplier_name": (
+                        product.supplier.name if product.supplier else None
+                    ),
+                    "created_at": (
+                        product.created_at.isoformat() if product.created_at else None
+                    ),
                 }
             )
 
