@@ -168,37 +168,75 @@ class ProjectPlantFactory(factory.alchemy.SQLAlchemyModelFactory):
 
 # Pytest fixtures for factories
 @pytest.fixture
-def user_factory():
+def user_factory(db_session):
+    """Factory for creating users with proper session binding"""
+    UserFactory._meta.sqlalchemy_session = db_session
     return UserFactory
 
 
 @pytest.fixture
-def supplier_factory():
+def supplier_factory(db_session):
+    """Factory for creating suppliers with proper session binding"""
+    SupplierFactory._meta.sqlalchemy_session = db_session
     return SupplierFactory
 
 
 @pytest.fixture
-def product_factory():
+def product_factory(db_session):
+    """Factory for creating products with proper session binding"""
+    ProductFactory._meta.sqlalchemy_session = db_session
     return ProductFactory
 
 
 @pytest.fixture
-def plant_factory():
-    return PlantFactory
+def plant_factory(db_session):
+    """Factory for creating plants with proper session binding"""
+
+    # Create a simple factory without the problematic supplier dependency
+    class TestPlantFactory(factory.alchemy.SQLAlchemyModelFactory):
+        class Meta:
+            model = Plant
+            sqlalchemy_session = db_session
+            sqlalchemy_session_persistence = "commit"
+
+        name = factory.Faker("word")
+        common_name = factory.Faker("word")
+        category = factory.Faker("random_element", elements=["Tree", "Shrub", "Perennial", "Annual"])
+        height_min = factory.Faker("random_int", min=10, max=100)
+        height_max = factory.Faker("random_int", min=100, max=500)
+        width_min = factory.Faker("random_int", min=10, max=100)
+        width_max = factory.Faker("random_int", min=100, max=300)
+        hardiness_zone = factory.Faker("random_element", elements=["3a", "3b", "4a", "4b", "5a", "5b"])
+        sun_requirements = factory.Faker("random_element", elements=["full_sun", "partial_shade", "full_shade"])
+        sun_exposure = factory.Faker("random_element", elements=["full_sun", "partial_shade", "full_shade"])
+        soil_type = factory.Faker("random_element", elements=["clay", "sand", "loam", "silt"])
+        moisture_level = factory.Faker("random_element", elements=["low", "medium", "high"])
+        bloom_time = factory.Faker("random_element", elements=["spring", "summer", "fall", "winter"])
+        bloom_color = factory.Faker("color_name")
+        native = factory.Faker("boolean")
+        # Skip supplier field to avoid session conflicts
+
+    return TestPlantFactory
 
 
 @pytest.fixture
-def client_factory():
+def client_factory(db_session):
+    """Factory for creating clients with proper session binding"""
+    ClientFactory._meta.sqlalchemy_session = db_session
     return ClientFactory
 
 
 @pytest.fixture
-def project_factory():
+def project_factory(db_session):
+    """Factory for creating projects with proper session binding"""
+    ProjectFactory._meta.sqlalchemy_session = db_session
     return ProjectFactory
 
 
 @pytest.fixture
-def project_plant_factory():
+def project_plant_factory(db_session):
+    """Factory for creating project plants with proper session binding"""
+    ProjectPlantFactory._meta.sqlalchemy_session = db_session
     return ProjectPlantFactory
 
 
@@ -245,9 +283,12 @@ def sample_project_plant(project_plant_factory):
 
 
 @pytest.fixture
-def sample_plants(plant_factory):
+def sample_plants(plant_factory, db_session):
     """Create multiple sample plants for testing"""
-    return [plant_factory() for _ in range(5)]
+    plants = [plant_factory() for _ in range(5)]
+    # Ensure all plants are committed to the test session
+    db_session.commit()
+    return plants
 
 
 @pytest.fixture
