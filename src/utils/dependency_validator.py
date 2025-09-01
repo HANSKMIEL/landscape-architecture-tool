@@ -275,3 +275,13 @@ if __name__ == "__main__":
     else:
         print("✅ Dependency validation completed successfully")
         sys.exit(0)
+
+# Module validation - ensure DependencyValidator class is properly exported
+__all__ = ["DependencyValidator", "validate_dependencies"]
+
+# Defensive validation to prevent import issues (addresses issue #326)
+if not hasattr(sys.modules[__name__], "DependencyValidator"):
+    raise ImportError(
+        "DependencyValidator class not properly defined in module. "
+        "This indicates a module structure issue."
+    )
