@@ -10,6 +10,7 @@ if everything is working after changes.
 """
 
 import json
+import re
 import subprocess
 import sys
 import time
@@ -300,7 +301,6 @@ print('Database initialized')
             summary = {"raw": summary_line.strip()}
             
             # Try regex-based extraction
-            import re
             numbers = re.findall(r'(\d+)\s*(passed|failed|error|skipped)', summary_line, re.IGNORECASE)
             
             for count, status in numbers:
@@ -357,7 +357,6 @@ print('Database initialized')
             for line in summary_lines:
                 if any(word in line.lower() for word in ["test files", "tests"]) and any(char.isdigit() for char in line):
                     # Extract numbers from the line
-                    import re
                     numbers = re.findall(r'\d+', line)
                     if numbers:
                         return {
