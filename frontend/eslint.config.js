@@ -58,8 +58,11 @@ export default [
       react: reactPlugin,
       "react-hooks": hooksPlugin,
       "react-refresh": reactRefresh,
-    },
-    rules: {
+      // Ignore "React" because it's often imported for JSX but not directly referenced.
+      // Ignore variables starting with "_" as a convention for unused variables.
+      "no-unused-vars": ["error", { 
+        varsIgnorePattern: "^React$",
+        varsIgnorePattern: "^_",
       ...reactPlugin.configs.recommended.rules,
       ...hooksPlugin.configs.recommended.rules,
       "react/react-in-jsx-scope": "off",
