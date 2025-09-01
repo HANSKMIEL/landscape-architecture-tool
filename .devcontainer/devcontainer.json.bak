@@ -1,0 +1,129 @@
+{
+  "name": "Landscape Architecture Tool",
+  "description": "Full-stack development environment for the Landscape Architecture Management Tool",
+  
+  "dockerComposeFile": "../docker-compose.yml",
+  "service": "backend",
+  "workspaceFolder": "/app",
+  // "image": "mcr.microsoft.com/vscode/devcontainers/python:3.11-bullseye",
+  
+  // Features to add
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "20"
+    },
+    "ghcr.io/devcontainers/features/git:1": {},
+    "ghcr.io/devcontainers/features/github-cli:1": {},
+    "ghcr.io/devcontainers/features/docker-in-docker:1": {}
+  },
+  
+  // Configure tool-specific properties
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "python.defaultInterpreterPath": "/usr/local/bin/python",
+        "python.linting.enabled": true,
+        "python.linting.pylintEnabled": false,
+        "python.linting.flake8Enabled": true,
+        "python.formatting.provider": "black",
+        "python.sortImports.provider": "isort",
+        "eslint.workingDirectories": ["frontend"],
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+          "source.organizeImports": "explicit"
+        },
+        "files.exclude": {
+          "**/__pycache__": true,
+          "**/.pytest_cache": true,
+          "**/node_modules": true,
+          "**/dist": true,
+          "**/.git": true
+        }
+      },
+      
+      "extensions": [
+        // Python extensions
+        "ms-python.python",
+        "ms-python.flake8",
+        "ms-python.black-formatter",
+        "ms-python.isort",
+        
+        // JavaScript/React extensions
+        "esbenp.prettier-vscode",
+        "dbaeumer.vscode-eslint",
+        "bradlc.vscode-tailwindcss",
+        "ms-vscode.vscode-typescript-next",
+        
+        // Docker & DevOps
+        "ms-azuretools.vscode-docker",
+        "ms-kubernetes-tools.vscode-kubernetes-tools",
+        
+        // Git & GitHub
+        "github.vscode-pull-request-github",
+        "github.copilot",
+        
+        // Database tools
+        "mtxr.sqltools",
+        "mtxr.sqltools-driver-pg",
+        
+        // General productivity
+        "ms-vscode.test-adapter-converter",
+        "gruntfuggly.todo-tree",
+        "streetsidesoftware.code-spell-checker"
+      ]
+    }
+  },
+  
+  // Use 'forwardPorts' to make a list of ports available locally
+  "forwardPorts": [
+    5000,  // Backend Flask API
+    5174,  // Frontend Vite dev server
+    5432,  // PostgreSQL
+    6379   // Redis
+  ],
+  
+  "portsAttributes": {
+    "5000": {
+      "label": "Backend API",
+      "onAutoForward": "notify"
+    },
+    "5174": {
+      "label": "Frontend Dev Server",
+      "onAutoForward": "openBrowser"
+    },
+    "5432": {
+      "label": "PostgreSQL Database",
+      "onAutoForward": "silent"
+    },
+    "6379": {
+      "label": "Redis Cache",
+      "onAutoForward": "silent"
+    }
+  },
+  
+  // Add the environment variables required
+  "containerEnv": {
+    "FLASK_ENV": "development",
+    "PYTHONPATH": "/app",
+    "DATABASE_URL": "postgresql://landscape_user:landscape_password@db:5432/landscape_architecture_prod",
+    "REDIS_URL": "redis://redis:6379/0",
+    "SECRET_KEY": "dev-secret-key-not-for-production"
+  },
+  
+  // Commands to run after container creation
+  "postCreateCommand": "pip install -r requirements.txt && cd frontend && npm install --legacy-peer-deps",
+  
+  // Commands to run after the container starts
+  "postStartCommand": "echo 'Container started! Backend: http://localhost:5000, Frontend: http://localhost:5174'",
+  
+  // User to run as in the container
+  "remoteUser": "app",
+  
+  // Uncomment to connect as an existing user other than the container default
+  // "remoteUser": "vscode",
+  
+  // Mount the project directory to preserve file permissions
+  "mounts": [
+    "source=${localWorkspaceFolder},target=/app,type=bind,consistency=cached"
+  ]
+}

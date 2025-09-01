@@ -8,13 +8,19 @@ import ast
 import os
 import subprocess
 import sys
+from pathlib import Path
 
-# Add project root to Python path
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+# Add project root to Python path using relative paths
+project_root = Path(__file__).parent.parent
+sys.path.insert(0, str(project_root))
 
 
 class TestDependencyValidationFix:
     """Test that dependency validation is properly moved to create_app()"""
+
+    def setup_method(self):
+        """Setup method called before each test method"""
+        self.PROJECT_ROOT = project_root
 
     def test_module_import_without_validation(self):
         """Test that the main module can be imported without triggering validation"""
@@ -22,9 +28,7 @@ class TestDependencyValidationFix:
         import src.main
 
         # Verify basic attributes are available
-        assert hasattr(
-            src.main, "create_app"
-        ), "create_app function should be available"
+        assert hasattr(src.main, "create_app"), "create_app function should be available"
         assert hasattr(src.main, "__version__"), "Version should be available"
         assert src.main.__version__ == "2.0.0", "Version should be correct"
 
@@ -76,7 +80,7 @@ except Exception as e:
 
     def test_app_creation_in_subprocess(self):
         """Test app creation in subprocess to verify validation runs"""
-        current_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        current_dir = str(project_root)
         result = subprocess.run(
             [
                 sys.executable,
@@ -113,11 +117,7 @@ except Exception as e:
     def test_no_module_level_validation_code(self):
         """Test that the problematic module-level validation code is removed"""
         # Read the main.py file to verify the fix
-        main_py_path = os.path.join(
-            os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-            "src",
-            "main.py",
-        )
+        main_py_path = project_root / "src" / "main.py"
 
         with open(main_py_path, "r") as f:
             content = f.read()
@@ -139,8 +139,7 @@ except Exception as e:
                         isinstance(target, ast.Name)
                         and target.id == "dependency_validator"
                         and isinstance(node.value, ast.Call)
-                        and getattr(node.value.func, "id", None)
-                        == "DependencyValidator"
+                        and getattr(node.value.func, "id", None) == "DependencyValidator"
                     ):
                         module_level_instantiation = True
             # Check for module-level validation call
@@ -163,8 +162,7 @@ except Exception as e:
                                 isinstance(target, ast.Name)
                                 and target.id == "dependency_validator"
                                 and isinstance(stmt.value, ast.Call)
-                                and getattr(stmt.value.func, "id", None)
-                                == "DependencyValidator"
+                                and getattr(stmt.value.func, "id", None) == "DependencyValidator"
                             ):
                                 create_app_instantiation = True
                     # Call inside create_app
@@ -178,15 +176,7 @@ except Exception as e:
                         ):
                             create_app_validation_call = True
 
-        assert (
-            not module_level_instantiation
-        ), "Module-level dependency validator instantiation should be removed"
-        assert (
-            not module_level_validation_call
-        ), "Module-level dependency validation call should be removed"
-        assert (
-            create_app_instantiation
-        ), "Dependency validator should be instantiated inside create_app()"
-        assert (
-            create_app_validation_call
-        ), "Dependency validation should be called inside create_app()"
+        assert not module_level_instantiation, "Module-level dependency validator instantiation should be removed"
+        assert not module_level_validation_call, "Module-level dependency validation call should be removed"
+        assert create_app_instantiation, "Dependency validator should be instantiated inside create_app()"
+        assert create_app_validation_call, "Dependency validation should be called inside create_app()"

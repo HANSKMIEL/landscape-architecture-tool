@@ -1,0 +1,50 @@
+{
+  "timestamp": "2025-08-29T18:06:32.053319",
+  "overall_status": "healthy",
+  "validation_steps": {
+    "git_status": {
+      "status": "healthy",
+      "uncommitted_files": 4,
+      "recent_commits": [
+        "958f802 Update .github/workflows/automated-validation.yml",
+        "f90eee8 Implement comprehensive automated validation system to address pipeline reliability issues",
+        "b203eec Fix transaction handling consistency in connection fixture",
+        "f07a4b8 Initial plan",
+        ""
+      ]
+    },
+    "dependencies": {
+      "status": "healthy",
+      "pip_check": true,
+      "npm_check": true,
+      "pip_errors": "",
+      "npm_errors": ""
+    },
+    "code_quality": {
+      "status": "healthy",
+      "linting_passed": true,
+      "quality_issues_count": 0,
+      "quality_issues": []
+    },
+    "application_health": {
+      "status": "healthy",
+      "app_creation": true,
+      "model_imports": true,
+      "app_error": "",
+      "import_error": ""
+    }
+  },
+  "summary": {
+    "total_steps": 4,
+    "healthy_steps": 4,
+    "health_percentage": 100.0,
+    "status_distribution": {
+      "healthy": 4,
+      "warning": 0,
+      "error": 0
+    }
+  },
+  "recommendations": [
+    "\u2705 All validation checks passed! Pipeline is healthy."
+  ]
+}

@@ -14,9 +14,7 @@ class BaseService:
     def __init__(self, model_class):
         self.model_class = model_class
 
-    def get_all(
-        self, search: str = None, page: int = 1, per_page: int = 50
-    ) -> Dict[str, Any]:
+    def get_all(self, search: str = None, page: int = 1, per_page: int = 50) -> Dict[str, Any]:
         """Get all entities with optional search and pagination"""
         try:
             query = self.model_class.query
@@ -24,9 +22,7 @@ class BaseService:
             if search and hasattr(self.model_class, "name"):
                 query = query.filter(self.model_class.name.contains(search))
 
-            paginated = query.order_by(self.model_class.id).paginate(
-                page=page, per_page=per_page, error_out=False
-            )
+            paginated = query.order_by(self.model_class.id).paginate(page=page, per_page=per_page, error_out=False)
 
             return {
                 "items": [item.to_dict() for item in paginated.items],
@@ -46,9 +42,7 @@ class BaseService:
             entity = db.session.get(self.model_class, entity_id)
             return entity.to_dict() if entity else None
         except Exception as e:
-            logger.error(
-                f"Error getting {self.model_class.__name__} by ID {entity_id}: {str(e)}"
-            )
+            logger.error(f"Error getting {self.model_class.__name__} by ID {entity_id}: {str(e)}")
             raise
 
     def create(self, data: Dict[str, Any]) -> Dict[str, Any]:
@@ -80,9 +74,7 @@ class BaseService:
             return entity.to_dict()
         except Exception as e:
             db.session.rollback()
-            logger.error(
-                f"Error updating {self.model_class.__name__} {entity_id}: {str(e)}"
-            )
+            logger.error(f"Error updating {self.model_class.__name__} {entity_id}: {str(e)}")
             raise
 
     def delete(self, entity_id: int) -> bool:
@@ -98,13 +90,9 @@ class BaseService:
             return True
         except Exception as e:
             db.session.rollback()
-            logger.error(
-                f"Error deleting {self.model_class.__name__} {entity_id}: {str(e)}"
-            )
+            logger.error(f"Error deleting {self.model_class.__name__} {entity_id}: {str(e)}")
             raise
-            logger.error(
-                f"Error deleting {self.model_class.__name__} {entity_id}: {str(e)}"
-            )
+            logger.error(f"Error deleting {self.model_class.__name__} {entity_id}: {str(e)}")
             raise
 
 
@@ -119,13 +107,9 @@ class SupplierService(BaseService):
         try:
             # Check for duplicate email if email is provided
             if data.get("email"):
-                existing_supplier = Supplier.query.filter_by(
-                    email=data["email"]
-                ).first()
+                existing_supplier = Supplier.query.filter_by(email=data["email"]).first()
                 if existing_supplier:
-                    raise ValueError(
-                        f"Supplier with email '{data['email']}' already exists"
-                    )
+                    raise ValueError(f"Supplier with email '{data['email']}' already exists")
 
             # Use the parent create method
             return super().create(data)
@@ -145,9 +129,7 @@ class SupplierService(BaseService):
                     Supplier.email == data["email"], Supplier.id != entity_id
                 ).first()
                 if existing_supplier:
-                    raise ValueError(
-                        f"Supplier with email '{data['email']}' already exists"
-                    )
+                    raise ValueError(f"Supplier with email '{data['email']}' already exists")
 
             # Use the parent update method
             return super().update(entity_id, data)
@@ -167,16 +149,10 @@ class SupplierService(BaseService):
 
             # Check for related products and plants
             if supplier.products and len(supplier.products) > 0:
-                raise ValueError(
-                    f"Cannot delete supplier with "
-                    f"{len(supplier.products)} associated products"
-                )
+                raise ValueError(f"Cannot delete supplier with " f"{len(supplier.products)} associated products")
 
             if supplier.plants and len(supplier.plants) > 0:
-                raise ValueError(
-                    f"Cannot delete supplier with "
-                    f"{len(supplier.plants)} associated plants"
-                )
+                raise ValueError(f"Cannot delete supplier with " f"{len(supplier.plants)} associated plants")
 
             # Use the parent delete method
             return super().delete(entity_id)
@@ -187,9 +163,7 @@ class SupplierService(BaseService):
             logger.error(f"Error deleting supplier: {str(e)}")
             raise
 
-    def get_all(
-        self, search: str = None, page: int = 1, per_page: int = 50
-    ) -> Dict[str, Any]:
+    def get_all(self, search: str = None, page: int = 1, per_page: int = 50) -> Dict[str, Any]:
         """Get all suppliers with search functionality"""
         try:
             query = Supplier.query
@@ -201,9 +175,7 @@ class SupplierService(BaseService):
                     | Supplier.city.contains(search)
                 )
 
-            paginated = query.order_by(Supplier.name).paginate(
-                page=page, per_page=per_page, error_out=False
-            )
+            paginated = query.order_by(Supplier.name).paginate(page=page, per_page=per_page, error_out=False)
 
             return {
                 "suppliers": [supplier.to_dict() for supplier in paginated.items],
@@ -240,14 +212,10 @@ class PlantService(BaseService):
                 if existing_plant:
                     if height_min is not None and existing_plant.height_max is not None:
                         if height_min > existing_plant.height_max:
-                            raise ValueError(
-                                "height_min cannot be greater than existing height_max"
-                            )
+                            raise ValueError("height_min cannot be greater than existing height_max")
                     if height_max is not None and existing_plant.height_min is not None:
                         if height_max < existing_plant.height_min:
-                            raise ValueError(
-                                "height_max cannot be less than existing height_min"
-                            )
+                            raise ValueError("height_max cannot be less than existing height_min")
 
             # Use the parent update method
             return super().update(entity_id, data)
@@ -258,23 +226,17 @@ class PlantService(BaseService):
             logger.error(f"Error updating plant: {str(e)}")
             raise
 
-    def get_all(
-        self, search: str = None, page: int = 1, per_page: int = 50
-    ) -> Dict[str, Any]:
+    def get_all(self, search: str = None, page: int = 1, per_page: int = 50) -> Dict[str, Any]:
         """Get all plants with search functionality"""
         try:
             query = Plant.query
 
             if search:
                 query = query.filter(
-                    Plant.name.contains(search)
-                    | Plant.common_name.contains(search)
-                    | Plant.category.contains(search)
+                    Plant.name.contains(search) | Plant.common_name.contains(search) | Plant.category.contains(search)
                 )
 
-            paginated = query.order_by(Plant.name).paginate(
-                page=page, per_page=per_page, error_out=False
-            )
+            paginated = query.order_by(Plant.name).paginate(page=page, per_page=per_page, error_out=False)
 
             return {
                 "plants": [plant.to_dict() for plant in paginated.items],
@@ -293,9 +255,7 @@ class ProductService(BaseService):
     def __init__(self):
         super().__init__(Product)
 
-    def get_all(
-        self, search: str = None, page: int = 1, per_page: int = 50
-    ) -> Dict[str, Any]:
+    def get_all(self, search: str = None, page: int = 1, per_page: int = 50) -> Dict[str, Any]:
         """Get all products with search functionality"""
         try:
             query = Product.query
@@ -307,9 +267,7 @@ class ProductService(BaseService):
                     | Product.description.contains(search)
                 )
 
-            paginated = query.order_by(Product.name).paginate(
-                page=page, per_page=per_page, error_out=False
-            )
+            paginated = query.order_by(Product.name).paginate(page=page, per_page=per_page, error_out=False)
 
             return {
                 "products": [product.to_dict() for product in paginated.items],
@@ -328,23 +286,17 @@ class ClientService(BaseService):
     def __init__(self):
         super().__init__(Client)
 
-    def get_all(
-        self, search: str = None, page: int = 1, per_page: int = 50
-    ) -> Dict[str, Any]:
+    def get_all(self, search: str = None, page: int = 1, per_page: int = 50) -> Dict[str, Any]:
         """Get all clients with search functionality"""
         try:
             query = Client.query
 
             if search:
                 query = query.filter(
-                    Client.name.contains(search)
-                    | Client.contact_person.contains(search)
-                    | Client.city.contains(search)
+                    Client.name.contains(search) | Client.contact_person.contains(search) | Client.city.contains(search)
                 )
 
-            paginated = query.order_by(Client.name).paginate(
-                page=page, per_page=per_page, error_out=False
-            )
+            paginated = query.order_by(Client.name).paginate(page=page, per_page=per_page, error_out=False)
 
             return {
                 "clients": [client.to_dict() for client in paginated.items],
@@ -384,9 +336,7 @@ class ProjectService(BaseService):
                     | Project.location.contains(search)
                 )
 
-            paginated = query.order_by(Project.id.desc()).paginate(
-                page=page, per_page=per_page, error_out=False
-            )
+            paginated = query.order_by(Project.id.desc()).paginate(page=page, per_page=per_page, error_out=False)
 
             return {
                 "projects": [project.to_dict() for project in paginated.items],
@@ -412,15 +362,9 @@ class DashboardService:
                 "products": Product.query.count(),
                 "clients": Client.query.count(),
                 "projects": Project.query.count(),
-                "active_projects": Project.query.filter(
-                    Project.status == "In uitvoering"
-                ).count(),
-                "completed_projects": Project.query.filter(
-                    Project.status == "Afgerond"
-                ).count(),
-                "total_budget": float(
-                    db.session.query(db.func.sum(Project.budget)).scalar() or 0
-                ),
+                "active_projects": Project.query.filter(Project.status == "In uitvoering").count(),
+                "completed_projects": Project.query.filter(Project.status == "Afgerond").count(),
+                "total_budget": float(db.session.query(db.func.sum(Project.budget)).scalar() or 0),
                 "last_updated": datetime.now().isoformat(),
             }
             logger.info("Dashboard stats generated successfully")

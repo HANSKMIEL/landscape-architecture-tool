@@ -246,7 +246,7 @@ class TestBaseService:
                 mock_order_by.paginate.side_effect = Exception("Database error")
                 mock_query.order_by.return_value = mock_order_by
 
-                with pytest.raises(Exception):
+                with pytest.raises(Exception):  # noqa: B017
                     service.get_all()
 
     def test_get_by_id_error_handling(self, app, db_setup):
@@ -257,7 +257,7 @@ class TestBaseService:
             with patch("src.models.user.db.session.get") as mock_get:
                 mock_get.side_effect = Exception("Database error")
 
-                with pytest.raises(Exception):
+                with pytest.raises(Exception):  # noqa: B017
                     service.get_by_id(1)
 
     def test_create_error_handling(self, app, db_setup):
@@ -268,7 +268,7 @@ class TestBaseService:
             with patch("src.models.user.db.session.add") as mock_add:
                 mock_add.side_effect = Exception("Database error")
 
-                with pytest.raises(Exception):
+                with pytest.raises(Exception):  # noqa: B017
                     service.create({"name": "Test"})
 
     def test_update_error_handling(self, app, db_setup):
@@ -284,7 +284,7 @@ class TestBaseService:
             with patch("src.models.user.db.session.commit") as mock_commit:
                 mock_commit.side_effect = Exception("Database error")
 
-                with pytest.raises(Exception):
+                with pytest.raises(Exception):  # noqa: B017
                     service.update(plant.id, {"name": "Updated"})
 
     def test_delete_error_handling(self, app, db_setup):
@@ -300,7 +300,7 @@ class TestBaseService:
             with patch("src.models.user.db.session.delete") as mock_delete:
                 mock_delete.side_effect = Exception("Database error")
 
-                with pytest.raises(Exception):
+                with pytest.raises(Exception):  # noqa: B017
                     service.delete(plant.id)
 
 

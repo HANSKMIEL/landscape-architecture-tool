@@ -5,7 +5,6 @@ Updates the dev_log.md file with development activities and changes.
 """
 
 import argparse
-import os
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -159,9 +158,7 @@ Each entry follows this format:
 
             # Show recent entries
             if entries:
-                print(
-                    f"\nRecent Development Log Entries (showing {min(limit, len(entries))} of {len(entries)}):"
-                )
+                print(f"\nRecent Development Log Entries (showing {min(limit, len(entries))} of {len(entries)}):")
                 print("=" * 60)
                 for entry in entries[:limit]:
                     print(entry)
@@ -205,8 +202,11 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  python scripts/update_dev_log.py --action feature_added --description "Added plant recommendation system" --author "john_doe"
-  python scripts/update_dev_log.py --action bug_fixed --description "Fixed database connection issue" --author "jane_smith" --impact "Resolves production stability issues"
+  python scripts/update_dev_log.py --action feature_added \\
+    --description "Added plant recommendation system" --author "john_doe"
+  python scripts/update_dev_log.py --action bug_fixed \\
+    --description "Fixed database connection issue" --author "jane_smith" \\
+    --impact "Resolves production stability issues"
   python scripts/update_dev_log.py --list --count 5
   python scripts/update_dev_log.py --stats
         """,
@@ -232,9 +232,7 @@ Examples:
         default=10,
         help="Number of entries to show when listing (default: 10)",
     )
-    parser.add_argument(
-        "--stats", action="store_true", help="Show development log statistics"
-    )
+    parser.add_argument("--stats", action="store_true", help="Show development log statistics")
 
     args = parser.parse_args()
 
@@ -246,18 +244,16 @@ Examples:
         log_manager.list_entries(args.count)
     elif args.stats:
         stats = log_manager.get_stats()
-        print(f"\nDevelopment Log Statistics:")
+        print("\nDevelopment Log Statistics:")
         print(f"Total entries: {stats['total_entries']}")
         if stats["actions"]:
             print("\nActions by type:")
             for action, count in sorted(stats["actions"].items()):
                 print(f"  {action}: {count}")
     elif args.action and args.description and args.author:
-        success = log_manager.add_entry(
-            args.action, args.description, args.author, args.impact
-        )
+        success = log_manager.add_entry(args.action, args.description, args.author, args.impact)
         if success:
-            print(f"\nDevelopment log updated successfully!")
+            print("\nDevelopment log updated successfully!")
             # Show recent entries after adding
             print("\nMost recent entries:")
             log_manager.list_entries(3)

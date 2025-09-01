@@ -73,9 +73,7 @@ class TestSupplierService(DatabaseTestMixin):
         assert len(result["suppliers"]) == 1
         assert result["suppliers"][0]["name"] == "Alpha Nursery"
 
-    def test_get_all_suppliers_with_specialization_filter(
-        self, app_context, supplier_factory
-    ):
+    def test_get_all_suppliers_with_specialization_filter(self, app_context, supplier_factory):
         """Test getting suppliers with specialization filter"""
         supplier1 = supplier_factory(specialization="Native Plants")  # noqa: F841
         supplier2 = supplier_factory(specialization="Garden Tools")  # noqa: F841
@@ -83,10 +81,7 @@ class TestSupplierService(DatabaseTestMixin):
 
         result = SupplierService.get_all_suppliers(specialization="Native Plants")
         assert len(result["suppliers"]) == 2
-        assert all(
-            "Native Plants" in supplier["specialization"]
-            for supplier in result["suppliers"]
-        )
+        assert all("Native Plants" in supplier["specialization"] for supplier in result["suppliers"])
 
     def test_get_all_suppliers_pagination(self, app_context, supplier_factory):
         """Test suppliers pagination"""
@@ -160,9 +155,7 @@ class TestSupplierService(DatabaseTestMixin):
             "specialization": "Garden Equipment",
         }
 
-        updated_supplier = SupplierService.update_supplier(
-            sample_supplier.id, update_data
-        )
+        updated_supplier = SupplierService.update_supplier(sample_supplier.id, update_data)
 
         assert updated_supplier is not None
         assert updated_supplier.name == "Updated Supplier Name"
@@ -189,9 +182,7 @@ class TestSupplierService(DatabaseTestMixin):
         deleted_supplier = db.session.get(Supplier, supplier_id)
         assert deleted_supplier is None
 
-    def test_delete_supplier_with_products(
-        self, app_context, sample_supplier, product_factory
-    ):
+    def test_delete_supplier_with_products(self, app_context, sample_supplier, product_factory):
         """Test deleting supplier with products should fail"""
         # Add product to supplier
         product_factory(supplier=sample_supplier)
@@ -202,9 +193,7 @@ class TestSupplierService(DatabaseTestMixin):
         # Supplier should still exist
         self.assert_record_count(Supplier, 1)
 
-    def test_delete_supplier_with_plants(
-        self, app_context, sample_supplier, plant_factory
-    ):
+    def test_delete_supplier_with_plants(self, app_context, sample_supplier, plant_factory):
         """Test deleting supplier with plants should fail"""
         # Add plant to supplier
         plant_factory(supplier=sample_supplier)
@@ -222,16 +211,10 @@ class TestSupplierService(DatabaseTestMixin):
 
     def test_get_supplier_products(self, app_context, sample_supplier, product_factory):
         """Test getting products for a supplier"""
-        product1 = product_factory(  # noqa: F841
-            supplier=sample_supplier, name="Product 1"
-        )  # noqa: F841
-        product2 = product_factory(  # noqa: F841
-            supplier=sample_supplier, name="Product 2"
-        )  # noqa: F841
+        product_factory(supplier=sample_supplier, name="Product 1")  # noqa: F841  # noqa: F841
+        product_factory(supplier=sample_supplier, name="Product 2")  # noqa: F841  # noqa: F841
         other_supplier = product_factory().supplier
-        product3 = product_factory(  # noqa: F841
-            supplier=other_supplier, name="Product 3"
-        )  # noqa: F841
+        product_factory(supplier=other_supplier, name="Product 3")  # noqa: F841  # noqa: F841
 
         supplier_products = SupplierService.get_supplier_products(sample_supplier.id)
 
@@ -256,9 +239,7 @@ class TestSupplierService(DatabaseTestMixin):
         assert "Plant 2" in plant_names
         assert "Plant 3" not in plant_names
 
-    def test_get_supplier_statistics(
-        self, app_context, sample_supplier, product_factory, plant_factory
-    ):
+    def test_get_supplier_statistics(self, app_context, sample_supplier, product_factory, plant_factory):
         """Test getting statistical information for a supplier"""
         # Create products and plants with different prices and quantities
         product_factory(supplier=sample_supplier, price=10.0, stock_quantity=5)
@@ -330,13 +311,9 @@ class TestSupplierService(DatabaseTestMixin):
         """Test getting suppliers by specialization"""
         supplier1 = supplier_factory(specialization="Native Plants")  # noqa: F841
         supplier2 = supplier_factory(specialization="Garden Tools")  # noqa: F841
-        supplier3 = supplier_factory(  # noqa: F841
-            specialization="Native Plants and Trees"
-        )  # noqa: F841
+        supplier_factory(specialization="Native Plants and Trees")  # noqa: F841  # noqa: F841
 
-        native_suppliers = SupplierService.get_suppliers_by_specialization(
-            "Native Plants"
-        )
+        native_suppliers = SupplierService.get_suppliers_by_specialization("Native Plants")
         assert len(native_suppliers) == 2  # Includes partial matches
 
     def test_get_supplier_specializations(self, app_context, supplier_factory):
@@ -409,9 +386,7 @@ class TestSupplierService(DatabaseTestMixin):
             "sku": "TEST001",
         }
 
-        product = SupplierService.add_product_to_supplier(
-            sample_supplier.id, product_data
-        )
+        product = SupplierService.add_product_to_supplier(sample_supplier.id, product_data)
 
         assert product is not None
         assert product.name == "Test Product"
@@ -426,9 +401,7 @@ class TestSupplierService(DatabaseTestMixin):
         result = SupplierService.add_product_to_supplier(999, product_data)
         assert result is None
 
-    def test_get_top_suppliers_by_products(
-        self, app_context, supplier_factory, product_factory, plant_factory
-    ):
+    def test_get_top_suppliers_by_products(self, app_context, supplier_factory, product_factory, plant_factory):
         """Test getting top suppliers by number of products/plants"""
         supplier1 = supplier_factory(name="Supplier 1")
         supplier2 = supplier_factory(name="Supplier 2")
@@ -502,9 +475,7 @@ class TestSupplierServiceIntegration(DatabaseTestMixin):
         assert supplier.id is not None
 
         # Add products and plants
-        product = SupplierService.add_product_to_supplier(
-            supplier.id, {"name": "Test Product", "price": 25.0}
-        )
+        product = SupplierService.add_product_to_supplier(supplier.id, {"name": "Test Product", "price": 25.0})
         plant = plant_factory(supplier=supplier, price=15.0)
 
         # Get supplier statistics
@@ -541,9 +512,7 @@ class TestSupplierServiceIntegration(DatabaseTestMixin):
         deleted_supplier = SupplierService.get_supplier_by_id(supplier.id)
         assert deleted_supplier is None
 
-    def test_supplier_product_plant_management(
-        self, app_context, supplier_factory, product_factory, plant_factory
-    ):
+    def test_supplier_product_plant_management(self, app_context, supplier_factory, product_factory, plant_factory):
         """Test complex supplier-product-plant relationship scenarios"""
         supplier = supplier_factory(name="Management Test Supplier")
 
@@ -560,8 +529,7 @@ class TestSupplierServiceIntegration(DatabaseTestMixin):
 
         # Add diverse plants
         plants = [  # noqa: F841
-            plant_factory(supplier=supplier, name=f"Plant {i}", price=float(i * 5))
-            for i in range(1, 3)
+            plant_factory(supplier=supplier, name=f"Plant {i}", price=float(i * 5)) for i in range(1, 3)
         ]
 
         # Test supplier products retrieval
@@ -583,9 +551,7 @@ class TestSupplierServiceIntegration(DatabaseTestMixin):
 
         # Test top suppliers ranking
         top_suppliers = SupplierService.get_top_suppliers_by_products(limit=5)
-        supplier_entry = next(
-            (s for s in top_suppliers if s["supplier"]["id"] == supplier.id), None
-        )
+        supplier_entry = next((s for s in top_suppliers if s["supplier"]["id"] == supplier.id), None)
         assert supplier_entry is not None
         assert supplier_entry["total_items"] == 5  # 3 products + 2 plants
 
@@ -617,9 +583,7 @@ class TestSupplierServiceIntegration(DatabaseTestMixin):
             supplier_factory(**data)
 
         # Test search by specialization
-        native_suppliers = SupplierService.get_all_suppliers(
-            specialization="Native Plants"
-        )
+        native_suppliers = SupplierService.get_all_suppliers(specialization="Native Plants")
         assert len(native_suppliers["suppliers"]) == 2
 
         # Test search by city

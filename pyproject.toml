@@ -22,47 +22,30 @@ classifiers = [
 ]
 
 [tool.black]
-line-length = 88
-target-version = ["py311"]
-exclude = '''
-/(
-    \.eggs
-  | \.git
-  | \.hg
-  | \.mypy_cache
-  | \.nox
-  | \.tox
-  | \.venv
-  | _build
-  | buck-out
-  | build
-  | dist
-  | migrations
-  | \.copilot
-)/
-'''
+line-length = 120
+target-version = ["py312"]
 
 [tool.isort]
 profile = "black"
-line_length = 88
+line_length = 120
 multi_line_output = 3
 include_trailing_comma = true
-force_grid_wrap = 0
-use_parentheses = true
-ensure_newline_before_comments = true
 
-[tool.flake8]
-max-line-length = 88
-extend-ignore = ["E203", "W503", "F401", "F403", "E402", "C901", "W291"]
-max-complexity = 25
+[tool.ruff]
+line-length = 120
+src = ["."]
 exclude = [
-    ".git",
-    "__pycache__",
-    "build",
-    "dist",
-    "migrations",
-    ".copilot"
+  ".git",
+  ".venv",
+  "venv",
+  "build",
+  "dist",
+  "__pycache__",
 ]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B"]
+ignore = []
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

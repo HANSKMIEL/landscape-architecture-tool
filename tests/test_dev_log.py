@@ -13,8 +13,9 @@ from unittest.mock import patch
 
 import pytest
 
-# Add project root to Python path
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+# Add project root to Python path using relative paths
+project_root = Path(__file__).parent.parent
+sys.path.insert(0, str(project_root))
 
 from scripts.update_dev_log import DevLogManager  # noqa: E402
 
@@ -64,9 +65,7 @@ class TestDevLogManager:
         with patch("scripts.update_dev_log.datetime") as mock_datetime:
             mock_datetime.now.return_value.strftime.return_value = "2025-01-01 12:00:00"
 
-            entry = log_manager.format_log_entry(
-                "feature_added", "Test feature implementation", "test_author"
-            )
+            entry = log_manager.format_log_entry("feature_added", "Test feature implementation", "test_author")
 
             expected_lines = [
                 "## [2025-01-01 12:00:00] - FEATURE_ADDED",
@@ -135,14 +134,10 @@ class TestDevLogManager:
     def test_add_entry_invalid_action(self, log_manager):
         """Test that invalid actions are handled gracefully"""
         with patch("builtins.print") as mock_print:
-            success = log_manager.add_entry(
-                "invalid_action", "Test description", "test_author"
-            )
+            success = log_manager.add_entry("invalid_action", "Test description", "test_author")
 
             assert success  # Should still succeed but warn
-            mock_print.assert_any_call(
-                "Warning: 'invalid_action' is not a standard action type."
-            )
+            mock_print.assert_any_call("Warning: 'invalid_action' is not a standard action type.")
 
     def test_list_entries_empty_log(self, log_manager):
         """Test listing entries when log file doesn't exist"""
@@ -222,7 +217,7 @@ class TestDevLogScript:
             [sys.executable, "scripts/update_dev_log.py", "--help"],
             capture_output=True,
             text=True,
-            cwd=os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+            cwd=str(project_root),
         )
 
         assert result.returncode == 0
@@ -239,7 +234,7 @@ class TestDevLogScript:
             [sys.executable, "scripts/update_dev_log.py", "--action", "feature_added"],
             capture_output=True,
             text=True,
-            cwd=os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+            cwd=str(project_root),
         )
 
         assert result.returncode == 1
@@ -317,9 +312,7 @@ class TestLogFormatValidation:
         ]
 
         for action in documented_actions:
-            assert (
-                action in roadmap_content or action.replace("_", " ") in roadmap_content
-            )
+            assert action in roadmap_content or action.replace("_", " ") in roadmap_content
 
         # Check that script path is correctly documented
         assert "scripts/update_dev_log.py" in roadmap_content

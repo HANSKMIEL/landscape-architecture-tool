@@ -1,31 +1,122 @@
-#!/usr/bin/env python3
-"""
-Enhanced test configuration with comprehensive fixtures and factory patterns
-"""
-
 import os
-import sys
-
-# Add project root to Python path
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import pytest
+from sqlalchemy import create_engine, text
+from sqlalchemy.orm import scoped_session, sessionmaker
+from sqlalchemy.pool import StaticPool
 
-from src.main import create_app
-from src.models.user import db
+# Use a dedicated test DB URL and NEVER touch prod/dev DBs.
+TEST_DATABASE_URL = os.getenv("TEST_DATABASE_URL") or os.getenv("DATABASE_URL", "sqlite+pysqlite:///:memory:")
+
+
+def _make_engine(url: str):
+    if url.startswith("sqlite"):
+        # For in-memory SQLite, ensure single connection via StaticPool so SAVEPOINTs work.
+        connect_args = {"check_same_thread": False}
+        pool = StaticPool if ":memory:" in url else None
+        return create_engine(
+            url,
+            connect_args=connect_args,
+            poolclass=pool,
+            future=True,
+        )
+    # Postgres or other RDBMS
+    return create_engine(url, pool_pre_ping=True, future=True)
+
+
+@pytest.fixture(scope="session")
+def engine():
+    # Basic safety check to prevent running against a production DB
+    assert "prod" not in TEST_DATABASE_URL.lower(), "Refusing to run tests against a DB that looks like production"
+    eng = _make_engine(TEST_DATABASE_URL)
+    return eng
+
+
+@pytest.fixture(scope="session")
+def connection(engine):
+    conn = engine.connect()
+    # Apply a per-session statement timeout for tests (Postgres only)
+    try:
+        conn.execute(text("SET SESSION statement_timeout = '15s'"))
+    except Exception:
+        # SQLite or engines that don't support this — ignore
+        pass
+
+    # Create database tables for the test session
+    from src.models.user import db as flask_db
+
+    # Create all tables in the test database
+    flask_db.metadata.create_all(bind=engine)
+
+    # For SQLAlchemy 2.0, handle transactions properly
+    if conn.in_transaction():
+        # If already in transaction, ensure proper cleanup
+        try:
+            yield conn
+        finally:
+            # Roll back to ensure clean state for next session
+            if conn.in_transaction():
+                conn.rollback()
+            # Ensure connection is properly closed
+            if not conn.closed:
+                conn.close()
+    else:
+        # Start a new transaction
+        outer_tx = conn.begin()
+        try:
+            yield conn
+        finally:
+            # Rollback transaction and ensure proper cleanup
+            if outer_tx.is_active:
+                outer_tx.rollback()
+            # Ensure connection is properly closed
+            if not conn.closed:
+                conn.close()
+
+
+@pytest.fixture(scope="session")
+def Session(connection):
+    # Bind a sessionmaker to a single connection to enable SAVEPOINT-based isolation per test
+    return scoped_session(sessionmaker(bind=connection, expire_on_commit=False, autoflush=False, future=True))
+
+
+@pytest.fixture(autouse=True)
+def db_session(Session, connection, app):
+    # Each test runs inside a nested transaction (SAVEPOINT) and rolls it back after the test
+    nested = connection.begin_nested()
+
+    # Bind the Flask app's db session to our test session for proper isolation
+    from src.models.user import db as flask_db
+
+    with app.app_context():
+        # Replace the Flask-SQLAlchemy session with our test session
+        flask_db.session = Session
+
+        try:
+            yield Session
+        finally:
+            # Clean up the session first
+            Session.remove()
+            # Then rollback the nested transaction
+            if nested.is_active:
+                nested.rollback()
 
 
 @pytest.fixture(scope="session")
 def app():
-    """Create and configure a test app for the entire test session"""
-    # Set testing environment
-    os.environ["FLASK_ENV"] = "testing"
+    """Create Flask app for testing"""
+    from src.main import create_app
+    from src.models.user import db as flask_db
 
     app = create_app()
     app.config.update(
         {
             "TESTING": True,
-            "SQLALCHEMY_DATABASE_URI": "sqlite:///:memory:",
+            "SQLALCHEMY_DATABASE_URI": TEST_DATABASE_URL,
+            "SQLALCHEMY_ENGINE_OPTIONS": {
+                "pool_pre_ping": True,
+                "future": True,
+            },
             "SESSION_COOKIE_SECURE": False,
             "RATELIMIT_ENABLED": False,
             "WTF_CSRF_ENABLED": False,
@@ -33,118 +124,26 @@ def app():
         }
     )
 
+    # Initialize database schema with Flask app context
+    with app.app_context():
+        flask_db.create_all()
+
     return app
 
 
-@pytest.fixture(scope="function")
-def app_context(app):
-    """Create an application context for each test"""
-    with app.app_context():
-        # Clean up before test to ensure clean state
-        _cleanup_database()
-
-        db.create_all()
-        yield app
-
-        # Comprehensive cleanup after test to ensure complete isolation
-        _cleanup_database()
-
-
-def _cleanup_database():
-    """Helper function to clean up database consistently"""
-    try:
-        # Close any active transactions first
-        if db.session.is_active:
-            db.session.rollback()
-    except Exception:
-        pass
-
-    try:
-        # Clear all data from all tables (more reliable than drop_all/create_all)
-        from src.models.landscape import (
-            Client,
-            Plant,
-            PlantRecommendationRequest,
-            Product,
-            Project,
-            ProjectPlant,
-            Supplier,
-        )
-        from src.models.user import User
-
-        # Delete in order to respect foreign key constraints
-        for model in [
-            ProjectPlant,
-            Project,
-            PlantRecommendationRequest,
-            Plant,
-            Product,
-            Client,
-            Supplier,
-            User,
-        ]:
-            try:
-                db.session.query(model).delete()
-            except Exception:
-                pass
-
-        db.session.commit()
-    except Exception:
-        try:
-            db.session.rollback()
-        except Exception:
-            pass
-
-    try:
-        # Close the session
-        db.session.close()
-    except Exception:
-        pass
-
-    try:
-        # Remove scoped session
-        db.session.remove()
-    except Exception:
-        pass
-
-    # Don't dispose engine for SQLite in-memory databases as it can cause issues
-
-
 @pytest.fixture
-def client(app_context):
+def client(app):
     """Create a test client"""
-    return app_context.test_client()
+    return app.test_client()
 
 
 @pytest.fixture
-def runner(app_context):
+def runner(app):
     """Create a test runner"""
-    return app_context.test_cli_runner()
+    return app.test_cli_runner()
 
 
 @pytest.fixture
-def clean_db(app_context):
-    """Provide a clean database for each test"""
-    db.session.begin()
-    yield db
-    db.session.rollback()
-    db.session.close()
-
-
-# Import factory fixtures (optional - for development environments)
-# Critical dependencies are validated at startup, but optional test dependencies
-# like factory-boy may be missing in CI environments with network issues
-try:
-    from tests.fixtures.test_data import *  # noqa: F401,F403
-except ImportError as e:
-    # Factory-boy or other optional test dependencies not available
-    # This is acceptable in CI environments with limited dependencies
-    # Production dependencies are validated separately by DependencyValidator
-    import warnings
-
-    warnings.warn(
-        f"Optional test fixtures not available: {e}. "
-        "Advanced test features may be limited, but core functionality is unaffected. "
-        "Install development dependencies with: pip install -r requirements-dev.txt",
-        UserWarning,
-    )
+def app_context(app):
+    """Create application context for tests that need it"""
+    return app

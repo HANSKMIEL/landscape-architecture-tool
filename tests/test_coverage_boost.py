@@ -5,12 +5,14 @@ Additional tests to boost coverage for critical paths
 
 import os
 import sys
+from pathlib import Path
 from unittest.mock import MagicMock, patch
 
-# Add project root to Python path
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
 from src.main import create_app
+
+# Add project root to Python path using relative paths
+project_root = Path(__file__).parent.parent
+sys.path.insert(0, str(project_root))
 
 
 class TestCoverageBoost:

@@ -1,0 +1,28 @@
+{
+  "timestamp": "2025-08-29T15:05:49.869197",
+  "overall_status": "warning",
+  "checks": {
+    "git_status": {
+      "status": "healthy",
+      "uncommitted_files": 0
+    },
+    "dependencies": {
+      "status": "healthy",
+      "conflicts": false
+    },
+    "database": {
+      "status": "error",
+      "postgres": false,
+      "redis": false
+    },
+    "code_quality": {
+      "status": "healthy",
+      "black": true,
+      "isort": true
+    },
+    "tests": {
+      "status": "error",
+      "tests_passing": false
+    }
+  }
+}

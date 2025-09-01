@@ -75,9 +75,11 @@ lint:
 	@command -v flake8 >/dev/null 2>&1 || pip install flake8
 	@command -v black >/dev/null 2>&1 || pip install black
 	@command -v isort >/dev/null 2>&1 || pip install isort
+	@command -v ruff >/dev/null 2>&1 || pip install ruff
+	ruff check .
 	black --check src/ tests/ --diff || true
 	isort --check-only src/ tests/ --diff || true
-	flake8 src/ tests/ --max-line-length=88 --extend-ignore=E203,W503,F403,C901,W291 --max-complexity=25 || true
+	flake8 src/ tests/ --max-line-length=120 --extend-ignore=E203,W503,F403,C901,W291,E402 --max-complexity=25 || true
 	@echo "Running frontend linting..."
 	cd frontend && npm run lint || true
 	@echo "✅ Linting complete"
@@ -128,6 +130,18 @@ pipeline-health:
 	@echo "Running pipeline health analysis..."
 	@python scripts/pipeline_monitor.py
 	@echo "✅ Pipeline health check complete"
+
+# Automated validation (comprehensive)
+validate:
+	@echo "🚀 Running comprehensive automated validation..."
+	@python scripts/automated_validation.py
+	@echo "✅ Comprehensive validation complete"
+
+# Quick validation (skip tests)
+validate-quick:
+	@echo "🏃‍♂️ Running quick validation..."
+	@python scripts/automated_validation.py --quick
+	@echo "✅ Quick validation complete"
 
 # Pipeline troubleshooting guide (bonus command)
 troubleshoot:

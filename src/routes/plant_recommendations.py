@@ -11,7 +11,7 @@ import logging
 import uuid
 from typing import Any, Dict
 
-from flask import Blueprint, jsonify, request, session
+from flask import Blueprint, Response, jsonify, request, session
 
 from src.models.landscape import Plant, PlantRecommendationRequest
 from src.models.user import db
@@ -82,9 +82,7 @@ def get_plant_recommendations():
             native_preference=data.get("native_preference", False),
             wildlife_friendly=data.get("wildlife_friendly", False),
             deer_resistant_required=data.get("deer_resistant_required", False),
-            pollinator_friendly_required=data.get(
-                "pollinator_friendly_required", False
-            ),
+            pollinator_friendly_required=data.get("pollinator_friendly_required", False),
             container_planting=data.get("container_planting", False),
             screening_purpose=data.get("screening_purpose", False),
             hedging_purpose=data.get("hedging_purpose", False),
@@ -98,9 +96,7 @@ def get_plant_recommendations():
         min_score = data.get("min_score", 0.3)
 
         # Get recommendations
-        recommendations = recommendation_engine.get_recommendations(
-            criteria, max_results, min_score
-        )
+        recommendations = recommendation_engine.get_recommendations(criteria, max_results, min_score)
 
         # Generate session ID if not exists
         if "session_id" not in session:
@@ -126,9 +122,7 @@ def get_plant_recommendations():
                 {
                     "plant": rec.plant.to_dict(),
                     "score": round(rec.total_score, 3),
-                    "criteria_scores": {
-                        k: round(v, 3) for k, v in rec.criteria_scores.items()
-                    },
+                    "criteria_scores": {k: round(v, 3) for k, v in rec.criteria_scores.items()},
                     "match_reasons": rec.match_reasons,
                     "warnings": rec.warnings,
                 }
@@ -145,16 +139,12 @@ def get_plant_recommendations():
     except Exception:
         logging.exception("Failed to get recommendations")
         return (
-            jsonify(
-                {"error": "Failed to get recommendations due to an internal error."}
-            ),
+            jsonify({"error": "Failed to get recommendations due to an internal error."}),
             500,
         )
 
 
-@plant_recommendations_bp.route(
-    "/api/plant-recommendations/criteria-options", methods=["GET"]
-)
+@plant_recommendations_bp.route("/api/plant-recommendations/criteria-options", methods=["GET"])
 def get_criteria_options():
     """
     Get available options for recommendation criteria
@@ -173,28 +163,16 @@ def get_criteria_options():
         plants = Plant.query.all()
 
         options = {
-            "hardiness_zones": sorted(
-                list(set(filter(None, [p.hardiness_zone for p in plants])))
-            ),
+            "hardiness_zones": sorted(list(set(filter(None, [p.hardiness_zone for p in plants])))),
             "sun_exposures": ["Full Sun", "Partial Sun", "Partial Shade", "Full Shade"],
-            "soil_types": sorted(
-                list(set(filter(None, [p.soil_type for p in plants])))
-            ),
+            "soil_types": sorted(list(set(filter(None, [p.soil_type for p in plants])))),
             "maintenance_levels": ["Low", "Medium", "High"],
             "moisture_levels": ["Low", "Medium", "High"],
             "budget_ranges": ["Low", "Medium", "High", "Premium"],
-            "plant_categories": sorted(
-                list(set(filter(None, [p.category for p in plants])))
-            ),
-            "bloom_colors": sorted(
-                list(set(filter(None, [p.bloom_color for p in plants])))
-            ),
-            "foliage_colors": sorted(
-                list(set(filter(None, [p.foliage_color for p in plants])))
-            ),
-            "bloom_seasons": sorted(
-                list(set(filter(None, [p.bloom_time for p in plants])))
-            ),
+            "plant_categories": sorted(list(set(filter(None, [p.category for p in plants])))),
+            "bloom_colors": sorted(list(set(filter(None, [p.bloom_color for p in plants])))),
+            "foliage_colors": sorted(list(set(filter(None, [p.foliage_color for p in plants])))),
+            "bloom_seasons": sorted(list(set(filter(None, [p.bloom_time for p in plants])))),
             "project_types": [
                 "Garden",
                 "Landscape",
@@ -240,9 +218,7 @@ def submit_feedback():
             return jsonify({"error": "request_id is required"}), 400
 
         # Save feedback
-        success = recommendation_engine.save_user_feedback(
-            request_id=request_id, feedback=feedback, rating=rating
-        )
+        success = recommendation_engine.save_user_feedback(request_id=request_id, feedback=feedback, rating=rating)
 
         if success:
             return jsonify({"message": "Feedback saved successfully"})
@@ -286,25 +262,16 @@ def get_recommendation_history():
         elif session_id:
             query = query.filter(PlantRecommendationRequest.session_id == session_id)
 
-        requests = (
-            query.order_by(PlantRecommendationRequest.created_at.desc())
-            .offset(offset)
-            .limit(limit)
-            .all()
-        )
+        requests = query.order_by(PlantRecommendationRequest.created_at.desc()).offset(offset).limit(limit).all()
 
         history = []
         for req in requests:
             history.append(
                 {
                     "id": req.id,
-                    "created_at": (
-                        req.created_at.isoformat() if req.created_at else None
-                    ),
+                    "created_at": (req.created_at.isoformat() if req.created_at else None),
                     "criteria_summary": _format_request_criteria(req),
-                    "recommendations_count": (
-                        len(req.recommended_plants) if req.recommended_plants else 0
-                    ),
+                    "recommendations_count": (len(req.recommended_plants) if req.recommended_plants else 0),
                     "feedback_rating": req.feedback_rating,
                     "has_feedback": bool(req.user_feedback),
                 }
@@ -351,9 +318,7 @@ def export_recommendations():
         req = db.session.get(PlantRecommendationRequest, request_id)
         if not req or not req.recommended_plants:
             return (
-                jsonify(
-                    {"error": "Recommendation request not found or has no results"}
-                ),
+                jsonify({"error": "Recommendation request not found or has no results"}),
                 404,
             )
 
@@ -387,9 +352,7 @@ def export_recommendations():
             plant = db.session.get(Plant, plant_id)
 
             if plant:
-                height_range = (
-                    f"{plant.height_min or 'N/A'}-{plant.height_max or 'N/A'}"
-                )
+                height_range = f"{plant.height_min or 'N/A'}-{plant.height_max or 'N/A'}"
                 width_range = f"{plant.width_min or 'N/A'}-{plant.width_max or 'N/A'}"
                 match_reasons = "; ".join(rec_data.get("match_reasons", []))
                 warnings = "; ".join(rec_data.get("warnings", []))
@@ -414,19 +377,13 @@ def export_recommendations():
                 )
 
         # Create response
-        from flask import Response
-
         csv_content = output.getvalue()
         output.close()
 
         return Response(
             csv_content,
             mimetype="text/csv",
-            headers={
-                "Content-Disposition": (
-                    f"attachment; filename=plant_recommendations_{request_id}.csv"
-                )
-            },
+            headers={"Content-Disposition": (f"attachment; filename=plant_recommendations_{request_id}.csv")},
         )
 
     except Exception as e:
@@ -483,8 +440,7 @@ def import_plant_data():
                     # Extended attributes
                     temperature_min=_parse_float(row.get("temperature_min")),
                     temperature_max=_parse_float(row.get("temperature_max")),
-                    humidity_preference=row.get("humidity_preference", "").strip()
-                    or None,
+                    humidity_preference=row.get("humidity_preference", "").strip() or None,
                     wind_tolerance=row.get("wind_tolerance", "").strip() or None,
                     soil_ph_min=_parse_float(row.get("soil_ph_min")),
                     soil_ph_max=_parse_float(row.get("soil_ph_max")),
@@ -493,8 +449,7 @@ def import_plant_data():
                     pruning_needs=row.get("pruning_needs", "").strip() or None,
                     fertilizer_needs=row.get("fertilizer_needs", "").strip() or None,
                     pest_resistance=row.get("pest_resistance", "").strip() or None,
-                    disease_resistance=row.get("disease_resistance", "").strip()
-                    or None,
+                    disease_resistance=row.get("disease_resistance", "").strip() or None,
                     plant_form=row.get("plant_form", "").strip() or None,
                     foliage_texture=row.get("foliage_texture", "").strip() or None,
                     seasonal_interest=row.get("seasonal_interest", "").strip() or None,
@@ -505,20 +460,11 @@ def import_plant_data():
                     wildlife_value=row.get("wildlife_value", "").strip() or None,
                     pollinator_friendly=_parse_bool(row.get("pollinator_friendly", "")),
                     deer_resistant=_parse_bool(row.get("deer_resistant", "")),
-                    invasive_potential=row.get("invasive_potential", "").strip()
-                    or None,
-                    suitable_for_containers=_parse_bool(
-                        row.get("suitable_for_containers", "")
-                    ),
-                    suitable_for_hedging=_parse_bool(
-                        row.get("suitable_for_hedging", "")
-                    ),
-                    suitable_for_screening=_parse_bool(
-                        row.get("suitable_for_screening", "")
-                    ),
-                    suitable_for_groundcover=_parse_bool(
-                        row.get("suitable_for_groundcover", "")
-                    ),
+                    invasive_potential=row.get("invasive_potential", "").strip() or None,
+                    suitable_for_containers=_parse_bool(row.get("suitable_for_containers", "")),
+                    suitable_for_hedging=_parse_bool(row.get("suitable_for_hedging", "")),
+                    suitable_for_screening=_parse_bool(row.get("suitable_for_screening", "")),
+                    suitable_for_groundcover=_parse_bool(row.get("suitable_for_groundcover", "")),
                     suitable_for_slopes=_parse_bool(row.get("suitable_for_slopes", "")),
                 )
 
@@ -531,9 +477,7 @@ def import_plant_data():
 
             except Exception as e:
                 logging.error(f"Error processing row {row_num}: {str(e)}")
-                errors.append(
-                    f"Row {row_num}: An error occurred while processing this row"
-                )
+                errors.append(f"Row {row_num}: An error occurred while processing this row")
 
         # Commit if no errors
         if not errors:
@@ -577,10 +521,7 @@ def _format_criteria_summary(criteria: RecommendationCriteria) -> Dict[str, Any]
     if criteria.soil_type:
         summary["Soil Type"] = criteria.soil_type
     if criteria.desired_height_min or criteria.desired_height_max:
-        height_range = (
-            f"{criteria.desired_height_min or 'Any'}-"
-            f"{criteria.desired_height_max or 'Any'}m"
-        )
+        height_range = f"{criteria.desired_height_min or 'Any'}-" f"{criteria.desired_height_max or 'Any'}m"
         summary["Desired Height"] = height_range
     if criteria.maintenance_level:
         summary["Maintenance Level"] = criteria.maintenance_level
@@ -603,9 +544,7 @@ def _format_request_criteria(req: PlantRecommendationRequest) -> Dict[str, Any]:
     if req.soil_type:
         summary["Soil Type"] = req.soil_type
     if req.desired_height_min or req.desired_height_max:
-        height_range = (
-            f"{req.desired_height_min or 'Any'}-{req.desired_height_max or 'Any'}m"
-        )
+        height_range = f"{req.desired_height_min or 'Any'}-{req.desired_height_max or 'Any'}m"
         summary["Desired Height"] = height_range
     if req.maintenance_level:
         summary["Maintenance Level"] = req.maintenance_level

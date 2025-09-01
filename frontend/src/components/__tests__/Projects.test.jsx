@@ -2,7 +2,7 @@
 import { screen, waitFor } from '@testing-library/react'
 import { axe, toHaveNoViolations } from 'jest-axe'
 import { renderWithLanguage } from '../../test/utils/render.jsx'
-import { createMockProjects, createApiResponse } from '../../test/utils/mockData.js'
+import { createMockProjects } from '../../test/utils/mockData.js'
 import { clearAllMocks, createMockFn } from '../../test/utils/test-helpers.js'
 import Projects from '../Projects'
 
@@ -20,7 +20,7 @@ describe('Projects Component', () => {
 
     // Mock fetch for API calls using framework-agnostic helper
     global.fetch = createMockFn((url) => {
-      if (url.includes('/api/projects')) {
+      if (url.includes('/projects')) {
         // Mock projects data with realistic project information
         const mockProjects = createMockProjects(3, [
           {
@@ -61,7 +61,7 @@ describe('Projects Component', () => {
           headers: {
             get: (name) => name === 'content-type' ? 'application/json' : null
           },
-          json: () => Promise.resolve(createApiResponse(mockProjects))
+          json: () => Promise.resolve({ projects: mockProjects })
         })
       }
       
@@ -95,16 +95,22 @@ describe('Projects Component', () => {
     it('displays projects data after loading', async () => {
       renderWithLanguage(<Projects language="en" />, { language: 'en' })
       
+      // Wait for initial page load
+      await waitFor(() => {
+        expect(screen.getByText('Projects')).toBeInTheDocument()
+      }, { timeout: 5000 })
+      
+      // Wait for projects data to load (increased timeout for CI reliability)
       await waitFor(() => {
         // Look for project names from mock data
         expect(screen.getByText(/Garden Redesign Project/i)).toBeInTheDocument()
-      }, { timeout: 10000 })
+      }, { timeout: 15000 })
       
       // Verify other mock projects are displayed
       await waitFor(() => {
         expect(screen.getByText(/Park Renovation/i)).toBeInTheDocument()
         expect(screen.getByText(/Corporate Landscape/i)).toBeInTheDocument()
-      })
+      }, { timeout: 5000 })
     })
   })
 

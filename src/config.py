@@ -12,9 +12,7 @@ class Config:
 
     SECRET_KEY = os.environ.get("SECRET_KEY") or "dev-secret-key-change-in-production"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    SQLALCHEMY_DATABASE_URI = (
-        os.environ.get("DATABASE_URL") or "sqlite:///landscape_architecture.db"
-    )
+    SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URL") or "sqlite:///landscape_architecture.db"
 
     # Security configurations
     SESSION_COOKIE_SECURE = True
@@ -29,12 +27,19 @@ class Config:
     RATELIMIT_STRATEGY = "moving-window"
 
     # CORS settings
-    CORS_ORIGINS = os.environ.get(
-        "CORS_ORIGINS", "http://localhost:5174,http://127.0.0.1:5174"
-    ).split(",")
+    CORS_ORIGINS = os.environ.get("CORS_ORIGINS", "http://localhost:5174,http://127.0.0.1:5174").split(",")
 
     # Logging
     LOG_LEVEL = os.environ.get("LOG_LEVEL", "INFO")
+
+    # N8n Integration Configuration
+    N8N_BASE_URL = os.environ.get("N8N_BASE_URL", "http://localhost:5678")
+    N8N_WEBHOOK_SECRET = os.environ.get("N8N_WEBHOOK_SECRET")
+    N8N_BASIC_AUTH_USER = os.environ.get("N8N_BASIC_AUTH_USER", "admin")
+    N8N_BASIC_AUTH_PASSWORD = os.environ.get("N8N_BASIC_AUTH_PASSWORD")
+
+    # Webhook timeout settings
+    N8N_WEBHOOK_TIMEOUT = int(os.environ.get("N8N_WEBHOOK_TIMEOUT", "30"))
 
 
 class DevelopmentConfig(Config):
@@ -51,9 +56,7 @@ class ProductionConfig(Config):
     SECRET_KEY = os.environ.get("SECRET_KEY")
 
     # Production database - use SQLite for demo, PostgreSQL in real production
-    SQLALCHEMY_DATABASE_URI = (
-        os.environ.get("DATABASE_URL") or "sqlite:///landscape_architecture_prod.db"
-    )
+    SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URL") or "sqlite:///landscape_architecture_prod.db"
 
     # Enhanced security for production
     SESSION_COOKIE_SECURE = True

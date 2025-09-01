@@ -55,12 +55,8 @@ class PipelineHealthMonitor:
     def _check_git_status(self) -> Dict[str, Any]:
         """Check Git repository status."""
         try:
-            result = subprocess.run(
-                ["git", "status", "--porcelain"], capture_output=True, text=True
-            )
-            uncommitted = (
-                result.stdout.strip().split("\n") if result.stdout.strip() else []
-            )
+            result = subprocess.run(["git", "status", "--porcelain"], capture_output=True, text=True)
+            uncommitted = result.stdout.strip().split("\n") if result.stdout.strip() else []
 
             return {
                 "status": "healthy" if len(uncommitted) == 0 else "warning",
@@ -92,10 +88,7 @@ class PipelineHealthMonitor:
             redis_ok = True
 
             try:
-                conn = psycopg2.connect(
-                    "postgresql://postgres:postgres_password@localhost:5432/"
-                    "landscape_test"
-                )
+                conn = psycopg2.connect("postgresql://postgres:postgres_password@localhost:5432/" "landscape_test")
                 conn.close()
             except psycopg2.OperationalError:
                 postgres_ok = False
@@ -126,9 +119,7 @@ class PipelineHealthMonitor:
     def _check_code_quality(self) -> Dict[str, Any]:
         """Check code quality tools."""
         try:
-            black_result = subprocess.run(
-                ["black", "--check", "."], capture_output=True
-            )
+            black_result = subprocess.run(["black", "--check", "."], capture_output=True)
             isort_result = subprocess.run(
                 ["isort", "--check-only", "--profile", "black", "."],
                 capture_output=True,
@@ -142,8 +133,6 @@ class PipelineHealthMonitor:
                 "black": black_ok,
                 "isort": isort_ok,
             }
-        except Exception as e:
-            return {"status": "error", "error": str(e)}
         except FileNotFoundError as e:
             return {"status": "error", "error": f"File not found: {e}"}
         except OSError as e:

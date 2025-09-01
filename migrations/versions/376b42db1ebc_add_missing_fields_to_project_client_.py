@@ -25,28 +25,16 @@ def upgrade():
         batch_op.create_index("idx_client_type", ["client_type"], unique=False)
 
     with op.batch_alter_table("plants", schema=None) as batch_op:
-        batch_op.add_column(
-            sa.Column("sun_exposure", sa.String(length=50), nullable=True)
-        )
-        batch_op.add_column(
-            sa.Column("moisture_level", sa.String(length=50), nullable=True)
-        )
+        batch_op.add_column(sa.Column("sun_exposure", sa.String(length=50), nullable=True))
+        batch_op.add_column(sa.Column("moisture_level", sa.String(length=50), nullable=True))
         batch_op.create_index("idx_plant_category", ["category"], unique=False)
-        batch_op.create_index(
-            "idx_plant_category_sun", ["category", "sun_requirements"], unique=False
-        )
-        batch_op.create_index(
-            "idx_plant_hardiness_zone", ["hardiness_zone"], unique=False
-        )
+        batch_op.create_index("idx_plant_category_sun", ["category", "sun_requirements"], unique=False)
+        batch_op.create_index("idx_plant_hardiness_zone", ["hardiness_zone"], unique=False)
         batch_op.create_index("idx_plant_name", ["name"], unique=False)
         batch_op.create_index("idx_plant_native", ["native"], unique=False)
-        batch_op.create_index(
-            "idx_plant_native_category", ["native", "category"], unique=False
-        )
+        batch_op.create_index("idx_plant_native_category", ["native", "category"], unique=False)
         batch_op.create_index("idx_plant_price", ["price"], unique=False)
-        batch_op.create_index(
-            "idx_plant_sun_requirements", ["sun_requirements"], unique=False
-        )
+        batch_op.create_index("idx_plant_sun_requirements", ["sun_requirements"], unique=False)
         batch_op.create_index("idx_plant_supplier_id", ["supplier_id"], unique=False)
         batch_op.create_index("idx_plant_water_needs", ["water_needs"], unique=False)
 
@@ -56,32 +44,20 @@ def upgrade():
         batch_op.create_index("idx_project_plant_status", ["status"], unique=False)
 
     with op.batch_alter_table("projects", schema=None) as batch_op:
-        batch_op.add_column(
-            sa.Column("target_completion_date", sa.Date(), nullable=True)
-        )
-        batch_op.add_column(
-            sa.Column("actual_completion_date", sa.Date(), nullable=True)
-        )
+        batch_op.add_column(sa.Column("target_completion_date", sa.Date(), nullable=True))
+        batch_op.add_column(sa.Column("actual_completion_date", sa.Date(), nullable=True))
         batch_op.create_index("idx_project_budget", ["budget"], unique=False)
         batch_op.create_index("idx_project_client_id", ["client_id"], unique=False)
-        batch_op.create_index(
-            "idx_project_project_type", ["project_type"], unique=False
-        )
+        batch_op.create_index("idx_project_project_type", ["project_type"], unique=False)
         batch_op.create_index("idx_project_start_date", ["start_date"], unique=False)
         batch_op.create_index("idx_project_status", ["status"], unique=False)
-        batch_op.create_index(
-            "idx_project_status_client", ["status", "client_id"], unique=False
-        )
-        batch_op.create_index(
-            "idx_project_type_status", ["project_type", "status"], unique=False
-        )
+        batch_op.create_index("idx_project_status_client", ["status", "client_id"], unique=False)
+        batch_op.create_index("idx_project_type_status", ["project_type", "status"], unique=False)
 
     with op.batch_alter_table("suppliers", schema=None) as batch_op:
         batch_op.create_index("idx_supplier_city", ["city"], unique=False)
         batch_op.create_index("idx_supplier_name", ["name"], unique=False)
-        batch_op.create_index(
-            "idx_supplier_specialization", ["specialization"], unique=False
-        )
+        batch_op.create_index("idx_supplier_specialization", ["specialization"], unique=False)
 
     # ### end Alembic commands ###
 

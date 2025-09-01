@@ -3,51 +3,17 @@
 Basic test suite for the Landscape Architecture Management System
 """
 
-import os
 import sys
+from pathlib import Path
 from unittest.mock import patch
 
 import pytest
 
-# Add project root to Python path
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+# Add project root to Python path using relative paths
+project_root = Path(__file__).parent.parent
+sys.path.insert(0, str(project_root))
 
 from src.main import create_app  # noqa: E402
-from src.models.user import db  # noqa: E402
-
-
-@pytest.fixture
-def app():
-    """Create and configure a test app"""
-    # Set testing environment
-    os.environ["FLASK_ENV"] = "testing"
-
-    app = create_app()
-    app.config.update(
-        {
-            "TESTING": True,
-            "SQLALCHEMY_DATABASE_URI": "sqlite:///:memory:",
-            "SESSION_COOKIE_SECURE": False,
-            "RATELIMIT_ENABLED": False,
-        }
-    )
-
-    with app.app_context():
-        db.create_all()
-        yield app
-        db.drop_all()
-
-
-@pytest.fixture
-def client(app):
-    """Create a test client"""
-    return app.test_client()
-
-
-@pytest.fixture
-def runner(app):
-    """Create a test runner"""
-    return app.test_cli_runner()
 
 
 class TestHealthEndpoint:

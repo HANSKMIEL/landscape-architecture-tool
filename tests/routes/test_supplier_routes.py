@@ -41,9 +41,7 @@ class TestSupplierRoutes(DatabaseTestMixin):
 
     def test_get_suppliers_with_search(self, client, app_context, supplier_factory):
         """Test getting suppliers with search parameter"""
-        supplier1 = supplier_factory(  # noqa: F841
-            name="Alpha Nursery", contact_person="John Alpha"
-        )  # noqa: F841
+        _ = supplier_factory(name="Alpha Nursery", contact_person="John Alpha")
         supplier2 = supplier_factory(  # noqa: F841
             name="Beta Plants", city="Springfield", contact_person="Bob Springfield"
         )  # noqa: F841
@@ -167,9 +165,7 @@ class TestSupplierRoutes(DatabaseTestMixin):
         data = response.get_json()
         assert "validation_errors" in data
 
-    def test_create_supplier_duplicate_email(
-        self, client, app_context, sample_supplier
-    ):
+    def test_create_supplier_duplicate_email(self, client, app_context, sample_supplier):
         """Test creating supplier with duplicate email"""
         supplier_data = {
             "name": "Duplicate Email Supplier",
@@ -274,9 +270,7 @@ class TestSupplierRoutes(DatabaseTestMixin):
         data = response.get_json()
         assert "error" in data
 
-    def test_delete_supplier_with_products(
-        self, client, app_context, sample_supplier, product_factory
-    ):
+    def test_delete_supplier_with_products(self, client, app_context, sample_supplier, product_factory):
         """Test deleting supplier that has products"""
         product_factory(supplier=sample_supplier)
 
@@ -287,9 +281,7 @@ class TestSupplierRoutes(DatabaseTestMixin):
         data = response.get_json()
         assert "error" in data
 
-    def test_delete_supplier_with_plants(
-        self, client, app_context, sample_supplier, plant_factory
-    ):
+    def test_delete_supplier_with_plants(self, client, app_context, sample_supplier, plant_factory):
         """Test deleting supplier that has plants"""
         plant_factory(supplier=sample_supplier)
 
@@ -300,20 +292,12 @@ class TestSupplierRoutes(DatabaseTestMixin):
         data = response.get_json()
         assert "error" in data
 
-    def test_get_supplier_products(
-        self, client, app_context, sample_supplier, product_factory
-    ):
+    def test_get_supplier_products(self, client, app_context, sample_supplier, product_factory):
         """Test getting products for a specific supplier"""
-        product1 = product_factory(  # noqa: F841
-            supplier=sample_supplier, name="Product 1"
-        )  # noqa: F841
-        product2 = product_factory(  # noqa: F841
-            supplier=sample_supplier, name="Product 2"
-        )  # noqa: F841
+        product_factory(supplier=sample_supplier, name="Product 1")  # noqa: F841  # noqa: F841
+        product_factory(supplier=sample_supplier, name="Product 2")  # noqa: F841  # noqa: F841
         other_supplier = product_factory().supplier
-        product3 = product_factory(  # noqa: F841
-            supplier=other_supplier, name="Product 3"
-        )  # noqa: F841
+        product_factory(supplier=other_supplier, name="Product 3")  # noqa: F841  # noqa: F841
 
         response = client.get(f"/api/suppliers/{sample_supplier.id}/products")
 
@@ -325,9 +309,7 @@ class TestSupplierRoutes(DatabaseTestMixin):
         assert "Product 2" in product_names
         assert "Product 3" not in product_names
 
-    def test_get_supplier_plants(
-        self, client, app_context, sample_supplier, plant_factory
-    ):
+    def test_get_supplier_plants(self, client, app_context, sample_supplier, plant_factory):
         """Test getting plants for a specific supplier"""
         plant1 = plant_factory(supplier=sample_supplier, name="Plant 1")  # noqa: F841
         plant2 = plant_factory(supplier=sample_supplier, name="Plant 2")  # noqa: F841
@@ -344,9 +326,7 @@ class TestSupplierRoutes(DatabaseTestMixin):
         assert "Plant 2" in plant_names
         assert "Plant 3" not in plant_names
 
-    def test_get_supplier_statistics(
-        self, client, app_context, sample_supplier, product_factory, plant_factory
-    ):
+    def test_get_supplier_statistics(self, client, app_context, sample_supplier, product_factory, plant_factory):
         """Test getting statistical information for a supplier"""
         # Create products and plants with different prices and quantities
         product_factory(supplier=sample_supplier, price=10.0, stock_quantity=5)
@@ -422,15 +402,11 @@ class TestSupplierRoutes(DatabaseTestMixin):
         assert "Garden Tools" in specializations
         assert "Landscaping Equipment" in specializations
 
-    def test_search_suppliers_by_specialization(
-        self, client, app_context, supplier_factory
-    ):
+    def test_search_suppliers_by_specialization(self, client, app_context, supplier_factory):
         """Test searching suppliers by specialization"""
         supplier1 = supplier_factory(specialization="Native Plants")  # noqa: F841
         supplier2 = supplier_factory(specialization="Garden Tools")  # noqa: F841
-        supplier3 = supplier_factory(  # noqa: F841
-            specialization="Native Plants and Trees"
-        )  # noqa: F841
+        supplier_factory(specialization="Native Plants and Trees")  # noqa: F841  # noqa: F841
 
         response = client.get("/api/suppliers?specialization=Native Plants")
 
@@ -438,9 +414,7 @@ class TestSupplierRoutes(DatabaseTestMixin):
         data = response.get_json()
         assert len(data["suppliers"]) == 2  # Includes partial matches
 
-    def test_get_top_suppliers(
-        self, client, app_context, supplier_factory, product_factory, plant_factory
-    ):
+    def test_get_top_suppliers(self, client, app_context, supplier_factory, product_factory, plant_factory):
         """Test getting top suppliers by products/plants"""
         supplier1 = supplier_factory(name="Supplier 1")
         supplier2 = supplier_factory(name="Supplier 2")
@@ -588,9 +562,7 @@ class TestSupplierRoutesIntegration(DatabaseTestMixin):
         # Note: Cannot delete supplier due to product constraint
         # This demonstrates referential integrity
 
-    def test_supplier_filtering_and_search_combinations(
-        self, client, app_context, supplier_factory
-    ):
+    def test_supplier_filtering_and_search_combinations(self, client, app_context, supplier_factory):
         """Test various combinations of supplier filters and search"""
         # Create diverse suppliers
         suppliers = [  # noqa: F841
@@ -654,9 +626,8 @@ class TestSupplierRoutesIntegration(DatabaseTestMixin):
             assert response.status_code == 201
 
         # Add plants directly via factory (as there might not be an API endpoint)
-        plants = [  # noqa: F841
-            plant_factory(supplier=supplier, name=f"Plant {i}") for i in range(2)
-        ]  # noqa: F841
+        plant1 = plant_factory(supplier=supplier, name="Plant 1")  # noqa: F841
+        plant2 = plant_factory(supplier=supplier, name="Plant 2")  # noqa: F841
 
         # Get supplier products
         response = client.get(f"/api/suppliers/{supplier.id}/products")
@@ -683,14 +654,10 @@ class TestSupplierRoutesIntegration(DatabaseTestMixin):
         top_data = response.get_json()
         assert len(top_data["suppliers"]) >= 1
         # The test supplier should be in the results
-        supplier_found = any(
-            s["supplier"]["id"] == supplier.id for s in top_data["suppliers"]
-        )
+        supplier_found = any(s["supplier"]["id"] == supplier.id for s in top_data["suppliers"])
         assert supplier_found
 
-    def test_supplier_validation_comprehensive(
-        self, client, app_context, sample_supplier
-    ):
+    def test_supplier_validation_comprehensive(self, client, app_context, sample_supplier):
         """Test comprehensive supplier validation scenarios"""
         # Test all validation rules
 

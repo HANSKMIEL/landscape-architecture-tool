@@ -49,9 +49,7 @@ class TestProjectService:
         client.name = "Test Client"
         return client
 
-    def test_create_project_success(
-        self, app_context, project_service, sample_project_data, mock_client
-    ):
+    def test_create_project_success(self, app_context, project_service, sample_project_data, mock_client):
         """Test successful project creation"""
         with patch("src.models.user.db.session") as mock_session:
 
@@ -72,9 +70,7 @@ class TestProjectService:
                 mock_session.commit.assert_called_once()
                 assert result == sample_project_data
 
-    def test_create_project_database_error(
-        self, app_context, project_service, sample_project_data
-    ):
+    def test_create_project_database_error(self, app_context, project_service, sample_project_data):
         """Test project creation with database error"""
         with patch("src.models.user.db.session") as mock_session:
 
@@ -87,14 +83,12 @@ class TestProjectService:
                 mock_model_class.return_value = mock_project
                 mock_model_class.__name__ = "Project"
 
-                with pytest.raises(Exception):
+                with pytest.raises(Exception):  # noqa: B017
                     project_service.create(sample_project_data)
 
                 mock_session.rollback.assert_called_once()
 
-    def test_get_project_by_id_success(
-        self, app_context, project_service, mock_project
-    ):
+    def test_get_project_by_id_success(self, app_context, project_service, mock_project):
         """Test retrieving project by ID"""
         with patch("src.models.landscape.Project.query") as mock_query:
             mock_query.get.return_value = mock_project
@@ -229,9 +223,7 @@ class TestProjectService:
             mock_pagination.has_prev = False
 
             mock_filtered_query = Mock()
-            mock_filtered_query.order_by.return_value.paginate.return_value = (
-                mock_pagination
-            )
+            mock_filtered_query.order_by.return_value.paginate.return_value = mock_pagination
             mock_query.filter.return_value = mock_filtered_query
 
             result = project_service.get_all(client_id=1)
@@ -253,9 +245,7 @@ class TestProjectService:
             mock_pagination.has_prev = False
 
             mock_filtered_query = Mock()
-            mock_filtered_query.order_by.return_value.paginate.return_value = (
-                mock_pagination
-            )
+            mock_filtered_query.order_by.return_value.paginate.return_value = mock_pagination
             mock_query.filter.return_value = mock_filtered_query
 
             result = project_service.get_all(search="Garden")
@@ -286,9 +276,7 @@ class TestProjectService:
             assert result["total"] == 25
             assert result["pages"] == 3
             assert result["current_page"] == 1
-            mock_query.order_by.return_value.paginate.assert_called_once_with(
-                page=1, per_page=10, error_out=False
-            )
+            mock_query.order_by.return_value.paginate.assert_called_once_with(page=1, per_page=10, error_out=False)
 
     def test_combined_search_and_client_filter(self, app_context, project_service):
         """Test combining search and client filtering"""
@@ -310,9 +298,7 @@ class TestProjectService:
             # Chain the filter calls
             mock_client_filtered = Mock()
             mock_search_filtered = Mock()
-            mock_search_filtered.order_by.return_value.paginate.return_value = (
-                mock_pagination
-            )
+            mock_search_filtered.order_by.return_value.paginate.return_value = mock_pagination
             mock_client_filtered.filter.return_value = mock_search_filtered
             mock_query.filter.return_value = mock_client_filtered
 
@@ -323,9 +309,7 @@ class TestProjectService:
             assert mock_query.filter.call_count == 1
             assert mock_client_filtered.filter.call_count == 1
 
-    def test_database_error_handling(
-        self, app_context, project_service, sample_project_data
-    ):
+    def test_database_error_handling(self, app_context, project_service, sample_project_data):
         """Test database error handling"""
         with patch("src.models.user.db.session") as mock_session:
 
@@ -337,14 +321,12 @@ class TestProjectService:
                 mock_model_class.return_value = mock_project
                 mock_model_class.__name__ = "Project"
 
-                with pytest.raises(Exception):
+                with pytest.raises(Exception):  # noqa: B017
                     project_service.create(sample_project_data)
 
                 mock_session.rollback.assert_called_once()
 
-    def test_project_status_validation(
-        self, app_context, project_service, mock_project
-    ):
+    def test_project_status_validation(self, app_context, project_service, mock_project):
         """Test project status update scenarios"""
         valid_statuses = ["Planning", "In uitvoering", "Afgerond", "On Hold"]
 

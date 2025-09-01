@@ -1,21 +1,32 @@
 version = 1
 
+# Ensure DeepSource knows where tests live
+test_patterns = [
+  "tests/**",
+]
+
+exclude_patterns = [
+  ".git/**",
+  "venv/**",
+  ".venv/**",
+  "dist/**",
+  "build/**",
+  "**/__pycache__/**",
+]
+
 [[analyzers]]
 name = "python"
 enabled = true
+runtime_version = "3.x.x"
 
-  [analyzers.meta]
-  runtime_version = "3.x.x"
-  max_line_length = 88
+[analyzers.meta]
+max_line_length = 120
 
-[[analyzers]]
-name = "test-coverage"
-enabled = true
+[transformers]
+  [transformers.black]
+    enabled = true
+  [transformers.isort]
+    enabled = true
 
-[[transformers]]
-name = "black"
-enabled = true
-
-[[transformers]]  
-name = "isort"
-enabled = true
+[reports]
+coverage = { tool = "coverage.py", path = "coverage.xml" }
