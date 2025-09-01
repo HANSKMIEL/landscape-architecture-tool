@@ -7,11 +7,19 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   test:
+    name: Backend and Frontend CI
     runs-on: ubuntu-latest
+    timeout-minutes: 20
+
     permissions:
       contents: read
+
     services:
       postgres:
         image: postgres:16
@@ -27,34 +35,66 @@ jobs:
           --health-retries=12
 
     env:
-      # Use a dedicated test URL for the entire job
       DATABASE_URL: postgresql+psycopg://postgres:postgres@localhost:5432/app_test
       TEST_DATABASE_URL: postgresql+psycopg://postgres:postgres@localhost:5432/app_test
       PIP_DISABLE_PIP_VERSION_CHECK: 1
+      PYTHONUNBUFFERED: "1"
+      CI: "true"
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        timeout-minutes: 2
         with:
           python-version: "3.12"
+          cache: "pip"
+          cache-dependency-path: |
+            requirements.txt
+            requirements-dev.txt
 
-      - name: Install dependencies
+      - name: Install backend dependencies
+        timeout-minutes: 10
         run: |
-          python -m pip install --upgrade pip
-          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-          if [ -f requirements-dev.txt ]; then pip install -r requirements-dev.txt; fi
-          # Ensure tooling is available even if not in requirements
-          pip install --upgrade pytest pytest-cov ruff black isort SQLAlchemy psycopg[binary]
+          set -euxo pipefail
+          if command -v make >/dev/null 2>&1 && [ -f Makefile ]; then
+            make install
+          else
+            python -m pip install --upgrade pip
+            if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+            if [ -f requirements-dev.txt ]; then pip install -r requirements-dev.txt; fi
+            pip install --upgrade pytest pytest-cov ruff black isort SQLAlchemy psycopg[binary]
+          fi
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        timeout-minutes: 2
+        with:
+          node-version: "18"
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        timeout-minutes: 4
+        run: |
+          set -euxo pipefail
+          cd frontend
+          npm ci
 
       - name: Wait for Postgres
+        timeout-minutes: 2
         run: |
-          for i in {1..30}; do
-            pg_isready -h localhost -p 5432 -U postgres && break
+          for i in {1..60}; do
+            pg_isready -h localhost -p 5432 -U postgres && exit 0
             sleep 2
           done
+          echo "Postgres did not become ready in time" >&2
+          exit 1
 
       - name: Prepare database schema (alembic if available, else create_all)
+        timeout-minutes: 2
         run: |
           python - <<'PY'
           import importlib, os
@@ -67,11 +107,7 @@ jobs:
                   conn.execute(text("SET SESSION statement_timeout = '15s'"))
               except Exception:
                   pass
-          # Try Alembic migrations
           try:
-              alembic_cfg = None
-              alembic = importlib.import_module('alembic')
-              command = importlib.import_module('alembic.config')
               from alembic.config import Config
               from alembic import command as alembic_command
               cfg_path = 'migrations/alembic.ini'
@@ -84,40 +120,59 @@ jobs:
           except Exception as e:
               print(f'Alembic not available/applicable ({e}); falling back to create_all if Base is exposed')
               try:
-                  # Adjust the import path to your project if needed
-                  from src.models.user import db  # noqa: E402
+                  from src.models.user import db  # Adjust if your db object lives elsewhere
                   db.metadata.create_all(bind=engine)
                   print('Created tables via db.metadata.create_all')
               except Exception:
                   print('No db available; assuming migrations manage schema')
           PY
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "18"
-          cache: "npm"
-          cache-dependency-path: frontend/package-lock.json
-
-      - name: Install frontend dependencies
+      - name: Build (backend/ frontend)
+        timeout-minutes: 3
         run: |
-          cd frontend
-          npm ci
+          set -euxo pipefail
+          if command -v make >/dev/null 2>&1 && [ -f Makefile ]; then
+            make build
+          else
+            cd frontend
+            npm run build
+          fi
 
       - name: Lint
+        timeout-minutes: 3
         run: |
+          set -euxo pipefail
           ruff check .
           black --check .
           isort --check-only .
-          cd frontend && npm run lint
+          cd frontend
+          npm run lint
 
-      - name: Run tests
+      - name: Backend tests
+        timeout-minutes: 4
         run: |
-          pytest -q --maxfail=1 --disable-warnings --durations=10 --cov=. --cov-report=xml
+          set -euxo pipefail
+          if command -v make >/dev/null 2>&1 && [ -f Makefile ]; then
+            make backend-test
+          else
+            pytest -q --maxfail=1 --disable-warnings --durations=10 --cov=. --cov-report=xml
+          fi
 
-      - name: Upload coverage artifact
+      - name: Frontend tests (Vitest with coverage)
+        timeout-minutes: 4
+        run: |
+          set -euxo pipefail
+          cd frontend
+          npm run test:coverage
+
+      - name: Upload coverage (if present)
         if: ${{ always() }}
         uses: actions/upload-artifact@v4
         with:
-          name: coverage-xml
-          path: coverage.xml
+          name: coverage-and-logs
+          path: |
+            coverage.xml
+            .coverage
+            frontend/coverage
+            frontend/coverage-vitest
+          if-no-files-found: ignore

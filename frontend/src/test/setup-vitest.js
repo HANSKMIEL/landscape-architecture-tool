@@ -1,9 +1,14 @@
-import './polyfills.js'
-import '@testing-library/jest-dom'
-import { vi } from 'vitest'
+// Global DOM matchers and fetch polyfill
+import '@testing-library/jest-dom';
+import 'whatwg-fetch';
+import { vi } from 'vitest';
 
-// Import the Vitest-compatible server
-import './mocks/server-vitest.js'
+// Set up TextEncoder/TextDecoder if missing
+if (typeof globalThis.TextEncoder === 'undefined') {
+  const { TextEncoder, TextDecoder } = await import('node:util');
+  globalThis.TextEncoder = TextEncoder;
+  globalThis.TextDecoder = TextDecoder;
+}
 
 // Mock window.matchMedia
 Object.defineProperty(window, 'matchMedia', {
@@ -36,5 +41,15 @@ global.ResizeObserver = class ResizeObserver {
   unobserve() {}
 };
 
-// Mock console.error to avoid noise in tests
-console.error = vi.fn();
+// Optional MSW server support (no-op if not present)
+try {
+  const mod = await import('./mocks/server.js');
+  if (mod.server && typeof mod.server.listen === 'function') {
+    mod.server.listen({ onUnhandledRequest: 'warn' });
+    const { afterAll, afterEach } = await import('vitest');
+    afterEach(() => mod.server.resetHandlers());
+    afterAll(() => mod.server.close());
+  }
+} catch {
+  // MSW server not used; proceed
+}
