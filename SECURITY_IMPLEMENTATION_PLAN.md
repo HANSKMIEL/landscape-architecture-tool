@@ -140,5 +140,5 @@ safety check --json --output safety-report.json
 
 ---
 
-*Last Updated: December 31, 2024*  
+*Last Updated: 2025-09-01*  
 *Next Update: After Phase 3 completion*
