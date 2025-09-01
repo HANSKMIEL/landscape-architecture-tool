@@ -90,16 +90,16 @@ os.environ["FLASK_ENV"] = "testing"
 try:
     from src.utils.dependency_validator import DependencyValidator
     validator = DependencyValidator()
-    
+
     # Test actual usage
     critical_ok, missing = validator.validate_critical_dependencies()
     print(f"SUCCESS: Critical validation: {critical_ok}, Missing: {missing}")
-    
+
     # Test in context of main app
     from src.main import create_app
     app = create_app()
     print("SUCCESS: App creation with DependencyValidator")
-    
+
 except ImportError as e:
     print(f"IMPORT_ERROR: {e}")
     sys.exit(1)
@@ -118,9 +118,7 @@ except Exception as e:
             text=True,
         )
 
-        assert (
-            result.returncode == 0
-        ), f"Isolated test failed: {result.stderr}\nStdout: {result.stdout}"
+        assert result.returncode == 0, f"Isolated test failed: {result.stderr}\nStdout: {result.stdout}"
         assert "SUCCESS" in result.stdout
         assert "ERROR" not in result.stdout
 
@@ -148,9 +146,7 @@ print("SUCCESS: Multiple imports work without conflict")
             capture_output=True,
             text=True,
         )
-        assert (
-            result.returncode == 0
-        ), f"Multiple imports test failed: {result.stderr}\nStdout: {result.stdout}"
+        assert result.returncode == 0, f"Multiple imports test failed: {result.stderr}\nStdout: {result.stdout}"
         assert "SUCCESS" in result.stdout
 
     def test_import_with_different_pythonpath(self):
@@ -201,9 +197,7 @@ print("SUCCESS: Multiple imports work without conflict")
                     dependency_validator_import = node
                     break
 
-        assert (
-            dependency_validator_import is not None
-        ), "DependencyValidator import not found"
+        assert dependency_validator_import is not None, "DependencyValidator import not found"
 
         # Verify it's not inside a try/except block (which could hide NameError)
         # This is a defensive check to ensure the import fails fast if there's an issue
@@ -215,12 +209,8 @@ print("SUCCESS: Multiple imports work without conflict")
 
         # The import should be at module level, not in a try/except
         # (defensive programming - we want import errors to be visible)
-        module_level_import = any(
-            isinstance(parent, ast.Module) for parent in parent_nodes
-        )
-        assert (
-            module_level_import
-        ), "DependencyValidator import should be at module level for clear error reporting"
+        module_level_import = any(isinstance(parent, ast.Module) for parent in parent_nodes)
+        assert module_level_import, "DependencyValidator import should be at module level for clear error reporting"
 
     def test_all_dependency_validator_usages_work(self):
         """Test all places where DependencyValidator is used"""
@@ -250,9 +240,7 @@ print("SUCCESS: Multiple imports work without conflict")
         import ast
 
         # This should parse without syntax errors
-        import_statement = (
-            "from src.utils.dependency_validator import DependencyValidator"
-        )
+        import_statement = "from src.utils.dependency_validator import DependencyValidator"
 
         try:
             ast.parse(import_statement)
@@ -321,4 +309,3 @@ class TestIssue326Regression:
             # Verify DependencyValidator worked correctly
             assert "dependencies" in data
             assert data["dependencies"]["critical"]["status"] in ["ok", "missing"]
-

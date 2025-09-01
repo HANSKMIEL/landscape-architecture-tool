@@ -34,20 +34,14 @@ class ClientService:
             )
 
         # Execute query with pagination
-        clients = query.order_by(Client.name).paginate(
-            page=page, per_page=per_page, error_out=False
-        )
+        clients = query.order_by(Client.name).paginate(page=page, per_page=per_page, error_out=False)
 
         # Add project counts to each client
         clients_data = []
         for client in clients.items:
             client_dict = client.to_dict()
-            client_dict["project_count"] = Project.query.filter_by(
-                client_id=client.id
-            ).count()
-            client_dict["active_projects"] = Project.query.filter_by(
-                client_id=client.id, status="active"
-            ).count()
+            client_dict["project_count"] = Project.query.filter_by(client_id=client.id).count()
+            client_dict["active_projects"] = Project.query.filter_by(client_id=client.id, status="active").count()
             clients_data.append(client_dict)
 
         return {
@@ -94,9 +88,7 @@ class ClientService:
             return False
 
         # Check if client has active projects
-        active_projects = Project.query.filter_by(
-            client_id=client_id, status="active"
-        ).count()
+        active_projects = Project.query.filter_by(client_id=client_id, status="active").count()
 
         if active_projects > 0:
             return False  # Cannot delete client with active projects
@@ -108,11 +100,7 @@ class ClientService:
     @staticmethod
     def get_client_projects(client_id: int) -> List[Project]:
         """Get all projects for a specific client"""
-        return (
-            Project.query.filter_by(client_id=client_id)
-            .order_by(Project.created_at.desc())
-            .all()
-        )
+        return Project.query.filter_by(client_id=client_id).order_by(Project.created_at.desc()).all()
 
     @staticmethod
     def get_client_statistics(client_id: int) -> Dict:
@@ -138,9 +126,7 @@ class ClientService:
             "completed_projects": completed_projects,
             "total_budget": total_budget,
             "total_area": total_area,
-            "average_project_budget": (
-                total_budget / total_projects if total_projects > 0 else 0
-            ),
+            "average_project_budget": (total_budget / total_projects if total_projects > 0 else 0),
         }
 
     @staticmethod
@@ -184,13 +170,7 @@ class ClientService:
 
         # Phone validation
         if client_data.get("phone"):
-            phone = (
-                client_data["phone"]
-                .replace(" ", "")
-                .replace("-", "")
-                .replace("(", "")
-                .replace(")", "")
-            )
+            phone = client_data["phone"].replace(" ", "").replace("-", "").replace("(", "").replace(")", "")
             if not phone.replace("+", "").isdigit():
                 errors.append("Invalid phone number format")
 
@@ -210,9 +190,7 @@ class ClientService:
         for client in clients:
             project_count = Project.query.filter_by(client_id=client.id).count()
             if project_count > 0:
-                client_stats.append(
-                    {"client": client.to_dict(), "project_count": project_count}
-                )
+                client_stats.append({"client": client.to_dict(), "project_count": project_count})
 
         # Sort by project count and limit
         client_stats.sort(key=lambda x: x["project_count"], reverse=True)

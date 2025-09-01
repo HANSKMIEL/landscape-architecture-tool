@@ -31,9 +31,7 @@ class PlantService:
         # Apply filters
         if search:
             search_term = f"%{search}%"
-            query = query.filter(
-                or_(Plant.name.ilike(search_term), Plant.common_name.ilike(search_term))
-            )
+            query = query.filter(or_(Plant.name.ilike(search_term), Plant.common_name.ilike(search_term)))
 
         if category:
             query = query.filter(Plant.category == category)
@@ -48,9 +46,7 @@ class PlantService:
             query = query.filter(Plant.native.is_(True))
 
         # Execute query with pagination
-        plants = query.order_by(Plant.name).paginate(
-            page=page, per_page=per_page, error_out=False
-        )
+        plants = query.order_by(Plant.name).paginate(page=page, per_page=per_page, error_out=False)
 
         return {
             "plants": [plant.to_dict() for plant in plants.items],
@@ -108,9 +104,7 @@ class PlantService:
         """Search plants by name or common name"""
         search_term = f"%{search_term}%"
         return (
-            Plant.query.filter(
-                or_(Plant.name.ilike(search_term), Plant.common_name.ilike(search_term))
-            )
+            Plant.query.filter(or_(Plant.name.ilike(search_term), Plant.common_name.ilike(search_term)))
             .order_by(Plant.name)
             .all()
         )

@@ -39,9 +39,7 @@ class ProjectPlantService:
                 raise ValueError(f"Plant with ID {plant_id} not found")
 
             # Check if the plant is already in the project
-            existing = ProjectPlant.query.filter_by(
-                project_id=project_id, plant_id=plant_id
-            ).first()
+            existing = ProjectPlant.query.filter_by(project_id=project_id, plant_id=plant_id).first()
 
             if existing:
                 # Update existing entry instead of creating duplicate
@@ -51,9 +49,7 @@ class ProjectPlantService:
                 if notes:
                     existing.notes = notes
                 db.session.commit()
-                logger.info(
-                    f"Updated plant {plant_id} quantity in project {project_id}"
-                )
+                logger.info(f"Updated plant {plant_id} quantity in project {project_id}")
                 return existing
 
             # Use plant's price as default unit cost if not provided
@@ -72,10 +68,7 @@ class ProjectPlantService:
             db.session.add(project_plant)
             db.session.commit()
 
-            logger.info(
-                f"Added plant {plant_id} to project {project_id} "
-                f"with quantity {quantity}"
-            )
+            logger.info(f"Added plant {plant_id} to project {project_id} " f"with quantity {quantity}")
             return project_plant
 
         except IntegrityError as e:
@@ -87,14 +80,10 @@ class ProjectPlantService:
             logger.error(f"Error adding plant to project: {e}")
             raise
 
-    def update_plant_quantity(
-        self, project_id: int, plant_id: int, new_quantity: int
-    ) -> ProjectPlant:
+    def update_plant_quantity(self, project_id: int, plant_id: int, new_quantity: int) -> ProjectPlant:
         """Update plant quantity in project"""
         try:
-            project_plant = ProjectPlant.query.filter_by(
-                project_id=project_id, plant_id=plant_id
-            ).first()
+            project_plant = ProjectPlant.query.filter_by(project_id=project_id, plant_id=plant_id).first()
 
             if not project_plant:
                 raise ValueError(f"Plant {plant_id} not found in project {project_id}")
@@ -105,10 +94,7 @@ class ProjectPlantService:
             project_plant.quantity = new_quantity
             db.session.commit()
 
-            logger.info(
-                f"Updated plant {plant_id} quantity to {new_quantity} "
-                f"in project {project_id}"
-            )
+            logger.info(f"Updated plant {plant_id} quantity to {new_quantity} " f"in project {project_id}")
             return project_plant
 
         except Exception as e:
@@ -116,18 +102,14 @@ class ProjectPlantService:
             logger.error(f"Error updating plant quantity: {e}")
             raise
 
-    def update_plant_status(
-        self, project_id: int, plant_id: int, status: str
-    ) -> ProjectPlant:
+    def update_plant_status(self, project_id: int, plant_id: int, status: str) -> ProjectPlant:
         """Update plant status (planned, ordered, planted, etc.)"""
         try:
             valid_statuses = ["planned", "ordered", "planted", "completed"]
             if status not in valid_statuses:
                 raise ValueError(f"Invalid status. Must be one of: {valid_statuses}")
 
-            project_plant = ProjectPlant.query.filter_by(
-                project_id=project_id, plant_id=plant_id
-            ).first()
+            project_plant = ProjectPlant.query.filter_by(project_id=project_id, plant_id=plant_id).first()
 
             if not project_plant:
                 raise ValueError(f"Plant {plant_id} not found in project {project_id}")
@@ -135,9 +117,7 @@ class ProjectPlantService:
             project_plant.status = status
             db.session.commit()
 
-            logger.info(
-                f"Updated plant {plant_id} status to {status} in project {project_id}"
-            )
+            logger.info(f"Updated plant {plant_id} status to {status} in project {project_id}")
             return project_plant
 
         except Exception as e:
@@ -212,9 +192,7 @@ class ProjectPlantService:
                 "total_plants": len(project_plants),
                 "cost_breakdown": cost_breakdown,
                 "budget": project.budget,
-                "budget_remaining": (
-                    (project.budget - total_cost) if project.budget else None
-                ),
+                "budget_remaining": ((project.budget - total_cost) if project.budget else None),
             }
 
         except Exception as e:
@@ -242,9 +220,7 @@ class ProjectPlantService:
                 if not plant:
                     continue
 
-                supplier_name = (
-                    plant.supplier.name if plant.supplier else "Unknown Supplier"
-                )
+                supplier_name = plant.supplier.name if plant.supplier else "Unknown Supplier"
                 supplier_id = plant.supplier_id if plant.supplier_id else 0
 
                 if supplier_id not in supplier_orders:
@@ -283,9 +259,7 @@ class ProjectPlantService:
     def remove_plant_from_project(self, project_id: int, plant_id: int) -> bool:
         """Remove a plant from a project"""
         try:
-            project_plant = ProjectPlant.query.filter_by(
-                project_id=project_id, plant_id=plant_id
-            ).first()
+            project_plant = ProjectPlant.query.filter_by(project_id=project_id, plant_id=plant_id).first()
 
             if not project_plant:
                 raise ValueError(f"Plant {plant_id} not found in project {project_id}")
@@ -301,14 +275,10 @@ class ProjectPlantService:
             logger.error(f"Error removing plant from project: {e}")
             raise
 
-    def update_plant_cost(
-        self, project_id: int, plant_id: int, unit_cost: float
-    ) -> ProjectPlant:
+    def update_plant_cost(self, project_id: int, plant_id: int, unit_cost: float) -> ProjectPlant:
         """Update plant unit cost in project"""
         try:
-            project_plant = ProjectPlant.query.filter_by(
-                project_id=project_id, plant_id=plant_id
-            ).first()
+            project_plant = ProjectPlant.query.filter_by(project_id=project_id, plant_id=plant_id).first()
 
             if not project_plant:
                 raise ValueError(f"Plant {plant_id} not found in project {project_id}")
@@ -319,10 +289,7 @@ class ProjectPlantService:
             project_plant.unit_cost = unit_cost
             db.session.commit()
 
-            logger.info(
-                f"Updated plant {plant_id} unit cost to {unit_cost} "
-                f"in project {project_id}"
-            )
+            logger.info(f"Updated plant {plant_id} unit cost to {unit_cost} " f"in project {project_id}")
             return project_plant
 
         except Exception as e:

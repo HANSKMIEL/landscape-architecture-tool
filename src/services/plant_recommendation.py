@@ -136,9 +136,7 @@ class PlantRecommendationEngine:
         scored_plants.sort(key=lambda x: x.total_score, reverse=True)
         return scored_plants[:max_results]
 
-    def _score_plant(
-        self, plant: Plant, criteria: RecommendationCriteria
-    ) -> PlantScore:
+    def _score_plant(self, plant: Plant, criteria: RecommendationCriteria) -> PlantScore:
         """
         Score a single plant against the criteria
 
@@ -162,9 +160,7 @@ class PlantRecommendationEngine:
         criteria_scores["design"] = design_score
 
         # Maintenance scoring
-        maintenance_score = self._score_maintenance(
-            plant, criteria, match_reasons, warnings
-        )
+        maintenance_score = self._score_maintenance(plant, criteria, match_reasons, warnings)
         criteria_scores["maintenance"] = maintenance_score
 
         # Special requirements scoring
@@ -208,13 +204,10 @@ class PlantRecommendationEngine:
             total_factors += 1
             if criteria.hardiness_zone in plant.hardiness_zone:
                 score += 1.0
-                match_reasons.append(
-                    f"Compatible hardiness zone ({plant.hardiness_zone})"
-                )
+                match_reasons.append(f"Compatible hardiness zone ({plant.hardiness_zone})")
             else:
                 warnings.append(
-                    f"Hardiness zone mismatch: plant {plant.hardiness_zone}, "
-                    f"site {criteria.hardiness_zone}"
+                    f"Hardiness zone mismatch: plant {plant.hardiness_zone}, " f"site {criteria.hardiness_zone}"
                 )
 
         # Sun exposure matching
@@ -222,14 +215,11 @@ class PlantRecommendationEngine:
             total_factors += 1
             if self._match_sun_exposure(criteria.sun_exposure, plant.sun_requirements):
                 score += 1.0
-                match_reasons.append(
-                    f"Suitable sun exposure ({plant.sun_requirements})"
-                )
+                match_reasons.append(f"Suitable sun exposure ({plant.sun_requirements})")
             else:
                 score += 0.3  # Partial compatibility
                 warnings.append(
-                    f"Sun exposure concern: plant needs {plant.sun_requirements}, "
-                    f"site has {criteria.sun_exposure}"
+                    f"Sun exposure concern: plant needs {plant.sun_requirements}, " f"site has {criteria.sun_exposure}"
                 )
 
         # Soil type matching
@@ -246,14 +236,11 @@ class PlantRecommendationEngine:
             total_factors += 1
             if plant.soil_ph_min <= criteria.soil_ph <= plant.soil_ph_max:
                 score += 1.0
-                match_reasons.append(
-                    f"Compatible pH ({plant.soil_ph_min}-{plant.soil_ph_max})"
-                )
+                match_reasons.append(f"Compatible pH ({plant.soil_ph_min}-{plant.soil_ph_max})")
             else:
                 score += 0.2
                 warnings.append(
-                    f"pH concern: plant prefers {plant.soil_ph_min}-"
-                    f"{plant.soil_ph_max}, site is {criteria.soil_ph}"
+                    f"pH concern: plant prefers {plant.soil_ph_min}-" f"{plant.soil_ph_max}, site is {criteria.soil_ph}"
                 )
 
         # Moisture level matching
@@ -265,8 +252,7 @@ class PlantRecommendationEngine:
             else:
                 score += 0.4
                 warnings.append(
-                    f"Water needs mismatch: plant needs {plant.water_needs}, "
-                    f"site has {criteria.moisture_level}"
+                    f"Water needs mismatch: plant needs {plant.water_needs}, " f"site has {criteria.moisture_level}"
                 )
 
         return score / total_factors if total_factors > 0 else 0.5
@@ -283,18 +269,13 @@ class PlantRecommendationEngine:
         total_factors = 0
 
         # Height matching
-        if (
-            criteria.desired_height_min is not None
-            or criteria.desired_height_max is not None
-        ) and (plant.height_min is not None or plant.height_max is not None):
+        if (criteria.desired_height_min is not None or criteria.desired_height_max is not None) and (
+            plant.height_min is not None or plant.height_max is not None
+        ):
             total_factors += 1
 
-            plant_height_avg = self._get_average_size(
-                plant.height_min, plant.height_max
-            )
-            criteria_height_avg = self._get_average_range(
-                criteria.desired_height_min, criteria.desired_height_max
-            )
+            plant_height_avg = self._get_average_size(plant.height_min, plant.height_max)
+            criteria_height_avg = self._get_average_range(criteria.desired_height_min, criteria.desired_height_max)
 
             if self._size_compatible(
                 criteria.desired_height_min,
@@ -303,16 +284,10 @@ class PlantRecommendationEngine:
                 plant.height_max,
             ):
                 score += 1.0
-                match_reasons.append(
-                    f"Suitable height ({plant.height_min}-{plant.height_max}m)"
-                )
-            elif (
-                abs(plant_height_avg - criteria_height_avg) <= 1.0
-            ):  # Within 1m tolerance
+                match_reasons.append(f"Suitable height ({plant.height_min}-{plant.height_max}m)")
+            elif abs(plant_height_avg - criteria_height_avg) <= 1.0:  # Within 1m tolerance
                 score += 0.7
-                match_reasons.append(
-                    f"Close height match ({plant.height_min}-{plant.height_max}m)"
-                )
+                match_reasons.append(f"Close height match ({plant.height_min}-{plant.height_max}m)")
             else:
                 score += 0.3
                 warnings.append(
@@ -322,10 +297,9 @@ class PlantRecommendationEngine:
                 )
 
         # Width matching
-        if (
-            criteria.desired_width_min is not None
-            or criteria.desired_width_max is not None
-        ) and (plant.width_min is not None or plant.width_max is not None):
+        if (criteria.desired_width_min is not None or criteria.desired_width_max is not None) and (
+            plant.width_min is not None or plant.width_max is not None
+        ):
             total_factors += 1
 
             if self._size_compatible(
@@ -335,9 +309,7 @@ class PlantRecommendationEngine:
                 plant.width_max,
             ):
                 score += 1.0
-                match_reasons.append(
-                    f"Suitable width ({plant.width_min}-{plant.width_max}m)"
-                )
+                match_reasons.append(f"Suitable width ({plant.width_min}-{plant.width_max}m)")
             else:
                 score += 0.4
 
@@ -346,12 +318,8 @@ class PlantRecommendationEngine:
             total_factors += 1
             color_match = False
             for pref_color in criteria.color_preferences:
-                if (
-                    plant.bloom_color
-                    and pref_color.lower() in plant.bloom_color.lower()
-                ) or (
-                    plant.foliage_color
-                    and pref_color.lower() in plant.foliage_color.lower()
+                if (plant.bloom_color and pref_color.lower() in plant.bloom_color.lower()) or (
+                    plant.foliage_color and pref_color.lower() in plant.foliage_color.lower()
                 ):
                     color_match = True
                     match_reasons.append(f"Matching color preference ({pref_color})")
@@ -384,13 +352,9 @@ class PlantRecommendationEngine:
         # Maintenance level matching
         if criteria.maintenance_level and plant.maintenance:
             total_factors += 1
-            if self._match_maintenance_level(
-                criteria.maintenance_level, plant.maintenance
-            ):
+            if self._match_maintenance_level(criteria.maintenance_level, plant.maintenance):
                 score += 1.0
-                match_reasons.append(
-                    f"Suitable maintenance level ({plant.maintenance})"
-                )
+                match_reasons.append(f"Suitable maintenance level ({plant.maintenance})")
             else:
                 score += 0.4
                 warnings.append(
@@ -401,18 +365,13 @@ class PlantRecommendationEngine:
         # Budget considerations (simplified)
         if criteria.budget_range and plant.price:
             total_factors += 1
-            budget_compatible = self._check_budget_compatibility(
-                criteria.budget_range, plant.price
-            )
+            budget_compatible = self._check_budget_compatibility(criteria.budget_range, plant.price)
             if budget_compatible:
                 score += 1.0
                 match_reasons.append(f"Within budget (${plant.price})")
             else:
                 score += 0.2
-                warnings.append(
-                    f"Price concern: ${plant.price} may exceed "
-                    f"{criteria.budget_range} budget"
-                )
+                warnings.append(f"Price concern: ${plant.price} may exceed " f"{criteria.budget_range} budget")
 
         # Pest and disease resistance
         if plant.pest_resistance or plant.disease_resistance:
@@ -429,9 +388,7 @@ class PlantRecommendationEngine:
                 "medium",
             ]:
                 resistance_score += 0.5
-                match_reasons.append(
-                    f"Good disease resistance ({plant.disease_resistance})"
-                )
+                match_reasons.append(f"Good disease resistance ({plant.disease_resistance})")
             score += resistance_score
 
         return score / total_factors if total_factors > 0 else 0.5
@@ -559,15 +516,11 @@ class PlantRecommendationEngine:
                 return any(val in plant_sun for val in values)
         return criteria_sun.lower() in plant_sun.lower()
 
-    def _match_maintenance_level(
-        self, criteria_maintenance: str, plant_maintenance: str
-    ) -> bool:
+    def _match_maintenance_level(self, criteria_maintenance: str, plant_maintenance: str) -> bool:
         """Check if maintenance levels match"""
         criteria_normalized = criteria_maintenance.lower()
         for key, values in self.maintenance_map.items():
-            if criteria_normalized in key or any(
-                criteria_maintenance in val for val in values
-            ):
+            if criteria_normalized in key or any(criteria_maintenance in val for val in values):
                 return any(val.lower() in plant_maintenance.lower() for val in values)
         return criteria_maintenance.lower() in plant_maintenance.lower()
 
@@ -575,9 +528,7 @@ class PlantRecommendationEngine:
         """Check if moisture levels match"""
         criteria_normalized = criteria_moisture.lower()
         for key, values in self.moisture_map.items():
-            if criteria_normalized in key or any(
-                criteria_moisture in val for val in values
-            ):
+            if criteria_normalized in key or any(criteria_moisture in val for val in values):
                 return any(val.lower() in plant_water.lower() for val in values)
         return criteria_moisture.lower() in plant_water.lower()
 
@@ -600,9 +551,7 @@ class PlantRecommendationEngine:
         # Check if ranges overlap
         return not (criteria_max < plant_min or criteria_min > plant_max)
 
-    def _get_average_size(
-        self, min_val: Optional[float], max_val: Optional[float]
-    ) -> float:
+    def _get_average_size(self, min_val: Optional[float], max_val: Optional[float]) -> float:
         """Get average of min/max values"""
         if min_val is not None and max_val is not None:
             return (min_val + max_val) / 2
@@ -613,9 +562,7 @@ class PlantRecommendationEngine:
         else:
             return 0
 
-    def _get_average_range(
-        self, min_val: Optional[float], max_val: Optional[float]
-    ) -> float:
+    def _get_average_range(self, min_val: Optional[float], max_val: Optional[float]) -> float:
         """Get average of criteria range"""
         if min_val is not None and max_val is not None:
             return (min_val + max_val) / 2
@@ -626,9 +573,7 @@ class PlantRecommendationEngine:
         else:
             return 0
 
-    def _check_budget_compatibility(
-        self, budget_range: str, plant_price: float
-    ) -> bool:
+    def _check_budget_compatibility(self, budget_range: str, plant_price: float) -> bool:
         """Check if plant price fits within budget range"""
         budget_map = {
             "low": (0, 50),
@@ -677,11 +622,7 @@ class PlantRecommendationEngine:
             desired_height_max=criteria.desired_height_max,
             desired_width_min=criteria.desired_width_min,
             desired_width_max=criteria.desired_width_max,
-            color_preferences=(
-                ",".join(criteria.color_preferences)
-                if criteria.color_preferences
-                else None
-            ),
+            color_preferences=(",".join(criteria.color_preferences) if criteria.color_preferences else None),
             bloom_season=criteria.bloom_season,
             maintenance_level=criteria.maintenance_level,
             budget_range=criteria.budget_range,
@@ -718,9 +659,7 @@ class PlantRecommendationEngine:
             db.session.rollback()
             raise e
 
-    def save_user_feedback(
-        self, request_id: int, feedback: Dict, rating: Optional[int] = None
-    ) -> bool:
+    def save_user_feedback(self, request_id: int, feedback: Dict, rating: Optional[int] = None) -> bool:
         """
         Save user feedback for a recommendation request
 

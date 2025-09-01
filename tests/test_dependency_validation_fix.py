@@ -28,9 +28,7 @@ class TestDependencyValidationFix:
         import src.main
 
         # Verify basic attributes are available
-        assert hasattr(
-            src.main, "create_app"
-        ), "create_app function should be available"
+        assert hasattr(src.main, "create_app"), "create_app function should be available"
         assert hasattr(src.main, "__version__"), "Version should be available"
         assert src.main.__version__ == "2.0.0", "Version should be correct"
 
@@ -141,8 +139,7 @@ except Exception as e:
                         isinstance(target, ast.Name)
                         and target.id == "dependency_validator"
                         and isinstance(node.value, ast.Call)
-                        and getattr(node.value.func, "id", None)
-                        == "DependencyValidator"
+                        and getattr(node.value.func, "id", None) == "DependencyValidator"
                     ):
                         module_level_instantiation = True
             # Check for module-level validation call
@@ -165,8 +162,7 @@ except Exception as e:
                                 isinstance(target, ast.Name)
                                 and target.id == "dependency_validator"
                                 and isinstance(stmt.value, ast.Call)
-                                and getattr(stmt.value.func, "id", None)
-                                == "DependencyValidator"
+                                and getattr(stmt.value.func, "id", None) == "DependencyValidator"
                             ):
                                 create_app_instantiation = True
                     # Call inside create_app
@@ -180,15 +176,7 @@ except Exception as e:
                         ):
                             create_app_validation_call = True
 
-        assert (
-            not module_level_instantiation
-        ), "Module-level dependency validator instantiation should be removed"
-        assert (
-            not module_level_validation_call
-        ), "Module-level dependency validation call should be removed"
-        assert (
-            create_app_instantiation
-        ), "Dependency validator should be instantiated inside create_app()"
-        assert (
-            create_app_validation_call
-        ), "Dependency validation should be called inside create_app()"
+        assert not module_level_instantiation, "Module-level dependency validator instantiation should be removed"
+        assert not module_level_validation_call, "Module-level dependency validation call should be removed"
+        assert create_app_instantiation, "Dependency validator should be instantiated inside create_app()"
+        assert create_app_validation_call, "Dependency validation should be called inside create_app()"
