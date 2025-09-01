@@ -190,32 +190,15 @@ def product_factory(db_session):
 
 @pytest.fixture
 def plant_factory(db_session):
-    """Factory for creating plants with proper session binding"""
+    """Factory for creating plants with proper session binding, omitting supplier field"""
 
-    # Create a simple factory without the problematic supplier dependency
-    class TestPlantFactory(factory.alchemy.SQLAlchemyModelFactory):
+    class TestPlantFactory(PlantFactory):
         class Meta:
             model = Plant
             sqlalchemy_session = db_session
             sqlalchemy_session_persistence = "commit"
-
-        name = factory.Faker("word")
-        common_name = factory.Faker("word")
-        category = factory.Faker("random_element", elements=["Tree", "Shrub", "Perennial", "Annual"])
-        height_min = factory.Faker("random_int", min=10, max=100)
-        height_max = factory.Faker("random_int", min=100, max=500)
-        width_min = factory.Faker("random_int", min=10, max=100)
-        width_max = factory.Faker("random_int", min=100, max=300)
-        hardiness_zone = factory.Faker("random_element", elements=["3a", "3b", "4a", "4b", "5a", "5b"])
-        sun_requirements = factory.Faker("random_element", elements=["full_sun", "partial_shade", "full_shade"])
-        sun_exposure = factory.Faker("random_element", elements=["full_sun", "partial_shade", "full_shade"])
-        soil_type = factory.Faker("random_element", elements=["clay", "sand", "loam", "silt"])
-        moisture_level = factory.Faker("random_element", elements=["low", "medium", "high"])
-        bloom_time = factory.Faker("random_element", elements=["spring", "summer", "fall", "winter"])
-        bloom_color = factory.Faker("color_name")
-        native = factory.Faker("boolean")
-        # Skip supplier field to avoid session conflicts
-
+        # Remove supplier field to avoid session conflicts
+        supplier = None
     return TestPlantFactory
 
 
