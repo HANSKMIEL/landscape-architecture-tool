@@ -11,7 +11,7 @@ import logging
 import uuid
 from typing import Any, Dict
 
-from flask import Blueprint, jsonify, request, session
+from flask import Blueprint, Response, jsonify, request, session
 
 from src.models.landscape import Plant, PlantRecommendationRequest
 from src.models.user import db
@@ -377,8 +377,6 @@ def export_recommendations():
                 )
 
         # Create response
-        from flask import Response
-
         csv_content = output.getvalue()
         output.close()
 
