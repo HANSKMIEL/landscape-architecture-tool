@@ -134,8 +134,8 @@ class AutomatedValidator:
             timeout=300  # Increased timeout for stability
         )
 
-        # Run frontend tests with proper command
-        frontend_test = self.run_command("cd frontend && npm run test:run", timeout=90)
+        # Run frontend tests with proper command (same as CI)
+        frontend_test = self.run_command("cd frontend && npm run test:coverage", timeout=90)
 
         # Enhanced result parsing with retry logic
         backend_passed = backend_test["success"]
@@ -159,7 +159,7 @@ class AutomatedValidator:
         # If frontend tests failed, try one more time  
         if not frontend_passed and "timeout" not in frontend_test.get("stderr", "").lower():
             print("🔄 Retrying frontend tests due to potential transient failure...")
-            frontend_retry = self.run_command("cd frontend && npm run test:run", timeout=90)
+            frontend_retry = self.run_command("cd frontend && npm run test:coverage", timeout=90)
             if frontend_retry["success"]:
                 frontend_passed = True
                 frontend_test = frontend_retry
@@ -194,7 +194,7 @@ class AutomatedValidator:
 
         if not frontend_passed:
             self.results["recommendations"].append(
-                "Frontend tests failing. Run 'cd frontend && npm run test:run' for details."
+                "Frontend tests failing. Run 'cd frontend && npm run test:coverage' for details."
             )
 
         return overall_status == "healthy"

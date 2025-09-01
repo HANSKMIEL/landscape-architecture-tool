@@ -1,7 +1,6 @@
-import os
 import logging
+import os
 import time
-from typing import Generator
 
 import pytest
 from sqlalchemy import create_engine, text
@@ -11,10 +10,10 @@ from sqlalchemy.pool import StaticPool
 # Import test data fixtures to make them available to all tests
 from tests.fixtures.test_data import *  # noqa: F401,F403
 from tests.fixtures.test_stability import (
+    cleanup_test_data,
+    error_recovery_context,
     test_monitor,
     validate_test_environment,
-    error_recovery_context,
-    cleanup_test_data
 )
 
 # Configure logging for tests
@@ -44,26 +43,26 @@ def _make_engine(url: str):
 def test_session_setup():
     """Session-level setup with comprehensive validation and monitoring."""
     start_time = time.time()
-    
+
     # Validate test environment
     validations = validate_test_environment()
     failed_validations = [k for k, v in validations.items() if not v]
-    
+
     if failed_validations:
         logger.error(f"Test environment validation failed: {failed_validations}")
         pytest.exit("Test environment is not properly configured", 1)
-    
+
     logger.info("Test session starting with validated environment")
-    
+
     yield
-    
+
     # Session cleanup and reporting
     duration = time.time() - start_time
     performance_report = test_monitor.get_performance_report()
-    
+
     logger.info(f"Test session completed in {duration:.2f}s")
     logger.info(f"Performance report: {performance_report}")
-    
+
     # Final cleanup
     try:
         cleanup_test_data()
@@ -76,10 +75,10 @@ def engine():
     # Enhanced safety checks
     assert "prod" not in TEST_DATABASE_URL.lower(), "Refusing to run tests against a DB that looks like production"
     assert "production" not in TEST_DATABASE_URL.lower(), "Production database detected in URL"
-    
+
     with error_recovery_context("database engine creation"):
         eng = _make_engine(TEST_DATABASE_URL)
-        
+
         # Test database connectivity
         try:
             with eng.connect() as conn:
@@ -88,7 +87,7 @@ def engine():
         except Exception as e:
             logger.error(f"Database connectivity test failed: {e}")
             raise
-            
+
         return eng
 
 
@@ -96,7 +95,7 @@ def engine():
 def connection(engine):
     with error_recovery_context("database connection setup"):
         conn = engine.connect()
-        
+
         # Apply a per-session statement timeout for tests (Postgres only)
         try:
             conn.execute(text("SET SESSION statement_timeout = '30s'"))
@@ -124,7 +123,7 @@ def connection(engine):
                         logger.debug("Rolled back active transaction")
                 except Exception as e:
                     logger.warning(f"Transaction rollback warning: {e}")
-                
+
                 try:
                     if not conn.closed:
                         conn.close()
@@ -143,7 +142,7 @@ def connection(engine):
                         logger.debug("Rolled back outer transaction")
                 except Exception as e:
                     logger.warning(f"Outer transaction rollback warning: {e}")
-                
+
                 try:
                     if not conn.closed:
                         conn.close()
@@ -155,13 +154,9 @@ def connection(engine):
 @pytest.fixture(scope="session")
 def Session(connection):
     # Bind a sessionmaker to a single connection with enhanced configuration
-    return scoped_session(sessionmaker(
-        bind=connection, 
-        expire_on_commit=False, 
-        autoflush=False, 
-        future=True,
-        autocommit=False
-    ))
+    return scoped_session(
+        sessionmaker(bind=connection, expire_on_commit=False, autoflush=False, future=True, autocommit=False)
+    )
 
 
 @pytest.fixture(autouse=True)
@@ -169,7 +164,7 @@ def db_session(Session, connection, app):
     """Enhanced database session with better isolation and cleanup."""
     # Start performance tracking
     start_time = time.time()
-    
+
     # Each test runs inside a nested transaction (SAVEPOINT) and rolls it back after the test
     nested = connection.begin_nested()
 
@@ -192,20 +187,20 @@ def db_session(Session, connection, app):
         finally:
             # Enhanced cleanup with error handling
             duration = time.time() - start_time
-            
+
             try:
                 # Clean up the session first
                 Session.remove()
                 logger.debug("Session removed successfully")
             except Exception as e:
                 logger.warning(f"Session removal warning: {e}")
-            
+
             try:
                 # Restore original session
                 flask_db.session = original_session
             except Exception as e:
                 logger.warning(f"Session restoration warning: {e}")
-            
+
             try:
                 # Then rollback the nested transaction
                 if nested.is_active:
@@ -213,7 +208,7 @@ def db_session(Session, connection, app):
                     logger.debug("Nested transaction rolled back")
             except Exception as e:
                 logger.warning(f"Nested transaction rollback warning: {e}")
-            
+
             # Performance tracking
             if duration > 5.0:  # Log slow tests
                 logger.warning(f"Slow test detected: {duration:.2f}s")
@@ -227,7 +222,7 @@ def app():
         from src.models.user import db as flask_db
 
         app = create_app()
-        
+
         # Enhanced test configuration
         app.config.update(
             {
@@ -237,7 +232,7 @@ def app():
                     "pool_pre_ping": True,
                     "future": True,
                     "pool_recycle": 3600,  # Recycle connections after 1 hour
-                    "pool_timeout": 30,    # 30 second timeout for getting connection
+                    "pool_timeout": 30,  # 30 second timeout for getting connection
                 },
                 "SESSION_COOKIE_SECURE": False,
                 "RATELIMIT_ENABLED": False,
@@ -288,16 +283,16 @@ def pytest_runtest_makereport(item, call):
     """Enhanced test result reporting with performance tracking."""
     outcome = yield
     report = outcome.get_result()
-    
+
     # Store test result for monitoring
     test_name = item.name
-    
+
     if call.when == "call":
-        duration = call.duration if hasattr(call, 'duration') else 0
+        duration = call.duration if hasattr(call, "duration") else 0
         success = report.outcome == "passed"
-        
+
         test_monitor.record_execution(test_name, duration, success)
-        
+
         if not success:
             logger.warning(f"Test failed: {test_name} - {report.longrepr}")
 
@@ -306,7 +301,10 @@ def pytest_runtest_makereport(item, call):
 @pytest.fixture
 def retry_on_failure_fixture():
     """Fixture that can be used to mark tests for retry on failure."""
+
     def retry_decorator(max_retries=3):
         from tests.fixtures.test_stability import retry_on_failure
+
         return retry_on_failure(max_retries=max_retries)
+
     return retry_decorator

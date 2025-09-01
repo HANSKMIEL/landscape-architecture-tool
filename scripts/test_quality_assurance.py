@@ -13,7 +13,7 @@ import subprocess
 import sys
 import time
 from pathlib import Path
-from typing import Dict, List, Tuple, Optional
+from typing import Dict
 
 # Configure logging
 logging.basicConfig(
@@ -117,7 +117,9 @@ class TestQualityAssurance:
                 logger.info(f"✅ Python version: {version_info.major}.{version_info.minor}.{version_info.micro}")
                 return True
             else:
-                logger.error(f"❌ Python version too old: {version_info.major}.{version_info.minor}.{version_info.micro}")
+                logger.error(
+                    f"❌ Python version too old: {version_info.major}.{version_info.minor}.{version_info.micro}"
+                )
                 return False
         except Exception as e:
             logger.error(f"❌ Could not check Python version: {e}")
@@ -186,7 +188,6 @@ class TestQualityAssurance:
     def _check_environment_variables(self) -> bool:
         """Check required environment variables."""
         required_vars = ["FLASK_ENV"]
-        optional_vars = ["PYTHONPATH", "CI"]
         
         missing_required = []
         for var in required_vars:
@@ -229,13 +230,7 @@ class TestQualityAssurance:
                 optimizations_applied.append("Cache cleanup")
                 break
         
-        # 2. Optimize SQLite for testing
-        sqlite_optimizations = [
-            "PRAGMA journal_mode=WAL",
-            "PRAGMA synchronous=NORMAL", 
-            "PRAGMA cache_size=-64000",
-            "PRAGMA busy_timeout=30000"
-        ]
+        # 2. Optimize SQLite for testing (optimizations defined in test config)
         optimizations_applied.append("SQLite optimization prepared")
         
         # 3. Set optimal environment variables
@@ -264,7 +259,6 @@ class TestQualityAssurance:
         
         # 1. Create test fixtures with enhanced error handling
         try:
-            from tests.fixtures.test_stability import test_monitor
             from tests.fixtures.test_improvements import enhance_test_reliability
             
             enhance_test_reliability()
@@ -274,7 +268,6 @@ class TestQualityAssurance:
             logger.warning("⚠️ Enhanced test fixtures not available")
         
         # 2. Configure pytest timeout
-        pytest_ini = self.repo_root / "pytest.ini"
         pyproject_toml = self.repo_root / "pyproject.toml"
         
         if pyproject_toml.exists():
