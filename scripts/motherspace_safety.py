@@ -251,7 +251,7 @@ class MotherSpaceSafetyManager:
         except Exception as e:
             print(f"⚠️ Failed to register tracking issue: {e}")
     
-    def update_tracking_issue(self, fingerprint: str, update_data: dict[str, Any]) -> int | None:
+    def update_tracking_issue(self, fingerprint: str, update_data: dict[str, Any]) -> Optional[int]:
         """Update existing tracking issue instead of creating new one."""
         tracking_file = self.safety_dir / "tracking_issues.json"
         
