@@ -198,6 +198,54 @@ class TestN8nWebhookEndpoints:
         assert response_data["status"] == "workflow_triggered"
         assert response_data["webhook"] == "inventory-alert"
 
+    @patch("src.routes.webhooks.requests.post")
+    def test_client_onboarding_webhook_success(self, mock_post, client):
+        """Test successful client onboarding webhook trigger"""
+        mock_response = Mock()
+        mock_response.status_code = 200
+        mock_post.return_value = mock_response
+
+        data = {
+            "client_id": 1,
+            "client_name": "John Smith",
+            "client_email": "john@example.com",
+            "contact_person": "John Smith",
+            "phone": "+31 20 123 4567",
+        }
+
+        response = client.post(
+            "/webhooks/n8n/client-onboarding",
+            data=json.dumps(data),
+            content_type="application/json",
+        )
+
+        assert response.status_code == 200
+        response_data = response.get_json()
+        assert response_data["status"] == "workflow_triggered"
+        assert response_data["webhook"] == "client-onboarding"
+
+        # Verify the mock was called correctly
+        mock_post.assert_called_once()
+        call_args = mock_post.call_args
+        assert "http://test-n8n:5678/webhook/client-onboarding" in str(call_args)
+
+    def test_client_onboarding_webhook_missing_data(self, client):
+        """Test client onboarding webhook with missing required data"""
+        data = {
+            "client_name": "John Smith",
+            # Missing client_id and client_email
+        }
+
+        response = client.post(
+            "/webhooks/n8n/client-onboarding",
+            data=json.dumps(data),
+            content_type="application/json",
+        )
+
+        assert response.status_code == 400
+        response_data = response.get_json()
+        assert "client_id and client_email are required" in response_data["error"]
+
 
 class TestN8nReceiverEndpoints:
     """Test N8n receiver endpoints that handle callbacks"""

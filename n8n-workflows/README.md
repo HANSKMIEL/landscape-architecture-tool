@@ -64,7 +64,38 @@ curl -X POST http://localhost:5678/webhook/client-onboarding \
 4. Notifies backend of completion
 5. Returns workflow status
 
-### 2. Project Milestone Tracking
+### 2. Project Created Automation
+**File:** `project-created.json`
+
+**Trigger:** Webhook `/webhook/project-created`
+
+**Features:**
+- 🚀 Project start notification emails
+- 📋 Project timeline and milestone overview
+- 🎯 Next steps communication to client
+- 📊 Progress tracking setup
+- 🔔 Backend integration for status updates
+
+**Test Command:**
+```bash
+curl -X POST http://localhost:5678/webhook/project-created \
+  -H "Content-Type: application/json" \
+  -d '{
+    "project_id": 1,
+    "client_id": 1,
+    "project_name": "Garden Redesign Project",
+    "timestamp": "2024-01-01T12:00:00Z"
+  }'
+```
+
+**Expected Actions:**
+1. Fetches client and project details from backend
+2. Sends project start notification email
+3. Provides timeline and next steps
+4. Notifies backend of email delivery
+5. Returns workflow completion status
+
+### 3. Project Milestone Tracking
 **File:** `project-milestone-tracking.json`
 
 **Trigger:** Webhook `/webhook/project-milestone`
@@ -103,7 +134,7 @@ curl -X POST http://localhost:5678/webhook/project-milestone \
 4. Triggers additional actions for completion
 5. Generates invoice for completed projects
 
-### 3. Inventory Management Automation
+### 4. Inventory Management Automation
 **File:** `inventory-management.json`
 
 **Trigger:** Webhook `/webhook/inventory-alert`
@@ -185,18 +216,31 @@ Enable webhook authentication in production:
 
 ### Triggering Workflows from Backend
 
-Add these calls to your application code:
+The landscape tool provides dedicated webhook endpoints for triggering N8n workflows. Use these backend endpoints rather than calling N8n directly:
 
 ```python
-# Client created
+# Client onboarding (new client created)
 import requests
-def trigger_client_onboarding(client_id, client_name, client_email):
+def trigger_client_onboarding(client_id, client_name, client_email, contact_person=None):
     requests.post(
-        'http://n8n:5678/webhook/client-onboarding',
+        'http://localhost:5000/webhooks/n8n/client-onboarding',
         json={
             'client_id': client_id,
             'client_name': client_name,
             'client_email': client_email,
+            'contact_person': contact_person,
+            'timestamp': datetime.now().isoformat()
+        }
+    )
+
+# Project created 
+def trigger_project_created(project_id, client_id, project_name):
+    requests.post(
+        'http://localhost:5000/webhooks/n8n/project-created',
+        json={
+            'project_id': project_id,
+            'client_id': client_id,
+            'project_name': project_name,
             'timestamp': datetime.now().isoformat()
         }
     )
@@ -204,7 +248,7 @@ def trigger_client_onboarding(client_id, client_name, client_email):
 # Project milestone reached
 def trigger_milestone_update(project_id, milestone, completion_percentage):
     requests.post(
-        'http://n8n:5678/webhook/project-milestone',
+        'http://localhost:5000/webhooks/n8n/project-milestone',
         json={
             'project_id': project_id,
             'milestone': milestone,
@@ -214,10 +258,10 @@ def trigger_milestone_update(project_id, milestone, completion_percentage):
         }
     )
 
-# Inventory check
+# Inventory alert
 def trigger_inventory_alert(plant_id, current_stock, minimum_threshold):
     requests.post(
-        'http://n8n:5678/webhook/inventory-alert',
+        'http://localhost:5000/webhooks/n8n/inventory-alert',
         json={
             'plant_id': plant_id,
             'current_stock': current_stock,
