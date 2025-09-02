@@ -79,6 +79,20 @@ class TestingConfig(Config):
     # otherwise use in-memory SQLite
     SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URL") or "sqlite:///:memory:"
     SESSION_COOKIE_SECURE = False
+    
+    # PostgreSQL-specific configuration for CI environments
+    def __init__(self):
+        super().__init__()
+        db_uri = self.SQLALCHEMY_DATABASE_URI
+        if db_uri and "postgresql" in db_uri:
+            self.SQLALCHEMY_ENGINE_OPTIONS = {
+                "pool_timeout": 30,
+                "pool_pre_ping": True,
+                "pool_recycle": 300,
+                "connect_args": {"connect_timeout": 10}
+            }
+        else:
+            self.SQLALCHEMY_ENGINE_OPTIONS = {}
 
 
 # Configuration mapping

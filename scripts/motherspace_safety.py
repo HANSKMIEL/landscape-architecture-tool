@@ -201,7 +201,7 @@ class MotherSpaceSafetyManager:
         
         return True
     
-    def get_issue_fingerprint(self, issue_data: Dict[str, Any]) -> str:
+    def get_issue_fingerprint(self, issue_data: dict[str, Any]) -> str:
         """Generate fingerprint for issue using the fingerprinting system."""
         # Import the fingerprinter from our test module
         sys.path.insert(0, str(self.repo_path))
@@ -210,7 +210,7 @@ class MotherSpaceSafetyManager:
         fingerprinter = IssueFingerprinter()
         return fingerprinter.generate_fingerprint(issue_data)
     
-    def find_existing_tracking_issue(self, fingerprint: str) -> Optional[Dict[str, Any]]:
+    def find_existing_tracking_issue(self, fingerprint: str) -> dict[str, Any] | None:
         """Find existing tracking issue with the same fingerprint."""
         tracking_file = self.safety_dir / "tracking_issues.json"
         
@@ -225,7 +225,7 @@ class MotherSpaceSafetyManager:
         
         return None
     
-    def register_tracking_issue(self, fingerprint: str, issue_number: int, issue_data: Dict[str, Any]) -> None:
+    def register_tracking_issue(self, fingerprint: str, issue_number: int, issue_data: dict[str, Any]) -> None:
         """Register a new tracking issue with its fingerprint."""
         tracking_file = self.safety_dir / "tracking_issues.json"
         
@@ -251,7 +251,7 @@ class MotherSpaceSafetyManager:
         except Exception as e:
             print(f"⚠️ Failed to register tracking issue: {e}")
     
-    def update_tracking_issue(self, fingerprint: str, update_data: Dict[str, Any]) -> Optional[int]:
+    def update_tracking_issue(self, fingerprint: str, update_data: dict[str, Any]) -> int | None:
         """Update existing tracking issue instead of creating new one."""
         tracking_file = self.safety_dir / "tracking_issues.json"
         
@@ -276,7 +276,7 @@ class MotherSpaceSafetyManager:
         
         return None
     
-    def is_safe_operation(self, actor: str, operation: str, issue_data: Dict[str, Any]) -> Dict[str, Any]:
+    def is_safe_operation(self, actor: str, operation: str, issue_data: dict[str, Any]) -> dict[str, Any]:
         """Comprehensive safety check for MotherSpace operations."""
         safety_result = {
             "safe": True,
