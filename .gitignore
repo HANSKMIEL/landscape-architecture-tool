@@ -176,13 +176,21 @@ draft_*.py
 .black_cache/
 .isort.cfg
 
-# Generated reports and validation artifacts
+# Generated reports and validation artifacts (keep them in reports/ subfolders)
 *_report_*.json
 automated_validation_report_*.json
 pipeline_health_report_*.json
 bandit-report.json
 safety-report.json
 quality_gates_report_*.json
+
+# Prevent root clutter - redirect to appropriate subfolders
+/*_SOLUTION*.md
+/*_PLAN*.md
+/*_SUMMARY*.md
+/*_ROADMAP*.md
+/*_IMPLEMENTATION*.md
+/dev_log.md
 
 coverage-vitest/
 **/coverage-vitest/

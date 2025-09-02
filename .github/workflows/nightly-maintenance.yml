@@ -1,0 +1,189 @@
+name: Nightly Maintenance
+
+on:
+  schedule:
+    # Run nightly at 19:30 Europe/Amsterdam time (UTC+1/+2)
+    # This is 18:30 UTC during winter, 17:30 UTC during summer
+    - cron: '30 17 * * *'  # Approximate time, adjusted for UTC
+  workflow_dispatch:  # Allow manual trigger
+    inputs:
+      timezone:
+        description: 'Timezone for display (default: Europe/Amsterdam)'
+        required: false
+        default: 'Europe/Amsterdam'
+        type: string
+
+env:
+  # Configurable timezone via repository variable, defaults to Europe/Amsterdam
+  REPO_TZ: ${{ vars.REPO_TZ || 'Europe/Amsterdam' }}
+  PYTHONUNBUFFERED: "1"
+  PIP_DISABLE_PIP_VERSION_CHECK: 1
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+jobs:
+  nightly-hygiene:
+    name: Nightly Repository Hygiene
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+
+      - name: Display current time in configured timezone
+        run: |
+          echo "🕐 Nightly maintenance started"
+          echo "Configured timezone: ${{ env.REPO_TZ }}"
+          echo "UTC time: $(date -u)"
+          if command -v timedatectl >/dev/null; then
+            echo "System timezone: $(timedatectl show --property=Timezone --value)"
+          fi
+
+      - name: Repository cleanup
+        run: |
+          echo "🧹 Starting repository cleanup..."
+          
+          # Clean up temporary files
+          find . -name '*.tmp' -type f -delete || true
+          find . -name '*.log' -type f -mtime +7 -delete || true
+          find . -name '__pycache__' -type d -exec rm -rf {} + || true
+          find . -name '*.pyc' -type f -delete || true
+          find . -name '.pytest_cache' -type d -exec rm -rf {} + || true
+          
+          # Clean up old validation reports (keep last 10)
+          ls -t automated_validation_report_*.json 2>/dev/null | tail -n +11 | xargs rm -f || true
+          ls -t pipeline_health_report_*.json 2>/dev/null | tail -n +11 | xargs rm -f || true
+          
+          echo "✅ Repository cleanup completed"
+
+      - name: Dependency security check
+        run: |
+          echo "🔒 Running dependency security checks..."
+          
+          # Check for known vulnerabilities
+          safety check --json --output safety-nightly.json || echo "⚠️ Security issues found"
+          
+          # Check for outdated dependencies
+          pip list --outdated --format=json > outdated-deps.json || true
+          
+          echo "✅ Security check completed"
+
+      - name: Health monitoring
+        run: |
+          echo "💊 Running health monitoring..."
+          
+          # Run pipeline health check if available
+          if [ -f "scripts/pipeline_health_monitor.py" ]; then
+            python scripts/pipeline_health_monitor.py || echo "⚠️ Health check issues detected"
+          fi
+          
+          # Check database schema if possible
+          if [ -f "src/main.py" ]; then
+            PYTHONPATH=. python -c "
+            try:
+                from src.main import app
+                print('✅ Application imports successfully')
+            except Exception as e:
+                print(f'⚠️ Application import issue: {e}')
+            " || true
+          fi
+          
+          echo "✅ Health monitoring completed"
+
+      - name: Code quality assessment
+        run: |
+          echo "📊 Running code quality assessment..."
+          
+          # Run basic linting
+          ruff check . --output-format=json > ruff-nightly.json || echo "⚠️ Linting issues found"
+          
+          # Check formatting
+          black --check . --diff > formatting-issues.txt || echo "⚠️ Formatting issues found"
+          
+          echo "✅ Code quality assessment completed"
+
+      - name: Generate maintenance report
+        run: |
+          echo "📄 Generating maintenance report..."
+          
+          cat > nightly-maintenance-report.md << 'EOF'
+          # Nightly Maintenance Report
+          
+          **Date:** $(date -u +"%Y-%m-%d %H:%M:%S UTC")
+          **Timezone:** ${{ env.REPO_TZ }}
+          **Workflow:** ${{ github.workflow }}
+          **Run ID:** ${{ github.run_id }}
+          
+          ## Summary
+          
+          - ✅ Repository cleanup completed
+          - 🔒 Security checks performed
+          - 💊 Health monitoring executed
+          - 📊 Code quality assessed
+          
+          ## Files Processed
+          
+          ### Security Reports
+          EOF
+          
+          if [ -f "safety-nightly.json" ]; then
+            echo "- safety-nightly.json ($(wc -c < safety-nightly.json) bytes)" >> nightly-maintenance-report.md
+          fi
+          
+          if [ -f "outdated-deps.json" ]; then
+            echo "- outdated-deps.json ($(wc -c < outdated-deps.json) bytes)" >> nightly-maintenance-report.md
+          fi
+          
+          echo "" >> nightly-maintenance-report.md
+          echo "### Quality Reports" >> nightly-maintenance-report.md
+          
+          if [ -f "ruff-nightly.json" ]; then
+            echo "- ruff-nightly.json ($(wc -c < ruff-nightly.json) bytes)" >> nightly-maintenance-report.md
+          fi
+          
+          if [ -f "formatting-issues.txt" ]; then
+            echo "- formatting-issues.txt ($(wc -c < formatting-issues.txt) bytes)" >> nightly-maintenance-report.md
+          fi
+          
+          echo "" >> nightly-maintenance-report.md
+          echo "## Next Steps" >> nightly-maintenance-report.md
+          echo "" >> nightly-maintenance-report.md
+          echo "Review reports and address any issues found during maintenance." >> nightly-maintenance-report.md
+          
+          echo "✅ Maintenance report generated"
+
+      - name: Upload maintenance artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nightly-maintenance-${{ github.run_id }}
+          path: |
+            nightly-maintenance-report.md
+            safety-nightly.json
+            outdated-deps.json
+            ruff-nightly.json
+            formatting-issues.txt
+          retention-days: 30
+          if-no-files-found: ignore
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "🌙 Nightly maintenance completed at $(date -u)"
+          echo "📁 Maintenance artifacts uploaded"
+          echo "🔍 Review artifacts for any issues requiring attention"

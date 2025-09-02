@@ -169,7 +169,7 @@ def add_multiple_plants_to_project(project_id):
 
                 results.append(project_plant.to_dict())
 
-            except Exception as e:
+            except Exception:
                 # Do not expose internal exception details; log if necessary
                 errors.append({"plant_data": plant_data, "error": "Failed to add plant due to internal error."})
 
