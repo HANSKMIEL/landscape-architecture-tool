@@ -2,12 +2,11 @@
 API Review Test Suite for Modified Endpoints
 Tests the functionality of the three API route files modified in commit 9cd9a802:
 - src/routes/plant_recommendations.py
-- src/routes/project_plants.py  
+- src/routes/project_plants.py
 - src/routes/reports.py
 """
 
 import json
-import logging
 
 import pytest
 
@@ -23,7 +22,7 @@ def app():
     app.config["TESTING"] = True
     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///:memory:"
     app.config["WTF_CSRF_ENABLED"] = False
-    
+
     with app.app_context():
         db.create_all()
         yield app
@@ -53,7 +52,7 @@ def sample_supplier(app_context):
         phone="123-456-7890",
         address="123 Test St",
         city="Test City",
-        postal_code="12345"
+        postal_code="12345",
     )
     db.session.add(supplier)
     db.session.commit()
@@ -76,7 +75,7 @@ def sample_plant(app_context, sample_supplier):
         hardiness_zone="5-8",
         maintenance="Low",
         price=25.50,
-        supplier_id=sample_supplier.id
+        supplier_id=sample_supplier.id,
     )
     db.session.add(plant)
     db.session.commit()
@@ -93,7 +92,7 @@ def sample_client(app_context):
         address="456 Client Ave",
         city="Client City",
         postal_code="54321",
-        client_type="Particulier"
+        client_type="Particulier",
     )
     db.session.add(client)
     db.session.commit()
@@ -110,7 +109,7 @@ def sample_project(app_context, sample_client):
         location="Test Location",
         area_size=100.0,
         budget=50000.0,
-        status="Planning"
+        status="Planning",
     )
     db.session.add(project)
     db.session.commit()
@@ -130,8 +129,12 @@ class TestPlantRecommendationsAPI:
 
         # Check required fields are present
         expected_keys = [
-            "hardiness_zones", "sun_exposures", "soil_types", 
-            "maintenance_levels", "moisture_levels", "budget_ranges"
+            "hardiness_zones",
+            "sun_exposures",
+            "soil_types",
+            "maintenance_levels",
+            "moisture_levels",
+            "budget_ranges",
         ]
         for key in expected_keys:
             assert key in data
@@ -139,17 +142,10 @@ class TestPlantRecommendationsAPI:
 
     def test_plant_recommendations_endpoint(self, client, app_context):
         """Test basic plant recommendations functionality"""
-        request_data = {
-            "hardiness_zone": "5-9",
-            "sun_exposure": "Full Sun",
-            "max_results": 3,
-            "min_score": 0.3
-        }
+        request_data = {"hardiness_zone": "5-9", "sun_exposure": "Full Sun", "max_results": 3, "min_score": 0.3}
 
         response = client.post(
-            "/api/plant-recommendations",
-            data=json.dumps(request_data),
-            content_type="application/json"
+            "/api/plant-recommendations", data=json.dumps(request_data), content_type="application/json"
         )
 
         assert response.status_code == 200
@@ -174,19 +170,11 @@ class TestPlantRecommendationsAPI:
     def test_plant_recommendations_error_handling(self, client, app_context):
         """Test error handling for plant recommendations"""
         # Test empty request body
-        response = client.post(
-            "/api/plant-recommendations",
-            data="",
-            content_type="application/json"
-        )
+        response = client.post("/api/plant-recommendations", data="", content_type="application/json")
         assert response.status_code == 400
 
         # Test invalid JSON
-        response = client.post(
-            "/api/plant-recommendations",
-            data="invalid json",
-            content_type="application/json"
-        )
+        response = client.post("/api/plant-recommendations", data="invalid json", content_type="application/json")
         assert response.status_code == 400
 
     def test_recommendation_history_endpoint(self, client, app_context):
@@ -227,17 +215,10 @@ class TestProjectPlantsAPI:
 
     def test_add_plant_to_project(self, client, app_context, sample_project, sample_plant):
         """Test adding a plant to a project"""
-        request_data = {
-            "plant_id": sample_plant.id,
-            "quantity": 5,
-            "unit_cost": 25.50,
-            "notes": "Test plant addition"
-        }
+        request_data = {"plant_id": sample_plant.id, "quantity": 5, "unit_cost": 25.50, "notes": "Test plant addition"}
 
         response = client.post(
-            f"/api/projects/{sample_project.id}/plants",
-            data=json.dumps(request_data),
-            content_type="application/json"
+            f"/api/projects/{sample_project.id}/plants", data=json.dumps(request_data), content_type="application/json"
         )
 
         assert response.status_code == 201
@@ -272,9 +253,7 @@ class TestProjectPlantsAPI:
         # First add a plant
         add_data = {"plant_id": sample_plant.id, "quantity": 3}
         client.post(
-            f"/api/projects/{sample_project.id}/plants",
-            data=json.dumps(add_data),
-            content_type="application/json"
+            f"/api/projects/{sample_project.id}/plants", data=json.dumps(add_data), content_type="application/json"
         )
 
         # Update quantity
@@ -282,7 +261,7 @@ class TestProjectPlantsAPI:
         response = client.put(
             f"/api/projects/{sample_project.id}/plants/{sample_plant.id}",
             data=json.dumps(update_data),
-            content_type="application/json"
+            content_type="application/json",
         )
 
         assert response.status_code == 200
@@ -312,14 +291,14 @@ class TestProjectPlantsAPI:
         request_data = {
             "plants": [
                 {"plant_id": sample_plant.id, "quantity": 2},
-                {"plant_id": sample_plant.id, "quantity": 3, "unit_cost": 15.00}
+                {"plant_id": sample_plant.id, "quantity": 3, "unit_cost": 15.00},
             ]
         }
 
         response = client.post(
             f"/api/projects/{sample_project.id}/plants/batch",
             data=json.dumps(request_data),
-            content_type="application/json"
+            content_type="application/json",
         )
 
         # Should return multi-status or success
@@ -338,11 +317,7 @@ class TestProjectPlantsAPI:
         assert response.status_code == 400
 
         # Test adding plant with invalid data
-        response = client.post(
-            "/api/projects/1/plants",
-            data=json.dumps({}),
-            content_type="application/json"
-        )
+        response = client.post("/api/projects/1/plants", data=json.dumps({}), content_type="application/json")
         assert response.status_code == 400
 
 
@@ -366,10 +341,7 @@ class TestReportsAPI:
 
         # Check summary structure
         summary = data["summary"]
-        expected_keys = [
-            "total_projects", "total_clients", "total_plants", 
-            "total_products", "total_suppliers"
-        ]
+        expected_keys = ["total_projects", "total_clients", "total_plants", "total_products", "total_suppliers"]
         for key in expected_keys:
             assert key in summary
             assert isinstance(summary[key], int)
@@ -377,9 +349,7 @@ class TestReportsAPI:
     def test_business_summary_with_date_filter(self, client, app_context):
         """Test business summary with date filtering"""
         response = client.get(
-            "/api/reports/business-summary"
-            "?start_date=2025-01-01T00:00:00"
-            "&end_date=2025-12-31T23:59:59"
+            "/api/reports/business-summary" "?start_date=2025-01-01T00:00:00" "&end_date=2025-12-31T23:59:59"
         )
 
         assert response.status_code == 200
@@ -468,18 +438,12 @@ class TestAPIIntegrationScenarios:
         _ = response.get_json()
 
         # 2. Make recommendation request
-        request_data = {
-            "hardiness_zone": "5-9",
-            "sun_exposure": "Full Sun",
-            "max_results": 2
-        }
+        request_data = {"hardiness_zone": "5-9", "sun_exposure": "Full Sun", "max_results": 2}
         response = client.post(
-            "/api/plant-recommendations",
-            data=json.dumps(request_data),
-            content_type="application/json"
+            "/api/plant-recommendations", data=json.dumps(request_data), content_type="application/json"
         )
         assert response.status_code == 200
-        # Verify the response has expected structure  
+        # Verify the response has expected structure
         _ = response.get_json()
 
         # 3. Check history includes our request
@@ -491,9 +455,7 @@ class TestAPIIntegrationScenarios:
         # 1. Add plant to project
         add_data = {"plant_id": sample_plant.id, "quantity": 5}
         response = client.post(
-            f"/api/projects/{sample_project.id}/plants",
-            data=json.dumps(add_data),
-            content_type="application/json"
+            f"/api/projects/{sample_project.id}/plants", data=json.dumps(add_data), content_type="application/json"
         )
         assert response.status_code == 201
 
@@ -508,7 +470,7 @@ class TestAPIIntegrationScenarios:
         response = client.put(
             f"/api/projects/{sample_project.id}/plants/{sample_plant.id}",
             data=json.dumps(update_data),
-            content_type="application/json"
+            content_type="application/json",
         )
         assert response.status_code == 200
 
@@ -550,7 +512,7 @@ class TestAPIAuthenticationAndAuthorization:
             "/api/plant-recommendations/criteria-options",
             "/api/reports/business-summary",
             "/api/reports/plant-usage",
-            "/api/reports/supplier-performance"
+            "/api/reports/supplier-performance",
         ]
 
         for endpoint in endpoints:
