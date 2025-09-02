@@ -4,6 +4,29 @@
 
 The MotherSpace System is a comprehensive multi-space orchestration platform that ensures optimal development harmony, efficient task delegation, and seamless cross-space collaboration. It consists of three coordinated spaces that work together to maintain system-wide efficiency without compromising functionality, security, or quality.
 
+## 🔄 MotherSpace vs Copilot Spaces UI
+
+**Important Distinction:**
+
+- **MotherSpace (GitHub Actions):** Automated workflow orchestration for CI/CD, issue management, and maintenance
+- **Copilot Spaces (UI):** Interactive AI assistant that appears in the Copilot Spaces panel for development guidance
+
+**How They Work Together:**
+
+| Function | MotherSpace Actions | Copilot Spaces UI |
+|----------|--------------------|--------------------|
+| **Purpose** | Automated orchestration | Interactive assistance |
+| **Visibility** | Workflow logs, issue comments | Copilot Spaces panel |
+| **Interaction** | Automatic triggers | Manual queries |
+| **Focus** | Repository maintenance | Development guidance |
+
+**Workflow:**
+1. **MotherSpace Actions** automatically manage repository health and issue triage
+2. **Copilot Spaces UI** provides interactive help for development tasks
+3. Both reference the same documentation and patterns for consistency
+
+For setting up the interactive **Copilot Spaces UI**, see [docs/SETUP_COPILOT_SPACE.md](./SETUP_COPILOT_SPACE.md)
+
 ## Space Architecture
 
 ### 🎯 MotherSpace Orchestrator
