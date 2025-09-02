@@ -52,7 +52,7 @@ class IssueFingerprinter:
         text = re.sub(r"#\d+", "[ISSUE_REF]", text)
 
         # Remove dynamic IDs and hashes (but preserve meaningful content)
-        text = re.sub(r"\b[a-f0-9]{7,}\b", "[HASH]", text)
+        text = re.sub(r"\b[a-f0-9]{8,}\b", "[HASH]", text)
 
         # Remove version numbers and build IDs
         text = re.sub(r"\bv?\d+\.\d+\.\d+(?:\.\d+)?\b", "[VERSION]", text)
