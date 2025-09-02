@@ -146,7 +146,11 @@ addopts = [
     "--maxfail=10",
     "--durations=10",
     "--timeout=30",
-    "--timeout-method=thread"
+    "--timeout-method=thread",
+    "--cov-report=term-missing",
+    "--cov-report=html:htmlcov",
+    "--cov-report=xml",
+    "--cov-branch"
 ]
 markers = [
     "slow: marks tests as slow (deselect with '-m \"not slow\"')",
@@ -158,14 +162,25 @@ markers = [
     "flaky: marks tests as potentially flaky (may need retries)",
     "stability: marks tests that check system stability",
     "performance: marks tests that check performance metrics",
-    "retry: marks tests that should be retried on failure"
+    "retry: marks tests that should be retried on failure",
+    "isolation: marks tests that verify database isolation",
+    "transaction: marks tests that verify transaction handling"
 ]
 timeout = 30
 timeout_method = "thread"
 filterwarnings = [
     "ignore::DeprecationWarning",
     "ignore::PendingDeprecationWarning",
-    "ignore::pytest.PytestUnraisableExceptionWarning"
+    "ignore::pytest.PytestUnraisableExceptionWarning",
+    "ignore:.*SQLAlchemy.*:DeprecationWarning",
+    "ignore:.*datetime.*:DeprecationWarning"
+]
+# Enhanced test discovery and execution
+minversion = "7.0"
+required_plugins = [
+    "pytest-cov>=4.0",
+    "pytest-timeout>=2.0",
+    "pytest-mock>=3.0"
 ]
 
 [tool.coverage.run]

@@ -60,6 +60,82 @@ docker compose up --build  # Note: use 'docker compose' (with space), not 'docke
 
 **KNOWN ISSUE**: The Dockerfile currently has a syntax error in a multi-line Python RUN command. Docker builds will fail until this is fixed.
 
+## Architecture and Patterns
+
+### Database Transaction Patterns
+
+**CRITICAL**: Always use proper transaction isolation in tests. The repository uses enhanced SAVEPOINT-based isolation to handle edge cases:
+
+```python
+# In tests/conftest.py - Enhanced transaction handling
+@pytest.fixture(scope="session")
+def connection(engine):
+    conn = engine.connect()
+    
+    # Always create reversible outer transaction for consistent isolation
+    if conn.in_transaction():
+        # Connection already in transaction - create savepoint for isolation
+        outer_tx = conn.begin_nested()
+    else:
+        # Connection not in transaction - create regular transaction
+        outer_tx = conn.begin()
+    
+    try:
+        yield conn
+    finally:
+        if outer_tx and outer_tx.is_active:
+            outer_tx.rollback()
+        if not conn.closed:
+            conn.close()
+```
+
+**Key Patterns**:
+- Always use `conn.begin_nested()` for SAVEPOINT-based isolation when `conn.in_transaction()` is true
+- Use regular `conn.begin()` for fresh connections
+- Always rollback transactions in test cleanup
+- Handle both transaction states consistently
+
+### Service Layer Patterns
+
+All business logic should follow the service layer pattern:
+
+```python
+# Example: src/services/base_service.py
+class BaseService:
+    def __init__(self, db_session):
+        self.db = db_session
+    
+    def create(self, data):
+        try:
+            instance = self.model(**data)
+            self.db.add(instance)
+            self.db.commit()
+            return instance
+        except Exception:
+            self.db.rollback()
+            raise
+```
+
+### API Route Patterns
+
+All API routes should follow these patterns:
+
+```python
+# Example: src/routes/suppliers.py
+@suppliers_bp.route('/', methods=['POST'])
+def create_supplier():
+    try:
+        data = request.get_json()
+        # Validate with schema
+        supplier = supplier_service.create(data)
+        return jsonify({"supplier": supplier.to_dict()}), 201
+    except ValidationError as e:
+        return jsonify({"error": str(e)}), 400
+    except Exception as e:
+        logger.error(f"Supplier creation failed: {e}")
+        return jsonify({"error": "Internal server error"}), 500
+```
+
 ## Testing and Validation
 
 ### Backend Testing
@@ -98,6 +174,80 @@ curl http://localhost:5000/health
 
 # Test API endpoints
 curl http://localhost:5000/api/suppliers
+
+# Test frontend accessibility  
+curl http://localhost:5174/
+```
+
+## CI/CD and Automation Patterns
+
+### GitHub Workflows
+
+The repository includes automated workflows:
+
+1. **CI Workflow** (`.github/workflows/ci.yml`):
+   - Runs on every push and PR
+   - Executes formatting, linting, tests
+   - Enhanced security scanning with bandit and safety
+   - Generates coverage reports
+
+2. **Nightly Maintenance** (`.github/workflows/nightly-maintenance.yml`):
+   - Runs at 19:30 Europe/Amsterdam time (configurable via REPO_TZ variable)
+   - Repository cleanup, security checks, health monitoring
+   - Manual trigger available via workflow_dispatch
+
+3. **Post-Merge Automation** (`.github/workflows/post-merge.yml`):
+   - Analyzes changes for follow-up requirements
+   - Auto-creates issues for API, N8n, and documentation reviews
+   - Processes README auto-update markers
+
+4. **Issue Verification** (`.github/workflows/verify-issue-closed.yml`):
+   - Validates critical issues after closure
+   - Runs appropriate tests based on issue type
+   - Adds validation comments
+
+### N8n Workflow Integration
+
+The repository includes N8n workflow templates in `n8n-workflows/`:
+
+```python
+# Trigger N8n workflows from application code
+import requests
+
+def trigger_client_onboarding(client_id, client_name, client_email):
+    requests.post(
+        'http://n8n:5678/webhook/client-onboarding',
+        json={
+            'client_id': client_id,
+            'client_name': client_name,
+            'client_email': client_email,
+            'timestamp': datetime.now().isoformat()
+        }
+    )
+```
+
+**Available Workflows**:
+- `client-onboarding.json` - Automated client welcome process
+- `project-milestone-tracking.json` - Project progress notifications
+- `inventory-management.json` - Stock level monitoring
+
+### Pre-commit Hooks
+
+Always run pre-commit hooks before committing:
+
+```bash
+# Install hooks
+pre-commit install
+
+# Run manually
+pre-commit run --all-files
+
+# Hooks include:
+# - Black formatting
+# - Ruff linting with security checks
+# - Import sorting with isort
+# - Automated validation
+```
 
 # Test frontend accessibility  
 curl http://localhost:5174/

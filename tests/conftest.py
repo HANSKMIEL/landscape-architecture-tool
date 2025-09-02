@@ -111,44 +111,37 @@ def connection(engine):
         flask_db.metadata.create_all(bind=engine)
         logger.info("Database tables created successfully")
 
-        # Enhanced transaction handling with better cleanup
+        # Enhanced transaction handling that ensures reversible outer transaction
+        # even when conn.in_transaction() is already true (addresses issue #306)
+        outer_tx = None
+        
+        # Always create a reversible outer transaction for consistent isolation
         if conn.in_transaction():
-            try:
-                yield conn
-            finally:
-                # Enhanced cleanup with error handling
-                try:
-                    if conn.in_transaction():
-                        conn.rollback()
-                        logger.debug("Rolled back active transaction")
-                except Exception as e:
-                    logger.warning(f"Transaction rollback warning: {e}")
-
-                try:
-                    if not conn.closed:
-                        conn.close()
-                        logger.debug("Connection closed successfully")
-                except Exception as e:
-                    logger.warning(f"Connection close warning: {e}")
+            # Connection already in transaction - create savepoint for isolation
+            outer_tx = conn.begin_nested()
+            logger.debug("Created nested transaction (savepoint) on existing transaction")
         else:
+            # Connection not in transaction - create regular transaction
             outer_tx = conn.begin()
+            logger.debug("Created new outer transaction")
+        
+        try:
+            yield conn
+        finally:
+            # Enhanced cleanup with consistent rollback behavior
             try:
-                yield conn
-            finally:
-                # Enhanced cleanup with error handling
-                try:
-                    if outer_tx.is_active:
-                        outer_tx.rollback()
-                        logger.debug("Rolled back outer transaction")
-                except Exception as e:
-                    logger.warning(f"Outer transaction rollback warning: {e}")
+                if outer_tx and outer_tx.is_active:
+                    outer_tx.rollback()
+                    logger.debug("Rolled back outer transaction/savepoint")
+            except Exception as e:
+                logger.warning(f"Transaction rollback warning: {e}")
 
-                try:
-                    if not conn.closed:
-                        conn.close()
-                        logger.debug("Connection closed successfully")
-                except Exception as e:
-                    logger.warning(f"Connection close warning: {e}")
+            try:
+                if not conn.closed:
+                    conn.close()
+                    logger.debug("Connection closed successfully")
+            except Exception as e:
+                logger.warning(f"Connection close warning: {e}")
 
 
 @pytest.fixture(scope="session")
