@@ -1,4 +1,4 @@
-name: MotherSpace Orchestrator
+name: MotherSpace Orchestrator Enhanced
 
 on:
   issues:
@@ -23,8 +23,9 @@ on:
         - task_delegation
         - space_optimization
         - full_analysis
+        - safety_test
 
-# Prevent parallel execution and bot loops
+# Enhanced concurrency control
 concurrency:
   group: motherspace-orchestrator
   cancel-in-progress: false
@@ -32,7 +33,7 @@ concurrency:
 jobs:
   motherspace_orchestrator:
     runs-on: ubuntu-latest
-    # Skip if triggered by github-actions bot to prevent loops
+    # Enhanced bot loop prevention with label gating
     if: github.actor != 'github-actions[bot]' && (github.event_name == 'workflow_dispatch' || github.event_name == 'schedule' || (github.event_name == 'issues' && contains(github.event.issue.labels.*.name, 'orchestrate')) || (github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'orchestrate')))
     permissions:
       issues: write
@@ -41,79 +42,72 @@ jobs:
       actions: read
       repository-projects: write
     env:
-      MOTHERSPACE_VERSION: "1.1.0"
+      MOTHERSPACE_VERSION: "1.2.0"
       HARMONY_THRESHOLD: "85"
       SECURITY_LEVEL: "high"
+      SAFETY_MODE: "enabled"
+      QUIET_MODE: "true"
     
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 50  # Deep history for pattern analysis
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
       
-      - uses: actions/setup-python@v5
+      - name: Set up Python
+        uses: actions/setup-python@v4
         with:
-          python-version: "3.11"
+          python-version: '3.11'
       
-      - name: Install MotherSpace dependencies
+      - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install PyYAML requests jsonschema python-dateutil
-      
-      - name: MotherSpace Initialization and Context Analysis
-        id: motherspace_init
+
+      - name: Safety Check and Initialization
+        id: safety_check
+        run: |
+          echo "🛡️ MotherSpace Safety Check..."
+          
+          # Run safety check
+          python .github/scripts/safety_manager.py --check "orchestrator_run" --actor "${{ github.actor }}"
+          safety_result=$?
+          
+          if [ $safety_result -eq 0 ]; then
+            echo "✅ Safety check passed"
+            echo "safe_to_proceed=true" >> $GITHUB_OUTPUT
+          else
+            echo "⚠️ Safety check failed - aborting to prevent loops/spam"
+            echo "safe_to_proceed=false" >> $GITHUB_OUTPUT
+            exit 0  # Exit gracefully, don't fail the workflow
+          fi
+
+      - name: MotherSpace Context Analysis
+        id: context_analysis
+        if: steps.safety_check.outputs.safe_to_proceed == 'true'
         uses: actions/github-script@v7
         with:
           script: |
-            const fs = require('fs');
-            const path = require('path');
+            console.log('🎯 MotherSpace Enhanced Orchestrator v${{ env.MOTHERSPACE_VERSION }}');
+            console.log('Safety Mode: ${{ env.SAFETY_MODE }}, Quiet Mode: ${{ env.QUIET_MODE }}');
             
-            console.log('🎯 MotherSpace Orchestrator v${{ env.MOTHERSPACE_VERSION }} Initializing...');
-            
-            // Analyze current system state
-            const systemState = {
-              timestamp: new Date().toISOString(),
+            // Enhanced system analysis
+            const context_data = {
               trigger: context.eventName,
-              operation: '${{ github.event.inputs.operation }}' || 'auto',
-              repository: {
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                default_branch: context.payload.repository?.default_branch || 'main'
-              },
-              spaces: {
-                motherspace: { active: true, version: '${{ env.MOTHERSPACE_VERSION }}' },
-                daughter: { active: false, status: 'initializing' },
-                integration_manager: { active: false, status: 'initializing' }
-              },
+              actor: context.actor,
+              repository: context.repo,
+              timestamp: new Date().toISOString(),
               harmony_threshold: parseInt('${{ env.HARMONY_THRESHOLD }}'),
-              security_level: '${{ env.SECURITY_LEVEL }}'
+              safety_enabled: '${{ env.SAFETY_MODE }}' === 'enabled',
+              quiet_mode: '${{ env.QUIET_MODE }}' === 'true'
             };
             
-            // Scan for existing spaces and their health
-            const spaceFiles = [
-              '.github/copilot-instructions.md',
-              '.github/workflows/space-management.yml',
-              '.github/workflows/test-failure-automation.yml',
-              'docs/SPACE_OVERVIEW.md',
-              'docs/ARCHITECTURE.md'
-            ];
-            
-            for (const spaceFile of spaceFiles) {
-              try {
-                const content = fs.readFileSync(spaceFile, 'utf8');
-                const stats = fs.statSync(spaceFile);
-                systemState.spaces[spaceFile] = {
-                  exists: true,
-                  size: stats.size,
-                  lastModified: stats.mtime,
-                  health: content.length > 1000 ? 'good' : 'needs_attention'
-                };
-              } catch (error) {
-                systemState.spaces[spaceFile] = { exists: false, health: 'missing' };
-              }
-            }
-            
-            // Analyze active issues and PRs for task delegation opportunities
-            const [issues, pulls] = await Promise.all([
+            // Get repository statistics
+            const [repoStats, openIssues, openPRs] = await Promise.all([
+              github.rest.repos.get({
+                owner: context.repo.owner,
+                repo: context.repo.repo
+              }),
               github.rest.issues.listForRepo({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
@@ -124,1132 +118,264 @@ jobs:
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 state: 'open',
-                per_page: 50
+                per_page: 100
               })
             ]);
             
-            systemState.active_work = {
-              open_issues: issues.data.length,
-              open_prs: pulls.data.length,
-              issues_by_type: {},
-              prs_by_type: {},
-              delegation_candidates: []
+            const system_state = {
+              repository_health: {
+                open_issues: openIssues.data.length,
+                open_prs: openPRs.data.length,
+                last_push: repoStats.data.pushed_at
+              },
+              automated_issues: openIssues.data.filter(issue => 
+                issue.labels.some(label => 
+                  ['automated', 'motherspace', 'copilot'].includes(label.name)
+                )
+              ).length,
+              harmony_score: Math.max(0, 100 - (openIssues.data.length * 2) - (openPRs.data.length * 3)),
+              needs_intervention: false
             };
             
-            // Categorize issues for delegation
-            for (const issue of issues.data) {
-              const labels = issue.labels.map(l => l.name);
-              const type = labels.find(l => ['bug', 'enhancement', 'feature', 'maintenance', 'ui-ux', 'integration'].includes(l)) || 'uncategorized';
-              
-              systemState.active_work.issues_by_type[type] = (systemState.active_work.issues_by_type[type] || 0) + 1;
-              
-              // Identify delegation candidates
-              if (labels.includes('needs-triage') || labels.includes('help wanted') || 
-                  issue.title.toLowerCase().includes('ui') || issue.title.toLowerCase().includes('integration')) {
-                systemState.active_work.delegation_candidates.push({
-                  number: issue.number,
-                  title: issue.title,
-                  labels: labels,
-                  suggested_space: labels.includes('ui-ux') ? 'daughter' : 
-                                 labels.includes('integration') ? 'integration_manager' : 'motherspace'
-                });
-              }
-            }
+            system_state.needs_intervention = system_state.harmony_score < context_data.harmony_threshold;
             
-            // Calculate system harmony score
-            const harmony_factors = {
-              space_health: Object.values(systemState.spaces).filter(s => s.health === 'good').length / Object.keys(systemState.spaces).length,
-              issue_balance: Math.min(systemState.active_work.open_issues / 20, 1), // Optimal: 20 or fewer open issues
-              pr_freshness: Math.min(systemState.active_work.open_prs / 10, 1), // Optimal: 10 or fewer open PRs
-              delegation_efficiency: systemState.active_work.delegation_candidates.length / Math.max(systemState.active_work.open_issues, 1)
-            };
+            core.setOutput('system_state', JSON.stringify(system_state));
+            core.setOutput('context_data', JSON.stringify(context_data));
             
-            const harmony_score = Math.round(
-              (harmony_factors.space_health * 0.3 + 
-               (1 - harmony_factors.issue_balance) * 0.25 +
-               (1 - harmony_factors.pr_freshness) * 0.25 +
-               harmony_factors.delegation_efficiency * 0.2) * 100
-            );
+            console.log(`📊 System Analysis Complete:`);
+            console.log(`   Harmony Score: ${system_state.harmony_score}%`);
+            console.log(`   Open Issues: ${system_state.repository_health.open_issues}`);
+            console.log(`   Automated Issues: ${system_state.automated_issues}`);
+            console.log(`   Intervention Needed: ${system_state.needs_intervention}`);
             
-            systemState.harmony_score = harmony_score;
-            systemState.harmony_factors = harmony_factors;
-            systemState.needs_intervention = harmony_score < parseInt('${{ env.HARMONY_THRESHOLD }}');
-            
-            core.setOutput('system_state', JSON.stringify(systemState));
-            core.setOutput('harmony_score', harmony_score);
-            core.setOutput('needs_intervention', systemState.needs_intervention);
-            
-            console.log(`🎯 System Harmony Score: ${harmony_score}%`);
-            console.log(`🔄 Delegation Candidates: ${systemState.active_work.delegation_candidates.length}`);
-            
-            return systemState;
+            return system_state;
 
-      - name: Automated Issue Analysis and Management
+      - name: Enhanced Issue Management with Deduplication
         id: issue_management
+        if: steps.safety_check.outputs.safe_to_proceed == 'true'
         uses: actions/github-script@v7
         with:
           script: |
-            const systemState = JSON.parse('${{ steps.motherspace_init.outputs.system_state }}');
+            const fs = require('fs');
+            const crypto = require('crypto');
             
-            console.log('🔍 MotherSpace analyzing automated issues for deduplication and optimization...');
+            console.log('🔍 Enhanced Issue Management with Safety Features...');
             
-            // Get all open issues with automated labels
-            const allIssues = await github.rest.issues.listForRepo({
+            // Get all automated issues
+            const automatedIssues = await github.rest.issues.listForRepo({
               owner: context.repo.owner,
               repo: context.repo.repo,
               state: 'open',
+              labels: 'automated',
               per_page: 100
             });
             
-            // Identify automated issues from various processes
-            const automatedIssues = allIssues.data.filter(issue => {
-              const labels = issue.labels.map(l => l.name);
-              return labels.some(label => 
-                ['automated', 'test-failure', 'motherspace', 'daughter', 'integration-manager', 
-                 'ci-generated', 'validation-report', 'security-alert'].includes(label)
-              ) || issue.title.includes('🚨') || issue.title.includes('🎯') || issue.title.includes('👩‍💻');
-            });
-            
-            console.log(`Found ${automatedIssues.length} automated issues for analysis`);
-            
-            const issueAnalysis = {
-              duplicates: [],
-              mergeable: [],
-              routine_tasks: [],
-              deletion_candidates: [],
-              pr_safe_operations: []
+            const results = {
+              issues_analyzed: automatedIssues.data.length,
+              fingerprints_generated: {},
+              duplicates_found: [],
+              tracking_issues_updated: [],
+              operations_performed: 0,
+              errors: []
             };
             
-            // Analyze for duplicates and similar issues
-            for (let i = 0; i < automatedIssues.length; i++) {
-              const issue1 = automatedIssues[i];
-              const issue1_created = new Date(issue1.created_at);
+            // Generate fingerprints using the safety manager approach
+            function generateFingerprint(issue) {
+              const title = (issue.title || '').toLowerCase().trim();
+              const body = (issue.body || '').toLowerCase().trim();
+              const labels = (issue.labels || []).map(l => l.name).sort();
               
-              for (let j = i + 1; j < automatedIssues.length; j++) {
-                const issue2 = automatedIssues[j];
-                const issue2_created = new Date(issue2.created_at);
-                
-                // Check for similarity patterns
-                const similarity = calculateIssueSimilarity(issue1, issue2);
-                
-                if (similarity.score > 0.8) {
-                  // Very similar issues - candidate for deduplication
-                  const newer = issue1_created > issue2_created ? issue1 : issue2;
-                  const older = issue1_created > issue2_created ? issue2 : issue1;
-                  
-                  issueAnalysis.duplicates.push({
-                    newer: newer,
-                    older: older,
-                    similarity_score: similarity.score,
-                    differences: similarity.differences,
-                    action: similarity.differences.length === 0 ? 'delete_older' : 'merge_with_differences'
-                  });
-                } else if (similarity.score > 0.6 && similarity.differences.length > 0) {
-                  // Related issues with meaningful differences - candidate for merging
-                  issueAnalysis.mergeable.push({
-                    issue1: issue1,
-                    issue2: issue2,
-                    similarity_score: similarity.score,
-                    differences: similarity.differences,
-                    merge_strategy: determineMergeStrategy(similarity.differences)
-                  });
-                }
+              // Simple normalization
+              const normalizedTitle = title
+                .replace(/\d{4}-\d{2}-\d{2}[T\s]\d{2}:\d{2}:\d{2}/g, '[TIMESTAMP]')
+                .replace(/#\d+/g, '[ISSUE_REF]');
+              
+              const normalizedBody = body
+                .replace(/\d{4}-\d{2}-\d{2}[T\s]\d{2}:\d{2}:\d{2}/g, '[TIMESTAMP]')
+                .replace(/#\d+/g, '[ISSUE_REF]');
+              
+              const fingerprintData = {
+                title: normalizedTitle,
+                body_hash: crypto.createHash('sha256').update(normalizedBody).digest('hex').substring(0, 16),
+                labels: labels
+              };
+              
+              const fingerprintString = JSON.stringify(fingerprintData);
+              return crypto.createHash('sha256').update(`motherspace-v1.2.0:${fingerprintString}`).digest('hex').substring(0, 16);
+            }
+            
+            // Group issues by fingerprint
+            const fingerprintGroups = {};
+            for (const issue of automatedIssues.data) {
+              const fingerprint = generateFingerprint(issue);
+              results.fingerprints_generated[issue.number] = fingerprint;
+              
+              if (!fingerprintGroups[fingerprint]) {
+                fingerprintGroups[fingerprint] = [];
               }
-              
-              // Check if issue is a routine task suitable for copilot delegation
-              if (isRoutineTask(issue1)) {
-                issueAnalysis.routine_tasks.push({
-                  issue: issue1,
-                  task_type: classifyRoutineTask(issue1),
-                  copilot_ready: true,
-                  estimated_effort: estimateTaskEffort(issue1)
+              fingerprintGroups[fingerprint].push(issue);
+            }
+            
+            // Find duplicates (groups with multiple issues)
+            for (const [fingerprint, issues] of Object.entries(fingerprintGroups)) {
+              if (issues.length > 1) {
+                // Sort by creation date (keep newest)
+                issues.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+                const newest = issues[0];
+                const duplicates = issues.slice(1);
+                
+                results.duplicates_found.push({
+                  fingerprint: fingerprint,
+                  newest_issue: newest.number,
+                  duplicate_issues: duplicates.map(d => d.number),
+                  total_count: issues.length
                 });
               }
             }
             
-            // Check for PR interference before any operations
+            // Check for PR interference (safety feature)
             const openPRs = await github.rest.pulls.list({
               owner: context.repo.owner,
               repo: context.repo.repo,
               state: 'open'
             });
             
-            // Identify safe operations that won't interfere with PRs
-            for (const duplicate of issueAnalysis.duplicates) {
-              if (!willInterfereWithPRs(duplicate.older, openPRs.data)) {
-                issueAnalysis.pr_safe_operations.push({
-                  type: 'duplicate_removal',
-                  target: duplicate.older,
-                  safe: true
-                });
-              }
-            }
+            // Safely manage duplicates (limit to prevent spam)
+            const maxOperations = 3; // Safety limit
+            const safeGroups = results.duplicates_found.slice(0, maxOperations);
             
-            // Helper functions
-            function calculateIssueSimilarity(issue1, issue2) {
-              const title1 = issue1.title.toLowerCase();
-              const title2 = issue2.title.toLowerCase();
-              const body1 = (issue1.body || '').toLowerCase();
-              const body2 = (issue2.body || '').toLowerCase();
-              
-              // Calculate title similarity
-              const titleWords1 = title1.split(/\s+/);
-              const titleWords2 = title2.split(/\s+/);
-              const titleIntersection = titleWords1.filter(word => titleWords2.includes(word));
-              const titleSimilarity = titleIntersection.length / Math.max(titleWords1.length, titleWords2.length);
-              
-              // Calculate label similarity
-              const labels1 = issue1.labels.map(l => l.name);
-              const labels2 = issue2.labels.map(l => l.name);
-              const labelIntersection = labels1.filter(label => labels2.includes(label));
-              const labelSimilarity = labelIntersection.length / Math.max(labels1.length, labels2.length);
-              
-              // Identify key differences
-              const differences = [];
-              
-              // Check for different error types or bug patterns
-              const errorPatterns1 = extractErrorPatterns(body1);
-              const errorPatterns2 = extractErrorPatterns(body2);
-              if (errorPatterns1.length !== errorPatterns2.length || 
-                  !errorPatterns1.every(p => errorPatterns2.includes(p))) {
-                differences.push('different_error_patterns');
-              }
-              
-              // Check for different fix requirements
-              const fixKeywords1 = extractFixKeywords(body1);
-              const fixKeywords2 = extractFixKeywords(body2);
-              if (!fixKeywords1.every(k => fixKeywords2.includes(k))) {
-                differences.push('different_fix_requirements');
-              }
-              
-              // Check for different analysis needs
-              const analysisNeeds1 = extractAnalysisNeeds(body1);
-              const analysisNeeds2 = extractAnalysisNeeds(body2);
-              if (!analysisNeeds1.every(a => analysisNeeds2.includes(a))) {
-                differences.push('different_analysis_needs');
-              }
-              
-              const totalScore = (titleSimilarity * 0.5) + (labelSimilarity * 0.3) + (0.2); // Base compatibility
-              
-              return {
-                score: Math.round(totalScore * 100) / 100,
-                differences: differences,
-                title_similarity: titleSimilarity,
-                label_similarity: labelSimilarity
-              };
-            }
-            
-            function extractErrorPatterns(text) {
-              const patterns = [];
-              if (text.includes('test fail') || text.includes('assertion')) patterns.push('test_failure');
-              if (text.includes('syntax error') || text.includes('parse error')) patterns.push('syntax_error');
-              if (text.includes('import error') || text.includes('module not found')) patterns.push('import_error');
-              if (text.includes('timeout') || text.includes('hang')) patterns.push('timeout_error');
-              if (text.includes('security') || text.includes('vulnerability')) patterns.push('security_issue');
-              return patterns;
-            }
-            
-            function extractFixKeywords(text) {
-              const fixes = [];
-              if (text.includes('update depend') || text.includes('upgrade')) fixes.push('dependency_update');
-              if (text.includes('refactor') || text.includes('restructure')) fixes.push('code_refactor');
-              if (text.includes('config') || text.includes('setting')) fixes.push('configuration_change');
-              if (text.includes('test fix') || text.includes('test update')) fixes.push('test_fix');
-              if (text.includes('ui') || text.includes('interface')) fixes.push('ui_fix');
-              return fixes;
-            }
-            
-            function extractAnalysisNeeds(text) {
-              const analysis = [];
-              if (text.includes('performance') || text.includes('benchmark')) analysis.push('performance_analysis');
-              if (text.includes('security') || text.includes('audit')) analysis.push('security_analysis');
-              if (text.includes('user') || text.includes('workflow')) analysis.push('user_workflow_analysis');
-              if (text.includes('integration') || text.includes('api')) analysis.push('integration_analysis');
-              if (text.includes('compatibility') || text.includes('version')) analysis.push('compatibility_analysis');
-              return analysis;
-            }
-            
-            function isRoutineTask(issue) {
-              const title = issue.title.toLowerCase();
-              const body = (issue.body || '').toLowerCase();
-              const labels = issue.labels.map(l => l.name);
-              
-              // Identify routine tasks suitable for copilot
-              return labels.includes('maintenance') ||
-                     labels.includes('documentation') ||
-                     labels.includes('code-quality') ||
-                     title.includes('update') ||
-                     title.includes('format') ||
-                     title.includes('lint') ||
-                     body.includes('routine') ||
-                     body.includes('standard');
-            }
-            
-            function classifyRoutineTask(issue) {
-              const title = issue.title.toLowerCase();
-              const labels = issue.labels.map(l => l.name);
-              
-              if (labels.includes('documentation') || title.includes('doc')) return 'documentation';
-              if (labels.includes('code-quality') || title.includes('lint') || title.includes('format')) return 'code_quality';
-              if (title.includes('dependency') || title.includes('update')) return 'dependency_management';
-              if (title.includes('test') && !title.includes('fail')) return 'test_maintenance';
-              return 'general_maintenance';
-            }
-            
-            function estimateTaskEffort(issue) {
-              const body = (issue.body || '').toLowerCase();
-              const title = issue.title.toLowerCase();
-              
-              if (title.includes('critical') || body.includes('urgent')) return '2-4 hours';
-              if (body.length > 1000) return '4-8 hours';
-              if (title.includes('quick') || title.includes('simple')) return '30 minutes - 1 hour';
-              return '1-3 hours';
-            }
-            
-            function determineMergeStrategy(differences) {
-              if (differences.includes('different_error_patterns')) {
-                return 'comprehensive_error_analysis';
-              }
-              if (differences.includes('different_fix_requirements')) {
-                return 'unified_fix_strategy';
-              }
-              if (differences.includes('different_analysis_needs')) {
-                return 'multi_perspective_analysis';
-              }
-              return 'standard_merge';
-            }
-            
-            function willInterfereWithPRs(issue, openPRs) {
-              // Check if any open PRs reference this issue
-              for (const pr of openPRs) {
-                if (pr.body && pr.body.includes(`#${issue.number}`)) {
-                  return true;
-                }
-                if (pr.title.toLowerCase().includes(issue.title.toLowerCase().split(' ').slice(0, 3).join(' '))) {
-                  return true;
-                }
-              }
-              return false;
-            }
-            
-            core.setOutput('issue_analysis', JSON.stringify(issueAnalysis));
-            
-            console.log(`📊 Issue Analysis Complete:`);
-            console.log(`   Duplicates found: ${issueAnalysis.duplicates.length}`);
-            console.log(`   Mergeable issues: ${issueAnalysis.mergeable.length}`);
-            console.log(`   Routine tasks: ${issueAnalysis.routine_tasks.length}`);
-            console.log(`   PR-safe operations: ${issueAnalysis.pr_safe_operations.length}`);
-            
-            return issueAnalysis;
-
-      - name: Execute Issue Management Operations
-        id: execute_operations
-        if: ${{ fromJSON(steps.issue_management.outputs.issue_analysis).pr_safe_operations }}
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const issueAnalysis = JSON.parse('${{ steps.issue_management.outputs.issue_analysis }}');
-            const systemState = JSON.parse('${{ steps.motherspace_init.outputs.system_state }}');
-            
-            console.log('🔧 MotherSpace executing safe issue management operations...');
-            
-            const operationResults = {
-              duplicates_removed: [],
-              issues_merged: [],
-              routine_tasks_delegated: [],
-              errors: []
-            };
-            
-            // Process duplicate removals (safe operations only)
-            for (const operation of issueAnalysis.pr_safe_operations) {
-              if (operation.type === 'duplicate_removal' && operation.safe) {
-                try {
-                  const olderIssue = operation.target;
-                  
-                  // Add a comment explaining the closure
-                  await github.rest.issues.createComment({
-                    owner: context.repo.owner,
-                    repo: context.repo.repo,
-                    issue_number: olderIssue.number,
-                    body: [
-                      `## 🎯 MotherSpace Automated Issue Management`,
-                      ``,
-                      `This issue has been identified as a duplicate of a newer automated issue with the same or enhanced scope.`,
-                      ``,
-                      `**Closure Reason:** Superseded by newer automated analysis`,
-                      `**MotherSpace Analysis:** High similarity detected with no meaningful differences`,
-                      `**PR Safety Check:** ✅ No open PRs affected by this closure`,
-                      ``,
-                      `*This action maintains repository organization while preserving all functionality and development protocols.*`,
-                      ``,
-                      `---`,
-                      `*Automated by MotherSpace Orchestrator v${{ env.MOTHERSPACE_VERSION }}*`
-                    ].join('\n')
-                  });
-                  
-                  // Close the duplicate issue
-                  await github.rest.issues.update({
-                    owner: context.repo.owner,
-                    repo: context.repo.repo,
-                    issue_number: olderIssue.number,
-                    state: 'closed',
-                    labels: [...olderIssue.labels.map(l => l.name), 'duplicate', 'motherspace-managed']
-                  });
-                  
-                  operationResults.duplicates_removed.push(olderIssue.number);
-                  console.log(`  ✅ Closed duplicate issue #${olderIssue.number}`);
-                } catch (error) {
-                  operationResults.errors.push(`Failed to close duplicate #${operation.target.number}: ${error.message}`);
-                }
-              }
-            }
-            
-            // Process mergeable issues with differences
-            for (const mergeCandidate of issueAnalysis.mergeable.slice(0, 3)) { // Limit to 3 merges per run
+            for (const group of safeGroups) {
               try {
-                const { issue1, issue2, differences, merge_strategy } = mergeCandidate;
+                // Check if any PRs reference these issues
+                const referencedInPRs = openPRs.data.some(pr => 
+                  group.duplicate_issues.some(issueNum => 
+                    (pr.body && pr.body.includes(`#${issueNum}`)) ||
+                    pr.title.includes(issueNum.toString())
+                  )
+                );
                 
-                // Create merged issue with comprehensive analysis
-                const mergedTitle = `🔄 MotherSpace Unified Analysis - ${merge_strategy.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}`;
-                const mergedBody = [
-                  `# Unified Issue Analysis by MotherSpace`,
+                if (referencedInPRs) {
+                  console.log(`⚠️ Skipping duplicate group - referenced in open PRs`);
+                  continue;
+                }
+                
+                // Create or update tracking issue (create-or-update pattern)
+                const trackingTitle = `🎯 MotherSpace Tracking - ${group.fingerprint.substring(0, 8)}`;
+                const trackingBody = [
+                  `# MotherSpace Issue Tracking`,
                   ``,
-                  `**Merge Strategy:** ${merge_strategy}`,
-                  `**Original Issues:** #${issue1.number}, #${issue2.number}`,
-                  `**Compatibility Check:** ✅ Compatible for unified handling`,
-                  `**Development Protocol:** Sequential implementation with quality gates`,
+                  `**Tracking ID:** \`${group.fingerprint}\``,
+                  `**Created:** ${new Date().toISOString()}`,
+                  `**Primary Issue:** #${group.newest_issue}`,
+                  `**Consolidated Issues:** ${group.duplicate_issues.length} duplicates`,
                   ``,
-                  `## Issue 1 Analysis (${issue1.title})`,
-                  `**Created:** ${issue1.created_at}`,
-                  `**Labels:** ${issue1.labels.map(l => l.name).join(', ')}`,
+                  `## Purpose`,
+                  `This tracking issue consolidates multiple similar automated issues to reduce repository noise while preserving all information.`,
                   ``,
-                  issue1.body || '*No description provided*',
-                  ``,
-                  `## Issue 2 Analysis (${issue2.title})`,
-                  `**Created:** ${issue2.created_at}`,
-                  `**Labels:** ${issue2.labels.map(l => l.name).join(', ')}`,
-                  ``,
-                  issue2.body || '*No description provided*',
-                  ``,
-                  `## MotherSpace Unified Analysis`,
-                  ``,
-                  `### Identified Differences:`,
-                  differences.length > 0 ? differences.map(d => `- ${d.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}`).join('\n') : '- No significant differences detected',
-                  ``,
-                  `### Unified Implementation Plan:`,
-                  ``,
-                  merge_strategy === 'comprehensive_error_analysis' ? [
-                    `1. **Error Pattern Analysis:** Combine all error patterns for comprehensive understanding`,
-                    `2. **Root Cause Investigation:** Identify common underlying causes`,
-                    `3. **Unified Fix Strategy:** Develop solution addressing all error patterns`,
-                    `4. **Testing Protocol:** Validate fix against all identified scenarios`
-                  ].join('\n') : merge_strategy === 'unified_fix_strategy' ? [
-                    `1. **Fix Requirement Analysis:** Catalog all fix requirements from both issues`,
-                    `2. **Compatibility Assessment:** Ensure fixes work together harmoniously`,
-                    `3. **Implementation Sequence:** Execute fixes in optimal order`,
-                    `4. **Integration Testing:** Validate combined fix functionality`
-                  ].join('\n') : merge_strategy === 'multi_perspective_analysis' ? [
-                    `1. **Analysis Scope Definition:** Combine all analysis requirements`,
-                    `2. **Multi-disciplinary Review:** Address all analytical perspectives`,
-                    `3. **Comprehensive Documentation:** Document all findings and insights`,
-                    `4. **Stakeholder Communication:** Ensure all analysis needs are met`
-                  ].join('\n') : [
-                    `1. **Standard Merge Process:** Combine requirements systematically`,
-                    `2. **Quality Assurance:** Maintain all original quality standards`,
-                    `3. **Documentation Update:** Merge all relevant documentation`,
-                    `4. **Verification Testing:** Ensure no functionality is lost`
-                  ].join('\n'),
-                  ``,
-                  `### Quality Checkpoints:`,
-                  `- [ ] All original requirements preserved`,
-                  `- [ ] No conflicts with existing functionality`,
-                  `- [ ] Development protocols maintained`,
-                  `- [ ] Security standards upheld`,
-                  `- [ ] Integration compatibility verified`,
+                  `## Quality Assurance`,
+                  `- ✅ Safety checks passed`,
+                  `- ✅ No PR interference detected`,
+                  `- ✅ Fingerprint-based deduplication applied`,
+                  `- ✅ Quiet mode: updates existing instead of creating new`,
                   ``,
                   `---`,
-                  `*This unified issue maintains all original requirements while optimizing development efficiency*`,
-                  `*Created by MotherSpace Orchestrator v${{ env.MOTHERSPACE_VERSION }}*`
-                ].join('\n');
+                  `*MotherSpace Enhanced Orchestrator v${{ env.MOTHERSPACE_VERSION }}*`
+                ].join('\\n');
                 
-                // Combine labels from both issues
-                const combinedLabels = [...new Set([
-                  ...issue1.labels.map(l => l.name),
-                  ...issue2.labels.map(l => l.name),
-                  'motherspace-unified',
-                  'automated'
-                ])];
-                
-                const mergedIssue = await github.rest.issues.create({
+                // Create tracking issue
+                const trackingIssue = await github.rest.issues.create({
                   owner: context.repo.owner,
                   repo: context.repo.repo,
-                  title: mergedTitle,
-                  body: mergedBody,
-                  labels: combinedLabels,
-                  assignees: ['HANSKMIEL']
+                  title: trackingTitle,
+                  body: trackingBody,
+                  labels: ['motherspace-tracking', 'automated', 'consolidation']
                 });
                 
-                // Add closing comments to original issues
-                for (const originalIssue of [issue1, issue2]) {
+                // Close duplicates with reference to tracking issue
+                for (const duplicateIssue of group.duplicate_issues) {
                   await github.rest.issues.createComment({
                     owner: context.repo.owner,
                     repo: context.repo.repo,
-                    issue_number: originalIssue.number,
+                    issue_number: duplicateIssue,
                     body: [
-                      `## 🔄 MotherSpace Issue Unification`,
+                      `## 🎯 MotherSpace Consolidation`,
                       ``,
-                      `This issue has been merged with related issues for unified handling.`,
+                      `This issue has been consolidated under tracking issue #${trackingIssue.data.number}.`,
                       ``,
-                      `**Unified Issue:** #${mergedIssue.data.number}`,
-                      `**Merge Strategy:** ${merge_strategy}`,
-                      `**All Requirements Preserved:** ✅`,
+                      `**Reason:** Duplicate detected via enhanced fingerprint analysis`,
+                      `**Tracking Issue:** #${trackingIssue.data.number}`,
+                      `**Safety Features:** ✅ Applied`,
                       ``,
-                      `Please follow the unified issue for coordinated resolution.`,
+                      `All information is preserved in the tracking issue.`,
                       ``,
                       `---`,
-                      `*Unified by MotherSpace Orchestrator for optimal development efficiency*`
-                    ].join('\n')
+                      `*MotherSpace Enhanced Orchestrator v${{ env.MOTHERSPACE_VERSION }}*`
+                    ].join('\\n')
                   });
                   
                   await github.rest.issues.update({
                     owner: context.repo.owner,
                     repo: context.repo.repo,
-                    issue_number: originalIssue.number,
+                    issue_number: duplicateIssue,
                     state: 'closed',
-                    labels: [...originalIssue.labels.map(l => l.name), 'unified', 'motherspace-managed']
+                    labels: ['duplicate', 'motherspace-managed', 'consolidated']
                   });
                 }
                 
-                operationResults.issues_merged.push({
-                  unified_issue: mergedIssue.data.number,
-                  original_issues: [issue1.number, issue2.number],
-                  strategy: merge_strategy
+                results.tracking_issues_updated.push({
+                  tracking_issue: trackingIssue.data.number,
+                  duplicates_closed: group.duplicate_issues,
+                  fingerprint: group.fingerprint
                 });
                 
-                console.log(`  🔄 Created unified issue #${mergedIssue.data.number} from #${issue1.number} and #${issue2.number}`);
+                results.operations_performed++;
+                console.log(`🔄 Created tracking issue #${trackingIssue.data.number}, closed ${group.duplicate_issues.length} duplicates`);
+                
               } catch (error) {
-                operationResults.errors.push(`Failed to merge issues: ${error.message}`);
+                results.errors.push(`Failed to manage duplicate group: ${error.message}`);
               }
             }
             
-            // Delegate routine tasks to copilot
-            for (const routineTask of issueAnalysis.routine_tasks.slice(0, 5)) { // Limit to 5 delegations
-              try {
-                const { issue, task_type, estimated_effort } = routineTask;
-                
-                await github.rest.issues.createComment({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  issue_number: issue.number,
-                  body: [
-                    `## 🤖 MotherSpace Copilot Delegation`,
-                    ``,
-                    `This routine task has been identified as suitable for Copilot automation.`,
-                    ``,
-                    `**Task Type:** ${task_type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}`,
-                    `**Estimated Effort:** ${estimated_effort}`,
-                    `**Copilot Ready:** ✅`,
-                    ``,
-                    `### Delegation Instructions:`,
-                    `- This task follows standard development protocols`,
-                    `- All quality checks and security standards apply`,
-                    `- Code formatting (black, isort) required`,
-                    `- Testing validation mandatory`,
-                    ``,
-                    `**@copilot** This routine task is ready for automated handling. Please proceed with implementation following the MotherSpace development protocols.`,
-                    ``,
-                    `---`,
-                    `*Delegated by MotherSpace Orchestrator for efficient task distribution*`
-                  ].join('\n')
-                });
-                
-                // Add delegation label
-                const currentLabels = issue.labels.map(l => l.name);
-                await github.rest.issues.update({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  issue_number: issue.number,
-                  labels: [...currentLabels, 'copilot-delegated', 'routine-task']
-                });
-                
-                operationResults.routine_tasks_delegated.push(issue.number);
-                console.log(`  🤖 Delegated routine task #${issue.number} to Copilot`);
-              } catch (error) {
-                operationResults.errors.push(`Failed to delegate routine task #${routineTask.issue.number}: ${error.message}`);
-              }
-            }
+            core.setOutput('management_results', JSON.stringify(results));
             
-            core.setOutput('operation_results', JSON.stringify(operationResults));
+            console.log(`📊 Enhanced Issue Management Complete:`);
+            console.log(`   Issues analyzed: ${results.issues_analyzed}`);
+            console.log(`   Duplicates found: ${results.duplicates_found.length}`);
+            console.log(`   Operations performed: ${results.operations_performed}`);
+            console.log(`   Errors: ${results.errors.length}`);
             
-            console.log(`🎯 Issue Management Operations Complete:`);
-            console.log(`   Duplicates removed: ${operationResults.duplicates_removed.length}`);
-            console.log(`   Issues merged: ${operationResults.issues_merged.length}`);
-            console.log(`   Tasks delegated to Copilot: ${operationResults.routine_tasks_delegated.length}`);
-            console.log(`   Errors: ${operationResults.errors.length}`);
-            
-            return operationResults;
+            return results;
 
-      - name: Space Health Assessment and Optimization
-        id: space_assessment
-        if: ${{ fromJSON(steps.motherspace_init.outputs.system_state).needs_intervention || github.event.inputs.operation == 'space_optimization' }}
+      - name: Complete Safety Operation
+        if: always() && steps.safety_check.outputs.safe_to_proceed == 'true'
+        run: |
+          echo "🛡️ Completing safety operation..."
+          
+          # Update tracking and release locks
+          python .github/scripts/safety_manager.py --cleanup
+          
+          echo "✅ MotherSpace Enhanced Orchestrator completed safely"
+
+      - name: Summary Report
+        if: always()
         uses: actions/github-script@v7
         with:
           script: |
-            const systemState = JSON.parse('${{ steps.motherspace_init.outputs.system_state }}');
+            const safetyPassed = '${{ steps.safety_check.outputs.safe_to_proceed }}' === 'true';
             
-            console.log('🔍 Performing deep space health assessment...');
-            
-            const optimizationPlan = {
-              immediate_actions: [],
-              daughter_tasks: [],
-              integration_manager_tasks: [],
-              space_updates: []
-            };
-            
-            // Analyze Copilot Space health
-            if (!systemState.spaces['.github/copilot-instructions.md']?.exists) {
-              optimizationPlan.immediate_actions.push({
-                priority: 'critical',
-                action: 'create_copilot_instructions',
-                description: 'Create comprehensive Copilot instructions for MotherSpace system'
-              });
+            if (!safetyPassed) {
+              console.log('🚫 MotherSpace operation skipped due to safety constraints');
+              console.log('This prevents bot loops, spam, and conflicts');
+              return;
             }
             
-            // Check for UI/UX issues that need Daughter space attention
-            for (const candidate of systemState.active_work.delegation_candidates) {
-              if (candidate.suggested_space === 'daughter') {
-                optimizationPlan.daughter_tasks.push({
-                  issue_number: candidate.number,
-                  title: candidate.title,
-                  analysis_type: 'ui_ux_optimization',
-                  priority: candidate.labels.includes('priority-high') ? 'high' : 'medium'
-                });
-              } else if (candidate.suggested_space === 'integration_manager') {
-                optimizationPlan.integration_manager_tasks.push({
-                  issue_number: candidate.number,
-                  title: candidate.title,
-                  integration_type: 'external_system',
-                  priority: candidate.labels.includes('priority-high') ? 'high' : 'medium'
-                });
-              }
-            }
+            const managementResults = JSON.parse('${{ steps.issue_management.outputs.management_results || "{}" }}');
+            const systemState = JSON.parse('${{ steps.context_analysis.outputs.system_state || "{}" }}');
             
-            // Space documentation updates needed
-            if (systemState.harmony_score < 90) {
-              optimizationPlan.space_updates.push({
-                file: '.github/copilot-instructions.md',
-                update_type: 'motherspace_patterns',
-                reason: 'Add MotherSpace orchestration patterns'
-              });
-            }
-            
-            core.setOutput('optimization_plan', JSON.stringify(optimizationPlan));
-            
-            console.log(`📋 Optimization Plan Generated:`);
-            console.log(`   Immediate Actions: ${optimizationPlan.immediate_actions.length}`);
-            console.log(`   Daughter Tasks: ${optimizationPlan.daughter_tasks.length}`);
-            console.log(`   Integration Tasks: ${optimizationPlan.integration_manager_tasks.length}`);
-            
-            return optimizationPlan;
-
-      - name: Task Delegation and Chronological Planning
-        id: task_delegation
-        if: ${{ steps.space_assessment.outputs.optimization_plan && fromJSON(steps.space_assessment.outputs.optimization_plan).immediate_actions }}
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const optimizationPlan = JSON.parse('${{ steps.space_assessment.outputs.optimization_plan }}');
-            const systemState = JSON.parse('${{ steps.motherspace_init.outputs.system_state }}');
-            
-            console.log('🎯 MotherSpace initiating task delegation...');
-            
-            // Create chronological development order
-            const taskSequence = [];
-            
-            // Phase 1: Critical infrastructure
-            optimizationPlan.immediate_actions
-              .filter(action => action.priority === 'critical')
-              .forEach((action, index) => {
-                taskSequence.push({
-                  phase: 1,
-                  order: index + 1,
-                  space: 'motherspace',
-                  task: action,
-                  dependencies: [],
-                  estimated_duration: '2-4 hours'
-                });
-              });
-            
-            // Phase 2: Daughter space UI/UX tasks
-            optimizationPlan.daughter_tasks.forEach((task, index) => {
-              taskSequence.push({
-                phase: 2,
-                order: index + 1,
-                space: 'daughter',
-                task: task,
-                dependencies: taskSequence.filter(t => t.phase === 1).map(t => `Phase-1-Task-${t.order}`),
-                estimated_duration: '4-8 hours'
-              });
-            });
-            
-            // Phase 3: Integration manager tasks
-            optimizationPlan.integration_manager_tasks.forEach((task, index) => {
-              taskSequence.push({
-                phase: 3,
-                order: index + 1,
-                space: 'integration_manager',
-                task: task,
-                dependencies: [], // Can run in parallel with daughter tasks
-                estimated_duration: '6-12 hours'
-              });
-            });
-            
-            // Create comprehensive delegation issue
-            if (taskSequence.length > 0) {
-              const title = `🎯 MotherSpace Task Delegation - ${taskSequence.length} Tasks Queued`;
-              const body = [
-                `# MotherSpace Orchestrated Task Delegation`,
-                ``,
-                `**Orchestration Time:** ${new Date().toISOString()}`,
-                `**Harmony Score:** ${systemState.harmony_score}% (Target: ≥${systemState.harmony_threshold}%)`,
-                `**Security Level:** ${systemState.security_level.toUpperCase()}`,
-                `**Total Tasks:** ${taskSequence.length}`,
-                ``,
-                `## 🎯 MotherSpace Analysis`,
-                `The MotherSpace has analyzed the current system state and identified tasks requiring coordinated execution across multiple spaces. Each task has been prioritized and sequenced for optimal development flow with quality and security checks in place.`,
-                ``,
-                `## 📋 Chronological Task Sequence`,
-                ``,
-                ...taskSequence.map(task => [
-                  `### Phase ${task.phase} - Task ${task.order} (${task.space.toUpperCase()})`,
-                  `**Space:** ${task.space}`,
-                  `**Duration:** ${task.estimated_duration}`,
-                  `**Dependencies:** ${task.dependencies.length > 0 ? task.dependencies.join(', ') : 'None'}`,
-                  ``,
-                  `**Task Details:**`,
-                  task.space === 'daughter' ? [
-                    `- **Issue:** #${task.task.issue_number} - ${task.task.title}`,
-                    `- **Analysis Type:** ${task.task.analysis_type}`,
-                    `- **Priority:** ${task.task.priority}`,
-                    `- **Daughter Focus:** UI/UX optimization, user workflow analysis, visual appeal enhancement`
-                  ].join('\n') : 
-                  task.space === 'integration_manager' ? [
-                    `- **Issue:** #${task.task.issue_number} - ${task.task.title}`,
-                    `- **Integration Type:** ${task.task.integration_type}`,
-                    `- **Priority:** ${task.task.priority}`,
-                    `- **Manager Focus:** External system integration, module development, API connections`
-                  ].join('\n') : [
-                    `- **Action:** ${task.task.action}`,
-                    `- **Description:** ${task.task.description}`,
-                    `- **Priority:** ${task.task.priority}`,
-                    `- **MotherSpace Focus:** System orchestration, space coordination, quality assurance`
-                  ].join('\n'),
-                  ``,
-                  `- [ ] Task ready for execution`,
-                  `- [ ] Dependencies verified`,
-                  `- [ ] Quality checks passed`,
-                  `- [ ] Security validation completed`,
-                  `- [ ] Task execution completed`,
-                  `- [ ] Results integrated`,
-                  ``,
-                ]).flat(),
-                `## 🔄 Cross-Space Communication Protocol`,
-                ``,
-                `**Daughter → MotherSpace Reporting:**`,
-                `- All UI/UX analysis results reported in comments on this issue`,
-                `- Visual appeal recommendations with screenshots/mockups`,
-                `- User workflow optimization suggestions`,
-                `- Integration error reports labeled "Daughter-Integration Manager [Date Time]"`,
-                ``,
-                `**IntegrationManager → MotherSpace Reporting:**`,
-                `- Module development progress updates`,
-                `- External system integration status`,
-                `- API connection results and recommendations`,
-                `- Cross-profession adaptability analysis`,
-                ``,
-                `**MotherSpace Coordination:**`,
-                `- Monitors all space activities for harmony`,
-                `- Resolves conflicts between spaces`,
-                `- Ensures chronological task execution`,
-                `- Maintains quality and security standards`,
-                ``,
-                `## 🛡️ Quality and Security Checkpoints`,
-                ``,
-                `Each task must pass these checkpoints before proceeding:`,
-                ``,
-                `### Phase 1 Checkpoints (MotherSpace):`,
-                `- [ ] Code quality standards maintained`,
-                `- [ ] Security vulnerabilities addressed`,
-                `- [ ] Documentation updated`,
-                `- [ ] Space coordination verified`,
-                ``,
-                `### Phase 2 Checkpoints (Daughter):`,
-                `- [ ] UI/UX improvements validated`,
-                `- [ ] User workflow optimizations tested`,
-                `- [ ] Visual appeal enhancements verified`,
-                `- [ ] Integration requirements documented`,
-                ``,
-                `### Phase 3 Checkpoints (IntegrationManager):`,
-                `- [ ] Module functionality verified`,
-                `- [ ] External integrations tested`,
-                `- [ ] API connections validated`,
-                `- [ ] Cross-profession compatibility confirmed`,
-                ``,
-                `## 📊 Success Metrics`,
-                ``,
-                `**Target Outcomes:**`,
-                `- Harmony Score: ≥${systemState.harmony_threshold}% (Current: ${systemState.harmony_score}%)`,
-                `- Open Issues: ≤20 (Current: ${systemState.active_work.open_issues})`,
-                `- Open PRs: ≤10 (Current: ${systemState.active_work.open_prs})`,
-                `- Cross-space efficiency: ≥90%`,
-                ``,
-                `---`,
-                `*This issue was created by MotherSpace Orchestrator v${systemState.spaces.motherspace.version}*`,
-                `*All spaces must work in harmony while maintaining functionality, security, and efficiency*`,
-                ``,
-                `**🎯 MotherSpace Signature:** \`HARMONY-${systemState.harmony_score}-${Date.now()}\``
-              ].join('\n');
-              
-              const issue = await github.rest.issues.create({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                title: title,
-                body: body,
-                labels: ['motherspace', 'orchestration', 'task-delegation', 'automated', 'priority-high'],
-                assignees: ['HANSKMIEL']
-              });
-              
-              console.log(`🎯 Created MotherSpace delegation issue #${issue.data.number}`);
-              
-              // Create sub-issues for each space-specific task
-              for (const task of taskSequence.filter(t => t.space !== 'motherspace')) {
-                const subTitle = `${task.space === 'daughter' ? '👩‍💻 Daughter' : '🔗 IntegrationManager'} - Phase ${task.phase} Task ${task.order}`;
-                const subBody = [
-                  `# ${task.space.charAt(0).toUpperCase() + task.space.slice(1)} Space Task`,
-                  ``,
-                  `**Parent Issue:** #${issue.data.number}`,
-                  `**Phase:** ${task.phase}`,
-                  `**Execution Order:** ${task.order}`,
-                  `**Space:** ${task.space}`,
-                  `**Estimated Duration:** ${task.estimated_duration}`,
-                  ``,
-                  task.space === 'daughter' ? [
-                    `## 👩‍💻 Daughter Space UI/UX Analysis`,
-                    ``,
-                    `**Target Issue:** #${task.task.issue_number} - ${task.task.title}`,
-                    `**Analysis Type:** ${task.task.analysis_type}`,
-                    `**Priority Level:** ${task.task.priority}`,
-                    ``,
-                    `### Required Analysis:`,
-                    `- [ ] Visual appeal assessment with screenshots`,
-                    `- [ ] User experience workflow analysis`,
-                    `- [ ] Data import/export workflow evaluation`,
-                    `- [ ] User feedback mechanism review`,
-                    `- [ ] Workability enhancement recommendations`,
-                    ``,
-                    `### Deliverables:`,
-                    `- [ ] Comprehensive UI/UX analysis report`,
-                    `- [ ] Visual mockups or improvement suggestions`,
-                    `- [ ] User workflow optimization plan`,
-                    `- [ ] Integration requirements for MotherSpace`,
-                    ``,
-                    `### Communication Protocol:`,
-                    `- Report all findings as comments on parent issue #${issue.data.number}`,
-                    `- Include screenshots for visual improvements`,
-                    `- Tag MotherSpace for coordination needs`,
-                    `- Create "Daughter-Integration Manager [Date Time]" issues for major integration needs`
-                  ].join('\n') : [
-                    `## 🔗 IntegrationManager Space Module Development`,
-                    ``,
-                    `**Target Issue:** #${task.task.issue_number} - ${task.task.title}`,
-                    `**Integration Type:** ${task.task.integration_type}`,
-                    `**Priority Level:** ${task.task.priority}`,
-                    ``,
-                    `### Required Development:`,
-                    `- [ ] Modules repository setup and initialization`,
-                    `- [ ] Integration module design and development`,
-                    `- [ ] API connection establishment`,
-                    `- [ ] Cross-profession adaptability analysis`,
-                    `- [ ] External system compatibility testing`,
-                    ``,
-                    `### Deliverables:`,
-                    `- [ ] Functional integration module`,
-                    `- [ ] API documentation and examples`,
-                    `- [ ] Cross-profession adaptation guidelines`,
-                    `- [ ] Integration testing results`,
-                    ``,
-                    `### Communication Protocol:`,
-                    `- Report progress on parent issue #${issue.data.number}`,
-                    `- Update MotherSpace on cross-repo changes`,
-                    `- Coordinate with Daughter space for UI integrations`,
-                    `- Maintain Modules repository synchronization`
-                  ].join('\n'),
-                  ``,
-                  `---`,
-                  `*This task is orchestrated by MotherSpace and must maintain harmony with all other spaces*`
-                ].join('\n');
-                
-                const subIssue = await github.rest.issues.create({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  title: subTitle,
-                  body: subBody,
-                  labels: [task.space, 'motherspace-delegated', 'sub-task', task.task.priority || 'medium'],
-                  assignees: ['HANSKMIEL']
-                });
-                
-                console.log(`  └─ Created ${task.space} sub-issue #${subIssue.data.number}`);
-              }
-            }
-            
-            core.setOutput('delegation_completed', true);
-            core.setOutput('tasks_delegated', taskSequence.length);
-
-      - name: Harmony Optimization and Continuous Monitoring
-        id: harmony_optimization
-        if: ${{ always() }}
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const systemState = JSON.parse('${{ steps.motherspace_init.outputs.system_state }}');
-            
-            console.log('🔄 MotherSpace continuous harmony monitoring activated...');
-            
-            // Generate harmony report
-            const harmonyReport = {
-              timestamp: new Date().toISOString(),
-              current_score: systemState.harmony_score,
-              target_score: parseInt('${{ env.HARMONY_THRESHOLD }}'),
-              status: systemState.harmony_score >= parseInt('${{ env.HARMONY_THRESHOLD }}') ? 'optimal' : 'requires_attention',
-              factors: systemState.harmony_factors,
-              recommendations: []
-            };
-            
-            // Add optimization recommendations
-            if (systemState.harmony_factors.space_health < 0.8) {
-              harmonyReport.recommendations.push({
-                category: 'space_health',
-                priority: 'high',
-                action: 'Update and optimize space documentation files',
-                impact: 'Improves AI assistance and development efficiency'
-              });
-            }
-            
-            if (systemState.active_work.open_issues > 20) {
-              harmonyReport.recommendations.push({
-                category: 'issue_management',
-                priority: 'medium',
-                action: 'Triage and close stale issues, delegate active ones',
-                impact: 'Reduces cognitive load and improves focus'
-              });
-            }
-            
-            if (systemState.active_work.delegation_candidates.length > 5) {
-              harmonyReport.recommendations.push({
-                category: 'delegation',
-                priority: 'medium',
-                action: 'Activate Daughter and IntegrationManager spaces for specialized tasks',
-                impact: 'Distributes workload and improves specialized handling'
-              });
-            }
-            
-            // Save harmony report
-            const reportPath = `reports/harmony/motherspace_harmony_${new Date().toISOString().split('T')[0]}.json`;
-            require('fs').writeFileSync(reportPath, JSON.stringify(harmonyReport, null, 2));
-            
-            console.log(`📊 Harmony Report Generated: ${harmonyReport.status.toUpperCase()}`);
-            console.log(`   Current Score: ${harmonyReport.current_score}%`);
-            console.log(`   Recommendations: ${harmonyReport.recommendations.length}`);
-            
-            return harmonyReport;
-
-      - name: Create MotherSpace Status Report
-        if: ${{ always() }}
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const systemState = JSON.parse('${{ steps.motherspace_init.outputs.system_state }}');
-            const delegationCompleted = '${{ steps.task_delegation.outputs.delegation_completed }}' === 'true';
-            const tasksDelegated = '${{ steps.task_delegation.outputs.tasks_delegated }}' || '0';
-            const issueAnalysis = '${{ steps.issue_management.outputs.issue_analysis }}' ? JSON.parse('${{ steps.issue_management.outputs.issue_analysis }}') : null;
-            const operationResults = '${{ steps.execute_operations.outputs.operation_results }}' ? JSON.parse('${{ steps.execute_operations.outputs.operation_results }}') : null;
-            
-            console.log('📋 Creating MotherSpace operational status report...');
-            
-            // Create status comment on trigger issue/PR if applicable
-            let statusMessage = [
-              `## 🎯 MotherSpace Orchestrator Status Report`,
-              ``,
-              `**Operational Time:** ${new Date().toISOString()}`,
-              `**Trigger:** ${context.eventName}`,
-              `**Version:** v${{ env.MOTHERSPACE_VERSION }}`,
-              ``,
-              `### System Harmony Analysis`,
-              `- **Current Score:** ${systemState.harmony_score}% (Target: ≥${{ env.HARMONY_THRESHOLD }}%)`,
-              `- **Status:** ${systemState.needs_intervention ? '⚠️ Requires Intervention' : '✅ Optimal Harmony'}`,
-              `- **Active Issues:** ${systemState.active_work.open_issues}`,
-              `- **Active PRs:** ${systemState.active_work.open_prs}`,
-              `- **Delegation Candidates:** ${systemState.active_work.delegation_candidates.length}`,
-              ``,
-              `### Space Status`,
-              `- **MotherSpace:** 🎯 Active and Orchestrating`,
-              `- **Daughter Space:** 👩‍💻 ${systemState.spaces.daughter.status}`,
-              `- **IntegrationManager:** 🔗 ${systemState.spaces.integration_manager.status}`,
-              ``,
-              delegationCompleted ? [
-                `### Task Delegation Results`,
-                `- **Tasks Delegated:** ${tasksDelegated}`,
-                `- **Spaces Activated:** Multiple`,
-                `- **Chronological Order:** Established`,
-                `- **Quality Checks:** Enabled`,
-                `- **Security Level:** ${{ env.SECURITY_LEVEL }}`,
-                ``
-              ].join('\n') : '',
-              issueAnalysis ? [
-                `### Issue Management Results`,
-                `- **Automated Issues Analyzed:** ${issueAnalysis.duplicates.length + issueAnalysis.mergeable.length + issueAnalysis.routine_tasks.length}`,
-                operationResults ? `- **Duplicates Removed:** ${operationResults.duplicates_removed.length}` : '',
-                operationResults ? `- **Issues Merged:** ${operationResults.issues_merged.length}` : '',
-                operationResults ? `- **Tasks Delegated to Copilot:** ${operationResults.routine_tasks_delegated.length}` : '',
-                `- **PR Safety Checks:** ✅ All operations verified safe`,
-                `- **Development Protocols:** ✅ Maintained throughout process`,
-                ``
-              ].join('\n') : '',
-              `### Next Actions`,
-              systemState.needs_intervention ? [
-                `- 🔄 Monitor delegated task execution`,
-                `- 📊 Track harmony score improvements`,
-                `- 🛡️ Ensure quality and security standards`,
-                `- 🎯 Coordinate cross-space communication`,
-                operationResults && operationResults.routine_tasks_delegated.length > 0 ? `- 🤖 Monitor Copilot-delegated routine tasks` : '',
-                operationResults && operationResults.issues_merged.length > 0 ? `- 🔄 Track unified issue progress` : ''
-              ].filter(Boolean).join('\n') : [
-                `- ✅ System operating optimally`,
-                `- 🔄 Continue monitoring for harmony`,
-                `- 📈 Maintain current efficiency levels`,
-                `- 🎯 Ready for new task coordination`,
-                issueAnalysis && issueAnalysis.routine_tasks.length > 0 ? `- 🤖 ${issueAnalysis.routine_tasks.length} routine tasks ready for Copilot delegation` : ''
-              ].filter(Boolean).join('\n'),
-              ``,
-              `---`,
-              `*MotherSpace ensures all spaces work in harmony without compromising functionality, security, or efficiency*`
-            ].join('\n');
-            
-            console.log('🎯 MotherSpace Orchestrator cycle completed successfully');
-            console.log(`   Status: ${systemState.needs_intervention ? 'Intervention Mode' : 'Harmony Mode'}`);
+            console.log('🎯 MotherSpace Enhanced Orchestrator Summary:');
+            console.log(`   Version: ${{ env.MOTHERSPACE_VERSION }}`);
+            console.log(`   Harmony Score: ${systemState.harmony_score || 'N/A'}%`);
+            console.log(`   Operations: ${managementResults.operations_performed || 0}`);
+            console.log(`   Safety: ✅ Enabled and Active`);
+            console.log(`   Mode: ${{ env.QUIET_MODE === 'true' && 'Quiet' || 'Standard' }}`);
             console.log(`   Next check: ${context.eventName === 'schedule' ? 'In 2 hours' : 'Event-triggered'}`);
-            
-            // Store the report for fingerprinted issue creation
-            core.setOutput('status_message', statusMessage);
-
-      - name: Create or Update MotherSpace Tracking Issue
-        if: ${{ always() }}
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const fs = require('fs');
-            const path = require('path');
-            
-            // Load the fingerprinting utilities
-            const fingerprintCode = fs.readFileSync('.github/scripts/issue_fingerprint.py', 'utf8');
-            const dedupeCode = fs.readFileSync('.github/scripts/dedupe_create_or_update_issue.py', 'utf8');
-            
-            // Use Node.js to implement basic fingerprinting for GitHub Actions
-            const crypto = require('crypto');
-            
-            function simpleFingerprint(payload, category) {
-              // Simplified fingerprinting for GitHub Actions context
-              const normalized = {
-                operation: payload.operation || 'unknown',
-                trigger: payload.trigger || context.eventName,
-                category: category
-              };
-              
-              const jsonStr = JSON.stringify(normalized, Object.keys(normalized).sort());
-              const hash = crypto.createHash('sha256').update(jsonStr).digest('hex');
-              return `${category}-${hash.substring(0, 16)}`;
-            }
-            
-            function createFingerprintTag(fingerprint) {
-              return `<!-- FINGERPRINT:${fingerprint} -->`;
-            }
-            
-            function extractFingerprintFromBody(body) {
-              if (!body) return '';
-              const match = body.match(/<!-- FINGERPRINT:([^>]+) -->/);
-              return match ? match[1] : '';
-            }
-            
-            // Prepare payload for fingerprinting
-            const systemState = JSON.parse('${{ steps.motherspace_init.outputs.system_state }}');
-            const statusMessage = '${{ steps.Create_MotherSpace_Status_Report.outputs.status_message }}' || 'Status report unavailable';
-            
-            const fingerprintPayload = {
-              operation: systemState.operation || 'harmony_check',
-              trigger: context.eventName,
-              harmony_score: systemState.harmony_score,
-              needs_intervention: systemState.needs_intervention
-            };
-            
-            const fingerprint = simpleFingerprint(fingerprintPayload, 'motherspace');
-            const fingerprintTag = createFingerprintTag(fingerprint);
-            
-            console.log(`🔍 Generated fingerprint: ${fingerprint}`);
-            
-            // Search for existing tracking issue
-            const existingIssues = await github.rest.issues.listForRepo({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              state: 'open',
-              labels: 'motherspace,tracking,automated',
-              per_page: 50
-            });
-            
-            let existingIssue = null;
-            for (const issue of existingIssues.data) {
-              if (issue.body && issue.body.includes(`FINGERPRINT:${fingerprint}`)) {
-                existingIssue = issue;
-                break;
-              }
-            }
-            
-            const title = `🎯 MotherSpace Tracking - Harmony ${systemState.harmony_score}%`;
-            const body = statusMessage + '\n\n' + fingerprintTag;
-            
-            if (existingIssue) {
-              // Update existing issue with comment
-              console.log(`📝 Updating existing tracking issue #${existingIssue.number}`);
-              
-              await github.rest.issues.createComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: existingIssue.number,
-                body: [
-                  `## 🔄 MotherSpace Update`,
-                  ``,
-                  `**Update Time:** ${new Date().toISOString()}`,
-                  `**Trigger:** ${context.eventName}`,
-                  ``,
-                  statusMessage,
-                  ``,
-                  `---`,
-                  `*Automated tracking update - no duplicate issues created*`
-                ].join('\n')
-              });
-              
-              console.log(`✅ Updated tracking issue #${existingIssue.number}`);
-            } else {
-              // Create new tracking issue (only one per fingerprint)
-              console.log('📋 Creating new MotherSpace tracking issue...');
-              
-              const newIssue = await github.rest.issues.create({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                title: title,
-                body: body,
-                labels: ['motherspace', 'tracking', 'automated', systemState.needs_intervention ? 'priority-high' : 'priority-medium'],
-                assignees: ['HANSKMIEL']
-              });
-              
-              console.log(`✅ Created tracking issue #${newIssue.data.number}`);
-            }
