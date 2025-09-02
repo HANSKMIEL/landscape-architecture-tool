@@ -45,10 +45,7 @@ def add_plant_to_project(project_id):
 
         return jsonify(project_plant.to_dict()), 201
 
-    except HTTPException as e:
-        # Handle Flask HTTP exceptions (like 415 Unsupported Media Type)
-        if e.code == 415:
-            return jsonify({"error": "Invalid content type. JSON required"}), 400
+            return jsonify({"error": "Invalid content type. JSON required"}), 415
         return jsonify({"error": e.description}), e.code
     except ValidationError as e:
         # Provide a minimal, generic error message; do not leak internals
