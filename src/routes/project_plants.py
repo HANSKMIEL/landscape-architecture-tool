@@ -24,6 +24,10 @@ service = ProjectPlantService()
 def add_plant_to_project(project_id):
     """Add a plant to a project"""
     try:
+        # Handle missing or invalid content type
+        if not request.is_json:
+            return jsonify({"error": "Content-Type must be application/json"}), 400
+
         data = request.get_json()
 
         # Validate input
@@ -40,7 +44,7 @@ def add_plant_to_project(project_id):
 
         return jsonify(project_plant.to_dict()), 201
 
-    except ValueError as e:
+    except (ValueError, TypeError) as e:
         return jsonify({"error": str(e)}), 400
     except Exception as e:
         logger.error(f"Error adding plant to project: {e}")
@@ -130,7 +134,7 @@ def get_plant_order_list(project_id):
     """Generate plant order list for suppliers"""
     try:
         order_list = service.generate_plant_order_list(project_id)
-        return jsonify(order_list)
+        return jsonify({"order_list": order_list})
 
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
