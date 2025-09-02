@@ -7,7 +7,7 @@ The MotherSpace System is a comprehensive multi-space orchestration platform tha
 ## Space Architecture
 
 ### 🎯 MotherSpace Orchestrator
-**Master coordination and harmony management**
+**Master coordination and harmony management with advanced issue management (v1.1.0)**
 
 **Responsibilities:**
 - Analyzes all spaces to ensure optimal harmony (target: ≥85% harmony score)
@@ -15,6 +15,20 @@ The MotherSpace System is a comprehensive multi-space orchestration platform tha
 - Optimizes every issue, sub-issue, and PR for efficient cross-space collaboration
 - Monitors system-wide harmony and intervenes when thresholds are breached
 - Coordinates cross-space communication and resolves conflicts
+- **🆕 Advanced Issue Management**: Intelligent deduplication, merging, and automated cleanup of automated issues
+- **🤖 Copilot Integration**: Automatic delegation of routine tasks to copilot for efficient handling
+
+**🆕 Enhanced Issue Management Features (v1.1.0):**
+- **Automated Issue Analysis**: Scans all automated issues for duplicates and merge opportunities
+- **Intelligent Deduplication**: Removes superseded issues while preserving unique requirements  
+- **Smart Merging**: Combines related issues with different analysis needs, bugs, or fixes using compatibility-checked strategies:
+  - `comprehensive_error_analysis` - Unified error pattern analysis
+  - `unified_fix_strategy` - Compatible fix requirement integration
+  - `multi_perspective_analysis` - Combined analytical perspectives
+  - `standard_merge` - Systematic requirement consolidation
+- **Copilot Delegation**: Automatically identifies and delegates routine tasks (documentation, code quality, maintenance)
+- **PR Safety Checks**: Comprehensive analysis to prevent interference with open pull requests
+- **Development Protocol Preservation**: Maintains all quality gates and security standards during operations
 
 **Harmony Factors:**
 - Space health: Documentation completeness and quality
@@ -76,6 +90,12 @@ The MotherSpace System is a comprehensive multi-space orchestration platform tha
 - "Analyze current system harmony and delegate tasks for optimal development flow"
 - "Create chronological task sequence with quality checkpoints for [feature/bug]"
 - "Optimize issue #X for cross-space collaboration and efficiency"
+
+**🆕 Issue Management queries (v1.1.0):**
+- "Analyze automated issues for deduplication and merging opportunities"
+- "Delegate routine tasks to copilot while maintaining quality standards"
+- "Merge similar issues #X and #Y while preserving unique requirements"
+- "Clean up superseded automated issues without affecting open PRs"
 
 ### For UI/UX Improvements  
 **Daughter Space analysis queries:**
