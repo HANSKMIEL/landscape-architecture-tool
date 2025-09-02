@@ -225,8 +225,7 @@ def submit_feedback():
         return jsonify({"error": "Failed to save feedback"}), 404
 
     except Exception as e:
-        logging.exception("Failed to submit feedback")
-        return jsonify({"error": "Failed to submit feedback"}), 500
+        return jsonify({"error": "An internal error has occurred."}), 500
 
 
 @plant_recommendations_bp.route("/api/plant-recommendations/history", methods=["GET"])
