@@ -63,7 +63,7 @@ class IssueFingerprinter:
 
         # Normalize whitespace and punctuation
         text = re.sub(r"\s+", " ", text)
-        text = re.sub(r"[^\w\s\[\]]", " ", text)  # Keep only word chars, spaces, and brackets
+        text = re.sub(r"[^\w\s\[\]\.,\?\!\:\;]", " ", text)  # Keep word chars, spaces, brackets, and key punctuation
 
         return text.strip().lower()
 
