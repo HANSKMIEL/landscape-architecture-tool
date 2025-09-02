@@ -1,25 +1,55 @@
 # Copilot Space Overview
 
-**Version:** 1.0.0  
+**Version:** 1.2.0 (Enhanced)  
 **Last Updated:** September 2, 2025  
 **System:** Landscape Architecture Tool  
 
 ## 🎯 What is Copilot Space?
 
-Copilot Space is a comprehensive development environment configuration that provides AI-assisted coding guidance, patterns, and automation for the Landscape Architecture Tool. It ensures consistent development practices and enables efficient collaboration between developers and AI systems.
+Copilot Space is a comprehensive development environment configuration that provides AI-assisted coding guidance, patterns, and automation for the Landscape Architecture Tool. The **Enhanced Version 1.2.0** includes real GitHub Copilot UI integration, advanced safety features, and fingerprint-based deduplication.
 
-## 🏗️ Architecture Overview
+## How to Enable This Space in Copilot UI
 
-The Copilot Space implements a **Multi-Space Orchestration System** with three primary components:
+### Quick Setup (5 minutes)
 
-### MotherSpace Orchestrator
-- **Purpose:** Master orchestrator ensuring development harmony
+1. **Enable Copilot Spaces** in your repository settings:
+   - Go to Settings → Code security and analysis → GitHub Copilot
+   - Enable "Copilot Spaces" feature
+   - Point to this repository for custom space configuration
+
+2. **Attach Key Files** to your Copilot Space:
+   - `.github/copilot-instructions.md` (primary instructions)
+   - `docs/ARCHITECTURE.md` (technical context)
+   - `docs/SPACE_OVERVIEW.md` (this file)
+   - `docs/SETUP_COPILOT_SPACE.md` (detailed setup guide)
+
+3. **Test Space Activation** with these prompts:
+   - "Explain the enhanced MotherSpace safety features"
+   - "How does fingerprint deduplication work?"
+   - "Show me the create-or-update pattern for issues"
+
+4. **Verify Integration**: Your space should now appear in the GitHub Copilot Spaces panel
+
+### Full Setup Guide
+For complete setup instructions, see [`docs/SETUP_COPILOT_SPACE.md`](./SETUP_COPILOT_SPACE.md)
+
+## 🏗️ Enhanced Architecture Overview
+
+The Enhanced Copilot Space implements a **Multi-Space Orchestration System** with advanced safety features:
+
+### MotherSpace Orchestrator (Enhanced v1.2.0)
+- **Purpose:** Master orchestrator with advanced safety features
 - **Target:** ≥85% harmony score across all spaces
+- **New Features:**
+  - **Fingerprint Deduplication:** Prevents duplicate issues through content analysis
+  - **Bot Loop Prevention:** Guards against self-triggering automation
+  - **Quiet Mode:** Updates existing issues instead of creating noise
+  - **Safety Manager:** Comprehensive rate limiting and concurrency controls
 - **Functions:**
-  - Task delegation in chronological order
-  - Quality and security checks
+  - Task delegation in chronological order with safety checks
+  - Quality and security validation
   - Cross-space communication coordination
-  - Automated intervention when harmony drops
+  - Automated intervention with conflict prevention
 
 ### Daughter Space - UI/UX Manager  
 - **Purpose:** Visual appeal and user experience optimization
