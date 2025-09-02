@@ -14,7 +14,7 @@ from pathlib import Path
 scripts_dir = Path(__file__).parent
 sys.path.insert(0, str(scripts_dir))
 
-from issue_fingerprint import generate_fingerprint, create_fingerprint_tag, extract_fingerprint_from_body
+from issue_fingerprint import create_fingerprint_tag, extract_fingerprint_from_body, generate_fingerprint  # noqa: E402
 
 
 class IssueManager:
@@ -35,7 +35,7 @@ class IssueManager:
         self.issues_created_this_run = 0
         self.max_issues_per_run = 1
     
-    async def find_existing_issue(self, fingerprint: str, labels: list = None) -> dict:
+    async def find_existing_issue(self, fingerprint: str, labels: list | None = None) -> dict:
         """
         Find an existing open issue with the given fingerprint.
         
@@ -48,14 +48,14 @@ class IssueManager:
         """
         # Search open issues - look for fingerprint in body
         search_params = {
-            'owner': self.owner,
-            'repo': self.repo,
-            'state': 'open',
-            'per_page': 100  # Should be enough for most repositories
+            "owner": self.owner,
+            "repo": self.repo,
+            "state": "open",
+            "per_page": 100  # Should be enough for most repositories
         }
         
         if labels:
-            search_params['labels'] = ','.join(labels)
+            search_params["labels"] = ",".join(labels)
         
         try:
             issues_response = await self.github.rest.issues.listForRepo(search_params)
@@ -75,7 +75,7 @@ class IssueManager:
                                    body: str,
                                    labels: list,
                                    fingerprint: str,
-                                   assignees: list = None,
+                                   assignees: list | None = None,
                                    update_strategy: str = "append") -> dict:
         """
         Create a new issue or update an existing one with the same fingerprint.
@@ -104,60 +104,59 @@ class IssueManager:
                 existing_issue, title, body_with_fingerprint, labels, assignees, update_strategy
             )
             return {
-                'action': 'updated',
-                'issue': result,
-                'issue_number': existing_issue['number'],
-                'fingerprint': fingerprint
+                "action": "updated",
+                "issue": result,
+                "issue_number": existing_issue["number"],
+                "fingerprint": fingerprint
             }
-        else:
-            # Create new issue (if under limit)
-            if self.issues_created_this_run >= self.max_issues_per_run:
-                return {
-                    'action': 'skipped',
-                    'reason': f'Issue creation limit reached ({self.max_issues_per_run} per run)',
-                    'fingerprint': fingerprint
-                }
-            
-            result = await self._create_new_issue(
-                title, body_with_fingerprint, labels, assignees
-            )
-            self.issues_created_this_run += 1
-            
+        # Create new issue (if under limit)
+        if self.issues_created_this_run >= self.max_issues_per_run:
             return {
-                'action': 'created',
-                'issue': result,
-                'issue_number': result['number'],
-                'fingerprint': fingerprint
+                "action": "skipped",
+                "reason": f"Issue creation limit reached ({self.max_issues_per_run} per run)",
+                "fingerprint": fingerprint
             }
+        
+        result = await self._create_new_issue(
+            title, body_with_fingerprint, labels, assignees
+        )
+        self.issues_created_this_run += 1
+        
+        return {
+            "action": "created",
+            "issue": result,
+            "issue_number": result["number"],
+            "fingerprint": fingerprint
+        }
     
-    async def _create_new_issue(self, title: str, body: str, labels: list, assignees: list = None) -> dict:
+    async def _create_new_issue(self, title: str, body: str, labels: list, assignees: list | None = None) -> dict:
         """Create a new issue."""
         issue_data = {
-            'owner': self.owner,
-            'repo': self.repo,
-            'title': title,
-            'body': body,
-            'labels': labels or []
+            "owner": self.owner,
+            "repo": self.repo,
+            "title": title,
+            "body": body,
+            "labels": labels or []
         }
         
         if assignees:
-            issue_data['assignees'] = assignees
+            issue_data["assignees"] = assignees
         
         try:
             response = await self.github.rest.issues.create(issue_data)
             return response.data
         except Exception as e:
-            raise Exception(f"Failed to create issue: {e}")
+            raise Exception(f"Failed to create issue: {e}") from e
     
     async def _update_existing_issue(self, 
                                    existing_issue: dict,
                                    title: str,
                                    body: str,
                                    labels: list,
-                                   assignees: list = None,
+                                   assignees: list | None = None,
                                    update_strategy: str = "append") -> dict:
         """Update an existing issue."""
-        issue_number = existing_issue['number']
+        issue_number = existing_issue["number"]
         
         # Determine update approach
         if update_strategy == "replace":
@@ -166,7 +165,7 @@ class IssueManager:
         elif update_strategy == "prepend":
             # Add new content at the beginning
             separator = "\n\n---\n**🔄 UPDATE** *(automated)*:\n\n"
-            new_body = body + separator + existing_issue['body']
+            new_body = body + separator + existing_issue["body"]
         else:  # append (default)
             # Add new content as a comment instead of modifying body
             await self._add_update_comment(issue_number, title, body)
@@ -174,43 +173,43 @@ class IssueManager:
         
         # Update the issue
         update_data = {
-            'owner': self.owner,
-            'repo': self.repo,
-            'issue_number': issue_number,
-            'title': title,
-            'body': new_body,
-            'labels': labels or []
+            "owner": self.owner,
+            "repo": self.repo,
+            "issue_number": issue_number,
+            "title": title,
+            "body": new_body,
+            "labels": labels or []
         }
         
         if assignees:
-            update_data['assignees'] = assignees
+            update_data["assignees"] = assignees
         
         try:
             response = await self.github.rest.issues.update(update_data)
             return response.data
         except Exception as e:
-            raise Exception(f"Failed to update issue #{issue_number}: {e}")
+            raise Exception(f"Failed to update issue #{issue_number}: {e}") from e
     
     async def _add_update_comment(self, issue_number: int, title: str, body: str):
         """Add an update comment to an existing issue."""
         comment_body = [
-            f"## 🔄 Automated Update",
-            f"",
+            "## 🔄 Automated Update",
+            "",
             f"**Update Time:** {self._get_current_timestamp()}",
             f"**Updated Title:** {title}",
-            f"",
+            "",
             f"{body}",
-            f"",
-            f"---",
-            f"*This update was automatically generated to avoid duplicate issues.*"
+            "",
+            "---",
+            "*This update was automatically generated to avoid duplicate issues.*"
         ]
         
         try:
             await self.github.rest.issues.createComment({
-                'owner': self.owner,
-                'repo': self.repo,
-                'issue_number': issue_number,
-                'body': '\n'.join(comment_body)
+                "owner": self.owner,
+                "repo": self.repo,
+                "issue_number": issue_number,
+                "body": "\n".join(comment_body)
             })
         except Exception as e:
             print(f"Warning: Failed to add update comment to issue #{issue_number}: {e}")
@@ -230,7 +229,7 @@ async def create_or_update_automated_issue(github_client,
                                          title: str,
                                          body: str,
                                          labels: list,
-                                         assignees: list = None,
+                                         assignees: list | None = None,
                                          update_strategy: str = "append") -> dict:
     """
     Convenience function to create or update an automated issue with fingerprinting.
@@ -255,7 +254,7 @@ async def create_or_update_automated_issue(github_client,
     
     # Create issue manager and process
     manager = IssueManager(github_client, owner, repo)
-    result = await manager.create_or_update_issue(
+    return await manager.create_or_update_issue(
         title=title,
         body=body,
         labels=labels,
@@ -263,8 +262,6 @@ async def create_or_update_automated_issue(github_client,
         assignees=assignees,
         update_strategy=update_strategy
     )
-    
-    return result
 
 
 if __name__ == "__main__":

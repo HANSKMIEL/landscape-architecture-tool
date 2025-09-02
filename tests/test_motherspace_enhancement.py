@@ -36,7 +36,7 @@ def test_motherspace_workflow_has_concurrency_and_safety():
 
     # Check for concurrency group
     assert "concurrency" in workflow_data, "MotherSpace workflow should include concurrency control"
-    
+
     concurrency = workflow_data["concurrency"]
     assert concurrency.get("group") == "motherspace-orchestrator", "Should have proper concurrency group"
     assert concurrency.get("cancel-in-progress") is False, "Should not cancel in progress runs"
@@ -44,7 +44,7 @@ def test_motherspace_workflow_has_concurrency_and_safety():
     # Check for actor guard in job condition
     jobs = workflow_data.get("jobs", {})
     orchestrator_job = jobs.get("motherspace_orchestrator", {})
-    
+
     job_if = orchestrator_job.get("if", "")
     assert "github.actor != 'github-actions[bot]'" in job_if, "Should have actor guard to prevent bot loops"
     assert "orchestrate" in job_if, "Should check for 'orchestrate' label"
@@ -65,7 +65,7 @@ def test_motherspace_workflow_has_fingerprint_step():
     steps = orchestrator_job.get("steps", [])
 
     step_names = [step.get("name", "") for step in steps]
-    
+
     # Should have create-or-update step
     assert any(
         "Create or Update" in name and "Tracking Issue" in name for name in step_names
