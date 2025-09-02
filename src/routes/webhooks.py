@@ -78,6 +78,44 @@ def trigger_project_created():
     )
 
 
+@bp.route("/n8n/client-onboarding", methods=["POST"])
+@handle_errors
+def trigger_client_onboarding():
+    """
+    Trigger N8n workflow when a new client is created for onboarding
+    Expected payload: {
+        'client_id': int, 'client_name': str, 'client_email': str,
+        'contact_person': str (optional), 'phone': str (optional)
+    }
+    """
+    data = request.get_json()
+
+    if not data or "client_id" not in data or "client_email" not in data:
+        return jsonify({"error": "client_id and client_email are required"}), 400
+
+    workflow_data = {
+        "event": "client_onboarding",
+        "client_id": data["client_id"],
+        "client_name": data.get("client_name", ""),
+        "client_email": data["client_email"],
+        "contact_person": data.get("contact_person", ""),
+        "phone": data.get("phone", ""),
+        "timestamp": data.get("timestamp", datetime.now(UTC).isoformat()),
+    }
+
+    success = trigger_n8n_workflow("client-onboarding", workflow_data)
+
+    if success:
+        return (
+            jsonify({"status": "workflow_triggered", "webhook": "client-onboarding"}),
+            200,
+        )
+    return (
+        jsonify({"status": "workflow_failed", "webhook": "client-onboarding"}),
+        500,
+    )
+
+
 @bp.route("/n8n/client-updated", methods=["POST"])
 @handle_errors
 def trigger_client_updated():
