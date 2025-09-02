@@ -3,8 +3,9 @@
 # This file handles all report generation operations
 
 import io
-from datetime import UTC, datetime
 import logging
+from datetime import UTC, datetime
+
 from flask import Blueprint, jsonify, request, send_file
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
@@ -384,7 +385,7 @@ def generate_business_summary_pdf(data):
             mimetype="application/pdf",
         )
 
-    except Exception as e:
+    except Exception:
         logging.exception("Error generating business summary PDF")
         return jsonify({"error": "Failed to generate PDF report. Please try again later."}), 500
 

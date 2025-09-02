@@ -224,7 +224,7 @@ def submit_feedback():
             return jsonify({"message": "Feedback saved successfully"})
         return jsonify({"error": "Failed to save feedback"}), 404
 
-    except Exception as e:
+    except Exception:
         return jsonify({"error": "An internal error has occurred."}), 500
 
 
@@ -285,7 +285,7 @@ def get_recommendation_history():
             }
         )
 
-    except Exception as e:
+    except Exception:
         logging.exception("Failed to get history")  # Log full stack trace for investigation
         return jsonify({"error": "An internal error has occurred."}), 500
 

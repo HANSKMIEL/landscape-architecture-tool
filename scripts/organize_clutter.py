@@ -6,10 +6,10 @@ Automatically organizes generated files into appropriate subfolders to keep
 the root directory clean and maintainable.
 """
 
-import os
-import glob
-import shutil
 import argparse
+import glob
+import os
+import shutil
 from datetime import datetime
 from pathlib import Path
 
@@ -116,7 +116,7 @@ def generate_report(moved_files, remaining_clutter):
     }
     
     Path(report_file).parent.mkdir(parents=True, exist_ok=True)
-    with open(report_file, 'w') as f:
+    with open(report_file, "w") as f:
         json.dump(report, f, indent=2)
     
     print(f"\nCleanup report saved to: {report_file}")
@@ -157,16 +157,16 @@ def main():
     remaining_clutter = check_clutter()
     
     # Summary
-    print(f"\n📊 Cleanup Summary:")
+    print("\n📊 Cleanup Summary:")
     print(f"   Files moved: {len(moved_files)}")
     print(f"   Remaining clutter: {len(remaining_clutter)}")
     
     if remaining_clutter:
-        print(f"\n⚠️  Remaining clutter files:")
+        print("\n⚠️  Remaining clutter files:")
         for file in remaining_clutter:
             print(f"  - {file}")
     else:
-        print(f"\n✅ Root directory is clean!")
+        print("\n✅ Root directory is clean!")
     
     # Generate report if requested
     if args.report and not args.dry_run:

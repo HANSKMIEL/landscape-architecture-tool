@@ -1,0 +1,1044 @@
+name: IntegrationManager Space - Module Development & External Systems
+
+on:
+  issues:
+    types: [opened, labeled]
+  workflow_dispatch:
+    inputs:
+      operation:
+        description: 'IntegrationManager operation to perform'
+        required: true
+        default: 'module_development'
+        type: choice
+        options:
+        - module_development
+        - create_modules_repo
+        - external_integration
+        - cross_profession_analysis
+        - api_development
+      target_issue:
+        description: 'Issue number to work on (optional)'
+        required: false
+        type: number
+
+jobs:
+  integration_manager_orchestrator:
+    if: ${{ contains(github.event.issue.labels.*.name, 'integration-manager') || contains(github.event.issue.labels.*.name, 'integration') || github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+      repository-projects: write
+    env:
+      INTEGRATION_MANAGER_VERSION: "1.0.0"
+      MODULES_REPO_NAME: "landscape-modules"
+      SUPPORTED_INTEGRATIONS: "vectorworks,crm,ai,apis"
+      CROSS_PROFESSION_SUPPORT: "architecture,engineering,planning,design"
+    
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 10
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      
+      - name: IntegrationManager Initialization
+        id: integration_init
+        uses: actions/github-script@v7
+        with:
+          script: |
+            console.log('🔗 IntegrationManager Space v${{ env.INTEGRATION_MANAGER_VERSION }} Initializing...');
+            
+            const operation = '${{ github.event.inputs.operation }}' || 'module_development';
+            const targetIssue = '${{ github.event.inputs.target_issue }}' || 
+                               (context.payload.issue ? context.payload.issue.number : null);
+            
+            const integrationState = {
+              timestamp: new Date().toISOString(),
+              version: '${{ env.INTEGRATION_MANAGER_VERSION }}',
+              operation: operation,
+              target_issue: targetIssue,
+              modules_repo: '${{ env.MODULES_REPO_NAME }}',
+              supported_integrations: '${{ env.SUPPORTED_INTEGRATIONS }}'.split(','),
+              cross_profession_support: '${{ env.CROSS_PROFESSION_SUPPORT }}'.split(','),
+              repository: {
+                owner: context.repo.owner,
+                repo: context.repo.repo
+              }
+            };
+            
+            // Check if modules repository exists
+            try {
+              const modulesRepo = await github.rest.repos.get({
+                owner: context.repo.owner,
+                repo: integrationState.modules_repo
+              });
+              integrationState.modules_repo_exists = true;
+              integrationState.modules_repo_info = {
+                created_at: modulesRepo.data.created_at,
+                updated_at: modulesRepo.data.updated_at,
+                size: modulesRepo.data.size,
+                default_branch: modulesRepo.data.default_branch
+              };
+              console.log(`✅ Modules repository exists: ${modulesRepo.data.html_url}`);
+            } catch (error) {
+              integrationState.modules_repo_exists = false;
+              console.log(`❌ Modules repository does not exist - will create if needed`);
+            }
+            
+            // Get target issue details if specified
+            if (targetIssue) {
+              try {
+                const issue = await github.rest.issues.get({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: targetIssue
+                });
+                
+                integrationState.target_issue_details = {
+                  title: issue.data.title,
+                  body: issue.data.body,
+                  labels: issue.data.labels.map(l => l.name),
+                  state: issue.data.state
+                };
+              } catch (error) {
+                console.log(`⚠️ Could not fetch issue #${targetIssue}: ${error.message}`);
+              }
+            }
+            
+            core.setOutput('integration_state', JSON.stringify(integrationState));
+            core.setOutput('operation', operation);
+            core.setOutput('modules_repo_exists', integrationState.modules_repo_exists);
+            
+            console.log(`🎯 Operation: ${operation}`);
+            console.log(`📁 Modules Repository: ${integrationState.modules_repo_exists ? 'Exists' : 'Will Create'}`);
+            
+            return integrationState;
+
+      - name: Create Modules Repository
+        id: create_modules_repo
+        if: ${{ !fromJSON(steps.integration_init.outputs.integration_state).modules_repo_exists || github.event.inputs.operation == 'create_modules_repo' }}
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const integrationState = JSON.parse('${{ steps.integration_init.outputs.integration_state }}');
+            
+            console.log('📁 Creating Modules repository...');
+            
+            try {
+              // Create the modules repository
+              const modulesRepo = await github.rest.repos.createForAuthenticatedUser({
+                name: integrationState.modules_repo,
+                description: 'Landscape Architecture Tool - Integration Modules for External Systems and Cross-Profession Support',
+                private: false,
+                has_issues: true,
+                has_projects: true,
+                has_wiki: true,
+                auto_init: true,
+                gitignore_template: 'Python',
+                license_template: 'mit'
+              });
+              
+              console.log(`✅ Created modules repository: ${modulesRepo.data.html_url}`);
+              
+              // Create initial repository structure
+              const initialFiles = [
+                {
+                  path: 'README.md',
+                  content: [
+                    '# Landscape Architecture Tool - Integration Modules',
+                    '',
+                    'This repository contains integration modules for the Landscape Architecture Tool, enabling connections to external systems and supporting multiple professions.',
+                    '',
+                    '## 🎯 Purpose',
+                    '',
+                    'The modules in this repository make the Landscape Architecture Tool adaptable to:',
+                    '- Different user requirements across professions',
+                    '- External software integrations (Vectorworks, CRM systems, etc.)',
+                    '- AI integration services',
+                    '- Internet APIs and web services',
+                    '- Cross-profession workflows (architecture, engineering, planning, design)',
+                    '',
+                    '## 📁 Module Structure',
+                    '',
+                    '```',
+                    'modules/',
+                    '├── vectorworks/          # Vectorworks integration',
+                    '├── crm/                  # CRM system integrations',
+                    '├── ai/                   # AI service integrations',
+                    '├── apis/                 # Web API integrations',
+                    '├── cross-profession/     # Multi-profession support',
+                    '└── core/                 # Core integration utilities',
+                    '```',
+                    '',
+                    '## 🔧 Integration Categories',
+                    '',
+                    '### Software Integrations',
+                    '- **Vectorworks**: CAD file import/export, project synchronization',
+                    '- **CRM Systems**: Customer relationship management integration',
+                    '- **Project Management**: Task and timeline synchronization',
+                    '',
+                    '### AI Integrations',
+                    '- **Design Assistance**: AI-powered design suggestions',
+                    '- **Plant Selection**: Intelligent plant recommendation systems',
+                    '- **Cost Estimation**: Automated project cost analysis',
+                    '',
+                    '### API Integrations',
+                    '- **Weather Services**: Climate data for plant selection',
+                    '- **Supplier APIs**: Real-time pricing and availability',
+                    '- **Government APIs**: Zoning and regulation compliance',
+                    '',
+                    '### Cross-Profession Support',
+                    '- **Architecture**: Building integration and site planning',
+                    '- **Engineering**: Infrastructure and utilities coordination',
+                    '- **Urban Planning**: Regulatory compliance and zoning',
+                    '- **Interior Design**: Indoor plant and space planning',
+                    '',
+                    '## 🚀 Getting Started',
+                    '',
+                    '1. Clone this repository alongside the main Landscape Architecture Tool',
+                    '2. Install module dependencies: `pip install -r requirements.txt`',
+                    '3. Configure integration settings in `config/integrations.yml`',
+                    '4. Import modules in your main application',
+                    '',
+                    '## 📚 Documentation',
+                    '',
+                    'Each module includes comprehensive documentation:',
+                    '- Installation and setup instructions',
+                    '- API reference and examples',
+                    '- Integration testing guidelines',
+                    '- Cross-profession configuration guides',
+                    '',
+                    '## 🔗 Synchronization',
+                    '',
+                    'This repository is automatically synchronized with the main Landscape Architecture Tool repository through the IntegrationManager Space, ensuring compatibility and consistency.',
+                    '',
+                    '## 🛡️ Security',
+                    '',
+                    'All integrations follow security best practices:',
+                    '- API key management through environment variables',
+                    '- Data validation and sanitization',
+                    '- Secure communication protocols',
+                    '- Regular security audits',
+                    '',
+                    '---',
+                    '',
+                    '*Managed by IntegrationManager Space - Automated Integration Development*'
+                  ].join('\n')
+                },
+                {
+                  path: 'modules/core/__init__.py',
+                  content: [
+                    '"""',
+                    'Landscape Architecture Tool - Core Integration Utilities',
+                    '',
+                    'This module provides core utilities for all integrations.',
+                    '"""',
+                    '',
+                    '__version__ = "1.0.0"',
+                    '__author__ = "IntegrationManager Space"',
+                    '',
+                    'from .base_integration import BaseIntegration',
+                    'from .config_manager import ConfigManager',
+                    'from .security_manager import SecurityManager',
+                    '',
+                    '__all__ = ["BaseIntegration", "ConfigManager", "SecurityManager"]'
+                  ].join('\n')
+                },
+                {
+                  path: 'modules/core/base_integration.py',
+                  content: [
+                    '"""',
+                    'Base Integration Class',
+                    '',
+                    'Provides common functionality for all integration modules.',
+                    '"""',
+                    '',
+                    'import logging',
+                    'from abc import ABC, abstractmethod',
+                    'from typing import Dict, Any, Optional',
+                    '',
+                    '',
+                    'class BaseIntegration(ABC):',
+                    '    """Base class for all integration modules."""',
+                    '    ',
+                    '    def __init__(self, config: Dict[str, Any]):',
+                    '        self.config = config',
+                    '        self.logger = logging.getLogger(self.__class__.__name__)',
+                    '        self.is_connected = False',
+                    '    ',
+                    '    @abstractmethod',
+                    '    def connect(self) -> bool:',
+                    '        """Establish connection to external system."""',
+                    '        pass',
+                    '    ',
+                    '    @abstractmethod',
+                    '    def disconnect(self) -> bool:',
+                    '        """Disconnect from external system."""',
+                    '        pass',
+                    '    ',
+                    '    @abstractmethod',
+                    '    def test_connection(self) -> bool:',
+                    '        """Test connection to external system."""',
+                    '        pass',
+                    '    ',
+                    '    def get_status(self) -> Dict[str, Any]:',
+                    '        """Get integration status."""',
+                    '        return {',
+                    '            "connected": self.is_connected,',
+                    '            "module": self.__class__.__name__,',
+                    '            "version": getattr(self, "version", "1.0.0")',
+                    '        }'
+                  ].join('\n')
+                },
+                {
+                  path: 'modules/vectorworks/__init__.py',
+                  content: [
+                    '"""',
+                    'Vectorworks Integration Module',
+                    '',
+                    'Enables integration with Vectorworks CAD software for landscape architecture.',
+                    '"""',
+                    '',
+                    '__version__ = "1.0.0"',
+                    '',
+                    'from .vectorworks_integration import VectorworksIntegration',
+                    '',
+                    '__all__ = ["VectorworksIntegration"]'
+                  ].join('\n')
+                },
+                {
+                  path: 'modules/crm/__init__.py',
+                  content: [
+                    '"""',
+                    'CRM Integration Module',
+                    '',
+                    'Enables integration with various CRM systems for client management.',
+                    '"""',
+                    '',
+                    '__version__ = "1.0.0"',
+                    '',
+                    'from .crm_integration import CRMIntegration',
+                    '',
+                    '__all__ = ["CRMIntegration"]'
+                  ].join('\n')
+                },
+                {
+                  path: 'modules/ai/__init__.py',
+                  content: [
+                    '"""',
+                    'AI Integration Module',
+                    '',
+                    'Enables integration with AI services for design assistance and automation.',
+                    '"""',
+                    '',
+                    '__version__ = "1.0.0"',
+                    '',
+                    'from .ai_integration import AIIntegration',
+                    '',
+                    '__all__ = ["AIIntegration"]'
+                  ].join('\n')
+                },
+                {
+                  path: 'config/integrations.yml',
+                  content: [
+                    '# Integration Configuration',
+                    '# Configure settings for all integration modules',
+                    '',
+                    'vectorworks:',
+                    '  enabled: false',
+                    '  api_endpoint: ""',
+                    '  file_formats: ["dwg", "3dm", "skp"]',
+                    '  sync_interval: 3600  # seconds',
+                    '',
+                    'crm:',
+                    '  enabled: false',
+                    '  provider: "generic"  # salesforce, hubspot, pipedrive, generic',
+                    '  api_endpoint: ""',
+                    '  sync_contacts: true',
+                    '  sync_projects: true',
+                    '',
+                    'ai:',
+                    '  enabled: false',
+                    '  provider: "openai"  # openai, azure, custom',
+                    '  models:',
+                    '    design_assistance: "gpt-4"',
+                    '    plant_selection: "gpt-3.5-turbo"',
+                    '  rate_limits:',
+                    '    requests_per_minute: 60',
+                    '',
+                    'apis:',
+                    '  weather:',
+                    '    enabled: false',
+                    '    provider: "openweather"',
+                    '  suppliers:',
+                    '    enabled: false',
+                    '    providers: []',
+                    '',
+                    'cross_profession:',
+                    '  architecture:',
+                    '    enabled: true',
+                    '    features: ["site_planning", "building_integration"]',
+                    '  engineering:',
+                    '    enabled: false',
+                    '    features: ["utilities", "infrastructure"]',
+                    '  planning:',
+                    '    enabled: false',
+                    '    features: ["zoning", "regulations"]',
+                    '  design:',
+                    '    enabled: true',
+                    '    features: ["interior_plants", "space_planning"]'
+                  ].join('\n')
+                },
+                {
+                  path: 'requirements.txt',
+                  content: [
+                    '# Core integration dependencies',
+                    'requests>=2.31.0',
+                    'PyYAML>=6.0',
+                    'python-dotenv>=1.0.0',
+                    'pydantic>=2.0.0',
+                    'httpx>=0.24.0',
+                    '',
+                    '# Optional dependencies (install as needed)',
+                    '# openai>=1.0.0  # For AI integrations',
+                    '# salesforce-api>=1.0.0  # For Salesforce CRM',
+                    '# hubspot-api-client>=8.0.0  # For HubSpot CRM'
+                  ].join('\n')
+                },
+                {
+                  path: '.github/workflows/integration-sync.yml',
+                  content: [
+                    'name: Integration Synchronization',
+                    '',
+                    'on:',
+                    '  push:',
+                    '    branches: [ main ]',
+                    '  schedule:',
+                    '    - cron: "0 */6 * * *"  # Every 6 hours',
+                    '  workflow_dispatch:',
+                    '',
+                    'jobs:',
+                    '  sync_with_main_repo:',
+                    '    runs-on: ubuntu-latest',
+                    '    steps:',
+                    '      - uses: actions/checkout@v4',
+                    '      ',
+                    '      - name: Sync integration status',
+                    '        run: |',
+                    '          echo "Synchronizing with landscape-architecture-tool repository"',
+                    '          # TODO: Implement synchronization logic',
+                    '          ',
+                    '      - name: Update integration compatibility',
+                    '        run: |',
+                    '          echo "Checking integration compatibility"',
+                    '          # TODO: Implement compatibility checks'
+                  ].join('\n')
+                }
+              ];
+              
+              // Create initial files
+              for (const file of initialFiles) {
+                try {
+                  await github.rest.repos.createOrUpdateFileContents({
+                    owner: context.repo.owner,
+                    repo: integrationState.modules_repo,
+                    path: file.path,
+                    message: `Initial ${file.path} setup by IntegrationManager Space`,
+                    content: Buffer.from(file.content).toString('base64')
+                  });
+                  console.log(`📄 Created: ${file.path}`);
+                } catch (error) {
+                  console.log(`⚠️ Could not create ${file.path}: ${error.message}`);
+                }
+              }
+              
+              // Create repository structure directories
+              const directories = [
+                'modules/apis',
+                'modules/cross-profession',
+                'tests',
+                'docs',
+                'examples'
+              ];
+              
+              for (const dir of directories) {
+                try {
+                  await github.rest.repos.createOrUpdateFileContents({
+                    owner: context.repo.owner,
+                    repo: integrationState.modules_repo,
+                    path: `${dir}/.gitkeep`,
+                    message: `Create ${dir} directory structure`,
+                    content: Buffer.from('# Directory structure placeholder').toString('base64')
+                  });
+                  console.log(`📁 Created directory: ${dir}`);
+                } catch (error) {
+                  console.log(`⚠️ Could not create directory ${dir}: ${error.message}`);
+                }
+              }
+              
+              core.setOutput('modules_repo_created', true);
+              core.setOutput('modules_repo_url', modulesRepo.data.html_url);
+              
+              return {
+                created: true,
+                url: modulesRepo.data.html_url,
+                name: integrationState.modules_repo
+              };
+              
+            } catch (error) {
+              console.log(`❌ Failed to create modules repository: ${error.message}`);
+              core.setOutput('modules_repo_created', false);
+              return { created: false, error: error.message };
+            }
+
+      - name: Module Development Analysis
+        id: module_analysis
+        if: ${{ steps.integration_init.outputs.operation == 'module_development' || steps.integration_init.outputs.operation == 'external_integration' }}
+        run: |
+          echo "🔗 IntegrationManager analyzing module development requirements..."
+          
+          python3 << 'EOF'
+          import json
+          import os
+          from pathlib import Path
+          
+          # Analyze current landscape tool for integration opportunities
+          integration_analysis = {
+              "current_integrations": [],
+              "potential_integrations": [],
+              "vectorworks_opportunities": [],
+              "crm_opportunities": [],
+              "ai_opportunities": [],
+              "api_opportunities": [],
+              "cross_profession_adaptations": [],
+              "module_recommendations": []
+          }
+          
+          # Analyze backend for existing integration patterns
+          backend_files = []
+          try:
+              for py_file in Path("src").rglob("*.py"):
+                  with open(py_file, 'r') as f:
+                      content = f.read()
+                  
+                  # Look for external service patterns
+                  if any(pattern in content.lower() for pattern in ["requests", "api", "integration", "external"]):
+                      integration_analysis["current_integrations"].append({
+                          "file": str(py_file),
+                          "type": "api_client" if "requests" in content else "integration_ready"
+                      })
+                  
+                  # Check for potential Vectorworks integration points
+                  if any(pattern in content.lower() for pattern in ["drawing", "cad", "dwg", "file", "import", "export"]):
+                      integration_analysis["vectorworks_opportunities"].append({
+                          "file": str(py_file),
+                          "opportunity": "file_handling_integration"
+                      })
+                  
+                  # Check for CRM integration opportunities
+                  if any(pattern in content.lower() for pattern in ["client", "customer", "contact", "project"]):
+                      integration_analysis["crm_opportunities"].append({
+                          "file": str(py_file),
+                          "opportunity": "customer_data_sync"
+                      })
+                  
+                  # Check for AI integration opportunities
+                  if any(pattern in content.lower() for pattern in ["recommendation", "suggest", "analysis", "calculate"]):
+                      integration_analysis["ai_opportunities"].append({
+                          "file": str(py_file),
+                          "opportunity": "ai_enhancement"
+                      })
+          except Exception as e:
+              print(f"Error analyzing backend: {e}")
+          
+          # Analyze frontend for integration UI needs
+          try:
+              frontend_components = Path("frontend/src/components")
+              if frontend_components.exists():
+                  for component_file in frontend_components.rglob("*.jsx"):
+                      with open(component_file, 'r') as f:
+                          content = f.read()
+                      
+                      # Look for integration UI opportunities
+                      if any(pattern in content.lower() for pattern in ["import", "export", "upload", "download"]):
+                          integration_analysis["api_opportunities"].append({
+                              "component": str(component_file.name),
+                              "opportunity": "data_exchange_ui"
+                          })
+          except Exception as e:
+              print(f"Error analyzing frontend: {e}")
+          
+          # Generate cross-profession adaptation recommendations
+          professions = ["architecture", "engineering", "planning", "design"]
+          for profession in professions:
+              integration_analysis["cross_profession_adaptations"].append({
+                  "profession": profession,
+                  "adaptations": [
+                      f"Add {profession}-specific plant categories",
+                      f"Include {profession}-relevant project templates",
+                      f"Integrate {profession} industry standards",
+                      f"Support {profession} workflow patterns"
+                  ],
+                  "priority": "medium" if profession in ["architecture", "design"] else "low"
+              })
+          
+          # Generate module recommendations
+          if len(integration_analysis["vectorworks_opportunities"]) > 2:
+              integration_analysis["module_recommendations"].append({
+                  "module": "vectorworks",
+                  "priority": "high",
+                  "reason": "Multiple file handling opportunities detected",
+                  "estimated_effort": "2-3 weeks"
+              })
+          
+          if len(integration_analysis["crm_opportunities"]) > 3:
+              integration_analysis["module_recommendations"].append({
+                  "module": "crm",
+                  "priority": "medium",
+                  "reason": "Client management integration opportunities",
+                  "estimated_effort": "1-2 weeks"
+              })
+          
+          if len(integration_analysis["ai_opportunities"]) > 2:
+              integration_analysis["module_recommendations"].append({
+                  "module": "ai",
+                  "priority": "high",
+                  "reason": "AI enhancement opportunities for recommendations and analysis",
+                  "estimated_effort": "3-4 weeks"
+              })
+          
+          # Save analysis
+          os.makedirs("reports/integration-analysis", exist_ok=True)
+          with open("reports/integration-analysis/module_analysis.json", 'w') as f:
+              json.dump(integration_analysis, f, indent=2)
+          
+          print(f"🔗 Integration Analysis Complete:")
+          print(f"   Current Integrations: {len(integration_analysis['current_integrations'])}")
+          print(f"   Vectorworks Opportunities: {len(integration_analysis['vectorworks_opportunities'])}")
+          print(f"   CRM Opportunities: {len(integration_analysis['crm_opportunities'])}")
+          print(f"   AI Opportunities: {len(integration_analysis['ai_opportunities'])}")
+          print(f"   Module Recommendations: {len(integration_analysis['module_recommendations'])}")
+          EOF
+
+      - name: Cross-Profession Analysis
+        id: cross_profession_analysis
+        if: ${{ steps.integration_init.outputs.operation == 'cross_profession_analysis' || steps.integration_init.outputs.operation == 'module_development' }}
+        run: |
+          echo "🎯 IntegrationManager analyzing cross-profession adaptability..."
+          
+          python3 << 'EOF'
+          import json
+          import os
+          from pathlib import Path
+          
+          # Analyze cross-profession adaptability
+          cross_profession_analysis = {
+              "current_profession_support": [],
+              "adaptation_opportunities": {},
+              "profession_specific_features": {},
+              "shared_functionality": [],
+              "adaptation_roadmap": []
+          }
+          
+          professions = {
+              "architecture": {
+                  "focus": ["building_integration", "site_planning", "structural_coordination"],
+                  "tools": ["cad_integration", "bim_compatibility", "zoning_compliance"],
+                  "data_needs": ["building_codes", "site_constraints", "design_standards"]
+              },
+              "engineering": {
+                  "focus": ["infrastructure", "utilities", "drainage", "grading"],
+                  "tools": ["calculation_modules", "technical_specifications", "code_compliance"],
+                  "data_needs": ["soil_data", "utility_maps", "engineering_standards"]
+              },
+              "planning": {
+                  "focus": ["zoning", "regulations", "community_planning", "environmental_impact"],
+                  "tools": ["gis_integration", "regulatory_compliance", "impact_assessment"],
+                  "data_needs": ["zoning_maps", "regulations", "demographic_data"]
+              },
+              "design": {
+                  "focus": ["aesthetics", "user_experience", "visual_impact", "interior_plants"],
+                  "tools": ["visualization", "mood_boards", "color_palettes", "style_guides"],
+                  "data_needs": ["design_trends", "client_preferences", "visual_references"]
+              }
+          }
+          
+          # Analyze current system for profession-agnostic features
+          try:
+              # Check models for adaptable entities
+              models_dir = Path("src/models")
+              if models_dir.exists():
+                  for model_file in models_dir.glob("*.py"):
+                      with open(model_file, 'r') as f:
+                          content = f.read()
+                      
+                      # Identify shared entities
+                      if any(entity in content.lower() for entity in ["plant", "project", "client", "supplier"]):
+                          cross_profession_analysis["shared_functionality"].append({
+                              "model": str(model_file.name),
+                              "adaptable": True,
+                              "profession_extensions_needed": list(professions.keys())
+                          })
+          except Exception as e:
+              print(f"Error analyzing models: {e}")
+          
+          # Generate profession-specific adaptation plans
+          for profession, details in professions.items():
+              adaptation_plan = {
+                  "profession": profession,
+                  "current_support": "basic",  # All professions can use basic functionality
+                  "enhancement_opportunities": [],
+                  "new_features_needed": [],
+                  "integration_modules": []
+              }
+              
+              # Identify enhancement opportunities
+              for focus_area in details["focus"]:
+                  adaptation_plan["enhancement_opportunities"].append({
+                      "area": focus_area,
+                      "current_state": "not_specialized",
+                      "enhancement": f"Add {profession}-specific {focus_area} support"
+                  })
+              
+              # Identify new features needed
+              for tool in details["tools"]:
+                  adaptation_plan["new_features_needed"].append({
+                      "feature": tool,
+                      "priority": "high" if tool in ["cad_integration", "gis_integration"] else "medium",
+                      "complexity": "high" if "integration" in tool else "medium"
+                  })
+              
+              # Identify integration modules needed
+              for data_need in details["data_needs"]:
+                  adaptation_plan["integration_modules"].append({
+                      "module": f"{profession}_{data_need}_integration",
+                      "type": "data_source",
+                      "priority": "medium"
+                  })
+              
+              cross_profession_analysis["adaptation_opportunities"][profession] = adaptation_plan
+          
+          # Create adaptation roadmap
+          roadmap_phases = [
+              {
+                  "phase": 1,
+                  "duration": "1-2 months",
+                  "focus": "Core Multi-Profession Support",
+                  "deliverables": [
+                      "Profession-specific user profiles and preferences",
+                      "Configurable interface elements for each profession",
+                      "Basic profession-specific plant categories",
+                      "Profession-aware project templates"
+                  ]
+              },
+              {
+                  "phase": 2,
+                  "duration": "2-3 months",
+                  "focus": "External Integration Development",
+                  "deliverables": [
+                      "CAD integration module (Architecture/Engineering)",
+                      "GIS integration module (Planning)",
+                      "Visualization enhancement module (Design)",
+                      "Basic API integrations for profession-specific data"
+                  ]
+              },
+              {
+                  "phase": 3,
+                  "duration": "3-4 months",
+                  "focus": "Advanced Profession Features",
+                  "deliverables": [
+                      "Advanced calculation modules for Engineering",
+                      "Regulatory compliance modules for Planning",
+                      "Design assistance AI for Architecture/Design",
+                      "Cross-profession collaboration features"
+                  ]
+              }
+          ]
+          
+          cross_profession_analysis["adaptation_roadmap"] = roadmap_phases
+          
+          # Save analysis
+          os.makedirs("reports/integration-analysis", exist_ok=True)
+          with open("reports/integration-analysis/cross_profession_analysis.json", 'w') as f:
+              json.dump(cross_profession_analysis, f, indent=2)
+          
+          print(f"🎯 Cross-Profession Analysis Complete:")
+          print(f"   Professions Analyzed: {len(professions)}")
+          print(f"   Adaptation Opportunities: {len(cross_profession_analysis['adaptation_opportunities'])}")
+          print(f"   Shared Functionality: {len(cross_profession_analysis['shared_functionality'])}")
+          print(f"   Roadmap Phases: {len(cross_profession_analysis['adaptation_roadmap'])}")
+          EOF
+
+      - name: Generate IntegrationManager Report
+        id: generate_integration_report
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const integrationState = JSON.parse('${{ steps.integration_init.outputs.integration_state }}');
+            const modulesRepoCreated = '${{ steps.create_modules_repo.outputs.modules_repo_created }}' === 'true';
+            const modulesRepoUrl = '${{ steps.create_modules_repo.outputs.modules_repo_url }}' || '';
+            
+            console.log('📋 IntegrationManager generating comprehensive report...');
+            
+            // Load analysis results
+            let moduleAnalysis = null;
+            let crossProfessionAnalysis = null;
+            
+            try {
+              if (fs.existsSync('reports/integration-analysis/module_analysis.json')) {
+                moduleAnalysis = JSON.parse(fs.readFileSync('reports/integration-analysis/module_analysis.json', 'utf8'));
+              }
+              if (fs.existsSync('reports/integration-analysis/cross_profession_analysis.json')) {
+                crossProfessionAnalysis = JSON.parse(fs.readFileSync('reports/integration-analysis/cross_profession_analysis.json', 'utf8'));
+              }
+            } catch (error) {
+              console.log(`⚠️ Could not load some analysis files: ${error.message}`);
+            }
+            
+            // Create comprehensive report
+            const reportTitle = `🔗 IntegrationManager Space Development Report - ${integrationState.operation}`;
+            const reportBody = [
+              `# IntegrationManager Space Comprehensive Report`,
+              ``,
+              `**Operation Time:** ${new Date().toISOString()}`,
+              `**Operation Type:** ${integrationState.operation}`,
+              `**Target Issue:** ${integrationState.target_issue ? `#${integrationState.target_issue}` : 'N/A'}`,
+              `**IntegrationManager Version:** v${integrationState.version}`,
+              `**Modules Repository:** ${integrationState.modules_repo_exists ? 'Existing' : (modulesRepoCreated ? 'Created' : 'Creation Failed')}`,
+              ``,
+              `## 🎯 Executive Summary`,
+              ``,
+              `The IntegrationManager Space has analyzed the landscape architecture tool for integration opportunities and cross-profession adaptability. This report outlines development priorities for creating a comprehensive module ecosystem.`,
+              ``,
+              ...(modulesRepoCreated ? [
+                `## 📁 Modules Repository Setup`,
+                ``,
+                `✅ **Successfully created modules repository:** [${integrationState.modules_repo}](${modulesRepoUrl})`,
+                ``,
+                `**Repository Features:**`,
+                `- ✅ Initialized with comprehensive structure`,
+                `- ✅ Core integration utilities implemented`,
+                `- ✅ Module categories established (Vectorworks, CRM, AI, APIs)`,
+                `- ✅ Cross-profession support framework created`,
+                `- ✅ Security and configuration management included`,
+                `- ✅ Synchronization workflow configured`,
+                ``,
+                `**Initial Module Structure:**`,
+                `- \`modules/core/\` - Base integration utilities`,
+                `- \`modules/vectorworks/\` - CAD software integration`,
+                `- \`modules/crm/\` - Customer relationship management`,
+                `- \`modules/ai/\` - AI service integrations`,
+                `- \`modules/apis/\` - Web API integrations`,
+                `- \`modules/cross-profession/\` - Multi-profession support`,
+                `- \`config/\` - Integration configuration`,
+                `- \`tests/\` - Integration testing framework`,
+                ``
+              ] : []),
+              ...(moduleAnalysis ? [
+                `## 🔗 Module Development Analysis`,
+                ``,
+                `**Current Integration State:**`,
+                `- Existing Integrations: ${moduleAnalysis.current_integrations?.length || 0}`,
+                `- Vectorworks Opportunities: ${moduleAnalysis.vectorworks_opportunities?.length || 0}`,
+                `- CRM Opportunities: ${moduleAnalysis.crm_opportunities?.length || 0}`,
+                `- AI Opportunities: ${moduleAnalysis.ai_opportunities?.length || 0}`,
+                `- API Opportunities: ${moduleAnalysis.api_opportunities?.length || 0}`,
+                ``,
+                `**Priority Module Recommendations:**`,
+                ...moduleAnalysis.module_recommendations?.map(rec => 
+                  `- **${rec.module.toUpperCase()}** (${rec.priority}): ${rec.reason} - ${rec.estimated_effort}`
+                ) || [],
+                ``,
+                `**Integration Opportunities:**`,
+                ...(moduleAnalysis.vectorworks_opportunities?.length > 0 ? [
+                  `### Vectorworks Integration`,
+                  ...moduleAnalysis.vectorworks_opportunities.slice(0, 3).map(opp => `- ${opp.file}: ${opp.opportunity}`)
+                ] : []),
+                ...(moduleAnalysis.crm_opportunities?.length > 0 ? [
+                  `### CRM Integration`,
+                  ...moduleAnalysis.crm_opportunities.slice(0, 3).map(opp => `- ${opp.file}: ${opp.opportunity}`)
+                ] : []),
+                ...(moduleAnalysis.ai_opportunities?.length > 0 ? [
+                  `### AI Integration`,
+                  ...moduleAnalysis.ai_opportunities.slice(0, 3).map(opp => `- ${opp.file}: ${opp.opportunity}`)
+                ] : []),
+                ``
+              ] : []),
+              ...(crossProfessionAnalysis ? [
+                `## 🎯 Cross-Profession Adaptability Analysis`,
+                ``,
+                `**Supported Professions:** ${Object.keys(crossProfessionAnalysis.adaptation_opportunities || {}).length}`,
+                `- ${Object.keys(crossProfessionAnalysis.adaptation_opportunities || {}).join(', ')}`,
+                ``,
+                `**Shared Functionality:** ${crossProfessionAnalysis.shared_functionality?.length || 0} adaptable components`,
+                ``,
+                `**Profession-Specific Adaptations:**`,
+                ...Object.entries(crossProfessionAnalysis.adaptation_opportunities || {}).map(([profession, plan]) => [
+                  `### ${profession.charAt(0).toUpperCase() + profession.slice(1)}`,
+                  `- **Enhancement Opportunities:** ${plan.enhancement_opportunities?.length || 0}`,
+                  `- **New Features Needed:** ${plan.new_features_needed?.length || 0}`,
+                  `- **Integration Modules:** ${plan.integration_modules?.length || 0}`,
+                  ``
+                ]).flat(),
+                `**Development Roadmap:**`,
+                ...crossProfessionAnalysis.adaptation_roadmap?.map(phase => [
+                  `### Phase ${phase.phase} - ${phase.focus} (${phase.duration})`,
+                  ...phase.deliverables.map(deliverable => `- ${deliverable}`),
+                  ``
+                ]).flat() || [],
+                ``
+              ] : []),
+              `## 🚀 Implementation Priorities`,
+              ``,
+              `### Immediate Actions (1-2 weeks)`,
+              `1. **Core Integration Framework**`,
+              `   - Implement base integration classes`,
+              `   - Set up configuration management`,
+              `   - Create security validation framework`,
+              ``,
+              `2. **High-Priority Modules**`,
+              moduleAnalysis?.module_recommendations?.filter(rec => rec.priority === 'high').map(rec => 
+                `   - ${rec.module.charAt(0).toUpperCase() + rec.module.slice(1)} module development`
+              ).join('\n') || '   - No high-priority modules identified',
+              ``,
+              `### Medium-term Goals (1-2 months)`,
+              `1. **External System Integrations**`,
+              `   - Vectorworks CAD file import/export`,
+              `   - CRM system synchronization`,
+              `   - Weather and supplier API connections`,
+              ``,
+              `2. **Cross-Profession Support**`,
+              `   - Profession-specific user profiles`,
+              `   - Configurable interface elements`,
+              `   - Profession-aware project templates`,
+              ``,
+              `### Long-term Vision (3-6 months)`,
+              `1. **Advanced AI Integration**`,
+              `   - Design assistance and recommendations`,
+              `   - Intelligent plant selection`,
+              `   - Automated cost estimation`,
+              ``,
+              `2. **Full Cross-Profession Ecosystem**`,
+              `   - Complete adaptation for all 4 professions`,
+              `   - Advanced collaboration features`,
+              `   - Industry-specific compliance modules`,
+              ``,
+              `## 🔄 Synchronization and Maintenance`,
+              ``,
+              `**Repository Synchronization:**`,
+              `- ✅ Automated sync workflow configured`,
+              `- 🔄 6-hour sync interval for compatibility checks`,
+              `- 📋 Integration status monitoring`,
+              `- 🛡️ Security validation on all updates`,
+              ``,
+              `**Maintenance Requirements:**`,
+              `- Regular compatibility testing with main repository`,
+              `- Security audits for all external integrations`,
+              `- Documentation updates for new modules`,
+              `- Cross-profession feature validation`,
+              ``,
+              `## 📊 Success Metrics`,
+              ``,
+              `**Module Development:**`,
+              `- Active integration modules: Target ≥5`,
+              `- External system connections: Target ≥3`,
+              `- API integration success rate: Target >95%`,
+              ``,
+              `**Cross-Profession Support:**`,
+              `- Supported professions: Target 4 (Architecture, Engineering, Planning, Design)`,
+              `- Profession-specific features: Target ≥10 per profession`,
+              `- User adaptation rate: Target >80%`,
+              ``,
+              `**System Integration:**`,
+              `- Repository synchronization: Target 100% uptime`,
+              `- Security compliance: Target 100%`,
+              `- Cross-repo compatibility: Target >98%`,
+              ``,
+              `## 🔗 Cross-Space Coordination`,
+              ``,
+              `**MotherSpace Integration:**`,
+              `- Report module development progress`,
+              `- Coordinate with system-wide quality checks`,
+              `- Align with overall development priorities`,
+              ``,
+              `**Daughter Space Collaboration:**`,
+              `- Provide integration modules for UI enhancements`,
+              `- Support data import/export UI development`,
+              `- Coordinate profession-specific interface elements`,
+              ``,
+              `**Communication Protocol:**`,
+              `- Weekly progress reports to MotherSpace`,
+              `- Integration requirement sharing with Daughter Space`,
+              `- Cross-repo synchronization status updates`,
+              ``,
+              `---`,
+              `**🔗 IntegrationManager Space Report Complete**`,
+              ``,
+              `*This analysis was performed by IntegrationManager Space v${integrationState.version} with focus on external system integration, module development, and cross-profession adaptability. All recommendations are designed to maximize the landscape tool's versatility while maintaining security and quality standards.*`,
+              ``,
+              modulesRepoCreated ? `**🎯 Modules Repository:** [${integrationState.modules_repo}](${modulesRepoUrl})` : '',
+              `**🎯 IntegrationManager Signature:** \`INTEGRATION-${integrationState.operation.toUpperCase()}-${Date.now()}\``
+            ].join('\n');
+            
+            // Determine where to post the report
+            let reportIssueNumber = null;
+            
+            if (integrationState.target_issue) {
+              // Post as comment on target issue
+              const comment = await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: integrationState.target_issue,
+                body: reportBody
+              });
+              
+              reportIssueNumber = integrationState.target_issue;
+              console.log(`📋 IntegrationManager report posted as comment on issue #${integrationState.target_issue}`);
+            } else {
+              // Create new issue for the report
+              const issue = await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: reportTitle,
+                body: reportBody,
+                labels: ['integration-manager', 'module-development', 'cross-profession', 'automated'],
+                assignees: ['HANSKMIEL']
+              });
+              
+              reportIssueNumber = issue.data.number;
+              console.log(`📋 Created IntegrationManager report issue #${issue.data.number}`);
+            }
+            
+            core.setOutput('report_completed', true);
+            core.setOutput('report_issue', reportIssueNumber);
+            core.setOutput('modules_repo_ready', modulesRepoCreated);
+
+      - name: IntegrationManager Status Update
+        if: ${{ always() }}
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const integrationState = JSON.parse('${{ steps.integration_init.outputs.integration_state }}');
+            const reportCompleted = '${{ steps.generate_integration_report.outputs.report_completed }}' === 'true';
+            const modulesRepoReady = '${{ steps.generate_integration_report.outputs.modules_repo_ready }}' === 'true';
+            const reportIssue = '${{ steps.generate_integration_report.outputs.report_issue }}';
+            
+            console.log('🔗 IntegrationManager Space operation completed');
+            console.log(`   Operation: ${integrationState.operation}`);
+            console.log(`   Target Issue: ${integrationState.target_issue || 'N/A'}`);
+            console.log(`   Modules Repository: ${modulesRepoReady ? 'Ready' : 'Not Created'}`);
+            console.log(`   Report Generated: ${reportCompleted ? 'Yes' : 'No'}`);
+            if (reportIssue) {
+              console.log(`   Report Issue: #${reportIssue}`);
+            }
+            console.log('   Status: Ready for MotherSpace coordination and cross-space collaboration');

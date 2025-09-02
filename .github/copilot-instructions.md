@@ -179,6 +179,63 @@ curl http://localhost:5000/api/suppliers
 curl http://localhost:5174/
 ```
 
+## 🎯 MotherSpace Orchestration System
+
+**CRITICAL**: The repository implements a comprehensive multi-space orchestration system for optimal development harmony and task coordination.
+
+### MotherSpace Orchestrator (`.github/workflows/motherspace-orchestrator.yml`)
+- **Master orchestrator** that analyzes all spaces for optimal harmony (target: ≥85% harmony score)
+- **Task delegation** in chronological development order with quality/security checks
+- **Issue/PR optimization** for efficient cross-space collaboration
+- **Harmony monitoring** with automated intervention and comprehensive system analysis
+- **Cross-space communication** coordination and conflict resolution
+- **Triggers**: Issues, PRs, workflow completions, scheduled every 2 hours, manual dispatch
+
+### Daughter Space - UI/UX Manager (`.github/workflows/daughter-space-uiux.yml`)
+- **Visual appeal analysis** with accessibility and responsive design assessment
+- **User workflow optimization** including data import/export evaluation  
+- **Integration requirement reporting** with detailed enhancement recommendations
+- **"Daughter-Integration Manager" issues** for major integration needs (manual assignment)
+- **Professional UI standards** enforcement and enhancement guidance
+- **Triggers**: Issues labeled 'daughter' or 'ui-ux', manual dispatch with target issue
+
+### IntegrationManager Space (`.github/workflows/integrationmanager-space.yml`)
+- **Modules repository creation** and management for external integrations
+- **Cross-profession adaptation** for Architecture, Engineering, Planning, Design
+- **External system integration** (Vectorworks, CRM, AI, APIs)
+- **Module development analysis** with priority recommendations
+- **Repository synchronization** between main tool and modules repo
+- **Triggers**: Issues labeled 'integration-manager' or 'integration', manual dispatch
+
+### Space Communication Patterns
+
+**MotherSpace → All Spaces:**
+```yaml
+# Harmony monitoring and task delegation
+harmony_score: 85%  # Target threshold
+delegation_queue: chronological_order
+quality_checks: [security, functionality, efficiency]
+intervention_mode: automatic_when_below_threshold
+```
+
+**Daughter → MotherSpace Reporting:**
+```yaml
+# UI/UX analysis and integration requirements
+analysis_types: [visual_appeal, user_workflow, data_management, accessibility]
+report_format: comprehensive_github_comment
+integration_issues: "Daughter-Integration Manager [Date Time]"
+assignment: manual_to_HANSKMIEL
+```
+
+**IntegrationManager → Cross-Repo:**
+```yaml
+# Module development and external integration
+modules_repo: landscape-modules
+supported_integrations: [vectorworks, crm, ai, apis]
+cross_profession: [architecture, engineering, planning, design]
+sync_interval: 6_hours
+```
+
 ## CI/CD and Automation Patterns
 
 ### GitHub Workflows
