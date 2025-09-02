@@ -25,6 +25,10 @@ service = ProjectPlantService()
 def add_plant_to_project(project_id):
     """Add a plant to a project"""
     try:
+        # Handle missing or invalid content type
+        if not request.is_json:
+            return jsonify({"error": "Content-Type must be application/json"}), 400
+
         data = request.get_json()
         
         # Check if JSON data was provided
@@ -45,12 +49,14 @@ def add_plant_to_project(project_id):
 
         return jsonify(project_plant.to_dict()), 201
 
-            return jsonify({"error": "Invalid content type. JSON required"}), 415
+    except HTTPException as e:
+        if e.code == 415:
+            return jsonify({"error": "Invalid content type. JSON required"}), 400
         return jsonify({"error": e.description}), e.code
     except ValidationError as e:
         # Provide a minimal, generic error message; do not leak internals
         return jsonify({"error": "Validation failed", "fields": [err.get("loc", []) for err in e.errors()]}), 400
-    except ValueError as e:
+    except (ValueError, TypeError) as e:
         return jsonify({"error": str(e)}), 400
     except Exception as e:
         logger.error(f"Error adding plant to project: {e}")
