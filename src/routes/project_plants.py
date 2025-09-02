@@ -30,10 +30,6 @@ def add_plant_to_project(project_id):
 
         data = request.get_json()
 
-        # Check if we got valid JSON data
-        if data is None:
-            return jsonify({"error": "Invalid or missing JSON data"}), 400
-
         # Validate input
         schema = ProjectPlantCreateSchema(**data)
         validated_data = schema.model_dump(exclude_unset=True)
