@@ -133,11 +133,7 @@ def get_plant_order_list(project_id):
     """Generate plant order list for suppliers"""
     try:
         order_list = service.generate_plant_order_list(project_id)
-        return jsonify({
-            "project_id": project_id,
-            "supplier_orders": order_list,
-            "total_suppliers": len(order_list)
-        })
+        return jsonify({"project_id": project_id, "supplier_orders": order_list, "total_suppliers": len(order_list)})
 
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
