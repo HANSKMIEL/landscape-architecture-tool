@@ -4,7 +4,7 @@
 
 import io
 from datetime import UTC, datetime
-
+import logging
 from flask import Blueprint, jsonify, request, send_file
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
@@ -385,7 +385,8 @@ def generate_business_summary_pdf(data):
         )
 
     except Exception as e:
-        return jsonify({"error": f"PDF generation failed: {e!s}"}), 500
+        logging.exception("Error generating business summary PDF")
+        return jsonify({"error": "Failed to generate PDF report. Please try again later."}), 500
 
 
 @reports_bp.route("/api/reports/project/<int:project_id>", methods=["GET"])
