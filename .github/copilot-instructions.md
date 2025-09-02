@@ -563,6 +563,72 @@ The repository includes comprehensive CI/CD problem prevention:
 
 Use `python scripts/phase4_validation.py` for comprehensive validation of prevention measures.
 
+## Repository Organization and Clutter Management
+
+### File Organization Structure
+
+**ALWAYS organize generated files appropriately to prevent root directory clutter:**
+
+```
+reports/
+├── validation/          # automated_validation_report_*.json
+├── health/             # pipeline_health_report_*.json  
+└── security/           # bandit-report.json, safety-report.json
+
+docs/
+├── solutions/          # *_SOLUTION*.md, *_SUMMARY*.md
+└── planning/           # *_PLAN*.md, *_ROADMAP*.md, dev_log.md
+
+archive/                # Historical files no longer actively used
+```
+
+### Clutter Prevention Rules
+
+**Scripts and tools should save outputs to appropriate subfolders:**
+
+```python
+# Good: Save reports to appropriate subfolder
+report_path = f"reports/validation/automated_validation_report_{timestamp}.json"
+
+# Bad: Save reports to root directory  
+report_path = f"automated_validation_report_{timestamp}.json"
+```
+
+**The `.gitignore` includes patterns to prevent root clutter:**
+- `/*_SOLUTION*.md` → should go in `docs/solutions/`
+- `/*_PLAN*.md` → should go in `docs/planning/`
+- `*_report_*.json` → should go in `reports/*/`
+
+### Space Management Automation
+
+**Automated workflows monitor and maintain Copilot Space effectiveness:**
+
+1. **Space Update Detection**: Triggers when architecture, workflows, or patterns change
+2. **Clutter Monitoring**: Alerts when root directory accumulates >10 loose files
+3. **Test Failure Automation**: Creates issues with sub-issues for systematic bug resolution
+
+**Key workflows:**
+- `.github/workflows/space-management.yml` - Weekly space validation
+- `.github/workflows/test-failure-automation.yml` - Automatic issue creation for test failures
+- Clutter prevention via enhanced `.gitignore` and folder structure
+
+### Copilot Space Validation
+
+**Use these prompts to test space effectiveness after updates:**
+
+```
+"Explain the database transaction isolation pattern with code examples"
+"Show me how to add a new API route following our conventions"  
+"What's our current testing strategy and how do I add tests?"
+"How should I organize generated reports and prevent clutter?"
+"Create a new service following our transaction patterns"
+```
+
+**Space files to maintain:**
+- `.github/copilot-instructions.md` - This file with all patterns and conventions
+- `docs/SPACE_OVERVIEW.md` - Overview and usage guide
+- `docs/ARCHITECTURE.md` - Detailed architecture documentation
+
 ---
 
 **Remember**: Always follow these instructions first. Search or run exploratory commands only when information here is incomplete or incorrect. Focus on the validated commands and timeout values provided.

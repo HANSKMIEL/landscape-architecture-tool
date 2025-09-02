@@ -1,7 +1,7 @@
 # Landscape Architecture Tool - Development Makefile
 # Provides standard development commands as documented in .github/copilot-instructions.md
 
-.PHONY: help install build test ci lint clean frontend-install frontend-build frontend-test backend-test check db-setup dev
+.PHONY: help install build test ci lint clean frontend-install frontend-build frontend-test backend-test check db-setup dev organize check-clutter organize-preview
 
 # Default target
 help:
@@ -21,6 +21,11 @@ help:
 	@echo "Pipeline Management:"
 	@echo "  make pipeline-health  - Analyze pipeline health status"
 	@echo "  make troubleshoot     - Show troubleshooting guide"
+	@echo ""
+	@echo "Repository Organization:"
+	@echo "  make check-clutter    - Check for clutter in root directory"
+	@echo "  make organize         - Organize clutter files into subfolders"
+	@echo "  make organize-preview - Preview organization without moving files"
 	@echo ""
 	@echo "Component-specific Commands:"
 	@echo "  make frontend-install  - Install frontend dependencies"
@@ -230,6 +235,22 @@ validate-quick:
 	@python scripts/automated_validation.py --quick
 	@echo "✅ Quick validation complete"
 
+# Repository organization and clutter management
+organize:
+	@echo "🧹 Organizing repository clutter..."
+	@python scripts/organize_clutter.py
+	@echo "✅ Repository organization complete"
+
+# Check for clutter without organizing
+check-clutter:
+	@echo "🔍 Checking for repository clutter..."
+	@python scripts/organize_clutter.py --check-only
+
+# Preview clutter organization (dry run)
+organize-preview:
+	@echo "👀 Preview of clutter organization..."
+	@python scripts/organize_clutter.py --dry-run
+
 # Pipeline troubleshooting guide (bonus command)
 troubleshoot:
 	@echo "📋 Pipeline Troubleshooting Guide"
@@ -240,5 +261,7 @@ troubleshoot:
 	@echo "  make pipeline-health - Analyze pipeline health"
 	@echo "  make lint           - Check code quality issues"
 	@echo "  make test           - Run test suite"
+	@echo "  make check-clutter  - Check for repository clutter"
+	@echo "  make organize       - Organize clutter files"
 	@echo ""
 	@echo "For detailed troubleshooting, see: PIPELINE_TROUBLESHOOTING.md"

@@ -1,0 +1,353 @@
+name: Space Management Automation
+
+on:
+  schedule:
+    # Check space updates weekly on Mondays at 9:00 AM
+    - cron: "0 9 * * 1"
+  push:
+    paths:
+      - 'src/**'
+      - 'tests/**'
+      - '.github/workflows/**'
+      - 'docs/**'
+      - 'documentation/**'
+      - 'pyproject.toml'
+      - 'requirements*.txt'
+  workflow_dispatch:
+
+jobs:
+  check_space_updates:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      contents: read
+      pull-requests: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 100  # Get enough history to analyze changes
+      
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      
+      - name: Analyze changes and space relevance
+        id: analyze
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+            
+            // Get recent commits (last 10)
+            let changedFiles = [];
+            if (context.eventName === 'push') {
+              const commits = context.payload.commits || [];
+              for (const commit of commits) {
+                changedFiles.push(...(commit.added || []));
+                changedFiles.push(...(commit.modified || []));
+              }
+            } else {
+              // For scheduled runs, get recent changes
+              try {
+                const { execSync } = require('child_process');
+                const output = execSync('git diff --name-only HEAD~10..HEAD', { encoding: 'utf8' });
+                changedFiles = output.split('\n').filter(Boolean);
+              } catch (error) {
+                console.log('Could not get git diff, checking all space files');
+                changedFiles = [];
+              }
+            }
+            
+            // Analyze what types of changes might require space updates
+            const needsSpaceUpdate = {
+              architecture: false,
+              workflows: false,
+              testing: false,
+              dependencies: false,
+              patterns: false,
+              clutter: false
+            };
+            
+            const spaceRelevantFiles = {
+              architecture: ['src/models/', 'src/services/', 'src/routes/', 'src/main.py'],
+              workflows: ['.github/workflows/', '.pre-commit-config.yaml', 'pyproject.toml'],
+              testing: ['tests/', 'pytest.ini', 'conftest.py'],
+              dependencies: ['requirements.txt', 'requirements-dev.txt', 'pyproject.toml'],
+              patterns: ['src/utils/', 'src/schemas/', 'scripts/'],
+              clutter: ['reports/', 'docs/', '*.md', '*.json']
+            };
+            
+            for (const file of changedFiles) {
+              for (const [category, patterns] of Object.entries(spaceRelevantFiles)) {
+                if (patterns.some(pattern => file.includes(pattern) || file.match(pattern))) {
+                  needsSpaceUpdate[category] = true;
+                }
+              }
+            }
+            
+            // Check if Copilot Space files exist and get their last update times
+            const spaceFiles = [
+              '.github/copilot-instructions.md',
+              'docs/SPACE_OVERVIEW.md',
+              'docs/ARCHITECTURE.md'
+            ];
+            
+            let spaceStatus = {};
+            for (const spaceFile of spaceFiles) {
+              try {
+                const content = fs.readFileSync(spaceFile, 'utf8');
+                const stats = fs.statSync(spaceFile);
+                spaceStatus[spaceFile] = {
+                  exists: true,
+                  lastModified: stats.mtime,
+                  size: stats.size,
+                  hasArchitectureSection: content.includes('Architecture') || content.includes('ARCHITECTURE'),
+                  hasTestingSection: content.includes('Testing') || content.includes('TESTING'),
+                  hasWorkflowSection: content.includes('workflow') || content.includes('CI/CD'),
+                  hasClutterSection: content.includes('clutter') || content.includes('organization')
+                };
+              } catch (error) {
+                spaceStatus[spaceFile] = { exists: false };
+              }
+            }
+            
+            core.setOutput('needs_update', JSON.stringify(needsSpaceUpdate));
+            core.setOutput('space_status', JSON.stringify(spaceStatus));
+            core.setOutput('changed_files', JSON.stringify(changedFiles));
+            
+            return { needsSpaceUpdate, spaceStatus, changedFiles };
+
+      - name: Check for missing clutter management rules
+        id: check_clutter
+        run: |
+          echo "Checking for clutter in root directory..."
+          
+          # Count potential clutter files
+          CLUTTER_COUNT=$(find . -maxdepth 1 -name "*.md" -o -name "*.json" | grep -v README.md | grep -v package-lock.json | wc -l)
+          
+          # Check if reports/ structure exists
+          REPORTS_EXISTS=false
+          if [ -d "reports" ]; then
+            REPORTS_EXISTS=true
+          fi
+          
+          # Check gitignore rules
+          GITIGNORE_RULES=false
+          if grep -q "reports/" .gitignore && grep -q "_SOLUTION.*\.md" .gitignore; then
+            GITIGNORE_RULES=true
+          fi
+          
+          echo "clutter_count=$CLUTTER_COUNT" >> $GITHUB_OUTPUT
+          echo "reports_exists=$REPORTS_EXISTS" >> $GITHUB_OUTPUT
+          echo "gitignore_rules=$GITIGNORE_RULES" >> $GITHUB_OUTPUT
+
+      - name: Create space update issue if needed
+        if: ${{ fromJSON(steps.analyze.outputs.needs_update).architecture || fromJSON(steps.analyze.outputs.needs_update).workflows || fromJSON(steps.analyze.outputs.needs_update).testing || fromJSON(steps.analyze.outputs.needs_update).patterns }}
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const needsUpdate = JSON.parse('${{ steps.analyze.outputs.needs_update }}');
+            const spaceStatus = JSON.parse('${{ steps.analyze.outputs.space_status }}');
+            const changedFiles = JSON.parse('${{ steps.analyze.outputs.changed_files }}');
+            const clutterCount = '${{ steps.check_clutter.outputs.clutter_count }}';
+            const reportsExists = '${{ steps.check_clutter.outputs.reports_exists }}' === 'true';
+            const gitignoreRules = '${{ steps.check_clutter.outputs.gitignore_rules }}' === 'true';
+            
+            // Check for existing open space update issues
+            const existingIssues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'copilot-space,automated',
+              per_page: 10
+            });
+            
+            if (existingIssues.data.length > 0) {
+              console.log('Found existing space update issue, skipping creation');
+              return;
+            }
+            
+            // Determine what needs updating
+            const updateCategories = Object.entries(needsUpdate)
+              .filter(([key, value]) => value)
+              .map(([key]) => key);
+            
+            if (updateCategories.length === 0 && clutterCount < 5) {
+              console.log('No significant changes detected that require space updates');
+              return;
+            }
+            
+            // Create comprehensive space update issue
+            const title = `🎯 Copilot Space Update Required - ${updateCategories.join(', ')}`;
+            const body = [
+              `## Space Management Update Required`,
+              ``,
+              `Recent changes have been detected that may require updates to the Copilot Space configuration.`,
+              ``,
+              `**Detection Time:** ${new Date().toISOString()}`,
+              `**Trigger:** ${context.eventName === 'push' ? 'Code changes' : 'Scheduled check'}`,
+              ``,
+              `### Changes Detected:`,
+              ...updateCategories.map(cat => `- **${cat.charAt(0).toUpperCase() + cat.slice(1)}**: Requires space documentation update`),
+              ``,
+              `### Recent Files Changed:`,
+              ...changedFiles.slice(0, 10).map(file => `- ${file}`),
+              ...(changedFiles.length > 10 ? [`- ... and ${changedFiles.length - 10} more files`] : []),
+              ``,
+              `### Space Files Status:`,
+              ...Object.entries(spaceStatus).map(([file, status]) => {
+                if (!status.exists) {
+                  return `- ❌ **${file}**: Missing - needs creation`;
+                }
+                const sections = [];
+                if (!status.hasArchitectureSection) sections.push('architecture');
+                if (!status.hasTestingSection) sections.push('testing');
+                if (!status.hasWorkflowSection) sections.push('workflows');
+                if (!status.hasClutterSection) sections.push('clutter management');
+                
+                if (sections.length > 0) {
+                  return `- ⚠️ **${file}**: Missing sections: ${sections.join(', ')}`;
+                }
+                return `- ✅ **${file}**: Up to date`;
+              }),
+              ``,
+              `### Clutter Management Status:`,
+              `- **Root clutter files:** ${clutterCount}`,
+              `- **Reports structure:** ${reportsExists ? '✅ Exists' : '❌ Missing'}`,
+              `- **Gitignore rules:** ${gitignoreRules ? '✅ Configured' : '❌ Missing'}`,
+              ``,
+              `### Required Actions:`,
+              ``,
+              `#### 📚 Space Documentation Updates:`,
+              ...updateCategories.includes('architecture') ? [
+                `- [ ] Update architecture patterns in \`.github/copilot-instructions.md\``,
+                `- [ ] Review model/service/route patterns in \`docs/ARCHITECTURE.md\``
+              ] : [],
+              ...updateCategories.includes('workflows') ? [
+                `- [ ] Document new CI/CD workflows in space instructions`,
+                `- [ ] Update automation patterns and triggers`
+              ] : [],
+              ...updateCategories.includes('testing') ? [
+                `- [ ] Update testing strategy and patterns`,
+                `- [ ] Document new pytest markers or test structure changes`
+              ] : [],
+              ...updateCategories.includes('dependencies') ? [
+                `- [ ] Review dependency changes impact on development setup`,
+                `- [ ] Update local development instructions if needed`
+              ] : [],
+              ...updateCategories.includes('patterns') ? [
+                `- [ ] Document new utility patterns and schemas`,
+                `- [ ] Update coding conventions if needed`
+              ] : [],
+              ``,
+              `#### 🧹 Clutter Management:`,
+              ...(clutterCount > 5 || !reportsExists || !gitignoreRules) ? [
+                `- [ ] Organize clutter files into appropriate subfolders`,
+                `- [ ] Create \`reports/\` structure if missing`,
+                `- [ ] Update \`.gitignore\` with clutter prevention rules`,
+                `- [ ] Create scripts for automatic clutter organization`
+              ] : [`- [x] Clutter management is properly configured`],
+              ``,
+              `#### 🔄 Validation:`,
+              `- [ ] Test updated space instructions with sample Copilot queries`,
+              `- [ ] Verify architecture documentation matches current codebase`,
+              `- [ ] Ensure all new patterns are properly documented`,
+              `- [ ] Check clutter prevention is working`,
+              ``,
+              `### Space Validation Prompts:`,
+              `Use these prompts to test the updated space:`,
+              `- "Explain the database transaction isolation pattern with code examples"`,
+              `- "Show me how to add a new API route following our conventions"`,
+              `- "What's our current testing strategy and how do I add tests?"`,
+              `- "How should I organize generated reports and prevent clutter?"`,
+              ``,
+              `---`,
+              `*This issue was automatically created by the space management automation workflow.*`,
+              `*The space should be updated regularly to maintain Copilot effectiveness.*`
+            ].join('\n');
+            
+            const issue = await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: title,
+              body: body,
+              labels: ['copilot-space', 'automated', 'documentation', 'maintenance']
+            });
+            
+            console.log(`Created space update issue #${issue.data.number}`);
+
+      - name: Create clutter management issue if needed
+        if: ${{ steps.check_clutter.outputs.clutter_count > 10 || steps.check_clutter.outputs.reports_exists == 'false' }}
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const clutterCount = '${{ steps.check_clutter.outputs.clutter_count }}';
+            const reportsExists = '${{ steps.check_clutter.outputs.reports_exists }}' === 'true';
+            
+            const title = `🧹 Repository Clutter Management Required`;
+            const body = [
+              `## Repository Organization Issue`,
+              ``,
+              `**Clutter Files Detected:** ${clutterCount} files in root directory`,
+              `**Reports Structure:** ${reportsExists ? 'Exists' : 'Missing'}`,
+              `**Detection Time:** ${new Date().toISOString()}`,
+              ``,
+              `### Current Issues:`,
+              clutterCount > 10 ? `- ⚠️ **High clutter count**: ${clutterCount} loose files in root directory` : '',
+              !reportsExists ? `- ❌ **Missing structure**: No \`reports/\` folder for organizing generated files` : '',
+              ``,
+              `### Required Actions:`,
+              ``,
+              `#### 📁 Create Folder Structure:`,
+              `- [ ] Create \`reports/validation/\` for validation reports`,
+              `- [ ] Create \`reports/health/\` for pipeline health reports`,
+              `- [ ] Create \`reports/security/\` for security scan reports`,
+              `- [ ] Create \`docs/solutions/\` for solution documents`,
+              `- [ ] Create \`docs/planning/\` for planning documents`,
+              `- [ ] Create \`archive/\` for historical files`,
+              ``,
+              `#### 🔄 Organize Existing Files:`,
+              `- [ ] Move \`*_report_*.json\` files to appropriate \`reports/\` subfolders`,
+              `- [ ] Move \`*_SOLUTION*.md\` files to \`docs/solutions/\``,
+              `- [ ] Move \`*_PLAN*.md\` files to \`docs/planning/\``,
+              `- [ ] Move \`dev_log.md\` to \`docs/planning/\``,
+              `- [ ] Archive old documents that are no longer relevant`,
+              ``,
+              `#### 🛡️ Prevention Rules:`,
+              `- [ ] Update \`.gitignore\` with clutter prevention patterns`,
+              `- [ ] Create scripts that automatically organize generated files`,
+              `- [ ] Add pre-commit hooks to prevent root clutter`,
+              `- [ ] Update CI workflows to save reports in correct locations`,
+              ``,
+              `#### 📋 Maintenance:`,
+              `- [ ] Create automated cleanup workflows`,
+              `- [ ] Document file organization guidelines`,
+              `- [ ] Set up monitoring for clutter accumulation`,
+              ``,
+              `### Example Organization Script:`,
+              `\`\`\`bash`,
+              `# Create structure`,
+              `mkdir -p reports/{validation,health,security} docs/{solutions,planning} archive`,
+              ``,
+              `# Move files`,
+              `mv *_validation_report_*.json reports/validation/`,
+              `mv *_health_report_*.json reports/health/`,
+              `mv bandit-report.json safety-report.json reports/security/`,
+              `mv *_SOLUTION*.md docs/solutions/`,
+              `mv *_PLAN*.md docs/planning/`,
+              `\`\`\``,
+              ``,
+              `---`,
+              `*This issue was automatically created by the clutter management automation.*`
+            ].join('\n');
+            
+            const issue = await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: title,
+              body: body,
+              labels: ['maintenance', 'automated', 'organization', 'priority-medium']
+            });
+            
+            console.log(`Created clutter management issue #${issue.data.number}`);
