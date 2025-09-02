@@ -24,10 +24,10 @@ service = ProjectPlantService()
 def add_plant_to_project(project_id):
     """Add a plant to a project"""
     try:
-        # Use silent=True to avoid 415 exceptions for wrong Content-Type
-        data = request.get_json(silent=True)
-        if data is None:
-            return jsonify({"error": "Invalid JSON or Content-Type. Expected application/json"}), 400
+        # Check Content-Type before parsing JSON
+        if not request.is_json:
+            return jsonify({"error": "Invalid Content-Type. Expected application/json"}), 400
+        data = request.get_json()  # Let Flask handle JSON syntax errors
 
         # Validate input
         schema = ProjectPlantCreateSchema(**data)
