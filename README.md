@@ -270,6 +270,29 @@ The backend has been completely refactored from a monolithic structure to a modu
 - `PUT /api/projects/{id}` - Update project (with validation)
 - `DELETE /api/projects/{id}` - Delete project
 
+### Project Plants (New)
+- `GET /api/projects/{id}/plants` - Get all plants for a project
+- `POST /api/projects/{id}/plants` - Add plant to project (with validation)
+- `PUT /api/projects/{id}/plants/{plant_id}` - Update plant in project
+- `DELETE /api/projects/{id}/plants/{plant_id}` - Remove plant from project
+- `POST /api/projects/{id}/plants/batch` - Add multiple plants to project
+- `GET /api/projects/{id}/cost-analysis` - Get project cost breakdown
+- `GET /api/projects/{id}/plant-order-list` - Generate plant order list
+
+### Plant Recommendations (New)
+- `POST /api/plant-recommendations` - Get plant recommendations based on criteria
+- `GET /api/plant-recommendations/criteria-options` - Get available criteria options
+- `POST /api/plant-recommendations/feedback` - Submit recommendation feedback
+- `GET /api/plant-recommendations/history` - Get recommendation history
+- `POST /api/plant-recommendations/export` - Export recommendations to CSV
+- `POST /api/plant-recommendations/import` - Import plant data from CSV
+
+### Reports (New)
+- `GET /api/reports/business-summary` - Generate business summary report (JSON/PDF)
+- `GET /api/reports/project/{id}` - Generate detailed project report (JSON/PDF)
+- `GET /api/reports/plant-usage` - Generate plant usage statistics
+- `GET /api/reports/supplier-performance` - Generate supplier performance report
+
 ## 🔄 CI/CD Pipeline
 
 The project uses a modernized CI/CD pipeline that ensures code quality, security, and reliability through automated testing and validation.

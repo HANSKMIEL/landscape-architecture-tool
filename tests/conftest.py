@@ -114,7 +114,7 @@ def connection(engine):
         # Enhanced transaction handling that ensures reversible outer transaction
         # even when conn.in_transaction() is already true (addresses issue #306)
         outer_tx = None
-        
+
         # Always create a reversible outer transaction for consistent isolation
         if conn.in_transaction():
             # Connection already in transaction - create savepoint for isolation
@@ -124,7 +124,7 @@ def connection(engine):
             # Connection not in transaction - create regular transaction
             outer_tx = conn.begin()
             logger.debug("Created new outer transaction")
-        
+
         try:
             yield conn
         finally:
