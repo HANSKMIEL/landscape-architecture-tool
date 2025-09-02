@@ -219,14 +219,7 @@ jobs:
           
           # Run the Python-based fingerprinting and deduplication
           python -c "
-          import sys
-          import json
-          import requests
-          from datetime import datetime
-          
-          # Add repo to path to import our modules  
-          sys.path.insert(0, '.')
-          from tests.test_issue_fingerprint import IssueFingerprinter
+          from scripts.issue_fingerprinter import IssueFingerprinter
           from scripts.motherspace_safety import MotherSpaceSafetyManager
           
           # Initialize managers with pr_safe_operations support
