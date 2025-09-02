@@ -286,7 +286,8 @@ def get_recommendation_history():
         )
 
     except Exception as e:
-        return jsonify({"error": f"Failed to get history: {e!s}"}), 500
+        logging.exception("Failed to get history")  # Log full stack trace for investigation
+        return jsonify({"error": "An internal error has occurred."}), 500
 
 
 @plant_recommendations_bp.route("/api/plant-recommendations/export", methods=["POST"])
