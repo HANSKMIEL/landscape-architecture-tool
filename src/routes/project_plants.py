@@ -49,7 +49,6 @@ def add_plant_to_project(project_id):
 
         return jsonify(project_plant.to_dict()), 201
 
-<<<<<<< HEAD
     except HTTPException as e:
         if e.code == 415:
             return jsonify({"error": "Invalid content type. JSON required"}), 400
