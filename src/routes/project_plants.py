@@ -24,7 +24,10 @@ service = ProjectPlantService()
 def add_plant_to_project(project_id):
     """Add a plant to a project"""
     try:
-        data = request.get_json()
+        # Use silent=True to avoid 415 exceptions for wrong Content-Type
+        data = request.get_json(silent=True)
+        if data is None:
+            return jsonify({"error": "Invalid JSON or Content-Type. Expected application/json"}), 400
 
         # Validate input
         schema = ProjectPlantCreateSchema(**data)
@@ -130,7 +133,11 @@ def get_plant_order_list(project_id):
     """Generate plant order list for suppliers"""
     try:
         order_list = service.generate_plant_order_list(project_id)
-        return jsonify(order_list)
+        return jsonify({
+            "project_id": project_id,
+            "supplier_orders": order_list,
+            "total_suppliers": len(order_list)
+        })
 
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
