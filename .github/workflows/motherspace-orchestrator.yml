@@ -24,9 +24,16 @@ on:
         - space_optimization
         - full_analysis
 
+# Prevent parallel execution and bot loops
+concurrency:
+  group: motherspace-orchestrator
+  cancel-in-progress: false
+
 jobs:
   motherspace_orchestrator:
     runs-on: ubuntu-latest
+    # Skip if triggered by github-actions bot to prevent loops
+    if: github.actor != 'github-actions[bot]' && (github.event_name == 'workflow_dispatch' || github.event_name == 'schedule' || (github.event_name == 'issues' && contains(github.event.issue.labels.*.name, 'orchestrate')) || (github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'orchestrate')))
     permissions:
       issues: write
       pull-requests: write
@@ -1131,3 +1138,118 @@ jobs:
             console.log('🎯 MotherSpace Orchestrator cycle completed successfully');
             console.log(`   Status: ${systemState.needs_intervention ? 'Intervention Mode' : 'Harmony Mode'}`);
             console.log(`   Next check: ${context.eventName === 'schedule' ? 'In 2 hours' : 'Event-triggered'}`);
+            
+            // Store the report for fingerprinted issue creation
+            core.setOutput('status_message', statusMessage);
+
+      - name: Create or Update MotherSpace Tracking Issue
+        if: ${{ always() }}
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+            
+            // Load the fingerprinting utilities
+            const fingerprintCode = fs.readFileSync('.github/scripts/issue_fingerprint.py', 'utf8');
+            const dedupeCode = fs.readFileSync('.github/scripts/dedupe_create_or_update_issue.py', 'utf8');
+            
+            // Use Node.js to implement basic fingerprinting for GitHub Actions
+            const crypto = require('crypto');
+            
+            function simpleFingerprint(payload, category) {
+              // Simplified fingerprinting for GitHub Actions context
+              const normalized = {
+                operation: payload.operation || 'unknown',
+                trigger: payload.trigger || context.eventName,
+                category: category
+              };
+              
+              const jsonStr = JSON.stringify(normalized, Object.keys(normalized).sort());
+              const hash = crypto.createHash('sha256').update(jsonStr).digest('hex');
+              return `${category}-${hash.substring(0, 16)}`;
+            }
+            
+            function createFingerprintTag(fingerprint) {
+              return `<!-- FINGERPRINT:${fingerprint} -->`;
+            }
+            
+            function extractFingerprintFromBody(body) {
+              if (!body) return '';
+              const match = body.match(/<!-- FINGERPRINT:([^>]+) -->/);
+              return match ? match[1] : '';
+            }
+            
+            // Prepare payload for fingerprinting
+            const systemState = JSON.parse('${{ steps.motherspace_init.outputs.system_state }}');
+            const statusMessage = '${{ steps.Create_MotherSpace_Status_Report.outputs.status_message }}' || 'Status report unavailable';
+            
+            const fingerprintPayload = {
+              operation: systemState.operation || 'harmony_check',
+              trigger: context.eventName,
+              harmony_score: systemState.harmony_score,
+              needs_intervention: systemState.needs_intervention
+            };
+            
+            const fingerprint = simpleFingerprint(fingerprintPayload, 'motherspace');
+            const fingerprintTag = createFingerprintTag(fingerprint);
+            
+            console.log(`🔍 Generated fingerprint: ${fingerprint}`);
+            
+            // Search for existing tracking issue
+            const existingIssues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'motherspace,tracking,automated',
+              per_page: 50
+            });
+            
+            let existingIssue = null;
+            for (const issue of existingIssues.data) {
+              if (issue.body && issue.body.includes(`FINGERPRINT:${fingerprint}`)) {
+                existingIssue = issue;
+                break;
+              }
+            }
+            
+            const title = `🎯 MotherSpace Tracking - Harmony ${systemState.harmony_score}%`;
+            const body = statusMessage + '\n\n' + fingerprintTag;
+            
+            if (existingIssue) {
+              // Update existing issue with comment
+              console.log(`📝 Updating existing tracking issue #${existingIssue.number}`);
+              
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: existingIssue.number,
+                body: [
+                  `## 🔄 MotherSpace Update`,
+                  ``,
+                  `**Update Time:** ${new Date().toISOString()}`,
+                  `**Trigger:** ${context.eventName}`,
+                  ``,
+                  statusMessage,
+                  ``,
+                  `---`,
+                  `*Automated tracking update - no duplicate issues created*`
+                ].join('\n')
+              });
+              
+              console.log(`✅ Updated tracking issue #${existingIssue.number}`);
+            } else {
+              // Create new tracking issue (only one per fingerprint)
+              console.log('📋 Creating new MotherSpace tracking issue...');
+              
+              const newIssue = await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: title,
+                body: body,
+                labels: ['motherspace', 'tracking', 'automated', systemState.needs_intervention ? 'priority-high' : 'priority-medium'],
+                assignees: ['HANSKMIEL']
+              });
+              
+              console.log(`✅ Created tracking issue #${newIssue.data.number}`);
+            }

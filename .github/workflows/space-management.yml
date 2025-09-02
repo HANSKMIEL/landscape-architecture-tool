@@ -15,9 +15,16 @@ on:
       - 'requirements*.txt'
   workflow_dispatch:
 
+# Prevent parallel execution
+concurrency:
+  group: space-management
+  cancel-in-progress: false
+
 jobs:
   check_space_updates:
     runs-on: ubuntu-latest
+    # Skip if triggered by github-actions bot to prevent loops
+    if: github.actor != 'github-actions[bot]'
     permissions:
       issues: write
       contents: read
@@ -142,7 +149,7 @@ jobs:
           echo "reports_exists=$REPORTS_EXISTS" >> $GITHUB_OUTPUT
           echo "gitignore_rules=$GITIGNORE_RULES" >> $GITHUB_OUTPUT
 
-      - name: Create space update issue if needed
+      - name: Create or update space validation issue if needed
         if: ${{ fromJSON(steps.analyze.outputs.needs_update).architecture || fromJSON(steps.analyze.outputs.needs_update).workflows || fromJSON(steps.analyze.outputs.needs_update).testing || fromJSON(steps.analyze.outputs.needs_update).patterns }}
         uses: actions/github-script@v7
         with:
@@ -154,18 +161,23 @@ jobs:
             const reportsExists = '${{ steps.check_clutter.outputs.reports_exists }}' === 'true';
             const gitignoreRules = '${{ steps.check_clutter.outputs.gitignore_rules }}' === 'true';
             
-            // Check for existing open space update issues
-            const existingIssues = await github.rest.issues.listForRepo({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              state: 'open',
-              labels: 'copilot-space,automated',
-              per_page: 10
-            });
+            // Simplified fingerprinting for GitHub Actions
+            const crypto = require('crypto');
             
-            if (existingIssues.data.length > 0) {
-              console.log('Found existing space update issue, skipping creation');
-              return;
+            function simpleFingerprint(payload, category) {
+              const normalized = {
+                updateCategories: payload.updateCategories?.sort() || [],
+                clutterIssues: payload.clutterIssues || false,
+                category: category
+              };
+              
+              const jsonStr = JSON.stringify(normalized, Object.keys(normalized).sort());
+              const hash = crypto.createHash('sha256').update(jsonStr).digest('hex');
+              return `${category}-${hash.substring(0, 16)}`;
+            }
+            
+            function createFingerprintTag(fingerprint) {
+              return `<!-- FINGERPRINT:${fingerprint} -->`;
             }
             
             // Determine what needs updating
@@ -178,8 +190,36 @@ jobs:
               return;
             }
             
-            // Create comprehensive space update issue
-            const title = `🎯 Copilot Space Update Required - ${updateCategories.join(', ')}`;
+            // Generate fingerprint for this type of space validation issue
+            const fingerprintPayload = {
+              updateCategories: updateCategories,
+              clutterIssues: clutterCount > 5 || !reportsExists || !gitignoreRules
+            };
+            
+            const fingerprint = simpleFingerprint(fingerprintPayload, 'space-validation');
+            const fingerprintTag = createFingerprintTag(fingerprint);
+            
+            console.log(`🔍 Generated fingerprint: ${fingerprint}`);
+            
+            // Search for existing space validation issue
+            const existingIssues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'copilot-space,automated',
+              per_page: 20
+            });
+            
+            let existingIssue = null;
+            for (const issue of existingIssues.data) {
+              if (issue.body && issue.body.includes(`FINGERPRINT:${fingerprint}`)) {
+                existingIssue = issue;
+                break;
+              }
+            }
+            
+            // Create comprehensive space update issue content
+            const title = `🎯 [AUTO] Space Validation Summary - ${updateCategories.join(', ')}`;
             const body = [
               `## Space Management Update Required`,
               ``,
@@ -263,21 +303,55 @@ jobs:
               `- "How should I organize generated reports and prevent clutter?"`,
               ``,
               `---`,
-              `*This issue was automatically created by the space management automation workflow.*`,
-              `*The space should be updated regularly to maintain Copilot effectiveness.*`
+              `*This issue was automatically created/updated by the space management automation workflow.*`,
+              `*The space should be updated regularly to maintain Copilot effectiveness.*`,
+              ``,
+              fingerprintTag
             ].join('\n');
             
-            const issue = await github.rest.issues.create({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              title: title,
-              body: body,
-              labels: ['copilot-space', 'automated', 'documentation', 'maintenance']
-            });
-            
-            console.log(`Created space update issue #${issue.data.number}`);
+            if (existingIssue) {
+              // Update existing issue with comment
+              console.log(`📝 Updating existing space validation issue #${existingIssue.number}`);
+              
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: existingIssue.number,
+                body: [
+                  `## 🔄 Space Validation Update`,
+                  ``,
+                  `**Update Time:** ${new Date().toISOString()}`,
+                  `**Trigger:** ${context.eventName}`,
+                  `**Categories:** ${updateCategories.join(', ')}`,
+                  ``,
+                  `### New Changes Detected:`,
+                  ...updateCategories.map(cat => `- **${cat}**: Requires space documentation update`),
+                  ``,
+                  `### Recently Changed Files:`,
+                  ...changedFiles.slice(0, 5).map(file => `- ${file}`),
+                  ``,
+                  `---`,
+                  `*Automated space validation update - no duplicate issues created*`
+                ].join('\n')
+              });
+              
+              console.log(`✅ Updated space validation issue #${existingIssue.number}`);
+            } else {
+              // Create new issue (only one per fingerprint category)
+              console.log('📋 Creating new space validation issue...');
+              
+              const newIssue = await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: title,
+                body: body,
+                labels: ['copilot-space', 'automated', 'documentation', 'maintenance']
+              });
+              
+              console.log(`✅ Created space validation issue #${newIssue.data.number}`);
+            }
 
-      - name: Create clutter management issue if needed
+      - name: Create or update clutter management issue if needed
         if: ${{ steps.check_clutter.outputs.clutter_count > 10 || steps.check_clutter.outputs.reports_exists == 'false' }}
         uses: actions/github-script@v7
         with:
@@ -285,7 +359,54 @@ jobs:
             const clutterCount = '${{ steps.check_clutter.outputs.clutter_count }}';
             const reportsExists = '${{ steps.check_clutter.outputs.reports_exists }}' === 'true';
             
-            const title = `🧹 Repository Clutter Management Required`;
+            // Simplified fingerprinting for clutter issues
+            const crypto = require('crypto');
+            
+            function simpleFingerprint(payload, category) {
+              const normalized = {
+                highClutter: payload.clutterCount > 10,
+                missingReports: !payload.reportsExists,
+                category: category
+              };
+              
+              const jsonStr = JSON.stringify(normalized, Object.keys(normalized).sort());
+              const hash = crypto.createHash('sha256').update(jsonStr).digest('hex');
+              return `${category}-${hash.substring(0, 16)}`;
+            }
+            
+            function createFingerprintTag(fingerprint) {
+              return `<!-- FINGERPRINT:${fingerprint} -->`;
+            }
+            
+            // Generate fingerprint for clutter management issue
+            const fingerprintPayload = {
+              clutterCount: parseInt(clutterCount),
+              reportsExists: reportsExists
+            };
+            
+            const fingerprint = simpleFingerprint(fingerprintPayload, 'clutter-management');
+            const fingerprintTag = createFingerprintTag(fingerprint);
+            
+            console.log(`🔍 Generated clutter fingerprint: ${fingerprint}`);
+            
+            // Search for existing clutter management issue
+            const existingIssues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'maintenance,automated,organization',
+              per_page: 20
+            });
+            
+            let existingIssue = null;
+            for (const issue of existingIssues.data) {
+              if (issue.body && issue.body.includes(`FINGERPRINT:${fingerprint}`)) {
+                existingIssue = issue;
+                break;
+              }
+            }
+            
+            const title = `🧹 [AUTO] Repository Clutter Management Required`;
             const body = [
               `## Repository Organization Issue`,
               ``,
@@ -339,15 +460,45 @@ jobs:
               `\`\`\``,
               ``,
               `---`,
-              `*This issue was automatically created by the clutter management automation.*`
+              `*This issue was automatically created/updated by the clutter management automation.*`,
+              ``,
+              fingerprintTag
             ].join('\n');
             
-            const issue = await github.rest.issues.create({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              title: title,
-              body: body,
-              labels: ['maintenance', 'automated', 'organization', 'priority-medium']
-            });
-            
-            console.log(`Created clutter management issue #${issue.data.number}`);
+            if (existingIssue) {
+              // Update existing issue with comment
+              console.log(`📝 Updating existing clutter management issue #${existingIssue.number}`);
+              
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: existingIssue.number,
+                body: [
+                  `## 🔄 Clutter Management Update`,
+                  ``,
+                  `**Update Time:** ${new Date().toISOString()}`,
+                  `**Current Clutter Count:** ${clutterCount} files`,
+                  `**Reports Structure:** ${reportsExists ? 'Exists' : 'Missing'}`,
+                  ``,
+                  `The clutter situation has been re-evaluated. Please review the main issue description for current status.`,
+                  ``,
+                  `---`,
+                  `*Automated clutter management update - no duplicate issues created*`
+                ].join('\n')
+              });
+              
+              console.log(`✅ Updated clutter management issue #${existingIssue.number}`);
+            } else {
+              // Create new issue
+              console.log('📋 Creating new clutter management issue...');
+              
+              const newIssue = await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: title,
+                body: body,
+                labels: ['maintenance', 'automated', 'organization', 'priority-medium']
+              });
+              
+              console.log(`✅ Created clutter management issue #${newIssue.data.number}`);
+            }

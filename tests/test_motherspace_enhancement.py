@@ -25,8 +25,8 @@ def test_motherspace_workflow_syntax():
         pytest.fail(f"MotherSpace workflow has invalid YAML syntax: {e}")
 
 
-def test_motherspace_workflow_has_issue_management():
-    """Test that the MotherSpace workflow includes issue management functionality."""
+def test_motherspace_workflow_has_concurrency_and_safety():
+    """Test that the MotherSpace workflow includes concurrency control and safety features."""
     workflow_path = Path(__file__).parent.parent / ".github" / "workflows" / "motherspace-orchestrator.yml"
 
     with open(workflow_path) as f:
@@ -34,20 +34,46 @@ def test_motherspace_workflow_has_issue_management():
 
     workflow_data = yaml.safe_load(workflow_content)
 
-    # Check for issue management job step
+    # Check for concurrency group
+    assert "concurrency" in workflow_data, "MotherSpace workflow should include concurrency control"
+    
+    concurrency = workflow_data["concurrency"]
+    assert concurrency.get("group") == "motherspace-orchestrator", "Should have proper concurrency group"
+    assert concurrency.get("cancel-in-progress") is False, "Should not cancel in progress runs"
+
+    # Check for actor guard in job condition
+    jobs = workflow_data.get("jobs", {})
+    orchestrator_job = jobs.get("motherspace_orchestrator", {})
+    
+    job_if = orchestrator_job.get("if", "")
+    assert "github.actor != 'github-actions[bot]'" in job_if, "Should have actor guard to prevent bot loops"
+    assert "orchestrate" in job_if, "Should check for 'orchestrate' label"
+
+
+def test_motherspace_workflow_has_fingerprint_step():
+    """Test that the MotherSpace workflow includes fingerprinted issue creation."""
+    workflow_path = Path(__file__).parent.parent / ".github" / "workflows" / "motherspace-orchestrator.yml"
+
+    with open(workflow_path) as f:
+        workflow_content = f.read()
+
+    workflow_data = yaml.safe_load(workflow_content)
+
+    # Check for fingerprint-related step
     jobs = workflow_data.get("jobs", {})
     orchestrator_job = jobs.get("motherspace_orchestrator", {})
     steps = orchestrator_job.get("steps", [])
 
     step_names = [step.get("name", "") for step in steps]
-
+    
+    # Should have create-or-update step
     assert any(
-        "Issue Analysis and Management" in name for name in step_names
-    ), "MotherSpace workflow should include issue analysis and management step"
+        "Create or Update" in name and "Tracking Issue" in name for name in step_names
+    ), "MotherSpace workflow should include create-or-update tracking issue step"
 
-    assert any(
-        "Execute Issue Management Operations" in name for name in step_names
-    ), "MotherSpace workflow should include issue management execution step"
+    # Check that fingerprinting logic is present in the workflow
+    assert "FINGERPRINT:" in workflow_content, "Workflow should include fingerprinting logic"
+    assert "simpleFingerprint" in workflow_content, "Workflow should include fingerprint function"
 
 
 def test_motherspace_workflow_structure():
