@@ -113,7 +113,7 @@ def create_app():
     Migrate(app, db)
 
     # CORS configuration
-    CORS(app, origins=app.config["CORS_ORIGINS"])
+    CORS(app, origins=app.config["CORS_ORIGINS"], supports_credentials=True)
 
     # Rate limiting - configure properly based on storage type
     storage_url = app.config.get("RATELIMIT_STORAGE_URL", "memory://")
