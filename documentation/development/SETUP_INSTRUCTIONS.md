@@ -377,6 +377,26 @@ npm run lint:fix
    - GitHub Actions will automatically run CI/CD pipeline
    - Dependabot will keep dependencies updated
 
+### GitHub Repository Setup
+
+If you're setting up a new repository or encountering Dependabot label issues:
+
+1. **Setup GitHub Labels for Dependabot**
+   ```bash
+   # Automated setup (requires GitHub CLI)
+   python scripts/setup_github_labels.py --create
+   
+   # Or check what labels are needed
+   python scripts/setup_github_labels.py --dry-run
+   ```
+
+2. **Manual Label Creation**
+   See [GITHUB_LABELS_SETUP.md](./GITHUB_LABELS_SETUP.md) for detailed instructions
+
+3. **Common Dependabot Issues**
+   - Missing labels: Use the setup script above
+   - Network timeouts: Check [DEPENDENCY_UPDATE_PROCEDURES.md](../deployment/DEPENDENCY_UPDATE_PROCEDURES.md)
+
 ## 📚 Additional Resources
 
 ### API Documentation

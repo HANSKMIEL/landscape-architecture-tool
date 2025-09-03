@@ -1,7 +1,7 @@
 # Landscape Architecture Tool - Development Makefile
 # Provides standard development commands as documented in .github/copilot-instructions.md
 
-.PHONY: help install build test ci lint clean frontend-install frontend-build frontend-test backend-test check db-setup dev organize check-clutter organize-preview
+.PHONY: help install build test ci lint clean frontend-install frontend-build frontend-test backend-test check db-setup dev organize check-clutter organize-preview setup-github-labels
 
 # Default target
 help:
@@ -21,6 +21,9 @@ help:
 	@echo "Pipeline Management:"
 	@echo "  make pipeline-health  - Analyze pipeline health status"
 	@echo "  make troubleshoot     - Show troubleshooting guide"
+	@echo ""
+	@echo "GitHub Integration:"
+	@echo "  make setup-github-labels - Setup required labels for Dependabot"
 	@echo ""
 	@echo "Repository Organization:"
 	@echo "  make check-clutter    - Check for clutter in root directory"
@@ -265,3 +268,13 @@ troubleshoot:
 	@echo "  make organize       - Organize clutter files"
 	@echo ""
 	@echo "For detailed troubleshooting, see: PIPELINE_TROUBLESHOOTING.md"
+
+# Setup GitHub labels for Dependabot
+setup-github-labels:
+	@echo "🏷️  Setting up GitHub labels for Dependabot integration..."
+	@python scripts/setup_github_labels.py --dry-run
+	@echo ""
+	@echo "To actually create the labels, run:"
+	@echo "  python scripts/setup_github_labels.py --create"
+	@echo ""
+	@echo "Or see documentation/development/GITHUB_LABELS_SETUP.md for manual setup"
