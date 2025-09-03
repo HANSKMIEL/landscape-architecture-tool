@@ -164,8 +164,8 @@ def create_app():
     app.register_blueprint(plant_recommendations_bp)
     app.register_blueprint(project_plants_bp)
     app.register_blueprint(reports_bp)
-    app.register_blueprint(invoices_bp)
-    app.register_blueprint(excel_import_bp)
+    app.register_blueprint(invoices_bp, url_prefix="/api")
+    app.register_blueprint(excel_import_bp, url_prefix="/api")
     app.register_blueprint(photos_bp, url_prefix="/api/photos")
     
     # Register user authentication blueprint
