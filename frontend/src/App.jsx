@@ -6,6 +6,7 @@ import Header from './components/Header'
 import Login from './components/Login'
 import authService from './services/authService'
 import toast from 'react-hot-toast'
+import { LanguageProvider, useLanguage } from './i18n/LanguageProvider'
 
 // Dynamic imports for route components
 const Dashboard = lazy(() => import('./components/Dashboard'))
@@ -21,16 +22,16 @@ const Settings = lazy(() => import('./components/Settings'))
 import './unified-professional-styles.css'
 import './enhanced_sidebar_styles.css'
 
-function App() {
+// Main App component with authentication and routing
+function AppContent() {
+  const { t, currentLanguage } = useLanguage()
   const [sidebarOpen, setSidebarOpen] = useState(false)
-  const [language, setLanguage] = useState('nl') // Default to Dutch
   const [user, setUser] = useState(null)
   const [authLoading, setAuthLoading] = useState(true)
   const [loginError, setLoginError] = useState('')
 
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen)
   const closeSidebar = () => setSidebarOpen(false)
-  const toggleLanguage = () => setLanguage(language === 'en' ? 'nl' : 'en')
 
   // Check authentication status on app load
   useEffect(() => {
@@ -56,15 +57,12 @@ function App() {
       const response = await authService.login(credentials)
       setUser(response.user)
       
-      const welcomeMessage = language === 'nl' 
-        ? `Welkom terug, ${response.user.username}!`
-        : `Welcome back, ${response.user.username}!`
+      const welcomeMessage = t('auth.welcome', `Welcome back, ${response.user.username}!`)
+        .replace('{username}', response.user.username)
       
       toast.success(welcomeMessage)
     } catch (error) {
-      const errorMessage = language === 'nl'
-        ? 'Inloggen mislukt. Controleer uw gegevens.'
-        : 'Login failed. Please check your credentials.'
+      const errorMessage = t('auth.loginFailed', 'Login failed. Please check your credentials.')
       
       setLoginError(errorMessage)
       toast.error(errorMessage)
@@ -76,9 +74,7 @@ function App() {
       await authService.logout()
       setUser(null)
       
-      const logoutMessage = language === 'nl'
-        ? 'U bent succesvol uitgelogd'
-        : 'Successfully logged out'
+      const logoutMessage = t('auth.logoutSuccess', 'Successfully logged out')
       
       toast.success(logoutMessage)
     } catch (error) {
@@ -122,7 +118,7 @@ function App() {
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
           <p className="text-gray-600">
-            {language === 'nl' ? 'Laden...' : 'Loading...'}
+            {t('common.loading', 'Loading...')}
           </p>
         </div>
       </div>
@@ -141,7 +137,6 @@ function App() {
         <ResponsiveSidebar 
           isOpen={sidebarOpen} 
           onClose={closeSidebar}
-          language={language}
           user={user}
         />
         
@@ -151,8 +146,6 @@ function App() {
           <div className="header-container">
             <Header 
               onMenuClick={toggleSidebar}
-              language={language}
-              onLanguageToggle={toggleLanguage}
               sidebarOpen={sidebarOpen}
               user={user}
               onLogout={handleLogout}
@@ -165,22 +158,22 @@ function App() {
               <div className="flex items-center justify-center h-64">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
                 <span className="ml-3 text-gray-600">
-                  {language === 'nl' ? 'Laden...' : 'Loading...'}
+                  {t('common.loading', 'Loading...')}
                 </span>
               </div>
             }>
               <Routes>
                 <Route path="/" element={<Navigate to="/dashboard" replace />} />
-                <Route path="/dashboard" element={<Dashboard language={language} user={user} />} />
-                <Route path="/suppliers" element={<Suppliers language={language} user={user} />} />
-                <Route path="/plants" element={<Plants language={language} user={user} />} />
-                <Route path="/products" element={<Products language={language} user={user} />} />
-                <Route path="/clients" element={<Clients language={language} user={user} />} />
-                <Route path="/projects" element={<Projects language={language} user={user} />} />
-                <Route path="/plant-recommendations" element={<PlantRecommendations language={language} user={user} />} />
-                <Route path="/reports" element={<Reports language={language} user={user} />} />
-                <Route path="/invoices" element={<InvoiceQuoteManager language={language} user={user} />} />
-                <Route path="/settings" element={<Settings language={language} user={user} />} />
+                <Route path="/dashboard" element={<Dashboard user={user} />} />
+                <Route path="/suppliers" element={<Suppliers user={user} />} />
+                <Route path="/plants" element={<Plants user={user} />} />
+                <Route path="/products" element={<Products user={user} />} />
+                <Route path="/clients" element={<Clients user={user} />} />
+                <Route path="/projects" element={<Projects user={user} />} />
+                <Route path="/plant-recommendations" element={<PlantRecommendations user={user} />} />
+                <Route path="/reports" element={<Reports user={user} />} />
+                <Route path="/invoices" element={<InvoiceQuoteManager user={user} />} />
+                <Route path="/settings" element={<Settings user={user} />} />
               </Routes>
             </Suspense>
           </main>
@@ -213,6 +206,15 @@ function App() {
         />
       </div>
     </Router>
+  )
+}
+
+// Main App wrapper with Language Provider
+function App() {
+  return (
+    <LanguageProvider>
+      <AppContent />
+    </LanguageProvider>
   )
 }
 

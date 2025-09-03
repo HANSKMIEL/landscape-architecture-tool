@@ -1,14 +1,14 @@
 import { Menu, Globe, LogOut, User, Settings, ChevronDown } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
+import { useLanguage, LanguageSelector } from '../i18n/LanguageProvider';
 
 const Header = ({ 
   onMenuClick, 
-  language, 
-  onLanguageToggle, 
   sidebarOpen, 
   user, 
   onLogout 
 }) => {
+  const { t } = useLanguage();
   const [showUserMenu, setShowUserMenu] = useState(false);
   const userMenuRef = useRef(null);
 
@@ -24,33 +24,8 @@ const Header = ({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const translations = {
-    en: {
-      title: 'Landscape Architecture Tool',
-      titleMobile: 'Landscape Architecture',
-      profile: 'Profile',
-      settings: 'Settings',
-      logout: 'Logout',
-      switchLanguage: 'Switch to Dutch'
-    },
-    nl: {
-      title: 'Landschapsarchitectuur Tool',
-      titleMobile: 'Landschapsarchitectuur',
-      profile: 'Profiel',
-      settings: 'Instellingen',
-      logout: 'Uitloggen',
-      switchLanguage: 'Schakel naar Engels'
-    }
-  };
-
-  const t = translations[language];
-
   const getRoleDisplay = (role) => {
-    const roleNames = {
-      en: { admin: 'Administrator', employee: 'Employee', client: 'Client' },
-      nl: { admin: 'Beheerder', employee: 'Medewerker', client: 'Klant' }
-    };
-    return roleNames[language][role] || role;
+    return t(`auth.roles.${role}`, role);
   };
 
   const getRoleColor = (role) => {
@@ -78,25 +53,15 @@ const Header = ({
           
           <div className="hidden sm:block">
             <h1 className="text-xl font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
-              {t.title}
+              {t('dashboard.title', 'Landscape Architecture Tool')}
             </h1>
           </div>
         </div>
 
-        {/* Right side - Language toggle and user menu */}
+        {/* Right side - Language selector and user menu */}
         <div className="flex items-center space-x-4">
-          {/* Language Toggle */}
-          <button
-            onClick={onLanguageToggle}
-            className="flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500 transition-colors"
-            aria-label={t.switchLanguage}
-            title={t.switchLanguage}
-          >
-            <Globe className="w-4 h-4" />
-            <span className="hidden sm:inline font-semibold">
-              {language === 'en' ? 'EN' : 'NL'}
-            </span>
-          </button>
+          {/* Language Selector */}
+          <LanguageSelector className="hidden sm:block" />
           
           {/* User Menu */}
           {user && (
@@ -138,12 +103,12 @@ const Header = ({
                   <div className="py-1">
                     <button className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
                       <User className="w-4 h-4 mr-3" />
-                      {t.profile}
+                      {t('common.profile', 'Profile')}
                     </button>
                     
                     <button className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
                       <Settings className="w-4 h-4 mr-3" />
-                      {t.settings}
+                      {t('navigation.settings', 'Settings')}
                     </button>
                   </div>
 
@@ -157,7 +122,7 @@ const Header = ({
                       className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
                     >
                       <LogOut className="w-4 h-4 mr-3" />
-                      {t.logout}
+                      {t('navigation.logout', 'Logout')}
                     </button>
                   </div>
                 </div>
@@ -170,7 +135,7 @@ const Header = ({
       {/* Mobile title - shown when sidebar is closed */}
       <div className="sm:hidden mt-2">
         <h1 className="text-lg font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
-          {t.titleMobile}
+          {t('dashboard.title', 'Landscape Architecture')}
         </h1>
       </div>
     </header>

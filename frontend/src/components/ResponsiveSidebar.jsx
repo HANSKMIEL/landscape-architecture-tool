@@ -1,5 +1,6 @@
 import { Link, useLocation } from 'react-router-dom'
 import { useEffect } from 'react'
+import { useLanguage } from '../i18n/LanguageProvider'
 import {
   LayoutDashboard,
   Building2,
@@ -16,97 +17,67 @@ import {
   Eye
 } from 'lucide-react'
 
-const ResponsiveSidebar = ({ isOpen, onClose, language = 'nl', user }) => {
+const ResponsiveSidebar = ({ isOpen, onClose, user }) => {
   const location = useLocation()
-
-  const translations = {
-    en: {
-      dashboard: 'Dashboard',
-      suppliers: 'Suppliers',
-      products: 'Products',
-      plants: 'Plants',
-      clients: 'Clients',
-      projects: 'Projects',
-      recommendations: 'Plant Recommendations',
-      reports: 'Reports',
-      invoices: 'Invoices & Quotes',
-      settings: 'Settings',
-      closeSidebar: 'Close sidebar'
-    },
-    nl: {
-      dashboard: 'Dashboard',
-      suppliers: 'Leveranciers',
-      products: 'Producten',
-      plants: 'Planten',
-      clients: 'Klanten',
-      projects: 'Projecten',
-      recommendations: 'Plant Aanbevelingen',
-      reports: 'Rapporten',
-      invoices: 'Offertes & Facturen',
-      settings: 'Instellingen',
-      closeSidebar: 'Sluit zijbalk'
-    }
-  }
-
-  const t = translations[language]
+  const { t } = useLanguage()
 
   const navigation = [
     { 
-      name: t.dashboard, 
+      name: t('navigation.dashboard', 'Dashboard'), 
       href: '/dashboard', 
       icon: LayoutDashboard,
       roles: ['admin', 'employee', 'client']
     },
     { 
-      name: t.suppliers, 
+      name: t('navigation.suppliers', 'Suppliers'), 
       href: '/suppliers', 
       icon: Building2,
       roles: ['admin', 'employee']
     },
     { 
-      name: t.products, 
+      name: t('navigation.products', 'Products'), 
       href: '/products', 
       icon: Package,
       roles: ['admin', 'employee']
     },
     { 
-      name: t.plants, 
+      name: t('navigation.plants', 'Plants'), 
       href: '/plants', 
       icon: Leaf,
       roles: ['admin', 'employee']
     },
     { 
-      name: t.clients, 
+      name: t('navigation.clients', 'Clients'), 
       href: '/clients', 
       icon: Users,
       roles: ['admin', 'employee']
     },
     { 
-      name: t.projects, 
+      name: t('navigation.projects', 'Projects'), 
       href: '/projects', 
       icon: FolderOpen,
       roles: ['admin', 'employee', 'client']
     },
     { 
-      name: t.recommendations, 
+      name: t('plants.recommendations', 'Plant Recommendations'), 
       href: '/plant-recommendations', 
       icon: Lightbulb,
       roles: ['admin', 'employee', 'client']
     },
     { 
-      name: t.reports, 
+      name: t('navigation.reports', 'Reports'), 
       href: '/reports', 
       icon: FileText,
       roles: ['admin', 'employee']
     },
     { 
-      name: t.invoices, 
+      name: t('invoices.title', 'Invoices & Quotes'), 
       href: '/invoices', 
       icon: Receipt,
       roles: ['admin', 'employee']
     },
     { 
-      name: t.settings, 
+      name: t('navigation.settings', 'Settings'), 
       href: '/settings', 
       icon: Settings,
       roles: ['admin', 'employee', 'client']
@@ -207,10 +178,10 @@ const ResponsiveSidebar = ({ isOpen, onClose, language = 'nl', user }) => {
             </div>
             <div>
               <h1 className="text-lg font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
-                {language === 'nl' ? 'Landschap' : 'Landscape'}
+                {t('dashboard.title', 'Landscape')}
               </h1>
               <p className="text-sm text-gray-500">
-                {language === 'nl' ? 'Architectuur Tool' : 'Architecture Tool'}
+                {t('dashboard.welcome', 'Architecture Tool')}
               </p>
             </div>
           </div>
@@ -218,7 +189,7 @@ const ResponsiveSidebar = ({ isOpen, onClose, language = 'nl', user }) => {
           <button
             onClick={onClose}
             className="sidebar-close-btn lg:hidden"
-            aria-label={t.closeSidebar}
+            aria-label={t('common.close', 'Close sidebar')}
           >
             <X className="w-5 h-5 text-gray-500" />
           </button>
