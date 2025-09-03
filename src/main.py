@@ -1220,9 +1220,13 @@ def main():
 
         flask_env = os.environ.get("FLASK_ENV", "development")
         port = int(os.environ.get("PORT", 5000))
-        # Use 0.0.0.0 for testing to allow CI container access,
-        # 127.0.0.1 for development
-        host = "0.0.0.0" if flask_env == "testing" else "127.0.0.1"
+        # Secure host binding:
+        # - 127.0.0.1 for development (secure)
+        # - 0.0.0.0 only for testing or when explicitly enabled for production
+        if flask_env == "testing" or os.environ.get("ALLOW_ALL_INTERFACES", "").lower() == "true":
+            host = "0.0.0.0"  # nosec B104 # Controlled by environment variable for containerized deployments
+        else:
+            host = "127.0.0.1"
 
         logger.info("Starting Landscape Architecture Management System...")
         logger.info(f"Backend API will be available at: http://{host}:{port}")
