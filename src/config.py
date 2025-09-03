@@ -41,6 +41,10 @@ class Config:
     # Webhook timeout settings
     N8N_WEBHOOK_TIMEOUT = int(os.environ.get("N8N_WEBHOOK_TIMEOUT", "30"))
 
+    # File upload settings
+    UPLOAD_FOLDER = os.environ.get("UPLOAD_FOLDER", os.path.join(os.getcwd(), "uploads"))
+    MAX_CONTENT_LENGTH = 10 * 1024 * 1024  # 10MB max file size
+
 
 class DevelopmentConfig(Config):
     """Development configuration"""
