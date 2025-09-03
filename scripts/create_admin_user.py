@@ -3,9 +3,9 @@
 Create production admin user for Landscape Architecture Tool
 """
 
+import getpass
 import os
 import sys
-import getpass
 from datetime import datetime
 
 # Add project root to path
@@ -14,10 +14,11 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 def create_admin_user():
     """Create production admin user with secure credentials"""
     try:
+        from werkzeug.security import generate_password_hash
+
         from src.main import create_app
         from src.models.user import User
         from src.utils.db_init import db
-        from werkzeug.security import generate_password_hash
         
         app = create_app()
         
@@ -26,18 +27,18 @@ def create_admin_user():
             print("=" * 50)
             
             # Check if admin already exists
-            existing_admin = User.query.filter_by(role='admin').first()
+            existing_admin = User.query.filter_by(role="admin").first()
             if existing_admin:
                 print(f"⚠️  Admin user already exists: {existing_admin.username}")
                 response = input("Create another admin user? (y/N): ").lower()
-                if response != 'y':
+                if response != "y":
                     print("Exiting...")
                     return
             
             # Get admin credentials
             print("\n📝 Enter admin user details:")
             
-            username = input("Username (default: admin): ").strip() or 'admin'
+            username = input("Username (default: admin): ").strip() or "admin"
             
             # Check if username exists
             existing_user = User.query.filter_by(username=username).first()
@@ -73,9 +74,9 @@ def create_admin_user():
                 username=username,
                 email=email,
                 password_hash=generate_password_hash(password),
-                role='admin',
-                first_name=first_name or 'Admin',
-                last_name=last_name or 'User',
+                role="admin",
+                first_name=first_name or "Admin",
+                last_name=last_name or "User",
                 created_at=datetime.utcnow()
             )
             
@@ -97,5 +98,5 @@ def create_admin_user():
         import traceback
         traceback.print_exc()
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     create_admin_user()

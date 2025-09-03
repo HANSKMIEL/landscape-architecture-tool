@@ -51,7 +51,7 @@ def generate_quote(project_id):
 
         # Calculate quote items
         quote_items = []
-        subtotal = Decimal('0')
+        subtotal = Decimal("0")
 
         # Add plants with pricing
         for project_plant in project.project_plants:
@@ -74,7 +74,7 @@ def generate_quote(project_id):
 
         # Add project-specific services
         if project.area_size:
-            area_rate = Decimal('25.00')  # €25 per m² for design
+            area_rate = Decimal("25.00")  # €25 per m² for design
             design_cost = Decimal(str(project.area_size)) * area_rate
             quote_items.append({
                 "type": "service",
@@ -88,7 +88,7 @@ def generate_quote(project_id):
             subtotal += design_cost
 
         # Add consultation fee
-        consultation_fee = Decimal('150.00')
+        consultation_fee = Decimal("150.00")
         quote_items.append({
             "type": "service",
             "description": "Locatiebezoek en adviesgesprek",
@@ -101,7 +101,7 @@ def generate_quote(project_id):
         subtotal += consultation_fee
 
         # Calculate taxes and totals
-        vat_rate = Decimal('0.21')  # 21% BTW
+        vat_rate = Decimal("0.21")  # 21% BTW
         vat_amount = subtotal * vat_rate
         total_amount = subtotal + vat_amount
 
@@ -143,7 +143,7 @@ def generate_quote(project_id):
 
     except Exception as e:
         logging.exception("Error generating quote")
-        return jsonify({"error": f"Fout bij genereren offerte: {str(e)}"}), 500
+        return jsonify({"error": f"Fout bij genereren offerte: {e!s}"}), 500
 
 
 def generate_quote_pdf(data):
@@ -172,8 +172,8 @@ def generate_quote_pdf(data):
         
         header_table = Table(header_table_data, colWidths=[3*inch, 2.5*inch])
         header_table.setStyle(TableStyle([
-            ('VALIGN', (0, 0), (-1, -1), 'TOP'),
-            ('ALIGN', (1, 0), (1, 0), 'RIGHT'),
+            ("VALIGN", (0, 0), (-1, -1), "TOP"),
+            ("ALIGN", (1, 0), (1, 0), "RIGHT"),
         ]))
         story.append(header_table)
         story.append(Spacer(1, 30))
@@ -182,13 +182,13 @@ def generate_quote_pdf(data):
         client = data["client"]
         story.append(Paragraph("<b>Klantgegevens:</b>", styles["Heading3"]))
         client_text = f"{client['name']}"
-        if client['address']:
+        if client["address"]:
             client_text += f"<br/>{client['address']}"
-        if client['postal_code'] or client['city']:
+        if client["postal_code"] or client["city"]:
             client_text += f"<br/>{client['postal_code']} {client['city']}"
-        if client['phone']:
+        if client["phone"]:
             client_text += f"<br/>Tel: {client['phone']}"
-        if client['email']:
+        if client["email"]:
             client_text += f"<br/>Email: {client['email']}"
         
         story.append(Paragraph(client_text, styles["Normal"]))
@@ -198,11 +198,11 @@ def generate_quote_pdf(data):
         project = data["project"]
         story.append(Paragraph("<b>Projectgegevens:</b>", styles["Heading3"]))
         story.append(Paragraph(f"Project: {project['name']}", styles["Normal"]))
-        if project['location']:
+        if project["location"]:
             story.append(Paragraph(f"Locatie: {project['location']}", styles["Normal"]))
-        if project['area_size']:
+        if project["area_size"]:
             story.append(Paragraph(f"Oppervlakte: {project['area_size']} m²", styles["Normal"]))
-        if project['description']:
+        if project["description"]:
             story.append(Paragraph(f"Omschrijving: {project['description']}", styles["Normal"]))
         story.append(Spacer(1, 30))
 
@@ -222,15 +222,15 @@ def generate_quote_pdf(data):
 
         items_table = Table(items_data, colWidths=[2.5*inch, 0.8*inch, 0.8*inch, 1.2*inch, 1.2*inch])
         items_table.setStyle(TableStyle([
-            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor("#2D5016")),
-            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-            ('ALIGN', (1, 0), (-1, -1), 'RIGHT'),  # Right align numbers
-            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-            ('FONTSIZE', (0, 0), (-1, 0), 10),
-            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-            ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
-            ('GRID', (0, 0), (-1, -1), 1, colors.black),
+            ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#2D5016")),
+            ("TEXTCOLOR", (0, 0), (-1, 0), colors.whitesmoke),
+            ("ALIGN", (0, 0), (-1, -1), "LEFT"),
+            ("ALIGN", (1, 0), (-1, -1), "RIGHT"),  # Right align numbers
+            ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+            ("FONTSIZE", (0, 0), (-1, 0), 10),
+            ("BOTTOMPADDING", (0, 0), (-1, 0), 12),
+            ("BACKGROUND", (0, 1), (-1, -1), colors.beige),
+            ("GRID", (0, 0), (-1, -1), 1, colors.black),
         ]))
         story.append(items_table)
         story.append(Spacer(1, 20))
@@ -246,11 +246,11 @@ def generate_quote_pdf(data):
 
         summary_table = Table(summary_data, colWidths=[4*inch, 1.5*inch])
         summary_table.setStyle(TableStyle([
-            ('ALIGN', (0, 0), (-1, -1), 'RIGHT'),
-            ('FONTNAME', (0, 3), (1, 3), 'Helvetica-Bold'),
-            ('FONTSIZE', (0, 3), (1, 3), 12),
-            ('LINEABOVE', (0, 3), (1, 3), 2, colors.black),
-            ('BACKGROUND', (0, 3), (1, 3), colors.lightgrey),
+            ("ALIGN", (0, 0), (-1, -1), "RIGHT"),
+            ("FONTNAME", (0, 3), (1, 3), "Helvetica-Bold"),
+            ("FONTSIZE", (0, 3), (1, 3), 12),
+            ("LINEABOVE", (0, 3), (1, 3), 2, colors.black),
+            ("BACKGROUND", (0, 3), (1, 3), colors.lightgrey),
         ]))
         story.append(summary_table)
         story.append(Spacer(1, 30))
@@ -285,7 +285,7 @@ def generate_quote_pdf(data):
 
     except Exception as e:
         logging.exception("Error generating quote PDF")
-        return jsonify({"error": f"Fout bij genereren offerte PDF: {str(e)}"}), 500
+        return jsonify({"error": f"Fout bij genereren offerte PDF: {e!s}"}), 500
 
 
 @invoices_bp.route("/api/invoices/invoice/<int:project_id>", methods=["POST"])
@@ -327,7 +327,7 @@ def generate_invoice(project_id):
 
     except Exception as e:
         logging.exception("Error generating invoice")
-        return jsonify({"error": f"Fout bij genereren factuur: {str(e)}"}), 500
+        return jsonify({"error": f"Fout bij genereren factuur: {e!s}"}), 500
 
 
 def generate_invoice_pdf(data):
@@ -356,8 +356,8 @@ def generate_invoice_pdf(data):
         
         header_table = Table(header_table_data, colWidths=[3*inch, 2.5*inch])
         header_table.setStyle(TableStyle([
-            ('VALIGN', (0, 0), (-1, -1), 'TOP'),
-            ('ALIGN', (1, 0), (1, 0), 'RIGHT'),
+            ("VALIGN", (0, 0), (-1, -1), "TOP"),
+            ("ALIGN", (1, 0), (1, 0), "RIGHT"),
         ]))
         story.append(header_table)
         story.append(Spacer(1, 30))
@@ -366,13 +366,13 @@ def generate_invoice_pdf(data):
         client = data["client"]
         story.append(Paragraph("<b>Klantgegevens:</b>", styles["Heading3"]))
         client_text = f"{client['name']}"
-        if client['address']:
+        if client["address"]:
             client_text += f"<br/>{client['address']}"
-        if client['postal_code'] or client['city']:
+        if client["postal_code"] or client["city"]:
             client_text += f"<br/>{client['postal_code']} {client['city']}"
-        if client['phone']:
+        if client["phone"]:
             client_text += f"<br/>Tel: {client['phone']}"
-        if client['email']:
+        if client["email"]:
             client_text += f"<br/>Email: {client['email']}"
         
         story.append(Paragraph(client_text, styles["Normal"]))
@@ -382,9 +382,9 @@ def generate_invoice_pdf(data):
         project = data["project"]
         story.append(Paragraph("<b>Projectgegevens:</b>", styles["Heading3"]))
         story.append(Paragraph(f"Project: {project['name']}", styles["Normal"]))
-        if project['location']:
+        if project["location"]:
             story.append(Paragraph(f"Locatie: {project['location']}", styles["Normal"]))
-        if project['description']:
+        if project["description"]:
             story.append(Paragraph(f"Omschrijving: {project['description']}", styles["Normal"]))
         story.append(Spacer(1, 30))
 
@@ -404,15 +404,15 @@ def generate_invoice_pdf(data):
 
         items_table = Table(items_data, colWidths=[2.5*inch, 0.8*inch, 0.8*inch, 1.2*inch, 1.2*inch])
         items_table.setStyle(TableStyle([
-            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor("#2D5016")),
-            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-            ('ALIGN', (1, 0), (-1, -1), 'RIGHT'),  # Right align numbers
-            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-            ('FONTSIZE', (0, 0), (-1, 0), 10),
-            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-            ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
-            ('GRID', (0, 0), (-1, -1), 1, colors.black),
+            ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#2D5016")),
+            ("TEXTCOLOR", (0, 0), (-1, 0), colors.whitesmoke),
+            ("ALIGN", (0, 0), (-1, -1), "LEFT"),
+            ("ALIGN", (1, 0), (-1, -1), "RIGHT"),  # Right align numbers
+            ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+            ("FONTSIZE", (0, 0), (-1, 0), 10),
+            ("BOTTOMPADDING", (0, 0), (-1, 0), 12),
+            ("BACKGROUND", (0, 1), (-1, -1), colors.beige),
+            ("GRID", (0, 0), (-1, -1), 1, colors.black),
         ]))
         story.append(items_table)
         story.append(Spacer(1, 20))
@@ -428,11 +428,11 @@ def generate_invoice_pdf(data):
 
         summary_table = Table(summary_data, colWidths=[4*inch, 1.5*inch])
         summary_table.setStyle(TableStyle([
-            ('ALIGN', (0, 0), (-1, -1), 'RIGHT'),
-            ('FONTNAME', (0, 3), (1, 3), 'Helvetica-Bold'),
-            ('FONTSIZE', (0, 3), (1, 3), 12),
-            ('LINEABOVE', (0, 3), (1, 3), 2, colors.black),
-            ('BACKGROUND', (0, 3), (1, 3), colors.lightgrey),
+            ("ALIGN", (0, 0), (-1, -1), "RIGHT"),
+            ("FONTNAME", (0, 3), (1, 3), "Helvetica-Bold"),
+            ("FONTSIZE", (0, 3), (1, 3), 12),
+            ("LINEABOVE", (0, 3), (1, 3), 2, colors.black),
+            ("BACKGROUND", (0, 3), (1, 3), colors.lightgrey),
         ]))
         story.append(summary_table)
         story.append(Spacer(1, 30))
@@ -465,7 +465,7 @@ def generate_invoice_pdf(data):
 
     except Exception as e:
         logging.exception("Error generating invoice PDF")
-        return jsonify({"error": f"Fout bij genereren factuur PDF: {str(e)}"}), 500
+        return jsonify({"error": f"Fout bij genereren factuur PDF: {e!s}"}), 500
 
 
 @invoices_bp.route("/api/invoices/projects", methods=["GET"])
@@ -503,4 +503,4 @@ def list_invoiceable_projects():
 
     except Exception as e:
         logging.exception("Error listing invoiceable projects")
-        return jsonify({"error": f"Fout bij ophalen projecten: {str(e)}"}), 500
+        return jsonify({"error": f"Fout bij ophalen projecten: {e!s}"}), 500

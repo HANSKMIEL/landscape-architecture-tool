@@ -1,4 +1,5 @@
 from datetime import datetime
+
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import check_password_hash, generate_password_hash
 
@@ -12,7 +13,7 @@ class User(db.Model):
     username = db.Column(db.String(80), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(255), nullable=False)
-    role = db.Column(db.String(20), nullable=False, default='employee')  # admin, employee, client
+    role = db.Column(db.String(20), nullable=False, default="employee")  # admin, employee, client
     is_active = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -34,11 +35,11 @@ class User(db.Model):
 
     def can_access_admin(self):
         """Check if user can access admin features"""
-        return self.role == 'admin'
+        return self.role == "admin"
 
     def can_manage_data(self):
         """Check if user can manage business data (suppliers, plants, projects)"""
-        return self.role in ['admin', 'employee']
+        return self.role in ["admin", "employee"]
 
     def to_dict(self, include_sensitive=False):
         """Convert to dictionary, optionally including sensitive fields"""
@@ -61,6 +62,6 @@ class User(db.Model):
     @staticmethod
     def create_admin_user(username="admin", email="admin@landscape.com", password="admin123"):
         """Create default admin user for initial setup"""
-        user = User(username=username, email=email, role='admin')
+        user = User(username=username, email=email, role="admin")
         user.set_password(password)
         return user

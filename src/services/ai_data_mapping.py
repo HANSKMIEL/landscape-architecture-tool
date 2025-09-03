@@ -5,11 +5,13 @@ This service provides AI-powered data mapping functionality for Excel imports,
 helping users automatically map columns to database fields and validate data.
 """
 
-import openai
 import json
 import logging
 from typing import Dict, List, Optional, Tuple
+
+import openai
 import pandas as pd
+
 from src.utils.error_handlers import handle_business_logic_error
 
 logger = logging.getLogger(__name__)
@@ -17,7 +19,7 @@ logger = logging.getLogger(__name__)
 class AIDataMappingService:
     """AI-powered service for intelligent data mapping during Excel imports."""
     
-    def __init__(self, openai_api_key: Optional[str] = None):
+    def __init__(self, openai_api_key: str | None = None):
         """Initialize the AI data mapping service."""
         self.openai_api_key = openai_api_key
         if openai_api_key:
@@ -26,10 +28,10 @@ class AIDataMappingService:
     @handle_business_logic_error
     def suggest_column_mapping(
         self, 
-        excel_columns: List[str], 
-        target_schema: Dict[str, str],
+        excel_columns: list[str], 
+        target_schema: dict[str, str],
         data_type: str = "suppliers"
-    ) -> Dict[str, Dict[str, float]]:
+    ) -> dict[str, dict[str, float]]:
         """
         Suggest mapping between Excel columns and database fields using AI.
         
@@ -69,9 +71,9 @@ class AIDataMappingService:
     def validate_data_quality(
         self, 
         data: pd.DataFrame, 
-        column_mapping: Dict[str, str],
+        column_mapping: dict[str, str],
         data_type: str = "suppliers"
-    ) -> Dict[str, List[str]]:
+    ) -> dict[str, list[str]]:
         """
         Use AI to validate data quality and suggest corrections.
         
@@ -88,7 +90,7 @@ class AIDataMappingService:
         
         try:
             # Sample first few rows for AI analysis
-            sample_data = data.head(3).to_dict('records')
+            sample_data = data.head(3).to_dict("records")
             
             prompt = self._create_validation_prompt(sample_data, column_mapping, data_type)
             
@@ -109,8 +111,8 @@ class AIDataMappingService:
     
     def _create_mapping_prompt(
         self, 
-        excel_columns: List[str], 
-        target_schema: Dict[str, str], 
+        excel_columns: list[str], 
+        target_schema: dict[str, str], 
         data_type: str
     ) -> str:
         """Create a prompt for AI column mapping."""
@@ -142,8 +144,8 @@ Consider:
     
     def _create_validation_prompt(
         self, 
-        sample_data: List[Dict], 
-        column_mapping: Dict[str, str], 
+        sample_data: list[dict], 
+        column_mapping: dict[str, str], 
         data_type: str
     ) -> str:
         """Create a prompt for AI data validation."""
@@ -179,7 +181,7 @@ Check for:
 - Reasonable business values
 """
     
-    def _parse_ai_response(self, response_text: str) -> Dict[str, Dict[str, float]]:
+    def _parse_ai_response(self, response_text: str) -> dict[str, dict[str, float]]:
         """Parse AI response for column mapping suggestions."""
         try:
             # Try to extract JSON from the response
@@ -195,7 +197,7 @@ Check for:
             logger.warning(f"Failed to parse AI response: {e}")
             return {}
     
-    def _parse_validation_response(self, response_text: str) -> Dict[str, List[str]]:
+    def _parse_validation_response(self, response_text: str) -> dict[str, list[str]]:
         """Parse AI response for data validation."""
         try:
             # Try to extract JSON from the response
@@ -213,25 +215,25 @@ Check for:
     
     def _fallback_mapping(
         self, 
-        excel_columns: List[str], 
-        target_schema: Dict[str, str]
-    ) -> Dict[str, Dict[str, float]]:
+        excel_columns: list[str], 
+        target_schema: dict[str, str]
+    ) -> dict[str, dict[str, float]]:
         """Fallback column mapping without AI."""
         mapping = {}
         
         # Simple keyword-based matching
         mapping_rules = {
-            'name': ['naam', 'name', 'bedrijf', 'company', 'leverancier'],
-            'email': ['email', 'e-mail', 'mail'],
-            'phone': ['telefoon', 'phone', 'tel', 'gsm', 'mobiel'],
-            'address': ['adres', 'address', 'straat', 'street'],
-            'city': ['stad', 'city', 'plaats', 'woonplaats'],
-            'postal_code': ['postcode', 'postal', 'zip'],
-            'country': ['land', 'country'],
-            'contact_person': ['contact', 'contactpersoon', 'persoon'],
-            'description': ['beschrijving', 'description', 'omschrijving'],
-            'price': ['prijs', 'price', 'cost', 'kosten'],
-            'category': ['categorie', 'category', 'type'],
+            "name": ["naam", "name", "bedrijf", "company", "leverancier"],
+            "email": ["email", "e-mail", "mail"],
+            "phone": ["telefoon", "phone", "tel", "gsm", "mobiel"],
+            "address": ["adres", "address", "straat", "street"],
+            "city": ["stad", "city", "plaats", "woonplaats"],
+            "postal_code": ["postcode", "postal", "zip"],
+            "country": ["land", "country"],
+            "contact_person": ["contact", "contactpersoon", "persoon"],
+            "description": ["beschrijving", "description", "omschrijving"],
+            "price": ["prijs", "price", "cost", "kosten"],
+            "category": ["categorie", "category", "type"],
         }
         
         for excel_col in excel_columns:
@@ -258,8 +260,8 @@ Check for:
     def _fallback_validation(
         self, 
         data: pd.DataFrame, 
-        column_mapping: Dict[str, str]
-    ) -> Dict[str, List[str]]:
+        column_mapping: dict[str, str]
+    ) -> dict[str, list[str]]:
         """Fallback data validation without AI."""
         issues = []
         recommendations = []
@@ -276,10 +278,10 @@ Check for:
                     })
         
         # Email validation
-        email_cols = [col for col, field in column_mapping.items() if 'email' in field.lower()]
+        email_cols = [col for col, field in column_mapping.items() if "email" in field.lower()]
         for col in email_cols:
             if col in data.columns:
-                invalid_emails = data[~data[col].str.contains('@', na=False)][col].count()
+                invalid_emails = data[~data[col].str.contains("@", na=False)][col].count()
                 if invalid_emails > 0:
                     issues.append({
                         "type": "invalid_format",

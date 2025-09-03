@@ -29,13 +29,13 @@ from src.config import get_config
 from src.models.landscape import Plant, Product, Supplier
 from src.models.user import db
 from src.routes import n8n_receivers, webhooks
+from src.routes.excel_import import excel_import_bp
+from src.routes.invoices import invoices_bp
 from src.routes.performance import performance_bp
+from src.routes.photos import photos_bp
 from src.routes.plant_recommendations import plant_recommendations_bp
 from src.routes.project_plants import project_plants_bp
 from src.routes.reports import reports_bp
-from src.routes.invoices import invoices_bp
-from src.routes.excel_import import excel_import_bp
-from src.routes.photos import photos_bp
 from src.schemas import (
     ClientCreateSchema,
     ClientUpdateSchema,
@@ -166,11 +166,11 @@ def create_app():
     app.register_blueprint(reports_bp)
     app.register_blueprint(invoices_bp)
     app.register_blueprint(excel_import_bp)
-    app.register_blueprint(photos_bp, url_prefix='/api/photos')
+    app.register_blueprint(photos_bp, url_prefix="/api/photos")
     
     # Register user authentication blueprint
     from src.routes.user import user_bp
-    app.register_blueprint(user_bp, url_prefix='/api')
+    app.register_blueprint(user_bp, url_prefix="/api")
 
     # Register performance monitoring blueprint
     app.register_blueprint(performance_bp)

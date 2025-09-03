@@ -1,10 +1,12 @@
 """Photo model for storing image metadata and organizing visual assets."""
 
-from datetime import datetime
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Enum, Text, Boolean
-from sqlalchemy.orm import relationship
-from src.models.user import db
 import enum
+from datetime import datetime
+
+from sqlalchemy import Boolean, Column, DateTime, Enum, ForeignKey, Integer, String, Text
+from sqlalchemy.orm import relationship
+
+from src.models.user import db
 
 
 class PhotoCategory(enum.Enum):
@@ -21,7 +23,7 @@ class PhotoCategory(enum.Enum):
 class Photo(db.Model):
     """Model for storing photo metadata and file information."""
     
-    __tablename__ = 'photos'
+    __tablename__ = "photos"
     
     id = Column(Integer, primary_key=True)
     filename = Column(String(255), nullable=False)
@@ -40,13 +42,13 @@ class Photo(db.Model):
     alt_text = Column(String(500))  # For accessibility
     
     # Entity relationships (foreign keys)
-    plant_id = Column(Integer, ForeignKey('plants.id'), nullable=True)
-    material_id = Column(Integer, ForeignKey('products.id'), nullable=True)  # Materials are products
-    client_id = Column(Integer, ForeignKey('clients.id'), nullable=True)
-    project_id = Column(Integer, ForeignKey('projects.id'), nullable=True)
+    plant_id = Column(Integer, ForeignKey("plants.id"), nullable=True)
+    material_id = Column(Integer, ForeignKey("products.id"), nullable=True)  # Materials are products
+    client_id = Column(Integer, ForeignKey("clients.id"), nullable=True)
+    project_id = Column(Integer, ForeignKey("projects.id"), nullable=True)
     
     # Metadata
-    uploaded_by_id = Column(Integer, ForeignKey('user.id'), nullable=False)
+    uploaded_by_id = Column(Integer, ForeignKey("user.id"), nullable=False)
     uploaded_at = Column(DateTime, default=datetime.utcnow)
     is_primary = Column(Boolean, default=False)  # Primary photo for entity
     is_public = Column(Boolean, default=True)  # Visible to clients
@@ -63,27 +65,27 @@ class Photo(db.Model):
     def to_dict(self):
         """Convert photo to dictionary for JSON serialization."""
         return {
-            'id': self.id,
-            'filename': self.filename,
-            'original_filename': self.original_filename,
-            'file_path': self.file_path,
-            'thumbnail_path': self.thumbnail_path,
-            'file_size': self.file_size,
-            'mime_type': self.mime_type,
-            'width': self.width,
-            'height': self.height,
-            'category': self.category.value if self.category else None,
-            'title': self.title,
-            'description': self.description,
-            'alt_text': self.alt_text,
-            'plant_id': self.plant_id,
-            'material_id': self.material_id,
-            'client_id': self.client_id,
-            'project_id': self.project_id,
-            'uploaded_by_id': self.uploaded_by_id,
-            'uploaded_at': self.uploaded_at.isoformat() if self.uploaded_at else None,
-            'is_primary': self.is_primary,
-            'is_public': self.is_public,
-            'created_at': self.created_at.isoformat() if self.created_at else None,
-            'updated_at': self.updated_at.isoformat() if self.updated_at else None
+            "id": self.id,
+            "filename": self.filename,
+            "original_filename": self.original_filename,
+            "file_path": self.file_path,
+            "thumbnail_path": self.thumbnail_path,
+            "file_size": self.file_size,
+            "mime_type": self.mime_type,
+            "width": self.width,
+            "height": self.height,
+            "category": self.category.value if self.category else None,
+            "title": self.title,
+            "description": self.description,
+            "alt_text": self.alt_text,
+            "plant_id": self.plant_id,
+            "material_id": self.material_id,
+            "client_id": self.client_id,
+            "project_id": self.project_id,
+            "uploaded_by_id": self.uploaded_by_id,
+            "uploaded_at": self.uploaded_at.isoformat() if self.uploaded_at else None,
+            "is_primary": self.is_primary,
+            "is_public": self.is_public,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "updated_at": self.updated_at.isoformat() if self.updated_at else None
         }
