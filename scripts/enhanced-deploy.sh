@@ -16,8 +16,8 @@ APP_DIR="/var/www/landscape-tool"
 STAGING_DIR="/var/www/landscape-tool-staging"
 BACKUP_DIR="$APP_DIR/backups"
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
-HEALTH_CHECK_URL="https://yourcompany-landscapes.com/health"
-STAGING_URL="https://staging.yourcompany-landscapes.com/health"
+HEALTH_CHECK_URL="${HEALTH_CHECK_URL:-https://yourcompany-landscapes.com/health}"
+STAGING_URL="${STAGING_URL:-https://staging.yourcompany-landscapes.com/health}"
 
 echo -e "${BLUE}🚀 Enhanced Zero-Downtime Deployment with Parallel Testing${NC}"
 echo -e "${BLUE}=================================================${NC}"
