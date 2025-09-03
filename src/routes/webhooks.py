@@ -120,8 +120,10 @@ def trigger_client_onboarding():
 @handle_errors
 def trigger_client_updated():
     """
-    Trigger N8n workflow when client information is updated  # noqa: E501
-    Expected payload: {'client_id': int, 'updated_fields': list, 'client_data': dict}  # noqa: E501
+    Trigger N8n workflow when client information is updated
+
+    Expected payload:
+    {'client_id': int, 'updated_fields': list, 'client_data': dict}
     """
     data = request.get_json()
 
@@ -153,7 +155,8 @@ def trigger_client_updated():
 @handle_errors
 def trigger_project_milestone():
     """
-    Trigger N8n workflow when a project reaches a milestone  # noqa: E501
+    Trigger N8n workflow when a project reaches a milestone
+
     Expected payload: {'project_id': int, 'milestone': str, 'status': str}
     """
     data = request.get_json()
@@ -192,8 +195,10 @@ def trigger_project_milestone():
 @handle_errors
 def trigger_inventory_alert():
     """
-    Trigger N8n workflow for low inventory alerts  # noqa: E501
-    Expected payload: {'plant_id': int, 'current_stock': int, 'minimum_threshold': int}  # noqa: E501
+    Trigger N8n workflow for low inventory alerts
+
+    Expected payload:
+    {'plant_id': int, 'current_stock': int, 'minimum_threshold': int}
     """
     data = request.get_json()
 
