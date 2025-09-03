@@ -40,9 +40,9 @@ class DashboardService:
             cached_result = cache.get(cache_key)
             if cached_result and isinstance(cached_result, dict) and "totals" in cached_result:
                 return cached_result
-        except Exception:
+        except Exception as e:
             # Cache error, proceed to generate fresh data
-            pass
+            logger.warning(f"Cache retrieval failed: {e}")
 
         # Count totals
         total_clients = Client.query.count()

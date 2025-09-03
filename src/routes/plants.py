@@ -3,11 +3,13 @@ from flask import Blueprint, jsonify, request
 
 from src.models.landscape import Plant
 from src.models.user import db
+from src.routes.user import data_access_required, login_required
 
 plants_bp = Blueprint("plants", __name__)
 
 
 @plants_bp.route("/", methods=["GET"])
+@login_required
 def get_plants():
     """Get all plants with optional filtering"""
     try:
@@ -57,6 +59,7 @@ def get_plants():
 
 
 @plants_bp.route("/recommendations", methods=["POST"])
+@data_access_required
 def get_plant_recommendations():
     """Get AI-powered plant recommendations"""
     try:
@@ -194,6 +197,7 @@ def get_plant_recommendations():
 
 
 @plants_bp.route("/", methods=["POST"])
+@data_access_required
 def create_plant():
     """Create a new plant"""
     try:

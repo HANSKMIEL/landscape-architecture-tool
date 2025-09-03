@@ -7,11 +7,13 @@ from datetime import datetime, timedelta
 from flask import Blueprint, jsonify, request
 
 from src.models.landscape import Client, Project, db
+from src.routes.user import data_access_required, login_required
 
 clients_bp = Blueprint("clients", __name__)
 
 
 @clients_bp.route("/api/clients", methods=["GET"])
+@login_required
 def get_clients():
     """Get all clients with optional filtering"""
     try:
@@ -81,6 +83,7 @@ def get_clients():
 
 
 @clients_bp.route("/api/clients", methods=["POST"])
+@data_access_required
 def create_client():
     """Create a new client"""
     try:
@@ -186,6 +189,7 @@ def get_client(client_id):
 
 
 @clients_bp.route("/api/clients/<int:client_id>", methods=["PUT"])
+@data_access_required
 def update_client(client_id):
     """Update an existing client"""
     try:
@@ -240,6 +244,7 @@ def update_client(client_id):
 
 
 @clients_bp.route("/api/clients/<int:client_id>", methods=["DELETE"])
+@data_access_required
 def delete_client(client_id):
     """Delete a client and all associated projects"""
     try:
@@ -360,6 +365,7 @@ def search_clients():
 
 
 @clients_bp.route("/api/clients/export", methods=["GET"])
+@data_access_required
 def export_clients():
     """Export all clients to JSON"""
     try:

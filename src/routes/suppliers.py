@@ -2,11 +2,13 @@ from flask import Blueprint, jsonify, request
 
 from src.models.landscape import Supplier
 from src.models.user import db
+from src.routes.user import data_access_required, login_required
 
 suppliers_bp = Blueprint("suppliers", __name__)
 
 
 @suppliers_bp.route("/", methods=["GET"])
+@login_required
 def get_suppliers():
     """Get all suppliers with optional search"""
     try:
@@ -38,6 +40,7 @@ def get_suppliers():
 
 
 @suppliers_bp.route("/", methods=["POST"])
+@data_access_required
 def create_supplier():
     """Create a new supplier"""
     try:
@@ -76,6 +79,7 @@ def get_supplier(supplier_id):
 
 
 @suppliers_bp.route("/<int:supplier_id>", methods=["PUT"])
+@data_access_required
 def update_supplier(supplier_id):
     """Update a supplier"""
     try:
@@ -105,6 +109,7 @@ def update_supplier(supplier_id):
 
 
 @suppliers_bp.route("/<int:supplier_id>", methods=["DELETE"])
+@data_access_required
 def delete_supplier(supplier_id):
     """Delete a supplier"""
     try:

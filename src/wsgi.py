@@ -17,10 +17,16 @@ application = app
 
 if __name__ == "__main__":
     # For direct execution, run with Waitress
+    # Use environment variable to control host binding for security
+    host = (
+        "0.0.0.0" if os.environ.get("ALLOW_ALL_INTERFACES", "").lower() == "true" else "127.0.0.1"
+    )  # nosec B104 # Controlled by environment variable
+    port = int(os.environ.get("PORT", 8080))
+
     try:
         from waitress import serve
 
-        serve(application, host="0.0.0.0", port=8080)
+        serve(application, host=host, port=port)
     except ImportError:
         print("Waitress not installed. Install with: pip install waitress")
-        application.run(host="0.0.0.0", port=8080)
+        application.run(host=host, port=port)

@@ -14,6 +14,16 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URL") or "sqlite:///landscape_architecture.db"
 
+    # Validate secret key in production
+    @classmethod
+    def validate_production_config(cls):
+        """Validate critical production settings"""
+        issues = []
+        # S105: This is intentional comparison with development default - not a hardcoded secret
+        if cls.SECRET_KEY == "dev-secret-key-change-in-production":  # noqa: S105
+            issues.append("SECRET_KEY is using default development value - set SECRET_KEY environment variable")
+        return issues
+
     # Security configurations
     SESSION_COOKIE_SECURE = True
     SESSION_COOKIE_HTTPONLY = True
@@ -41,6 +51,10 @@ class Config:
     # Webhook timeout settings
     N8N_WEBHOOK_TIMEOUT = int(os.environ.get("N8N_WEBHOOK_TIMEOUT", "30"))
 
+    # File upload settings
+    UPLOAD_FOLDER = os.environ.get("UPLOAD_FOLDER", os.path.join(os.getcwd(), "uploads"))
+    MAX_CONTENT_LENGTH = 10 * 1024 * 1024  # 10MB max file size
+
 
 class DevelopmentConfig(Config):
     """Development configuration"""
@@ -54,6 +68,16 @@ class ProductionConfig(Config):
 
     DEBUG = False
     SECRET_KEY = os.environ.get("SECRET_KEY")
+
+    # Validate production setup
+    def __init__(self):
+        super().__init__()
+        issues = self.validate_production_config()
+        if issues:
+            import warnings
+
+            for issue in issues:
+                warnings.warn(f"SECURITY WARNING: {issue}", UserWarning, stacklevel=2)
 
     # Production database - use SQLite for demo, PostgreSQL in real production
     SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URL") or "sqlite:///landscape_architecture_prod.db"
