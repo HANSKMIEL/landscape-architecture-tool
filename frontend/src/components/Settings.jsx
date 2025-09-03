@@ -11,27 +11,37 @@ import {
   Link,
   Shield,
   Globe,
-  Palette
+  Palette,
+  BarChart3,
+  Brain,
+  Archive
 } from 'lucide-react'
 import ExcelImportManager from './ExcelImportManager'
+import AppearanceSettings from './settings/AppearanceSettings'
+import APISettings from './settings/APISettings'
+import AISettings from './settings/AISettings'
+import BulkDataSettings from './settings/BulkDataSettings'
+import ReportSettings from './settings/ReportSettings'
 
 const Settings = ({ language = 'nl' }) => {
-  const [activeTab, setActiveTab] = useState('data-management')
+  const [activeTab, setActiveTab] = useState('appearance')
 
   const translations = {
     en: {
       title: 'Settings',
       subtitle: 'Configure your landscape architecture application preferences',
-      dataManagement: 'Data Management',
-      dataManagementDesc: 'Import, export, and manage your business data',
-      integrations: 'Integrations',
-      integrationsDesc: 'Connect with external software and APIs',
-      aiAssistant: 'AI Assistant',
-      aiAssistantDesc: 'Configure intelligent data mapping and automation',
       appearance: 'Appearance',
-      appearanceDesc: 'Customize the look and feel of your application',
-      security: 'Security',
-      securityDesc: 'Manage user access and security settings',
+      appearanceDesc: 'Customize colors, fonts, and branding',
+      apis: 'API Integrations',
+      apisDesc: 'Connect with external software and services',
+      ai: 'AI Assistant',
+      aiDesc: 'Configure intelligent automation and recommendations',
+      bulkData: 'Bulk Data Management',
+      bulkDataDesc: 'Import, export, and data processing settings',
+      reports: 'Report Generation',
+      reportsDesc: 'Configure report templates and automation',
+      security: 'Security & Access',
+      securityDesc: 'Manage user permissions and security settings',
       comingSoon: 'Coming Soon',
       enabledFeatures: 'Enabled Features',
       futureIntegrations: 'Future Integrations',
@@ -49,16 +59,18 @@ const Settings = ({ language = 'nl' }) => {
     nl: {
       title: 'Instellingen',
       subtitle: 'Configureer uw landschapsarchitectuur applicatie voorkeuren',
-      dataManagement: 'Gegevensbeheer',
-      dataManagementDesc: 'Importeer, exporteer en beheer uw bedrijfsgegevens',
-      integrations: 'Integraties',
-      integrationsDesc: 'Verbind met externe software en API\'s',
-      aiAssistant: 'AI Assistent',
-      aiAssistantDesc: 'Configureer intelligente gegevenstoewijzing en automatisering',
       appearance: 'Uiterlijk',
-      appearanceDesc: 'Pas het uiterlijk van uw applicatie aan',
-      security: 'Beveiliging',
-      securityDesc: 'Beheer gebruikerstoegang en beveiligingsinstellingen',
+      appearanceDesc: 'Pas kleuren, lettertypen en branding aan',
+      apis: 'API Integraties',
+      apisDesc: 'Verbind met externe software en diensten',
+      ai: 'AI Assistent',
+      aiDesc: 'Configureer intelligente automatisering en aanbevelingen',
+      bulkData: 'Bulkgegevensbeheer',
+      bulkDataDesc: 'Import, export en gegevensverwerkingsinstellingen',
+      reports: 'Rapportage Generatie',
+      reportsDesc: 'Configureer rapportsjablonen en automatisering',
+      security: 'Beveiliging & Toegang',
+      securityDesc: 'Beheer gebruikersrechten en beveiligingsinstellingen',
       comingSoon: 'Binnenkort Beschikbaar',
       enabledFeatures: 'Ingeschakelde Functies',
       futureIntegrations: 'Toekomstige Integraties',
@@ -79,32 +91,39 @@ const Settings = ({ language = 'nl' }) => {
 
   const settingsTabs = [
     {
-      id: 'data-management',
-      label: t.dataManagement,
-      description: t.dataManagementDesc,
-      icon: Database,
-      enabled: true
-    },
-    {
-      id: 'ai-assistant', 
-      label: t.aiAssistant,
-      description: t.aiAssistantDesc,
-      icon: Cpu,
-      enabled: false
-    },
-    {
-      id: 'integrations',
-      label: t.integrations,
-      description: t.integrationsDesc,
-      icon: Link,
-      enabled: false
-    },
-    {
       id: 'appearance',
       label: t.appearance,
       description: t.appearanceDesc,
       icon: Palette,
-      enabled: false
+      enabled: true
+    },
+    {
+      id: 'bulk-data',
+      label: t.bulkData,
+      description: t.bulkDataDesc,
+      icon: Archive,
+      enabled: true
+    },
+    {
+      id: 'ai', 
+      label: t.ai,
+      description: t.aiDesc,
+      icon: Brain,
+      enabled: true
+    },
+    {
+      id: 'apis',
+      label: t.apis,
+      description: t.apisDesc,
+      icon: Link,
+      enabled: true
+    },
+    {
+      id: 'reports',
+      label: t.reports,
+      description: t.reportsDesc,
+      icon: BarChart3,
+      enabled: true
     },
     {
       id: 'security',
@@ -150,90 +169,38 @@ const Settings = ({ language = 'nl' }) => {
 
   const renderTabContent = () => {
     switch (activeTab) {
-      case 'data-management':
-        return <ExcelImportManager />
+      case 'appearance':
+        return <AppearanceSettings language={language} />
       
-      case 'ai-assistant':
+      case 'bulk-data':
+        return <BulkDataSettings language={language} />
+      
+      case 'ai':
+        return <AISettings language={language} />
+      
+      case 'apis':
+        return <APISettings language={language} />
+      
+      case 'reports':
+        return <ReportSettings language={language} />
+      
+      case 'security':
         return (
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Cpu className="h-5 w-5 text-blue-600" />
-                {t.aiAssistant}
+                <Shield className="h-5 w-5 text-red-600" />
+                {t.security}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-center py-8">
-                <Cpu className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                <Shield className="h-16 w-16 text-gray-400 mx-auto mb-4" />
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">{t.comingSoon}</h3>
-                <p className="text-gray-500 mb-4">{t.aiAssistantDesc}</p>
-                <div className="text-sm text-gray-600">
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
-                    <h4 className="font-semibold text-blue-800 mb-2">Geplande AI Functies:</h4>
-                    <ul className="text-blue-700 text-left space-y-1">
-                      <li>• Intelligente Excel kolom toewijzing</li>
-                      <li>• Automatische data validatie en correctie</li>
-                      <li>• Nederlandse bedrijfsdata aanbevelingen</li>
-                      <li>• Slim ontbreken van velden opvullen</li>
-                    </ul>
-                  </div>
-                </div>
+                <p className="text-gray-500 mb-4">{t.securityDesc}</p>
               </div>
             </CardContent>
           </Card>
-        )
-      
-      case 'integrations':
-        return (
-          <div className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Link className="h-5 w-5 text-green-600" />
-                  {t.enabledFeatures}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid gap-4">
-                  <div className="flex items-center justify-between p-4 border border-green-200 bg-green-50 rounded-lg">
-                    <div className="flex items-center gap-3">
-                      <FileSpreadsheet className="h-8 w-8 text-green-600" />
-                      <div>
-                        <h4 className="font-semibold text-green-800">Excel Import/Export</h4>
-                        <p className="text-sm text-green-600">Bulk data management voor leveranciers, planten, producten en klanten</p>
-                      </div>
-                    </div>
-                    <div className="px-3 py-1 bg-green-100 text-green-800 text-sm font-medium rounded-full">Actief</div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Zap className="h-5 w-5 text-blue-600" />
-                  {t.futureIntegrations}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid gap-4">
-                  {futureIntegrations.map((integration, index) => (
-                    <div key={index} className="flex items-center justify-between p-4 border border-gray-200 bg-gray-50 rounded-lg">
-                      <div className="flex items-center gap-3">
-                        <div className="text-2xl">{integration.icon}</div>
-                        <div>
-                          <h4 className="font-semibold text-gray-800">{integration.name}</h4>
-                          <p className="text-sm text-gray-600">{integration.description}</p>
-                        </div>
-                      </div>
-                      <div className="px-3 py-1 bg-gray-100 text-gray-600 text-sm font-medium rounded-full">{integration.category}</div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
         )
       
       default:
