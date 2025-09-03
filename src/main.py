@@ -33,6 +33,7 @@ from src.routes.performance import performance_bp
 from src.routes.plant_recommendations import plant_recommendations_bp
 from src.routes.project_plants import project_plants_bp
 from src.routes.reports import reports_bp
+from src.routes.invoices import invoices_bp
 from src.schemas import (
     ClientCreateSchema,
     ClientUpdateSchema,
@@ -161,6 +162,7 @@ def create_app():
     app.register_blueprint(plant_recommendations_bp)
     app.register_blueprint(project_plants_bp)
     app.register_blueprint(reports_bp)
+    app.register_blueprint(invoices_bp)
     
     # Register user authentication blueprint
     from src.routes.user import user_bp

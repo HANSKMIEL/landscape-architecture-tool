@@ -9,6 +9,7 @@ import {
   FolderOpen,
   Lightbulb,
   FileText,
+  Receipt,
   Settings,
   X,
   Shield,
@@ -28,6 +29,7 @@ const ResponsiveSidebar = ({ isOpen, onClose, language = 'nl', user }) => {
       projects: 'Projects',
       recommendations: 'Plant Recommendations',
       reports: 'Reports',
+      invoices: 'Invoices & Quotes',
       settings: 'Settings',
       closeSidebar: 'Close sidebar'
     },
@@ -40,6 +42,7 @@ const ResponsiveSidebar = ({ isOpen, onClose, language = 'nl', user }) => {
       projects: 'Projecten',
       recommendations: 'Plant Aanbevelingen',
       reports: 'Rapporten',
+      invoices: 'Offertes & Facturen',
       settings: 'Instellingen',
       closeSidebar: 'Sluit zijbalk'
     }
@@ -94,6 +97,12 @@ const ResponsiveSidebar = ({ isOpen, onClose, language = 'nl', user }) => {
       name: t.reports, 
       href: '/reports', 
       icon: FileText,
+      roles: ['admin', 'employee']
+    },
+    { 
+      name: t.invoices, 
+      href: '/invoices', 
+      icon: Receipt,
       roles: ['admin', 'employee']
     },
     { 

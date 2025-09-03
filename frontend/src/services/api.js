@@ -206,6 +206,22 @@ class ApiService {
       method: 'DELETE',
     });
   }
+
+  // Invoice and Quote API
+  async getInvoiceableProjects() {
+    return this.request('/invoices/projects');
+  }
+
+  async generateQuote(projectId, format = 'json') {
+    return this.request(`/invoices/quote/${projectId}?format=${format}`);
+  }
+
+  async generateInvoice(projectId, data = {}) {
+    return this.request(`/invoices/invoice/${projectId}`, {
+      method: 'POST',
+      body: data,
+    });
+  }
 }
 
 export default new ApiService();
