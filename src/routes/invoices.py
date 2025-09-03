@@ -39,7 +39,7 @@ COMPANY_INFO = {
     "bank_account": "NL12 ABCD 0123 4567 89",
 }
 
-@invoices_bp.route("/api/invoices/quote/<int:project_id>", methods=["GET"])
+@invoices_bp.route("/invoices/quote/<int:project_id>", methods=["GET"])
 def generate_quote(project_id):
     """Generate quote for a project"""
     try:
