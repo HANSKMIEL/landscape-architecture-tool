@@ -11,7 +11,7 @@ from flask import Blueprint, jsonify, request
 from pydantic import ValidationError
 from werkzeug.exceptions import HTTPException
 
-from src.routes.user import data_access_required, login_required
+from src.routes.user import data_access_required
 from src.schemas import ProjectPlantCreateSchema, ProjectPlantUpdateSchema
 from src.services.project_plant import ProjectPlantService
 from src.utils.error_handlers import handle_errors

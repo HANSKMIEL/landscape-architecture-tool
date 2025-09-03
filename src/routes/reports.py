@@ -22,7 +22,7 @@ from src.models.landscape import (
     Supplier,
     db,
 )
-from src.routes.user import data_access_required, login_required
+from src.routes.user import login_required
 
 reports_bp = Blueprint("reports", __name__)
 

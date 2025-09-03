@@ -4,12 +4,10 @@
 
 import io
 import logging
-from datetime import datetime
-from typing import Any, Dict, List
+from typing import Any
 
 import pandas as pd
 from flask import Blueprint, jsonify, request, send_file
-from werkzeug.utils import secure_filename
 
 from src.models.landscape import (
     Client,
@@ -19,12 +17,6 @@ from src.models.landscape import (
     db,
 )
 from src.routes.user import data_access_required
-from src.schemas import (
-    ClientCreateSchema,
-    PlantCreateSchema,
-    ProductCreateSchema,
-    SupplierCreateSchema,
-)
 
 excel_import_bp = Blueprint("excel_import", __name__)
 
@@ -205,7 +197,8 @@ def get_import_recommendations(
 
         if missing_supplier_ids:
             recommendations.append(
-                f"Leverancier IDs niet gevonden: {', '.join(map(str, missing_supplier_ids))}. Importeer eerst leveranciers."
+                f"Leverancier IDs niet gevonden: "
+                f"{', '.join(map(str, missing_supplier_ids))}. Importeer eerst leveranciers."
             )
 
     if import_type == "products" and "supplier_id" in df.columns:
@@ -217,7 +210,8 @@ def get_import_recommendations(
 
         if missing_supplier_ids:
             recommendations.append(
-                f"Leverancier IDs niet gevonden: {', '.join(map(str, missing_supplier_ids))}. Importeer eerst leveranciers."
+                f"Leverancier IDs niet gevonden: "
+                f"{', '.join(map(str, missing_supplier_ids))}. Importeer eerst leveranciers."
             )
 
     if len(df) > 1000:
@@ -316,7 +310,10 @@ def process_import_data(df: pd.DataFrame, import_type: str, update_existing: boo
             "updated_records": updated_records,
             "failed_imports": failed_imports,
             "errors": errors[:10],  # Limit to first 10 errors
-            "message": f"Import voltooid: {successful_imports} nieuwe records, {updated_records} bijgewerkt, {failed_imports} gefaald",
+            "message": (
+                f"Import voltooid: {successful_imports} nieuwe records, "
+                f"{updated_records} bijgewerkt, {failed_imports} gefaald"
+            ),
         }
 
     except Exception as e:

@@ -1,7 +1,6 @@
 import io
 import tempfile
 
-import pandas as pd
 import pytest
 
 from tests.fixtures.database import DatabaseTestMixin
@@ -126,8 +125,11 @@ Another Supplier,marie@example.com"""
     def test_validate_plants_csv_with_invalid_supplier_id(self, client, app_context):
         """Test validation with invalid supplier IDs"""
         # Create CSV with invalid supplier ID
-        csv_content = """name,common_name,category,sun_requirements,water_needs,hardiness_zone,height_max,width_max,bloom_time,bloom_color,maintenance,supplier_id
-Test Plant,Test Common,Tree,Sun,Low,5,10.0,8.0,Spring,White,Low,99999"""
+        csv_content = (
+            "name,common_name,category,sun_requirements,water_needs,"
+            "hardiness_zone,height_max,width_max,bloom_time,bloom_color,maintenance,supplier_id\n"
+            "Test Plant,Test Common,Tree,Sun,Low,5,10.0,8.0,Spring,White,Low,99999"
+        )
 
         csv_file = io.BytesIO(csv_content.encode("utf-8"))
 

@@ -1,7 +1,7 @@
 from flask import Blueprint, jsonify
 
 from src.models.landscape import Client, Plant, Product, Project, Supplier
-from src.routes.user import data_access_required, login_required
+from src.routes.user import login_required
 
 dashboard_bp = Blueprint("dashboard", __name__)
 

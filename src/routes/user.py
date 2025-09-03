@@ -1,9 +1,8 @@
-from datetime import datetime, timedelta
+from datetime import datetime
 from functools import wraps
 
 from flask import Blueprint, jsonify, request, session
 from pydantic import BaseModel, ValidationError
-from werkzeug.security import generate_password_hash
 
 from src.models.user import User, db
 

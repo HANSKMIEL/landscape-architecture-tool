@@ -15,7 +15,7 @@ from flask import Blueprint, Response, jsonify, request, session
 
 from src.models.landscape import Plant, PlantRecommendationRequest
 from src.models.user import db
-from src.routes.user import data_access_required, login_required
+from src.routes.user import data_access_required
 from src.services.plant_recommendation import (
     PlantRecommendationEngine,
     RecommendationCriteria,

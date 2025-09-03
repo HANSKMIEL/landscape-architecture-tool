@@ -68,13 +68,14 @@ class ProductionConfig(Config):
 
     DEBUG = False
     SECRET_KEY = os.environ.get("SECRET_KEY")
-    
+
     # Validate production setup
     def __init__(self):
         super().__init__()
         issues = self.validate_production_config()
         if issues:
             import warnings
+
             for issue in issues:
                 warnings.warn(f"SECURITY WARNING: {issue}", UserWarning, stacklevel=2)
 

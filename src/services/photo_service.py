@@ -1,10 +1,9 @@
 """Photo service for handling image uploads, processing, and management."""
 
-import hashlib
 import os
 import uuid
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from flask import current_app
 from PIL import Image

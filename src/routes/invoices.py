@@ -10,21 +10,13 @@ from decimal import Decimal
 from flask import Blueprint, jsonify, request, send_file
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
-from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
+from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib.units import inch
 from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 from sqlalchemy import or_
 
-from src.models.landscape import (
-    Client,
-    Plant,
-    Product,
-    Project,
-    ProjectPlant,
-    Supplier,
-    db,
-)
-from src.routes.user import data_access_required, login_required
+from src.models.landscape import Project, db
+from src.routes.user import data_access_required
 
 invoices_bp = Blueprint("invoices", __name__)
 

@@ -169,7 +169,7 @@ def create_app():
     app.register_blueprint(photos_bp, url_prefix="/api/photos")
 
     # Register user authentication blueprint
-    from src.routes.user import admin_required, data_access_required, login_required, user_bp
+    from src.routes.user import data_access_required, login_required, user_bp
 
     app.register_blueprint(user_bp, url_prefix="/api")
 

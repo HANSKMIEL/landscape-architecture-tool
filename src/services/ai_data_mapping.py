@@ -7,7 +7,6 @@ helping users automatically map columns to database fields and validate data.
 
 import json
 import logging
-from typing import Dict, List, Optional, Tuple
 
 import openai
 import pandas as pd
@@ -53,7 +52,10 @@ class AIDataMappingService:
                 messages=[
                     {
                         "role": "system",
-                        "content": "You are an expert data mapping assistant for Dutch landscape architecture business data.",
+                        "content": (
+                            "You are an expert data mapping assistant for "
+                            "Dutch landscape architecture business data."
+                        ),
                     },
                     {"role": "user", "content": prompt},
                 ],

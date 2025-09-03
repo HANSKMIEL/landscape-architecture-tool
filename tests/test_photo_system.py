@@ -1,6 +1,5 @@
 """Tests for photo upload and management system."""
 
-import os
 import tempfile
 from io import BytesIO
 
