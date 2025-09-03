@@ -178,11 +178,3 @@ const Header = ({
 };
 
 export default Header;
-        </h1>
-      </div>
-    </header>
-  )
-}
-
-export default Header
-
