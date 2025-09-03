@@ -11,6 +11,8 @@ import {
   Lightbulb,
   FileText,
   Receipt,
+  Camera,
+  Calendar,
   Settings,
   X,
   Shield,
@@ -59,6 +61,12 @@ const ResponsiveSidebar = ({ isOpen, onClose, user }) => {
       roles: ['admin', 'employee', 'client']
     },
     { 
+      name: t('navigation.timeline', 'Project Timeline'), 
+      href: '/timeline', 
+      icon: Calendar,
+      roles: ['admin', 'employee', 'client']
+    },
+    { 
       name: t('plants.recommendations', 'Plant Recommendations'), 
       href: '/plant-recommendations', 
       icon: Lightbulb,
@@ -75,6 +83,12 @@ const ResponsiveSidebar = ({ isOpen, onClose, user }) => {
       href: '/invoices', 
       icon: Receipt,
       roles: ['admin', 'employee']
+    },
+    { 
+      name: t('navigation.photos', 'Photo Gallery'), 
+      href: '/photos', 
+      icon: Camera,
+      roles: ['admin', 'employee', 'client']
     },
     { 
       name: t('navigation.settings', 'Settings'), 

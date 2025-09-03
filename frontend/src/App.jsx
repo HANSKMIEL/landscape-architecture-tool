@@ -18,6 +18,8 @@ const Projects = lazy(() => import('./components/Projects'))
 const PlantRecommendations = lazy(() => import('./components/PlantRecommendations'))
 const Reports = lazy(() => import('./components/Reports'))
 const InvoiceQuoteManager = lazy(() => import('./components/InvoiceQuoteManager'))
+const Photos = lazy(() => import('./components/Photos'))
+const ProjectTimeline = lazy(() => import('./components/ProjectTimeline'))
 const Settings = lazy(() => import('./components/Settings'))
 import './unified-professional-styles.css'
 import './enhanced_sidebar_styles.css'
@@ -173,6 +175,8 @@ function AppContent() {
                 <Route path="/plant-recommendations" element={<PlantRecommendations user={user} />} />
                 <Route path="/reports" element={<Reports user={user} />} />
                 <Route path="/invoices" element={<InvoiceQuoteManager user={user} />} />
+                <Route path="/photos" element={<Photos user={user} />} />
+                <Route path="/timeline" element={<ProjectTimeline user={user} />} />
                 <Route path="/settings" element={<Settings user={user} />} />
               </Routes>
             </Suspense>

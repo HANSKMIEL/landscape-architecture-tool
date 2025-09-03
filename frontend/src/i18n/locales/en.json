@@ -6,7 +6,9 @@
     "products": "Products",
     "clients": "Clients",
     "projects": "Projects",
+    "timeline": "Project Timeline",
     "reports": "Reports",
+    "photos": "Photo Gallery",
     "settings": "Settings",
     "logout": "Logout"
   },
@@ -230,5 +232,122 @@
     "info": "Information",
     "close": "Close",
     "profile": "Profile"
+  },
+  "photos": {
+    "title": "Photo Gallery",
+    "subtitle": "Manage and organize your project photos",
+    "uploadPhotos": "Upload Photos",
+    "uploadFirst": "Upload Your First Photo",
+    "searchPlaceholder": "Search photos...",
+    "noPhotos": "No photos found",
+    "noPhotosYet": "Upload some photos to get started",
+    "noPhotosFiltered": "Try adjusting your search or filter settings",
+    "allPhotos": "All Photos",
+    "searchResults": "Search results for",
+    "uploadSuccess": "Photos uploaded successfully",
+    "deleteSuccess": "Photo deleted successfully",
+    "deleteError": "Failed to delete photo",
+    "confirmDelete": "Are you sure you want to delete this photo?",
+    "categories": {
+      "all": "All Photos",
+      "plants": "Plants",
+      "materials": "Materials",
+      "properties": "Properties",
+      "projects": "Projects",
+      "examples": "Examples",
+      "inspiration": "Inspiration",
+      "reference": "Reference"
+    },
+    "stats": {
+      "total": "Total Photos",
+      "filtered": "Filtered",
+      "categories": "Categories",
+      "recent": "This Month"
+    }
+  },
+  "timeline": {
+    "title": "Project Timeline",
+    "subtitle": "Track project milestones and progress",
+    "addMilestone": "Add Milestone",
+    "selectProject": "Select Project",
+    "chooseProject": "Choose a project...",
+    "projectTimeline": "Project Timeline",
+    "noMilestones": "No milestones yet",
+    "addFirstMilestone": "Add your first milestone to get started",
+    "targetDate": "Target Date",
+    "completedDate": "Completed",
+    "assignedTo": "Assigned To",
+    "notes": "Notes",
+    "markComplete": "Mark Complete",
+    "startProgress": "Start Progress",
+    "types": {
+      "design": "Design Phase",
+      "planning": "Planning",
+      "permits": "Permits & Approvals",
+      "preparation": "Site Preparation",
+      "installation": "Installation",
+      "planting": "Planting",
+      "maintenance": "Maintenance",
+      "completion": "Project Completion"
+    },
+    "status": {
+      "pending": "Pending",
+      "in_progress": "In Progress",
+      "completed": "Completed",
+      "delayed": "Delayed"
+    },
+    "priority": {
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High",
+      "critical": "Critical"
+    },
+    "stats": {
+      "completed": "Completed",
+      "inProgress": "In Progress",
+      "pending": "Pending",
+      "progress": "Progress"
+    },
+    "form": {
+      "title": "Title",
+      "titlePlaceholder": "Enter milestone title...",
+      "description": "Description",
+      "descriptionPlaceholder": "Enter milestone description...",
+      "targetDate": "Target Date",
+      "type": "Milestone Type",
+      "priority": "Priority",
+      "assignedTo": "Assigned To",
+      "assignedToPlaceholder": "Team or person responsible...",
+      "notes": "Notes",
+      "notesPlaceholder": "Additional notes or requirements...",
+      "addMilestone": "Add Milestone"
+    },
+    "demo": {
+      "initialConsultation": "Initial Consultation",
+      "consultationDesc": "Meet with client to discuss requirements and vision",
+      "consultationNotes": "Completed successfully. Client approved initial concept.",
+      "siteAnalysis": "Site Analysis & Survey",
+      "analysisDesc": "Detailed site measurement and soil analysis",
+      "analysisNotes": "Site survey completed. Soil test results pending.",
+      "designDevelopment": "Design Development",
+      "designDesc": "Create detailed landscape design and plant selections",
+      "designNotes": "Design 80% complete. Awaiting client feedback on plant selections.",
+      "permitSubmission": "Permit Submission",
+      "permitDesc": "Submit landscape plans for municipal approval",
+      "materialProcurement": "Material Procurement",
+      "procurementDesc": "Order plants, materials, and equipment",
+      "installation": "Installation Phase",
+      "installationDesc": "Begin landscape installation and planting"
+    },
+    "errors": {
+      "fetchProjects": "Failed to load projects",
+      "missingFields": "Please fill in all required fields",
+      "addMilestone": "Failed to add milestone",
+      "updateStatus": "Failed to update status"
+    },
+    "success": {
+      "milestoneAdded": "Milestone added successfully",
+      "statusUpdated": "Status updated successfully"
+    }
   }
 }

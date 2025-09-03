@@ -6,7 +6,9 @@
     "products": "Producten",
     "clients": "Klanten",
     "projects": "Projecten",
+    "timeline": "Project Tijdlijn",
     "reports": "Rapporten",
+    "photos": "Fotogalerij",
     "settings": "Instellingen",
     "logout": "Uitloggen"
   },
@@ -230,5 +232,122 @@
     "info": "Informatie",
     "close": "Sluiten",
     "profile": "Profiel"
+  },
+  "photos": {
+    "title": "Fotogalerij",
+    "subtitle": "Beheer en organiseer uw projectfoto's",
+    "uploadPhotos": "Foto's Uploaden",
+    "uploadFirst": "Upload Uw Eerste Foto",
+    "searchPlaceholder": "Zoek foto's...",
+    "noPhotos": "Geen foto's gevonden",
+    "noPhotosYet": "Upload enkele foto's om te beginnen",
+    "noPhotosFiltered": "Probeer uw zoek- of filterinstellingen aan te passen",
+    "allPhotos": "Alle Foto's",
+    "searchResults": "Zoekresultaten voor",
+    "uploadSuccess": "Foto's succesvol geüpload",
+    "deleteSuccess": "Foto succesvol verwijderd",
+    "deleteError": "Kan foto niet verwijderen",
+    "confirmDelete": "Weet u zeker dat u deze foto wilt verwijderen?",
+    "categories": {
+      "all": "Alle Foto's",
+      "plants": "Planten",
+      "materials": "Materialen",
+      "properties": "Eigenschappen",
+      "projects": "Projecten",
+      "examples": "Voorbeelden",
+      "inspiration": "Inspiratie",
+      "reference": "Referentie"
+    },
+    "stats": {
+      "total": "Totaal Foto's",
+      "filtered": "Gefilterd",
+      "categories": "Categorieën",
+      "recent": "Deze Maand"
+    }
+  },
+  "timeline": {
+    "title": "Project Tijdlijn",
+    "subtitle": "Volg project mijlpalen en voortgang",
+    "addMilestone": "Mijlpaal Toevoegen",
+    "selectProject": "Project Selecteren",
+    "chooseProject": "Kies een project...",
+    "projectTimeline": "Project Tijdlijn",
+    "noMilestones": "Nog geen mijlpalen",
+    "addFirstMilestone": "Voeg uw eerste mijlpaal toe om te beginnen",
+    "targetDate": "Streefddatum",
+    "completedDate": "Voltooid",
+    "assignedTo": "Toegewezen Aan",
+    "notes": "Notities",
+    "markComplete": "Markeer als Voltooid",
+    "startProgress": "Start Voortgang",
+    "types": {
+      "design": "Ontwerpfase",
+      "planning": "Planning",
+      "permits": "Vergunningen & Goedkeuringen",
+      "preparation": "Voorbereiding Terrein",
+      "installation": "Installatie",
+      "planting": "Beplanting",
+      "maintenance": "Onderhoud",
+      "completion": "Project Voltooiing"
+    },
+    "status": {
+      "pending": "In Afwachting",
+      "in_progress": "Bezig",
+      "completed": "Voltooid",
+      "delayed": "Vertraagd"
+    },
+    "priority": {
+      "low": "Laag",
+      "medium": "Gemiddeld",
+      "high": "Hoog",
+      "critical": "Kritiek"
+    },
+    "stats": {
+      "completed": "Voltooid",
+      "inProgress": "Bezig",
+      "pending": "In Afwachting",
+      "progress": "Voortgang"
+    },
+    "form": {
+      "title": "Titel",
+      "titlePlaceholder": "Voer mijlpaal titel in...",
+      "description": "Beschrijving",
+      "descriptionPlaceholder": "Voer mijlpaal beschrijving in...",
+      "targetDate": "Streefddatum",
+      "type": "Mijlpaal Type",
+      "priority": "Prioriteit",
+      "assignedTo": "Toegewezen Aan",
+      "assignedToPlaceholder": "Team of verantwoordelijke persoon...",
+      "notes": "Notities",
+      "notesPlaceholder": "Aanvullende notities of vereisten...",
+      "addMilestone": "Mijlpaal Toevoegen"
+    },
+    "demo": {
+      "initialConsultation": "Eerste Consultatie",
+      "consultationDesc": "Ontmoeting met klant om vereisten en visie te bespreken",
+      "consultationNotes": "Succesvol voltooid. Klant keurde eerste concept goed.",
+      "siteAnalysis": "Terrein Analyse & Opmetingen",
+      "analysisDesc": "Gedetailleerde terrein metingen en grondanalyse",
+      "analysisNotes": "Terrein opmetingen voltooid. Grondtest resultaten in afwachting.",
+      "designDevelopment": "Ontwerp Ontwikkeling",
+      "designDesc": "Maak gedetailleerd landschapsontwerp en planten selecties",
+      "designNotes": "Ontwerp 80% voltooid. Wachten op klant feedback over planten selecties.",
+      "permitSubmission": "Vergunning Aanvraag",
+      "permitDesc": "Dien landschapsplannen in voor gemeentelijke goedkeuring",
+      "materialProcurement": "Materiaal Inkoop",
+      "procurementDesc": "Bestel planten, materialen en uitrusting",
+      "installation": "Installatie Fase",
+      "installationDesc": "Begin landschap installatie en beplanting"
+    },
+    "errors": {
+      "fetchProjects": "Kan projecten niet laden",
+      "missingFields": "Vul alle verplichte velden in",
+      "addMilestone": "Kan mijlpaal niet toevoegen",
+      "updateStatus": "Kan status niet bijwerken"
+    },
+    "success": {
+      "milestoneAdded": "Mijlpaal succesvol toegevoegd",
+      "statusUpdated": "Status succesvol bijgewerkt"
+    }
   }
 }

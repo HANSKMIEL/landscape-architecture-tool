@@ -1,23 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { Camera, Download, Trash2, Star, Eye, MoreVertical, Edit } from 'lucide-react';
-import { Button } from '../ui/button';
-import { Card, CardContent } from '../ui/card';
-import { Badge } from '../ui/badge';
-import { useToast } from '../ui/use-toast';
+import { Card, CardContent } from './ui/card';
+import { Badge } from './ui/badge';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '../ui/dropdown-menu';
+} from './ui/dropdown-menu';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '../ui/dialog';
+} from './ui/dialog';
 
 const PhotoGallery = ({ 
   category = null, 

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Camera, Upload, Images } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
+import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import PhotoUpload from './PhotoUpload';
 import PhotoGallery from './PhotoGallery';
 
