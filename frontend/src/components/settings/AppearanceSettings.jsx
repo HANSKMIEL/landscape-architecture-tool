@@ -129,8 +129,19 @@ const AppearanceSettings = ({ language = 'nl' }) => {
     // Apply theme
     if (settings.theme === 'dark') {
       root.classList.add('dark')
+      document.body.classList.add('dark')
+    } else if (settings.theme === 'auto') {
+      // Auto theme based on system preference
+      if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        root.classList.add('dark')
+        document.body.classList.add('dark')
+      } else {
+        root.classList.remove('dark')
+        document.body.classList.remove('dark')
+      }
     } else {
       root.classList.remove('dark')
+      document.body.classList.remove('dark')
     }
     
     // Apply colors
@@ -138,6 +149,14 @@ const AppearanceSettings = ({ language = 'nl' }) => {
     if (scheme) {
       root.style.setProperty('--primary-color', scheme.primary)
       root.style.setProperty('--secondary-color', scheme.secondary)
+      root.style.setProperty('--accent-color', settings.companyColors?.accent || '#F59E0B')
+    }
+    
+    // Apply custom company colors if using custom scheme
+    if (settings.colorScheme === 'custom') {
+      root.style.setProperty('--primary-color', settings.companyColors.primary)
+      root.style.setProperty('--secondary-color', settings.companyColors.secondary)
+      root.style.setProperty('--accent-color', settings.companyColors.accent)
     }
     
     // Apply font size
@@ -148,21 +167,52 @@ const AppearanceSettings = ({ language = 'nl' }) => {
     const selectedFont = fonts.find(f => f.id === settings.fontFamily)
     if (selectedFont) {
       root.style.setProperty('--font-family', selectedFont.family)
+      document.body.style.fontFamily = selectedFont.family
     }
   }
 
   const resetDefaults = () => {
-    setTheme('light')
-    setColorScheme('blue')
-    setFontSize('medium')
-    setFontFamily('inter')
-    setCompanyColors({
-      primary: '#3B82F6',
-      secondary: '#10B981',
-      accent: '#F59E0B'
-    })
+    const defaultSettings = {
+      theme: 'light',
+      colorScheme: 'blue',
+      fontSize: 'medium',
+      fontFamily: 'inter',
+      companyColors: {
+        primary: '#3B82F6',
+        secondary: '#10B981',
+        accent: '#F59E0B'
+      },
+      companyLogo: ''
+    }
+    
+    setTheme(defaultSettings.theme)
+    setColorScheme(defaultSettings.colorScheme)
+    setFontSize(defaultSettings.fontSize)
+    setFontFamily(defaultSettings.fontFamily)
+    setCompanyColors(defaultSettings.companyColors)
+    setCompanyLogo(defaultSettings.companyLogo)
+    
+    // Clear localStorage
     localStorage.removeItem('appearanceSettings')
+    
+    // Apply default settings immediately for preview
+    applySettings(defaultSettings)
+    
+    alert(language === 'nl' ? 'Standaardwaarden hersteld!' : 'Defaults restored!')
   }
+
+  // Live preview effect
+  useEffect(() => {
+    const currentSettings = {
+      theme,
+      colorScheme,
+      fontSize,
+      fontFamily,
+      companyColors,
+      companyLogo
+    }
+    applySettings(currentSettings)
+  }, [theme, colorScheme, fontSize, fontFamily, companyColors])
 
   return (
     <div className="space-y-6">
