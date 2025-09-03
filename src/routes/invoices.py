@@ -39,12 +39,13 @@ COMPANY_INFO = {
     "bank_account": "NL12 ABCD 0123 4567 89",
 }
 
+
 @invoices_bp.route("/invoices/quote/<int:project_id>", methods=["GET"])
 def generate_quote(project_id):
     """Generate quote for a project"""
     try:
         format_type = request.args.get("format", "json")  # json or pdf
-        
+
         project = db.session.get(Project, project_id)
         if not project:
             return jsonify({"error": "Project niet gevonden"}), 404
@@ -60,44 +61,50 @@ def generate_quote(project_id):
                 quantity = project_plant.quantity or 1
                 unit_cost = Decimal(str(project_plant.unit_cost or 0))
                 line_total = quantity * unit_cost
-                
-                quote_items.append({
-                    "type": "plant",
-                    "description": f"{plant.name} ({plant.common_name or 'Tuinplant'})",
-                    "quantity": quantity,
-                    "unit": "stuks",
-                    "unit_price": float(unit_cost),
-                    "total": float(line_total),
-                    "category": plant.category or "Beplanting",
-                })
+
+                quote_items.append(
+                    {
+                        "type": "plant",
+                        "description": f"{plant.name} ({plant.common_name or 'Tuinplant'})",
+                        "quantity": quantity,
+                        "unit": "stuks",
+                        "unit_price": float(unit_cost),
+                        "total": float(line_total),
+                        "category": plant.category or "Beplanting",
+                    }
+                )
                 subtotal += line_total
 
         # Add project-specific services
         if project.area_size:
             area_rate = Decimal("25.00")  # €25 per m² for design
             design_cost = Decimal(str(project.area_size)) * area_rate
-            quote_items.append({
-                "type": "service",
-                "description": f"Tuinontwerp en planning ({project.area_size} m²)",
-                "quantity": float(project.area_size),
-                "unit": "m²",
-                "unit_price": float(area_rate),
-                "total": float(design_cost),
-                "category": "Ontwerp",
-            })
+            quote_items.append(
+                {
+                    "type": "service",
+                    "description": f"Tuinontwerp en planning ({project.area_size} m²)",
+                    "quantity": float(project.area_size),
+                    "unit": "m²",
+                    "unit_price": float(area_rate),
+                    "total": float(design_cost),
+                    "category": "Ontwerp",
+                }
+            )
             subtotal += design_cost
 
         # Add consultation fee
         consultation_fee = Decimal("150.00")
-        quote_items.append({
-            "type": "service",
-            "description": "Locatiebezoek en adviesgesprek",
-            "quantity": 1,
-            "unit": "uur",
-            "unit_price": float(consultation_fee),
-            "total": float(consultation_fee),
-            "category": "Advies",
-        })
+        quote_items.append(
+            {
+                "type": "service",
+                "description": "Locatiebezoek en adviesgesprek",
+                "quantity": 1,
+                "unit": "uur",
+                "unit_price": float(consultation_fee),
+                "total": float(consultation_fee),
+                "category": "Advies",
+            }
+        )
         subtotal += consultation_fee
 
         # Calculate taxes and totals
@@ -108,8 +115,11 @@ def generate_quote(project_id):
         quote_data = {
             "quote_number": f"OFF-{project.id:04d}-{datetime.now(UTC).strftime('%Y%m')}",
             "generated_at": datetime.now(UTC).isoformat(),
-            "valid_until": (datetime.now(UTC).replace(day=1, month=datetime.now().month+1) if datetime.now().month < 12 
-                          else datetime.now(UTC).replace(year=datetime.now().year+1, month=1, day=1)).isoformat(),
+            "valid_until": (
+                datetime.now(UTC).replace(day=1, month=datetime.now().month + 1)
+                if datetime.now().month < 12
+                else datetime.now(UTC).replace(year=datetime.now().year + 1, month=1, day=1)
+            ).isoformat(),
             "project": {
                 "id": project.id,
                 "name": project.name,
@@ -150,31 +160,40 @@ def generate_quote_pdf(data):
     """Generate PDF version of quote"""
     try:
         buffer = io.BytesIO()
-        doc = SimpleDocTemplate(buffer, pagesize=A4, topMargin=0.5*inch)
+        doc = SimpleDocTemplate(buffer, pagesize=A4, topMargin=0.5 * inch)
         styles = getSampleStyleSheet()
         story = []
 
         # Header with company info
         header_table_data = [
             [
-                Paragraph(f"<b>{COMPANY_INFO['name']}</b><br/>"
-                         f"{COMPANY_INFO['address']}<br/>"
-                         f"{COMPANY_INFO['city']}<br/>"
-                         f"Tel: {COMPANY_INFO['phone']}<br/>"
-                         f"Email: {COMPANY_INFO['email']}", styles["Normal"]),
-                Paragraph(f"<b>OFFERTE</b><br/>"
-                         f"Nummer: {data['quote_number']}<br/>"
-                         f"Datum: {datetime.now(UTC).strftime('%d-%m-%Y')}<br/>"
-                         f"Geldig tot: {datetime.fromisoformat(data['valid_until']).strftime('%d-%m-%Y')}", 
-                         styles["Normal"])
+                Paragraph(
+                    f"<b>{COMPANY_INFO['name']}</b><br/>"
+                    f"{COMPANY_INFO['address']}<br/>"
+                    f"{COMPANY_INFO['city']}<br/>"
+                    f"Tel: {COMPANY_INFO['phone']}<br/>"
+                    f"Email: {COMPANY_INFO['email']}",
+                    styles["Normal"],
+                ),
+                Paragraph(
+                    f"<b>OFFERTE</b><br/>"
+                    f"Nummer: {data['quote_number']}<br/>"
+                    f"Datum: {datetime.now(UTC).strftime('%d-%m-%Y')}<br/>"
+                    f"Geldig tot: {datetime.fromisoformat(data['valid_until']).strftime('%d-%m-%Y')}",
+                    styles["Normal"],
+                ),
             ]
         ]
-        
-        header_table = Table(header_table_data, colWidths=[3*inch, 2.5*inch])
-        header_table.setStyle(TableStyle([
-            ("VALIGN", (0, 0), (-1, -1), "TOP"),
-            ("ALIGN", (1, 0), (1, 0), "RIGHT"),
-        ]))
+
+        header_table = Table(header_table_data, colWidths=[3 * inch, 2.5 * inch])
+        header_table.setStyle(
+            TableStyle(
+                [
+                    ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                    ("ALIGN", (1, 0), (1, 0), "RIGHT"),
+                ]
+            )
+        )
         story.append(header_table)
         story.append(Spacer(1, 30))
 
@@ -190,7 +209,7 @@ def generate_quote_pdf(data):
             client_text += f"<br/>Tel: {client['phone']}"
         if client["email"]:
             client_text += f"<br/>Email: {client['email']}"
-        
+
         story.append(Paragraph(client_text, styles["Normal"]))
         story.append(Spacer(1, 20))
 
@@ -208,30 +227,36 @@ def generate_quote_pdf(data):
 
         # Quote items table
         story.append(Paragraph("<b>Offerte onderdelen:</b>", styles["Heading3"]))
-        
-        items_data = [["Omschrijving", "Aantal", "Eenheid", "Prijs per eenheid", "Totaal"]]
-        
-        for item in data["items"]:
-            items_data.append([
-                item["description"],
-                str(item["quantity"]),
-                item["unit"],
-                f"€ {item['unit_price']:.2f}",
-                f"€ {item['total']:.2f}"
-            ])
 
-        items_table = Table(items_data, colWidths=[2.5*inch, 0.8*inch, 0.8*inch, 1.2*inch, 1.2*inch])
-        items_table.setStyle(TableStyle([
-            ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#2D5016")),
-            ("TEXTCOLOR", (0, 0), (-1, 0), colors.whitesmoke),
-            ("ALIGN", (0, 0), (-1, -1), "LEFT"),
-            ("ALIGN", (1, 0), (-1, -1), "RIGHT"),  # Right align numbers
-            ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-            ("FONTSIZE", (0, 0), (-1, 0), 10),
-            ("BOTTOMPADDING", (0, 0), (-1, 0), 12),
-            ("BACKGROUND", (0, 1), (-1, -1), colors.beige),
-            ("GRID", (0, 0), (-1, -1), 1, colors.black),
-        ]))
+        items_data = [["Omschrijving", "Aantal", "Eenheid", "Prijs per eenheid", "Totaal"]]
+
+        for item in data["items"]:
+            items_data.append(
+                [
+                    item["description"],
+                    str(item["quantity"]),
+                    item["unit"],
+                    f"€ {item['unit_price']:.2f}",
+                    f"€ {item['total']:.2f}",
+                ]
+            )
+
+        items_table = Table(items_data, colWidths=[2.5 * inch, 0.8 * inch, 0.8 * inch, 1.2 * inch, 1.2 * inch])
+        items_table.setStyle(
+            TableStyle(
+                [
+                    ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#2D5016")),
+                    ("TEXTCOLOR", (0, 0), (-1, 0), colors.whitesmoke),
+                    ("ALIGN", (0, 0), (-1, -1), "LEFT"),
+                    ("ALIGN", (1, 0), (-1, -1), "RIGHT"),  # Right align numbers
+                    ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+                    ("FONTSIZE", (0, 0), (-1, 0), 10),
+                    ("BOTTOMPADDING", (0, 0), (-1, 0), 12),
+                    ("BACKGROUND", (0, 1), (-1, -1), colors.beige),
+                    ("GRID", (0, 0), (-1, -1), 1, colors.black),
+                ]
+            )
+        )
         story.append(items_table)
         story.append(Spacer(1, 20))
 
@@ -241,17 +266,21 @@ def generate_quote_pdf(data):
             ["Subtotaal", f"€ {financial['subtotal']:.2f}"],
             [f"BTW ({financial['vat_rate']*100:.0f}%)", f"€ {financial['vat_amount']:.2f}"],
             ["", ""],
-            ["TOTAAL", f"€ {financial['total']:.2f}"]
+            ["TOTAAL", f"€ {financial['total']:.2f}"],
         ]
 
-        summary_table = Table(summary_data, colWidths=[4*inch, 1.5*inch])
-        summary_table.setStyle(TableStyle([
-            ("ALIGN", (0, 0), (-1, -1), "RIGHT"),
-            ("FONTNAME", (0, 3), (1, 3), "Helvetica-Bold"),
-            ("FONTSIZE", (0, 3), (1, 3), 12),
-            ("LINEABOVE", (0, 3), (1, 3), 2, colors.black),
-            ("BACKGROUND", (0, 3), (1, 3), colors.lightgrey),
-        ]))
+        summary_table = Table(summary_data, colWidths=[4 * inch, 1.5 * inch])
+        summary_table.setStyle(
+            TableStyle(
+                [
+                    ("ALIGN", (0, 0), (-1, -1), "RIGHT"),
+                    ("FONTNAME", (0, 3), (1, 3), "Helvetica-Bold"),
+                    ("FONTSIZE", (0, 3), (1, 3), 12),
+                    ("LINEABOVE", (0, 3), (1, 3), 2, colors.black),
+                    ("BACKGROUND", (0, 3), (1, 3), colors.lightgrey),
+                ]
+            )
+        )
         story.append(summary_table)
         story.append(Spacer(1, 30))
 
@@ -262,13 +291,13 @@ def generate_quote_pdf(data):
             "• Prijzen zijn inclusief 21% BTW",
             "• Betaling binnen 30 dagen na factuurdatum",
             "• Aanvullende kosten voor onvoorziene werkzaamheden worden vooraf gecommuniceerd",
-            "• Acceptatie van deze offerte geldt als opdrachtverlening"
+            "• Acceptatie van deze offerte geldt als opdrachtverlening",
         ]
         for term in terms:
             story.append(Paragraph(term, styles["Normal"]))
-        
+
         story.append(Spacer(1, 20))
-        
+
         # Footer
         story.append(Paragraph(f"BTW nummer: {COMPANY_INFO['vat_number']}", styles["Normal"]))
         story.append(Paragraph(f"Bankrekening: {COMPANY_INFO['bank_account']}", styles["Normal"]))
@@ -294,7 +323,7 @@ def generate_invoice(project_id):
     try:
         data = request.get_json() or {}
         format_type = data.get("format", "json")
-        
+
         project = db.session.get(Project, project_id)
         if not project:
             return jsonify({"error": "Project niet gevonden"}), 404
@@ -303,19 +332,21 @@ def generate_invoice(project_id):
         quote_response = generate_quote(project_id)
         if quote_response[1] != 200:  # Error case
             return quote_response
-            
+
         quote_data = quote_response[0].get_json()
-        
+
         # Convert quote to invoice
         invoice_data = quote_data.copy()
-        invoice_data.update({
-            "invoice_number": f"FACT-{project.id:04d}-{datetime.now(UTC).strftime('%Y%m')}",
-            "invoice_date": datetime.now(UTC).isoformat(),
-            "due_date": (datetime.now(UTC).replace(day=datetime.now().day+30)).isoformat(),
-            "payment_terms": "30 dagen",
-            "type": "invoice"
-        })
-        
+        invoice_data.update(
+            {
+                "invoice_number": f"FACT-{project.id:04d}-{datetime.now(UTC).strftime('%Y%m')}",
+                "invoice_date": datetime.now(UTC).isoformat(),
+                "due_date": (datetime.now(UTC).replace(day=datetime.now().day + 30)).isoformat(),
+                "payment_terms": "30 dagen",
+                "type": "invoice",
+            }
+        )
+
         # Remove quote-specific fields
         invoice_data.pop("quote_number", None)
         invoice_data.pop("valid_until", None)
@@ -334,31 +365,40 @@ def generate_invoice_pdf(data):
     """Generate PDF version of invoice"""
     try:
         buffer = io.BytesIO()
-        doc = SimpleDocTemplate(buffer, pagesize=A4, topMargin=0.5*inch)
+        doc = SimpleDocTemplate(buffer, pagesize=A4, topMargin=0.5 * inch)
         styles = getSampleStyleSheet()
         story = []
 
         # Header with company info
         header_table_data = [
             [
-                Paragraph(f"<b>{COMPANY_INFO['name']}</b><br/>"
-                         f"{COMPANY_INFO['address']}<br/>"
-                         f"{COMPANY_INFO['city']}<br/>"
-                         f"Tel: {COMPANY_INFO['phone']}<br/>"
-                         f"Email: {COMPANY_INFO['email']}", styles["Normal"]),
-                Paragraph(f"<b>FACTUUR</b><br/>"
-                         f"Nummer: {data['invoice_number']}<br/>"
-                         f"Datum: {datetime.fromisoformat(data['invoice_date']).strftime('%d-%m-%Y')}<br/>"
-                         f"Vervaldatum: {datetime.fromisoformat(data['due_date']).strftime('%d-%m-%Y')}", 
-                         styles["Normal"])
+                Paragraph(
+                    f"<b>{COMPANY_INFO['name']}</b><br/>"
+                    f"{COMPANY_INFO['address']}<br/>"
+                    f"{COMPANY_INFO['city']}<br/>"
+                    f"Tel: {COMPANY_INFO['phone']}<br/>"
+                    f"Email: {COMPANY_INFO['email']}",
+                    styles["Normal"],
+                ),
+                Paragraph(
+                    f"<b>FACTUUR</b><br/>"
+                    f"Nummer: {data['invoice_number']}<br/>"
+                    f"Datum: {datetime.fromisoformat(data['invoice_date']).strftime('%d-%m-%Y')}<br/>"
+                    f"Vervaldatum: {datetime.fromisoformat(data['due_date']).strftime('%d-%m-%Y')}",
+                    styles["Normal"],
+                ),
             ]
         ]
-        
-        header_table = Table(header_table_data, colWidths=[3*inch, 2.5*inch])
-        header_table.setStyle(TableStyle([
-            ("VALIGN", (0, 0), (-1, -1), "TOP"),
-            ("ALIGN", (1, 0), (1, 0), "RIGHT"),
-        ]))
+
+        header_table = Table(header_table_data, colWidths=[3 * inch, 2.5 * inch])
+        header_table.setStyle(
+            TableStyle(
+                [
+                    ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                    ("ALIGN", (1, 0), (1, 0), "RIGHT"),
+                ]
+            )
+        )
         story.append(header_table)
         story.append(Spacer(1, 30))
 
@@ -374,7 +414,7 @@ def generate_invoice_pdf(data):
             client_text += f"<br/>Tel: {client['phone']}"
         if client["email"]:
             client_text += f"<br/>Email: {client['email']}"
-        
+
         story.append(Paragraph(client_text, styles["Normal"]))
         story.append(Spacer(1, 20))
 
@@ -390,30 +430,36 @@ def generate_invoice_pdf(data):
 
         # Invoice items table
         story.append(Paragraph("<b>Factuur onderdelen:</b>", styles["Heading3"]))
-        
-        items_data = [["Omschrijving", "Aantal", "Eenheid", "Prijs per eenheid", "Totaal"]]
-        
-        for item in data["items"]:
-            items_data.append([
-                item["description"],
-                str(item["quantity"]),
-                item["unit"],
-                f"€ {item['unit_price']:.2f}",
-                f"€ {item['total']:.2f}"
-            ])
 
-        items_table = Table(items_data, colWidths=[2.5*inch, 0.8*inch, 0.8*inch, 1.2*inch, 1.2*inch])
-        items_table.setStyle(TableStyle([
-            ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#2D5016")),
-            ("TEXTCOLOR", (0, 0), (-1, 0), colors.whitesmoke),
-            ("ALIGN", (0, 0), (-1, -1), "LEFT"),
-            ("ALIGN", (1, 0), (-1, -1), "RIGHT"),  # Right align numbers
-            ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-            ("FONTSIZE", (0, 0), (-1, 0), 10),
-            ("BOTTOMPADDING", (0, 0), (-1, 0), 12),
-            ("BACKGROUND", (0, 1), (-1, -1), colors.beige),
-            ("GRID", (0, 0), (-1, -1), 1, colors.black),
-        ]))
+        items_data = [["Omschrijving", "Aantal", "Eenheid", "Prijs per eenheid", "Totaal"]]
+
+        for item in data["items"]:
+            items_data.append(
+                [
+                    item["description"],
+                    str(item["quantity"]),
+                    item["unit"],
+                    f"€ {item['unit_price']:.2f}",
+                    f"€ {item['total']:.2f}",
+                ]
+            )
+
+        items_table = Table(items_data, colWidths=[2.5 * inch, 0.8 * inch, 0.8 * inch, 1.2 * inch, 1.2 * inch])
+        items_table.setStyle(
+            TableStyle(
+                [
+                    ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#2D5016")),
+                    ("TEXTCOLOR", (0, 0), (-1, 0), colors.whitesmoke),
+                    ("ALIGN", (0, 0), (-1, -1), "LEFT"),
+                    ("ALIGN", (1, 0), (-1, -1), "RIGHT"),  # Right align numbers
+                    ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+                    ("FONTSIZE", (0, 0), (-1, 0), 10),
+                    ("BOTTOMPADDING", (0, 0), (-1, 0), 12),
+                    ("BACKGROUND", (0, 1), (-1, -1), colors.beige),
+                    ("GRID", (0, 0), (-1, -1), 1, colors.black),
+                ]
+            )
+        )
         story.append(items_table)
         story.append(Spacer(1, 20))
 
@@ -423,17 +469,21 @@ def generate_invoice_pdf(data):
             ["Subtotaal", f"€ {financial['subtotal']:.2f}"],
             [f"BTW ({financial['vat_rate']*100:.0f}%)", f"€ {financial['vat_amount']:.2f}"],
             ["", ""],
-            ["TE BETALEN", f"€ {financial['total']:.2f}"]
+            ["TE BETALEN", f"€ {financial['total']:.2f}"],
         ]
 
-        summary_table = Table(summary_data, colWidths=[4*inch, 1.5*inch])
-        summary_table.setStyle(TableStyle([
-            ("ALIGN", (0, 0), (-1, -1), "RIGHT"),
-            ("FONTNAME", (0, 3), (1, 3), "Helvetica-Bold"),
-            ("FONTSIZE", (0, 3), (1, 3), 12),
-            ("LINEABOVE", (0, 3), (1, 3), 2, colors.black),
-            ("BACKGROUND", (0, 3), (1, 3), colors.lightgrey),
-        ]))
+        summary_table = Table(summary_data, colWidths=[4 * inch, 1.5 * inch])
+        summary_table.setStyle(
+            TableStyle(
+                [
+                    ("ALIGN", (0, 0), (-1, -1), "RIGHT"),
+                    ("FONTNAME", (0, 3), (1, 3), "Helvetica-Bold"),
+                    ("FONTSIZE", (0, 3), (1, 3), 12),
+                    ("LINEABOVE", (0, 3), (1, 3), 2, colors.black),
+                    ("BACKGROUND", (0, 3), (1, 3), colors.lightgrey),
+                ]
+            )
+        )
         story.append(summary_table)
         story.append(Spacer(1, 30))
 
@@ -443,13 +493,13 @@ def generate_invoice_pdf(data):
             f"• Betaaltermijn: {data['payment_terms']}",
             f"• Bankrekening: {COMPANY_INFO['bank_account']}",
             f"• Onder vermelding van factuurnummer: {data['invoice_number']}",
-            "• Voor vragen kunt u contact opnemen via bovenstaande gegevens"
+            "• Voor vragen kunt u contact opnemen via bovenstaande gegevens",
         ]
         for info in payment_info:
             story.append(Paragraph(info, styles["Normal"]))
-        
+
         story.append(Spacer(1, 20))
-        
+
         # Footer
         story.append(Paragraph(f"BTW nummer: {COMPANY_INFO['vat_number']}", styles["Normal"]))
 
@@ -475,31 +525,27 @@ def list_invoiceable_projects():
         # Handle both Dutch and English status values
         completed_statuses = ["completed", "Afgerond", "afgerond"]
         in_progress_statuses = ["in_progress", "In uitvoering", "in_uitvoering"]
-        
+
         projects = Project.query.filter(
-            or_(
-                Project.status.in_(completed_statuses),
-                Project.status.in_(in_progress_statuses)
-            )
+            or_(Project.status.in_(completed_statuses), Project.status.in_(in_progress_statuses))
         ).all()
-        
+
         invoiceable_projects = []
         for project in projects:
-            invoiceable_projects.append({
-                "id": project.id,
-                "name": project.name,
-                "client_name": project.client.name if project.client else "Onbekende klant",
-                "status": project.status,
-                "budget": float(project.budget) if project.budget else 0,
-                "area_size": float(project.area_size) if project.area_size else 0,
-                "plant_count": len(project.project_plants),
-                "created_at": project.created_at.isoformat() if project.created_at else None,
-            })
-        
-        return jsonify({
-            "projects": invoiceable_projects,
-            "total": len(invoiceable_projects)
-        })
+            invoiceable_projects.append(
+                {
+                    "id": project.id,
+                    "name": project.name,
+                    "client_name": project.client.name if project.client else "Onbekende klant",
+                    "status": project.status,
+                    "budget": float(project.budget) if project.budget else 0,
+                    "area_size": float(project.area_size) if project.area_size else 0,
+                    "plant_count": len(project.project_plants),
+                    "created_at": project.created_at.isoformat() if project.created_at else None,
+                }
+            )
+
+        return jsonify({"projects": invoiceable_projects, "total": len(invoiceable_projects)})
 
     except Exception as e:
         logging.exception("Error listing invoiceable projects")

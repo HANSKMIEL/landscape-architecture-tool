@@ -31,16 +31,16 @@ class TestUserModel:
     def test_password_hashing(self, app_context):
         """Test password hashing and verification"""
         user = User(username="testuser", email="test@example.com", role="employee")
-        password = "mysecretpassword"
-        user.set_password(password)
-        
+        test_password = "mysecretpassword"  # noqa: S105
+        user.set_password(test_password)
+
         # Password should be hashed, not stored in plain text
-        assert user.password_hash != password
+        assert user.password_hash != test_password
         assert user.password_hash is not None
-        
+
         # Should be able to verify correct password
-        assert user.check_password(password) is True
-        
+        assert user.check_password(test_password) is True
+
         # Should reject incorrect password
         assert user.check_password("wrongpassword") is False
 
@@ -49,18 +49,18 @@ class TestUserModel:
         admin_user = User(username="admin", email="admin@test.com", role="admin")
         employee_user = User(username="employee", email="employee@test.com", role="employee")
         client_user = User(username="client", email="client@test.com", role="client")
-        
+
         # Test role checking
         assert admin_user.has_role("admin") is True
         assert admin_user.has_role("employee") is False
         assert employee_user.has_role("employee") is True
         assert client_user.has_role("client") is True
-        
+
         # Test admin access
         assert admin_user.can_access_admin() is True
         assert employee_user.can_access_admin() is False
         assert client_user.can_access_admin() is False
-        
+
         # Test data management access
         assert admin_user.can_manage_data() is True
         assert employee_user.can_manage_data() is True
@@ -69,7 +69,7 @@ class TestUserModel:
     def test_create_admin_user(self, app_context):
         """Test admin user creation utility"""
         admin_user = User.create_admin_user()
-        
+
         assert admin_user.username == "admin"
         assert admin_user.email == "admin@landscape.com"
         assert admin_user.role == "admin"
@@ -77,16 +77,13 @@ class TestUserModel:
 
     def test_create_admin_user_custom(self, app_context):
         """Test admin user creation with custom parameters"""
-        admin_user = User.create_admin_user(
-            username="custom_admin", 
-            email="custom@test.com", 
-            password="custompass123"
-        )
-        
+        test_password = "custompass123"  # noqa: S105
+        admin_user = User.create_admin_user(username="custom_admin", email="custom@test.com", password=test_password)
+
         assert admin_user.username == "custom_admin"
         assert admin_user.email == "custom@test.com"
         assert admin_user.role == "admin"
-        assert admin_user.check_password("custompass123") is True
+        assert admin_user.check_password(test_password) is True
 
     def test_user_to_dict(self, app_context):
         """Test user dictionary conversion"""
@@ -97,8 +94,8 @@ class TestUserModel:
 
         user_dict = user.to_dict()
         expected = {
-            "id": user.id, 
-            "username": "testuser", 
+            "id": user.id,
+            "username": "testuser",
             "email": "test@example.com",
             "role": "employee",
             "is_active": True,

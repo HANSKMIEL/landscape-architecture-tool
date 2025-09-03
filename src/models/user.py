@@ -8,7 +8,7 @@ db = SQLAlchemy()
 
 class User(db.Model):
     """User model with authentication capabilities"""
-    
+
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
@@ -52,16 +52,21 @@ class User(db.Model):
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,
         }
-        
+
         if include_sensitive:
             # Only include sensitive fields when explicitly requested (for admin use)
             pass  # password_hash should never be included in API responses
-            
+
         return result
 
     @staticmethod
-    def create_admin_user(username="admin", email="admin@landscape.com", password="admin123"):
+    def create_admin_user(username="admin", email="admin@landscape.com", password=None):
         """Create default admin user for initial setup"""
+        if password is None:
+            import os
+
+            # Use environment variable or fallback to default
+            password = os.getenv("DEFAULT_ADMIN_PASSWORD", "admin123")
         user = User(username=username, email=email, role="admin")
         user.set_password(password)
         return user

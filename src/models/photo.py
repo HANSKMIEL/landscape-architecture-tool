@@ -11,6 +11,7 @@ from src.models.user import db
 
 class PhotoCategory(enum.Enum):
     """Photo categories for organizing visual assets."""
+
     PLANT = "plant"
     MATERIAL = "material"
     PROPERTY = "property"
@@ -22,9 +23,9 @@ class PhotoCategory(enum.Enum):
 
 class Photo(db.Model):
     """Model for storing photo metadata and file information."""
-    
+
     __tablename__ = "photos"
-    
+
     id = Column(Integer, primary_key=True)
     filename = Column(String(255), nullable=False)
     original_filename = Column(String(255), nullable=False)
@@ -34,19 +35,19 @@ class Photo(db.Model):
     mime_type = Column(String(100))
     width = Column(Integer)
     height = Column(Integer)
-    
+
     # Categorization
     category = Column(Enum(PhotoCategory), nullable=False)
     title = Column(String(200))
     description = Column(Text)
     alt_text = Column(String(500))  # For accessibility
-    
+
     # Entity relationships (foreign keys)
     plant_id = Column(Integer, ForeignKey("plants.id"), nullable=True)
     material_id = Column(Integer, ForeignKey("products.id"), nullable=True)  # Materials are products
     client_id = Column(Integer, ForeignKey("clients.id"), nullable=True)
     project_id = Column(Integer, ForeignKey("projects.id"), nullable=True)
-    
+
     # Metadata
     uploaded_by_id = Column(Integer, ForeignKey("user.id"), nullable=False)
     uploaded_at = Column(DateTime, default=datetime.utcnow)
@@ -54,14 +55,14 @@ class Photo(db.Model):
     is_public = Column(Boolean, default=True)  # Visible to clients
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
+
     # Relationships
     plant = relationship("Plant", back_populates="photos")
     material = relationship("Product", back_populates="photos")
-    client = relationship("Client", back_populates="photos") 
+    client = relationship("Client", back_populates="photos")
     project = relationship("Project", back_populates="photos")
     uploaded_by = relationship("User")
-    
+
     def to_dict(self):
         """Convert photo to dictionary for JSON serialization."""
         return {
@@ -87,5 +88,5 @@ class Photo(db.Model):
             "is_primary": self.is_primary,
             "is_public": self.is_public,
             "created_at": self.created_at.isoformat() if self.created_at else None,
-            "updated_at": self.updated_at.isoformat() if self.updated_at else None
+            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
         }

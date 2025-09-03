@@ -11,7 +11,7 @@ class TestInvoiceGeneration(DatabaseTestMixin):
         """Test getting list of invoiceable projects"""
         response = client.get("/api/invoices/projects")
         assert response.status_code == 200
-        
+
         data = response.get_json()
         assert "projects" in data
         assert "total" in data
@@ -22,13 +22,13 @@ class TestInvoiceGeneration(DatabaseTestMixin):
         # First get available projects
         projects_response = client.get("/api/invoices/projects")
         projects_data = projects_response.get_json()
-        
+
         if projects_data["total"] > 0:
             project_id = projects_data["projects"][0]["id"]
-            
+
             response = client.get(f"/api/invoices/quote/{project_id}?format=json")
             assert response.status_code == 200
-            
+
             data = response.get_json()
             assert "quote_number" in data
             assert "client" in data
@@ -36,7 +36,7 @@ class TestInvoiceGeneration(DatabaseTestMixin):
             assert "items" in data
             assert "financial" in data
             assert "company" in data
-            
+
             # Verify financial calculations
             financial = data["financial"]
             assert "subtotal" in financial
@@ -49,10 +49,10 @@ class TestInvoiceGeneration(DatabaseTestMixin):
         # First get available projects
         projects_response = client.get("/api/invoices/projects")
         projects_data = projects_response.get_json()
-        
+
         if projects_data["total"] > 0:
             project_id = projects_data["projects"][0]["id"]
-            
+
             # Test PDF endpoint (should return PDF content or appropriate response)
             response = client.get(f"/api/invoices/quote/{project_id}?format=pdf")
             # PDF generation might fail in test environment, but endpoint should exist
@@ -63,14 +63,13 @@ class TestInvoiceGeneration(DatabaseTestMixin):
         # First get available projects
         projects_response = client.get("/api/invoices/projects")
         projects_data = projects_response.get_json()
-        
+
         if projects_data["total"] > 0:
             project_id = projects_data["projects"][0]["id"]
-            
-            response = client.post(f"/api/invoices/invoice/{project_id}", 
-                                 json={"format": "json"})
+
+            response = client.post(f"/api/invoices/invoice/{project_id}", json={"format": "json"})
             assert response.status_code == 200
-            
+
             data = response.get_json()
             assert "invoice_number" in data
             assert "invoice_date" in data
@@ -85,23 +84,23 @@ class TestInvoiceGeneration(DatabaseTestMixin):
         """Test that quote financial calculations are correct"""
         projects_response = client.get("/api/invoices/projects")
         projects_data = projects_response.get_json()
-        
+
         if projects_data["total"] > 0:
             project_id = projects_data["projects"][0]["id"]
-            
+
             response = client.get(f"/api/invoices/quote/{project_id}?format=json")
             data = response.get_json()
-            
+
             financial = data["financial"]
             subtotal = financial["subtotal"]
             vat_rate = financial["vat_rate"]
             vat_amount = financial["vat_amount"]
             total = financial["total"]
-            
+
             # Verify VAT calculation
             expected_vat = subtotal * vat_rate
             assert abs(vat_amount - expected_vat) < 0.01  # Allow for rounding
-            
+
             # Verify total calculation
             expected_total = subtotal + vat_amount
             assert abs(total - expected_total) < 0.01  # Allow for rounding
@@ -110,13 +109,13 @@ class TestInvoiceGeneration(DatabaseTestMixin):
         """Test that company information is properly included"""
         projects_response = client.get("/api/invoices/projects")
         projects_data = projects_response.get_json()
-        
+
         if projects_data["total"] > 0:
             project_id = projects_data["projects"][0]["id"]
-            
+
             response = client.get(f"/api/invoices/quote/{project_id}?format=json")
             data = response.get_json()
-            
+
             company = data["company"]
             assert company["name"] == "HANSKMIEL Landschapsarchitectuur"
             assert company["vat_number"] == "NL123456789B01"
@@ -128,7 +127,7 @@ class TestInvoiceGeneration(DatabaseTestMixin):
         """Test handling of invalid project ID"""
         response = client.get("/api/invoices/quote/99999?format=json")
         assert response.status_code == 404
-        
+
         data = response.get_json()
         assert "error" in data
 
@@ -136,16 +135,16 @@ class TestInvoiceGeneration(DatabaseTestMixin):
         """Test that quote items have proper structure"""
         projects_response = client.get("/api/invoices/projects")
         projects_data = projects_response.get_json()
-        
+
         if projects_data["total"] > 0:
             project_id = projects_data["projects"][0]["id"]
-            
+
             response = client.get(f"/api/invoices/quote/{project_id}?format=json")
             data = response.get_json()
-            
+
             items = data["items"]
             assert len(items) > 0
-            
+
             for item in items:
                 assert "description" in item
                 assert "quantity" in item
@@ -154,7 +153,7 @@ class TestInvoiceGeneration(DatabaseTestMixin):
                 assert "total" in item
                 assert "category" in item
                 assert "type" in item
-                
+
                 # Verify calculation
                 expected_total = item["quantity"] * item["unit_price"]
                 assert abs(item["total"] - expected_total) < 0.01

@@ -97,7 +97,7 @@ def create_app():
     # Load configuration
     config = get_config()
     app.config.from_object(config)
-    
+
     # Configure session
     app.permanent_session_lifetime = timedelta(hours=1)
 
@@ -167,9 +167,10 @@ def create_app():
     app.register_blueprint(invoices_bp, url_prefix="/api")
     app.register_blueprint(excel_import_bp, url_prefix="/api")
     app.register_blueprint(photos_bp, url_prefix="/api/photos")
-    
+
     # Register user authentication blueprint
     from src.routes.user import user_bp
+
     app.register_blueprint(user_bp, url_prefix="/api")
 
     # Register performance monitoring blueprint
