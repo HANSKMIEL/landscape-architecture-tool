@@ -11,7 +11,7 @@ import logging
 import openai
 import pandas as pd
 
-from src.utils.error_handlers import handle_business_logic_error
+from src.utils.error_handlers import LandscapeError
 
 logger = logging.getLogger(__name__)
 
@@ -22,10 +22,9 @@ class AIDataMappingService:
     def __init__(self, openai_api_key: str | None = None):
         """Initialize the AI data mapping service."""
         self.openai_api_key = openai_api_key
-        if openai_api_key:
-            openai.api_key = openai_api_key
+        # Use client-based approach instead of global setting
+        self.client = openai.OpenAI(api_key=openai_api_key) if openai_api_key else None
 
-    @handle_business_logic_error
     def suggest_column_mapping(
         self, excel_columns: list[str], target_schema: dict[str, str], data_type: str = "suppliers"
     ) -> dict[str, dict[str, float]]:
@@ -44,10 +43,15 @@ class AIDataMappingService:
             return self._fallback_mapping(excel_columns, target_schema)
 
         try:
+            # Check if client is available
+            if not self.client:
+                logger.warning("OpenAI client not initialized - API key not provided")
+                return {"error": "AI mapping service not available - API key not configured"}
+
             # Create prompt for GPT
             prompt = self._create_mapping_prompt(excel_columns, target_schema, data_type)
 
-            response = openai.chat.completions.create(
+            response = self.client.chat.completions.create(
                 model="gpt-3.5-turbo",
                 messages=[
                     {
@@ -69,7 +73,6 @@ class AIDataMappingService:
             logger.warning(f"AI mapping failed, using fallback: {e}")
             return self._fallback_mapping(excel_columns, target_schema)
 
-    @handle_business_logic_error
     def validate_data_quality(
         self, data: pd.DataFrame, column_mapping: dict[str, str], data_type: str = "suppliers"
     ) -> dict[str, list[str]]:
@@ -84,7 +87,7 @@ class AIDataMappingService:
         Returns:
             Dict with validation results and suggestions
         """
-        if not self.openai_api_key:
+        if not self.client:
             return self._fallback_validation(data, column_mapping)
 
         try:
@@ -93,7 +96,7 @@ class AIDataMappingService:
 
             prompt = self._create_validation_prompt(sample_data, column_mapping, data_type)
 
-            response = openai.chat.completions.create(
+            response = self.client.chat.completions.create(
                 model="gpt-3.5-turbo",
                 messages=[
                     {

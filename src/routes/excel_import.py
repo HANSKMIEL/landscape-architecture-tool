@@ -16,7 +16,7 @@ from src.models.landscape import (
     Supplier,
     db,
 )
-from src.routes.user import data_access_required
+from src.utils.decorators import data_access_required
 
 excel_import_bp = Blueprint("excel_import", __name__)
 
@@ -193,7 +193,16 @@ def get_import_recommendations(
         unique_supplier_ids = df["supplier_id"].dropna().unique()
         existing_suppliers = db.session.query(Supplier.id).filter(Supplier.id.in_(unique_supplier_ids)).all()
         existing_ids = [sid[0] for sid in existing_suppliers]
-        missing_supplier_ids = [sid for sid in unique_supplier_ids if int(sid) not in existing_ids]
+
+        # Safely convert to int with error handling
+        missing_supplier_ids = []
+        for sid in unique_supplier_ids:
+            try:
+                int_sid = int(sid)
+                if int_sid not in existing_ids:
+                    missing_supplier_ids.append(sid)
+            except (ValueError, TypeError):
+                missing_supplier_ids.append(sid)  # Invalid supplier ID format
 
         if missing_supplier_ids:
             recommendations.append(
@@ -222,7 +231,7 @@ def get_import_recommendations(
     return recommendations
 
 
-@excel_import_bp.route("/api/import/process", methods=["POST"])
+@excel_import_bp.route("/import/process", methods=["POST"])
 @data_access_required
 def process_import():
     """Process validated Excel/CSV file and import data"""
@@ -488,7 +497,7 @@ def import_client_row(row_dict: dict[str, Any], update_existing: bool) -> dict[s
         return {"success": False, "error": str(e)}
 
 
-@excel_import_bp.route("/api/import/template/<import_type>", methods=["GET"])
+@excel_import_bp.route("/import/template/<import_type>", methods=["GET"])
 @data_access_required
 def download_template(import_type):
     """Download Excel template for specific import type"""
@@ -700,7 +709,7 @@ def download_template(import_type):
         return jsonify({"error": f"Fout bij genereren template: {e!s}"}), 500
 
 
-@excel_import_bp.route("/api/import/status", methods=["GET"])
+@excel_import_bp.route("/import/status", methods=["GET"])
 @data_access_required
 def get_import_status():
     """Get current import statistics"""

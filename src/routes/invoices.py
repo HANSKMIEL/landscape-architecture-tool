@@ -4,7 +4,7 @@
 
 import io
 import logging
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 
 from flask import Blueprint, jsonify, request, send_file
@@ -109,11 +109,7 @@ def generate_quote(project_id):
         quote_data = {
             "quote_number": f"OFF-{project.id:04d}-{datetime.now(UTC).strftime('%Y%m')}",
             "generated_at": datetime.now(UTC).isoformat(),
-            "valid_until": (
-                datetime.now(UTC).replace(day=1, month=datetime.now().month + 1)
-                if datetime.now().month < 12
-                else datetime.now(UTC).replace(year=datetime.now().year + 1, month=1, day=1)
-            ).isoformat(),
+            "valid_until": (datetime.now(UTC) + timedelta(days=30)).isoformat(),
             "project": {
                 "id": project.id,
                 "name": project.name,
@@ -311,7 +307,7 @@ def generate_quote_pdf(data):
         return jsonify({"error": f"Fout bij genereren offerte PDF: {e!s}"}), 500
 
 
-@invoices_bp.route("/api/invoices/invoice/<int:project_id>", methods=["POST"])
+@invoices_bp.route("/invoices/invoice/<int:project_id>", methods=["POST"])
 @data_access_required
 def generate_invoice(project_id):
     """Generate invoice for a project (converts quote to invoice)"""
@@ -513,7 +509,7 @@ def generate_invoice_pdf(data):
         return jsonify({"error": f"Fout bij genereren factuur PDF: {e!s}"}), 500
 
 
-@invoices_bp.route("/api/invoices/projects", methods=["GET"])
+@invoices_bp.route("/invoices/projects", methods=["GET"])
 @data_access_required
 def list_invoiceable_projects():
     """List projects that can be invoiced"""

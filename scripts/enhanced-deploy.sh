@@ -95,9 +95,13 @@ with app.app_context():
         auth_url="https://yourcompany-landscapes.com/api/auth/login"
     fi
     
+    # Use environment variables for authentication testing
+    admin_username="${ADMIN_USERNAME:-admin}"
+    admin_password="${DEFAULT_ADMIN_PASSWORD:-admin123}"
+    
     auth_response=$(curl -s -X POST "$auth_url" \
         -H "Content-Type: application/json" \
-        -d '{"username":"admin","password":"admin123"}' || echo "AUTH_FAILED")
+        -d "{\"username\":\"$admin_username\",\"password\":\"$admin_password\"}" || echo "AUTH_FAILED")
     
     if [[ "$auth_response" == *"token"* ]]; then
         echo -e "${GREEN}✅ Authentication system working${NC}"

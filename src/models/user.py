@@ -73,8 +73,15 @@ class User(db.Model):
                 # Generate a secure random password if none provided
                 alphabet = string.ascii_letters + string.digits + "!@#$%^&*"
                 password = "".join(secrets.choice(alphabet) for _ in range(16))
-                print(f"IMPORTANT: Generated admin password: {password}")
-                print("Please save this password securely and set DEFAULT_ADMIN_PASSWORD environment variable.")
+
+                # Only print the password in non-production environments
+                if os.getenv("FLASK_ENV", "production") != "production":
+                    print(f"IMPORTANT: Generated admin password: {password}")
+                    print("Please save this password securely and set DEFAULT_ADMIN_PASSWORD environment variable.")
+                else:
+                    print(
+                        "IMPORTANT: Admin password was generated automatically. Please set the DEFAULT_ADMIN_PASSWORD environment variable securely in production."
+                    )
         user = User(username=username, email=email, role="admin")
         user.set_password(password)
         return user

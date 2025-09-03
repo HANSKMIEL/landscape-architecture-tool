@@ -1,7 +1,6 @@
 """API routes for photo upload and management."""
 
 import os
-from functools import wraps
 
 from flask import Blueprint, current_app, jsonify, request, send_file, session
 from flask_cors import cross_origin
@@ -10,6 +9,7 @@ from werkzeug.exceptions import RequestEntityTooLarge
 from src.models.photo import PhotoCategory
 from src.models.user import User
 from src.services.photo_service import PhotoService
+from src.utils.decorators import login_required
 
 photos_bp = Blueprint("photos", __name__)
 
@@ -17,18 +17,6 @@ photos_bp = Blueprint("photos", __name__)
 def get_photo_service():
     """Get photo service instance (lazy initialization)"""
     return PhotoService()
-
-
-def login_required(f):
-    """Decorator to require authentication"""
-
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if "user_id" not in session:
-            return jsonify({"error": "Authentication required"}), 401
-        return f(*args, **kwargs)
-
-    return decorated_function
 
 
 def get_current_user():

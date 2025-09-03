@@ -268,13 +268,7 @@ Update Test Supplier,Jane Updated,update@test.com,+31 20 3333333,Updated Street 
         """Test that large files get appropriate recommendations"""
         # Create a large CSV (simulate with many rows)
         rows = [
-            "Test Supplier "
-            + str(i)
-            + ",Jan,test"
-            + str(i)
-            + "@example.com,+31 20 1234567,Street "
-            + str(i)
-            + ",Amsterdam,1000 AB,Nederland"
+            f"Test Supplier {i},Jan,test{i}@example.com,+31 20 1234567,Street {i},Amsterdam,1000 AB,Nederland"
             for i in range(1500)
         ]  # Simulate large file
         csv_content = "name,contact_person,email,phone,address,city,postal_code,country\n" + "\n".join(rows)

@@ -194,8 +194,8 @@ class PhotoService:
             if "file_path" in locals() and os.path.exists(file_path):
                 try:
                     os.remove(file_path)
-                except OSError:
-                    pass
+                except OSError as cleanup_error:
+                    current_app.logger.error(f"Error cleaning up file {file_path}: {cleanup_error!s}")
 
             return {"success": False, "error": f"Upload failed: {e!s}"}
 

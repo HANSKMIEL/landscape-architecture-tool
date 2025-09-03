@@ -44,7 +44,7 @@ class IssueFingerprinter:
 
         # Remove timestamps and dates (order matters - full timestamps first)
         text = re.sub(r"\d{4}-\d{2}-\d{2}[Tt\s]\d{2}:\d{2}:\d{2}", "[TIMESTAMP]", text)
-        text = re.sub(r"\d{4}-\d{2}-\d{2}", "[TIMESTAMP]", text)
+        text = re.sub(r"\d{4}-\d{2}-\d{2}", "[DATE]", text)
 
         # Remove issue/PR numbers that might change
         text = re.sub(r"#\d+", "[ISSUE_REF]", text)
