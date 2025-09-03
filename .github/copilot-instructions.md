@@ -60,6 +60,21 @@ docker compose up --build  # Note: use 'docker compose' (with space), not 'docke
 
 **KNOWN ISSUE**: The Dockerfile currently has a syntax error in a multi-line Python RUN command. Docker builds will fail until this is fixed.
 
+### Production Deployment
+
+For production deployment, comprehensive guides are available:
+
+- **[Production Deployment Guide](docs/PRODUCTION_DEPLOYMENT.md)** - Complete production setup instructions
+- **[Hostinger Deployment Guide](docs/HOSTINGER_DEPLOYMENT_GUIDE.md)** - Hostinger-specific deployment process  
+- **[General Deployment Guide](documentation/deployment/DEPLOYMENT_GUIDE.md)** - VPS deployment with N8n integration
+
+**Key Production Features:**
+- Zero-downtime deployment system
+- SSL certificate automation (Let's Encrypt)
+- Production environment configuration (`.env.production.template`)
+- Enhanced security settings and monitoring
+- Automated backup and recovery procedures
+
 ## Architecture and Patterns
 
 ### Database Transaction Patterns
@@ -248,17 +263,29 @@ The repository includes automated workflows:
    - Enhanced security scanning with bandit and safety
    - Generates coverage reports
 
-2. **Nightly Maintenance** (`.github/workflows/nightly-maintenance.yml`):
+2. **Enhanced Deployment** (`.github/workflows/enhanced-deployment.yml`):
+   - Zero-downtime deployment with parallel testing
+   - Supports staging, production, and both environments
+   - Health checks and automatic rollback capabilities
+   - Manual trigger with environment selection
+
+3. **Production Deployment** (`.github/workflows/production-deployment.yml`):
+   - Production-ready deployment pipeline
+   - Comprehensive testing before deployment
+   - Container registry integration (GHCR)
+   - Support for staging, production, and hotfix deployments
+
+4. **Nightly Maintenance** (`.github/workflows/nightly-maintenance.yml`):
    - Runs at 19:30 Europe/Amsterdam time (configurable via REPO_TZ variable)
    - Repository cleanup, security checks, health monitoring
    - Manual trigger available via workflow_dispatch
 
-3. **Post-Merge Automation** (`.github/workflows/post-merge.yml`):
+5. **Post-Merge Automation** (`.github/workflows/post-merge.yml`):
    - Analyzes changes for follow-up requirements
    - Auto-creates issues for API, N8n, and documentation reviews
    - Processes README auto-update markers
 
-4. **Issue Verification** (`.github/workflows/verify-issue-closed.yml`):
+6. **Issue Verification** (`.github/workflows/verify-issue-closed.yml`):
    - Validates critical issues after closure
    - Runs appropriate tests based on issue type
    - Adds validation comments
@@ -466,6 +493,7 @@ pyproject.toml          # Python tool configuration (Black, isort, flake8)
 .pre-commit-config.yaml # Pre-commit hooks configuration
 docker-compose.yml      # Multi-service container orchestration
 .env.example           # Environment variables template
+.env.production.template # Production environment configuration
 requirements.txt       # Python production dependencies
 requirements-dev.txt   # Python development dependencies
 ```
@@ -477,6 +505,21 @@ scripts/
 ├── pipeline_health_monitor.py # System health monitoring
 ├── phase4_validation.py       # Comprehensive validation
 └── code_quality_check.py      # Code quality validation
+```
+
+### Documentation Structure
+```
+docs/
+├── PRODUCTION_DEPLOYMENT.md          # Production deployment guide
+├── HOSTINGER_DEPLOYMENT_GUIDE.md     # Hostinger-specific setup
+├── COMPREHENSIVE_DEVELOPMENT_STATUS.md # Complete feature status
+├── SPACE_OVERVIEW.md                 # Copilot Space usage guide
+└── ARCHITECTURE.md                   # Detailed system architecture
+
+documentation/
+├── deployment/                       # Deployment guides and procedures
+├── development/                      # Development guidelines and setup
+└── pipeline/                         # CI/CD documentation and troubleshooting
 ```
 
 ## Environment Variables
