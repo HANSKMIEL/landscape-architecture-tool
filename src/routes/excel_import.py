@@ -76,7 +76,7 @@ def validate_file_structure(df: pd.DataFrame, import_type: str) -> Dict[str, Any
     """Validate DataFrame structure for import type"""
     
     required_columns = {
-        'suppliers': ['name', 'contact_person', 'email', 'phone', 'address', 'city', 'postal_code', 'country'],
+        'suppliers': ['name', 'contact_person', 'email', 'phone', 'address', 'city', 'postal_code', 'website', 'specialization', 'notes'],
         'plants': ['name', 'common_name', 'category', 'sun_requirements', 'water_needs', 'hardiness_zone', 
                   'height_max', 'width_max', 'bloom_time', 'bloom_color', 'maintenance', 'supplier_id'],
         'products': ['name', 'category', 'description', 'price', 'unit', 'supplier_id'],
@@ -307,7 +307,6 @@ def import_supplier_row(row_dict: Dict[str, Any], update_existing: bool) -> Dict
             'address': row_dict['address'],
             'city': row_dict['city'],
             'postal_code': row_dict['postal_code'],
-            'country': row_dict['country'],
             'website': row_dict.get('website', ''),
             'specialization': row_dict.get('specialization', ''),
             'notes': row_dict.get('notes', ''),
@@ -469,10 +468,10 @@ def download_template(import_type):
     try:
         templates = {
             'suppliers': {
-                'columns': ['name', 'contact_person', 'email', 'phone', 'address', 'city', 'postal_code', 'country', 'website', 'specialization', 'notes'],
+                'columns': ['name', 'contact_person', 'email', 'phone', 'address', 'city', 'postal_code', 'website', 'specialization', 'notes'],
                 'sample_data': [
-                    ['Boomkwekerij Peters', 'Jan Peters', 'info@boomkwekerij-peters.nl', '+31 20 1234567', 'Kwekerslaan 1', 'Amsterdam', '1000 AB', 'Nederland', 'www.boomkwekerij-peters.nl', 'Bomen en heesters', 'Gespecialiseerd in grote bomen'],
-                    ['Tuincentrum De Groene Vingers', 'Marie de Vries', 'verkoop@groenvingers.nl', '+31 30 9876543', 'Tuinstraat 15', 'Utrecht', '3500 CD', 'Nederland', 'www.groenvingers.nl', 'Tuinplanten', 'Breed assortiment tuinplanten']
+                    ['Boomkwekerij Peters', 'Jan Peters', 'info@boomkwekerij-peters.nl', '+31 20 1234567', 'Kwekerslaan 1', 'Amsterdam', '1000 AB', 'www.boomkwekerij-peters.nl', 'Bomen en heesters', 'Gespecialiseerd in grote bomen'],
+                    ['Tuincentrum De Groene Vingers', 'Marie de Vries', 'verkoop@groenvingers.nl', '+31 30 9876543', 'Tuinstraat 15', 'Utrecht', '3500 CD', 'www.groenvingers.nl', 'Tuinplanten', 'Breed assortiment tuinplanten']
                 ]
             },
             'plants': {
