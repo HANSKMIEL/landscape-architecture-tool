@@ -35,7 +35,7 @@ def allowed_file(filename):
     return "." in filename and \
            filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
 
-@excel_import_bp.route("/api/import/validate-file", methods=["POST"])
+@excel_import_bp.route("/import/validate-file", methods=["POST"])
 def validate_import_file():
     """Validate uploaded Excel/CSV file structure"""
     try:
