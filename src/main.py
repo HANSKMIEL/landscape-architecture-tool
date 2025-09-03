@@ -94,6 +94,9 @@ def create_app():
     # Load configuration
     config = get_config()
     app.config.from_object(config)
+    
+    # Configure session
+    app.permanent_session_lifetime = timedelta(hours=1)
 
     # Validate critical dependencies - only when app is actually created
     # (not during module import for testing or introspection)
@@ -158,6 +161,10 @@ def create_app():
     app.register_blueprint(plant_recommendations_bp)
     app.register_blueprint(project_plants_bp)
     app.register_blueprint(reports_bp)
+    
+    # Register user authentication blueprint
+    from src.routes.user import user_bp
+    app.register_blueprint(user_bp, url_prefix='/api')
 
     # Register performance monitoring blueprint
     app.register_blueprint(performance_bp)
