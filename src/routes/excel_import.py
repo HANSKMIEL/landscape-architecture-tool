@@ -18,6 +18,7 @@ from src.models.landscape import (
     Supplier,
     db,
 )
+from src.routes.user import data_access_required
 from src.schemas import (
     ClientCreateSchema,
     PlantCreateSchema,
@@ -37,6 +38,7 @@ def allowed_file(filename):
 
 
 @excel_import_bp.route("/import/validate-file", methods=["POST"])
+@data_access_required
 def validate_import_file():
     """Validate uploaded Excel/CSV file structure"""
     try:
@@ -227,6 +229,7 @@ def get_import_recommendations(
 
 
 @excel_import_bp.route("/api/import/process", methods=["POST"])
+@data_access_required
 def process_import():
     """Process validated Excel/CSV file and import data"""
     try:
@@ -489,6 +492,7 @@ def import_client_row(row_dict: dict[str, Any], update_existing: bool) -> dict[s
 
 
 @excel_import_bp.route("/api/import/template/<import_type>", methods=["GET"])
+@data_access_required
 def download_template(import_type):
     """Download Excel template for specific import type"""
     try:
@@ -700,6 +704,7 @@ def download_template(import_type):
 
 
 @excel_import_bp.route("/api/import/status", methods=["GET"])
+@data_access_required
 def get_import_status():
     """Get current import statistics"""
     try:

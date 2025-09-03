@@ -64,9 +64,17 @@ class User(db.Model):
         """Create default admin user for initial setup"""
         if password is None:
             import os
+            import secrets
+            import string
 
-            # Use environment variable or fallback to default
-            password = os.getenv("DEFAULT_ADMIN_PASSWORD", "admin123")
+            # Use environment variable or generate secure random password
+            password = os.getenv("DEFAULT_ADMIN_PASSWORD")
+            if not password:
+                # Generate a secure random password if none provided
+                alphabet = string.ascii_letters + string.digits + "!@#$%^&*"
+                password = "".join(secrets.choice(alphabet) for _ in range(16))
+                print(f"IMPORTANT: Generated admin password: {password}")
+                print("Please save this password securely and set DEFAULT_ADMIN_PASSWORD environment variable.")
         user = User(username=username, email=email, role="admin")
         user.set_password(password)
         return user

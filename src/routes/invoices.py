@@ -24,6 +24,7 @@ from src.models.landscape import (
     Supplier,
     db,
 )
+from src.routes.user import data_access_required, login_required
 
 invoices_bp = Blueprint("invoices", __name__)
 
@@ -41,6 +42,7 @@ COMPANY_INFO = {
 
 
 @invoices_bp.route("/invoices/quote/<int:project_id>", methods=["GET"])
+@data_access_required
 def generate_quote(project_id):
     """Generate quote for a project"""
     try:
@@ -318,6 +320,7 @@ def generate_quote_pdf(data):
 
 
 @invoices_bp.route("/api/invoices/invoice/<int:project_id>", methods=["POST"])
+@data_access_required
 def generate_invoice(project_id):
     """Generate invoice for a project (converts quote to invoice)"""
     try:
@@ -519,6 +522,7 @@ def generate_invoice_pdf(data):
 
 
 @invoices_bp.route("/api/invoices/projects", methods=["GET"])
+@data_access_required
 def list_invoiceable_projects():
     """List projects that can be invoiced"""
     try:

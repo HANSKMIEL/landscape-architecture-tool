@@ -15,6 +15,7 @@ from flask import Blueprint, Response, jsonify, request, session
 
 from src.models.landscape import Plant, PlantRecommendationRequest
 from src.models.user import db
+from src.routes.user import data_access_required, login_required
 from src.services.plant_recommendation import (
     PlantRecommendationEngine,
     RecommendationCriteria,
@@ -28,6 +29,7 @@ recommendation_engine = PlantRecommendationEngine()
 
 
 @plant_recommendations_bp.route("/api/plant-recommendations", methods=["POST"])
+@data_access_required
 def get_plant_recommendations():
     """
     Get plant recommendations based on criteria
@@ -189,6 +191,7 @@ def get_criteria_options():
 
 
 @plant_recommendations_bp.route("/api/plant-recommendations/feedback", methods=["POST"])
+@data_access_required
 def submit_feedback():
     """
     Submit user feedback for a recommendation
@@ -291,6 +294,7 @@ def get_recommendation_history():
 
 
 @plant_recommendations_bp.route("/api/plant-recommendations/export", methods=["POST"])
+@data_access_required
 def export_recommendations():
     """
     Export recommendation results to CSV format
@@ -391,6 +395,7 @@ def export_recommendations():
 
 
 @plant_recommendations_bp.route("/api/plant-recommendations/import", methods=["POST"])
+@data_access_required
 def import_plant_data():
     """
     Import plant data from CSV file

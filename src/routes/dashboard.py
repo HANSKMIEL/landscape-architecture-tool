@@ -1,11 +1,13 @@
 from flask import Blueprint, jsonify
 
 from src.models.landscape import Client, Plant, Product, Project, Supplier
+from src.routes.user import data_access_required, login_required
 
 dashboard_bp = Blueprint("dashboard", __name__)
 
 
 @dashboard_bp.route("/stats", methods=["GET"])
+@login_required
 def get_dashboard_stats():
     """Get dashboard statistics"""
     try:
