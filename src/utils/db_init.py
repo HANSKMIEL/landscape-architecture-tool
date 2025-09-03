@@ -1,7 +1,7 @@
 import logging
 
 from src.models.landscape import Client, Plant, Product, Project, Supplier
-from src.models.user import db
+from src.models.user import User, db
 
 logger = logging.getLogger(__name__)
 
@@ -19,12 +19,48 @@ def initialize_database():
 def populate_sample_data():
     """Populate database with sample data if empty"""
     try:
-        # Check if data already exists
+        # Always check and create users if they don't exist
+        if User.query.count() == 0:
+            logger.info("Creating sample users...")
+            users_data = [
+                {
+                    "username": "admin", 
+                    "email": "admin@landscape.com", 
+                    "password": "admin123", 
+                    "role": "admin"
+                },
+                {
+                    "username": "employee", 
+                    "email": "employee@landscape.com", 
+                    "password": "employee123", 
+                    "role": "employee"
+                },
+                {
+                    "username": "client", 
+                    "email": "client@landscape.com", 
+                    "password": "client123", 
+                    "role": "client"
+                },
+            ]
+
+            for user_data in users_data:
+                user = User(
+                    username=user_data["username"],
+                    email=user_data["email"],
+                    role=user_data["role"]
+                )
+                user.set_password(user_data["password"])
+                db.session.add(user)
+            
+            db.session.commit()
+            logger.info("Sample users created successfully!")
+
+        # Check if business data already exists
         if Supplier.query.count() > 0:
-            logger.info("Sample data already exists, skipping initialization")
+            logger.info("Sample business data already exists, skipping initialization")
             return
 
-        logger.info("Populating database with sample data...")
+        logger.info("Populating database with sample business data...")
 
         # Sample Suppliers
         suppliers_data = [
@@ -314,7 +350,7 @@ def populate_sample_data():
 
         db.session.commit()
 
-        logger.info("Sample data created successfully!")
+        logger.info("Sample business data created successfully!")
         logger.info(
             f"Created {len(suppliers)} suppliers, {len(plants_data)} plants, "
             f"{len(products_data)} products, {len(clients)} clients, "
