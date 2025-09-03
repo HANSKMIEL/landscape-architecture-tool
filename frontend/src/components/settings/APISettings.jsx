@@ -14,6 +14,99 @@ import {
   Database
 } from 'lucide-react'
 
+// --- Simple AES encryption helpers using Web Crypto API ---
+
+// Converts a string to ArrayBuffer
+function str2ab(str) {
+  const buf = new ArrayBuffer(str.length * 2);
+  const bufView = new Uint16Array(buf);
+  for (let i = 0, strLen = str.length; i < strLen; i++) {
+    bufView[i] = str.charCodeAt(i);
+  }
+  return buf;
+}
+
+// Converts ArrayBuffer to string
+function ab2str(buf) {
+  return String.fromCharCode.apply(null, new Uint16Array(buf));
+}
+
+// Derive a crypto key from passphrase
+async function getKeyMaterial(passphrase) {
+  const enc = new TextEncoder();
+  return window.crypto.subtle.importKey(
+    "raw",
+    enc.encode(passphrase),
+    "PBKDF2",
+    false,
+    ["deriveBits", "deriveKey"]
+  );
+}
+
+async function getKey(passphrase, salt) {
+  const keyMaterial = await getKeyMaterial(passphrase);
+  return window.crypto.subtle.deriveKey(
+    {
+      "name": "PBKDF2",
+      salt: salt,
+      "iterations": 100000,
+      "hash": "SHA-256"
+    },
+    keyMaterial,
+    { "name": "AES-GCM", "length": 256 },
+    true,
+    ["encrypt", "decrypt"]
+  );
+}
+
+async function encrypt(text, passphrase) {
+  const enc = new TextEncoder();
+  const salt = window.crypto.getRandomValues(new Uint8Array(16));
+  const iv = window.crypto.getRandomValues(new Uint8Array(12));
+  const key = await getKey(passphrase, salt);
+  const ciphertext = await window.crypto.subtle.encrypt(
+    { name: "AES-GCM", iv: iv },
+    key,
+    enc.encode(text)
+  );
+  return btoa(
+    JSON.stringify({
+      ciphertext: Array.from(new Uint8Array(ciphertext)),
+      iv: Array.from(iv),
+      salt: Array.from(salt)
+    })
+  );
+}
+
+async function decrypt(encryptedData, passphrase) {
+  try {
+    const obj = JSON.parse(atob(encryptedData));
+    const iv = new Uint8Array(obj.iv);
+    const salt = new Uint8Array(obj.salt);
+    const ciphertext = new Uint8Array(obj.ciphertext);
+    const key = await getKey(passphrase, salt);
+    const decrypted = await window.crypto.subtle.decrypt(
+      { name: "AES-GCM", iv: iv },
+      key,
+      ciphertext
+    );
+    const dec = new TextDecoder();
+    return dec.decode(decrypted);
+  } catch(e) {
+    return null;
+  }
+}
+
+async function encryptApiKeys(apiKeys, passphrase) {
+  const encrypted = {};
+  for (let [k, v] of Object.entries(apiKeys)) {
+    encrypted[k] = v ? await encrypt(v, passphrase) : "";
+  }
+  return encrypted;
+}
+
+// Optionally, a decryptApiKeys function can be created similarly
+
 const APISettings = ({ language = 'nl' }) => {
   const [apiKeys, setApiKeys] = useState({
     vectorworks: '',
@@ -152,9 +245,16 @@ const APISettings = ({ language = 'nl' }) => {
     }
   }
 
-  const saveSettings = () => {
+  const saveSettings = async () => {
+    // Prompt user for passphrase for encrypting keys
+    let passphrase = window.prompt(language === 'nl' ? "Voer wachtwoord voor encryptie van API sleutels in:" : "Enter passphrase to encrypt API keys:");
+    if (!passphrase || passphrase.length < 5) {
+      alert(language === 'nl' ? "Wachtwoord te kort. Instellingen niet opgeslagen." : "Passphrase too short. Settings not saved.");
+      return;
+    }
+    const encryptedApiKeys = await encryptApiKeys(apiKeys, passphrase);
     const settings = {
-      apiKeys,
+      apiKeys: encryptedApiKeys,
       apiEndpoints,
       connectionStatus,
       timestamp: new Date().toISOString()
