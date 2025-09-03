@@ -10,6 +10,7 @@ import {
   Lightbulb,
   FileText,
   Receipt,
+  Upload,
   Settings,
   X,
   Shield,
@@ -30,6 +31,7 @@ const ResponsiveSidebar = ({ isOpen, onClose, language = 'nl', user }) => {
       recommendations: 'Plant Recommendations',
       reports: 'Reports',
       invoices: 'Invoices & Quotes',
+      import: 'Excel Import',
       settings: 'Settings',
       closeSidebar: 'Close sidebar'
     },
@@ -43,6 +45,7 @@ const ResponsiveSidebar = ({ isOpen, onClose, language = 'nl', user }) => {
       recommendations: 'Plant Aanbevelingen',
       reports: 'Rapporten',
       invoices: 'Offertes & Facturen',
+      import: 'Excel Import',
       settings: 'Instellingen',
       closeSidebar: 'Sluit zijbalk'
     }
@@ -103,6 +106,12 @@ const ResponsiveSidebar = ({ isOpen, onClose, language = 'nl', user }) => {
       name: t.invoices, 
       href: '/invoices', 
       icon: Receipt,
+      roles: ['admin', 'employee']
+    },
+    { 
+      name: t.import, 
+      href: '/import', 
+      icon: Upload,
       roles: ['admin', 'employee']
     },
     { 

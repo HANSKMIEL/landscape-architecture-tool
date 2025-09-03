@@ -35,6 +35,11 @@ azure-storage-file-datalake>=12.14.0
 # PDF Generation
 reportlab>=4.2.0
 
+# Excel and CSV Processing
+pandas>=2.0.0
+openpyxl>=3.1.0
+xlrd>=2.0.0
+
 # Progress Tracking
 tqdm>=4.67.0
 

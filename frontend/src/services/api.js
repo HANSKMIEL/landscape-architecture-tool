@@ -14,7 +14,10 @@ class ApiService {
       ...options,
     };
 
-    if (config.body && typeof config.body === 'object') {
+    // Handle FormData - don't set Content-Type for FormData
+    if (config.body instanceof FormData) {
+      delete config.headers['Content-Type'];
+    } else if (config.body && typeof config.body === 'object') {
       config.body = JSON.stringify(config.body);
     }
 
@@ -221,6 +224,29 @@ class ApiService {
       method: 'POST',
       body: data,
     });
+  }
+
+  // Excel Import API
+  async getImportStatus() {
+    return this.request('/import/status');
+  }
+
+  async validateImportFile(formData) {
+    return this.request('/import/validate-file', {
+      method: 'POST',
+      body: formData,
+    });
+  }
+
+  async processImport(formData) {
+    return this.request('/import/process', {
+      method: 'POST',
+      body: formData,
+    });
+  }
+
+  async downloadImportTemplate(importType) {
+    return this.request(`/import/template/${importType}`);
   }
 }
 

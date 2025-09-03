@@ -17,6 +17,7 @@ const Projects = lazy(() => import('./components/Projects'))
 const PlantRecommendations = lazy(() => import('./components/PlantRecommendations'))
 const Reports = lazy(() => import('./components/Reports'))
 const InvoiceQuoteManager = lazy(() => import('./components/InvoiceQuoteManager'))
+const ExcelImportManager = lazy(() => import('./components/ExcelImportManager'))
 const Settings = lazy(() => import('./components/Settings'))
 import './unified-professional-styles.css'
 import './enhanced_sidebar_styles.css'
@@ -180,6 +181,7 @@ function App() {
                 <Route path="/plant-recommendations" element={<PlantRecommendations language={language} user={user} />} />
                 <Route path="/reports" element={<Reports language={language} user={user} />} />
                 <Route path="/invoices" element={<InvoiceQuoteManager language={language} user={user} />} />
+                <Route path="/import" element={<ExcelImportManager language={language} user={user} />} />
                 <Route path="/settings" element={<Settings language={language} user={user} />} />
               </Routes>
             </Suspense>
