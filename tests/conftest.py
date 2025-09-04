@@ -7,8 +7,6 @@ from sqlalchemy import create_engine, text
 from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy.pool import StaticPool
 
-# Import test data fixtures to make them available to all tests
-from tests.fixtures.test_data import *  # noqa: F403
 from tests.fixtures.test_stability import (
     cleanup_test_data,
     error_recovery_context,
@@ -120,28 +118,46 @@ def connection(engine):
             # Connection already in transaction - create savepoint for isolation
             outer_tx = conn.begin_nested()
             logger.debug("Created nested transaction (savepoint) on existing transaction")
+
+            try:
+                yield conn
+            finally:
+                # Enhanced cleanup with consistent rollback behavior
+                try:
+                    if outer_tx and outer_tx.is_active:
+                        outer_tx.rollback()
+                        logger.debug("Rolled back nested transaction (savepoint)")
+                except Exception as e:
+                    logger.warning(f"Nested transaction rollback warning: {e}")
+
+                try:
+                    if not conn.closed:
+                        conn.close()
+                        logger.debug("Connection closed successfully")
+                except Exception as e:
+                    logger.warning(f"Connection close warning: {e}")
         else:
             # Connection not in transaction - create regular transaction
             outer_tx = conn.begin()
             logger.debug("Created new outer transaction")
 
-        try:
-            yield conn
-        finally:
-            # Enhanced cleanup with consistent rollback behavior
             try:
-                if outer_tx and outer_tx.is_active:
-                    outer_tx.rollback()
-                    logger.debug("Rolled back outer transaction/savepoint")
-            except Exception as e:
-                logger.warning(f"Transaction rollback warning: {e}")
+                yield conn
+            finally:
+                # Enhanced cleanup with consistent rollback behavior
+                try:
+                    if outer_tx and outer_tx.is_active:
+                        outer_tx.rollback()
+                        logger.debug("Rolled back outer transaction")
+                except Exception as e:
+                    logger.warning(f"Transaction rollback warning: {e}")
 
-            try:
-                if not conn.closed:
-                    conn.close()
-                    logger.debug("Connection closed successfully")
-            except Exception as e:
-                logger.warning(f"Connection close warning: {e}")
+                try:
+                    if not conn.closed:
+                        conn.close()
+                        logger.debug("Connection closed successfully")
+                except Exception as e:
+                    logger.warning(f"Connection close warning: {e}")
 
 
 @pytest.fixture(scope="session")

@@ -9,11 +9,13 @@ import pandas as pd
 from flask import Blueprint, jsonify, request
 
 from src.models.landscape import Product, Supplier, db
+from src.routes.user import data_access_required, login_required
 
 products_bp = Blueprint("products", __name__)
 
 
 @products_bp.route("/api/products", methods=["GET"])
+@login_required
 def get_products():
     """Get all products with optional filtering"""
     try:
@@ -89,6 +91,7 @@ def get_products():
 
 
 @products_bp.route("/api/products", methods=["POST"])
+@data_access_required
 def create_product():
     """Create a new product"""
     try:
@@ -132,6 +135,7 @@ def create_product():
 
 
 @products_bp.route("/api/products/<int:product_id>", methods=["PUT"])
+@data_access_required
 def update_product(product_id):
     """Update an existing product"""
     try:
@@ -174,6 +178,7 @@ def update_product(product_id):
 
 
 @products_bp.route("/api/products/<int:product_id>", methods=["DELETE"])
+@data_access_required
 def delete_product(product_id):
     """Delete a product"""
     try:
@@ -256,6 +261,7 @@ def get_product_stats():
 
 
 @products_bp.route("/api/products/import", methods=["POST"])
+@data_access_required
 def import_products():
     """Import products from Excel/CSV file"""
     try:
@@ -372,6 +378,7 @@ def import_products():
 
 
 @products_bp.route("/api/products/export", methods=["GET"])
+@data_access_required
 def export_products():
     """Export all products to JSON"""
     try:

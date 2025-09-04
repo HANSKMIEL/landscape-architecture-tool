@@ -29,7 +29,10 @@ from src.config import get_config
 from src.models.landscape import Plant, Product, Supplier
 from src.models.user import db
 from src.routes import n8n_receivers, webhooks
+from src.routes.excel_import import excel_import_bp
+from src.routes.invoices import invoices_bp
 from src.routes.performance import performance_bp
+from src.routes.photos import photos_bp
 from src.routes.plant_recommendations import plant_recommendations_bp
 from src.routes.project_plants import project_plants_bp
 from src.routes.reports import reports_bp
@@ -95,6 +98,9 @@ def create_app():
     config = get_config()
     app.config.from_object(config)
 
+    # Configure session
+    app.permanent_session_lifetime = timedelta(hours=1)
+
     # Validate critical dependencies - only when app is actually created
     # (not during module import for testing or introspection)
     dependency_validator = DependencyValidator()
@@ -108,7 +114,7 @@ def create_app():
     Migrate(app, db)
 
     # CORS configuration
-    CORS(app, origins=app.config["CORS_ORIGINS"])
+    CORS(app, origins=app.config["CORS_ORIGINS"], supports_credentials=True)
 
     # Rate limiting - configure properly based on storage type
     storage_url = app.config.get("RATELIMIT_STORAGE_URL", "memory://")
@@ -158,6 +164,14 @@ def create_app():
     app.register_blueprint(plant_recommendations_bp)
     app.register_blueprint(project_plants_bp)
     app.register_blueprint(reports_bp)
+    app.register_blueprint(invoices_bp, url_prefix="/api")
+    app.register_blueprint(excel_import_bp, url_prefix="/api")
+    app.register_blueprint(photos_bp, url_prefix="/api/photos")
+
+    # Register user authentication blueprint
+    from src.routes.user import data_access_required, login_required, user_bp
+
+    app.register_blueprint(user_bp, url_prefix="/api")
 
     # Register performance monitoring blueprint
     app.register_blueprint(performance_bp)
@@ -275,6 +289,7 @@ def create_app():
 
     # Dashboard endpoints
     @app.route("/api/dashboard/stats", methods=["GET"])
+    @login_required
     @handle_errors
     def get_dashboard_stats():
         """Get dashboard statistics"""
@@ -282,6 +297,7 @@ def create_app():
         return jsonify(stats)
 
     @app.route("/api/dashboard/recent-activity", methods=["GET"])
+    @login_required
     @handle_errors
     def get_recent_activity():
         """Get recent activity for dashboard"""
@@ -290,6 +306,7 @@ def create_app():
 
     # Analytics endpoints
     @app.route("/api/analytics/plant-usage", methods=["GET"])
+    @login_required
     @handle_errors
     def get_plant_usage_analytics():
         """Get plant usage analytics"""
@@ -301,6 +318,7 @@ def create_app():
         return jsonify(analytics)
 
     @app.route("/api/analytics/project-performance", methods=["GET"])
+    @login_required
     @handle_errors
     def get_project_performance_analytics():
         """Get project performance analytics"""
@@ -312,6 +330,7 @@ def create_app():
         return jsonify(analytics)
 
     @app.route("/api/analytics/client-insights", methods=["GET"])
+    @login_required
     @handle_errors
     def get_client_insights_analytics():
         """Get client relationship insights"""
@@ -319,6 +338,7 @@ def create_app():
         return jsonify(analytics)
 
     @app.route("/api/analytics/financial", methods=["GET"])
+    @login_required
     @handle_errors
     def get_financial_analytics():
         """Get financial analytics"""
@@ -335,6 +355,7 @@ def create_app():
         return jsonify(analytics)
 
     @app.route("/api/analytics/recommendation-effectiveness", methods=["GET"])
+    @login_required
     @handle_errors
     def get_recommendation_effectiveness_analytics():
         """Get recommendation system effectiveness analytics"""
@@ -343,6 +364,7 @@ def create_app():
 
     # Suppliers endpoints
     @app.route("/api/suppliers", methods=["GET"])
+    @login_required
     @handle_errors
     def get_suppliers():
         """Get all suppliers"""
@@ -383,6 +405,7 @@ def create_app():
         return jsonify(result)
 
     @app.route("/api/suppliers/<int:supplier_id>", methods=["GET"])
+    @login_required
     @handle_errors
     def get_supplier(supplier_id):
         """Get specific supplier by ID"""
@@ -394,6 +417,7 @@ def create_app():
         return jsonify(supplier.to_dict())
 
     @app.route("/api/suppliers", methods=["POST"])
+    @data_access_required
     @handle_errors
     def create_supplier():
         """Create new supplier"""
@@ -422,6 +446,7 @@ def create_app():
             )
 
     @app.route("/api/suppliers/<int:supplier_id>", methods=["PUT"])
+    @data_access_required
     @handle_errors
     def update_supplier(supplier_id):
         """Update supplier"""
@@ -452,6 +477,7 @@ def create_app():
             )
 
     @app.route("/api/suppliers/<int:supplier_id>", methods=["DELETE"])
+    @data_access_required
     @handle_errors
     def delete_supplier(supplier_id):
         """Delete supplier"""
@@ -466,6 +492,7 @@ def create_app():
 
     # Additional supplier endpoints
     @app.route("/api/suppliers/<int:supplier_id>/products", methods=["GET"])
+    @login_required
     @handle_errors
     def get_supplier_products(supplier_id):
         """Get products for a specific supplier"""
@@ -477,6 +504,7 @@ def create_app():
         return jsonify({"products": [product.to_dict() for product in products]})
 
     @app.route("/api/suppliers/<int:supplier_id>/products", methods=["POST"])
+    @data_access_required
     @handle_errors
     def add_product_to_supplier(supplier_id):
         """Add a product to a specific supplier"""
@@ -507,6 +535,7 @@ def create_app():
             )
 
     @app.route("/api/suppliers/<int:supplier_id>/plants", methods=["GET"])
+    @login_required
     @handle_errors
     def get_supplier_plants(supplier_id):
         """Get plants for a specific supplier"""
@@ -519,6 +548,7 @@ def create_app():
         return jsonify({"plants": [plant.to_dict() for plant in plants]})
 
     @app.route("/api/suppliers/<int:supplier_id>/statistics", methods=["GET"])
+    @login_required
     @handle_errors
     def get_supplier_statistics(supplier_id):
         """Get statistics for a specific supplier"""
@@ -559,6 +589,7 @@ def create_app():
         )
 
     @app.route("/api/suppliers/specializations", methods=["GET"])
+    @login_required
     @handle_errors
     def get_supplier_specializations():
         """Get all unique supplier specializations"""
@@ -570,6 +601,7 @@ def create_app():
         return jsonify({"specializations": [spec[0] for spec in specializations]})
 
     @app.route("/api/suppliers/top", methods=["GET"])
+    @login_required
     @handle_errors
     def get_top_suppliers():
         """Get top suppliers by product/plant count"""
@@ -622,6 +654,7 @@ def create_app():
         return jsonify({"suppliers": suppliers_list})
 
     @app.route("/api/suppliers/<int:supplier_id>/contact", methods=["GET"])
+    @login_required
     @handle_errors
     def get_supplier_contact(supplier_id):
         """Get contact information for a specific supplier"""
@@ -661,6 +694,7 @@ def create_app():
         )
 
     @app.route("/api/suppliers/export", methods=["GET"])
+    @login_required
     @handle_errors
     def export_suppliers():
         """Export suppliers data"""
@@ -673,6 +707,7 @@ def create_app():
         return jsonify({"error": "Unsupported format"}), 400
 
     @app.route("/api/suppliers/bulk-import", methods=["POST"])
+    @data_access_required
     @handle_errors
     def bulk_import_suppliers():
         """Bulk import suppliers"""
@@ -709,6 +744,7 @@ def create_app():
 
     # Plants endpoints
     @app.route("/api/plants", methods=["GET"])
+    @login_required
     @handle_errors
     def get_plants():
         """Get all plants"""
@@ -760,6 +796,7 @@ def create_app():
         return jsonify(result)
 
     @app.route("/api/plants", methods=["POST"])
+    @data_access_required
     @handle_errors
     def create_plant():
         """Create new plant"""
@@ -790,6 +827,7 @@ def create_app():
             )
 
     @app.route("/api/plants/<int:plant_id>", methods=["GET"])
+    @login_required
     @handle_errors
     def get_plant(plant_id):
         """Get specific plant by ID"""
@@ -801,6 +839,7 @@ def create_app():
         return jsonify(plant.to_dict())
 
     @app.route("/api/plants/<int:plant_id>", methods=["PUT"])
+    @data_access_required
     @handle_errors
     def update_plant(plant_id):
         """Update plant"""
@@ -829,6 +868,7 @@ def create_app():
             return jsonify({"error": "An internal error occurred"}), 400
 
     @app.route("/api/plants/<int:plant_id>", methods=["DELETE"])
+    @data_access_required
     @handle_errors
     def delete_plant(plant_id):
         """Delete plant"""
@@ -840,6 +880,7 @@ def create_app():
 
     # Additional plant endpoints
     @app.route("/api/plants/categories", methods=["GET"])
+    @login_required
     @handle_errors
     def get_plant_categories():
         """Get unique plant categories"""
@@ -849,6 +890,7 @@ def create_app():
         return jsonify({"categories": [cat[0] for cat in categories]})
 
     @app.route("/api/plants/search-suggestions", methods=["GET"])
+    @login_required
     @handle_errors
     def plant_search_suggestions():
         """Get plant search suggestions"""
@@ -882,6 +924,7 @@ def create_app():
         return jsonify({"suggestions": suggestions})
 
     @app.route("/api/plants/export", methods=["GET"])
+    @login_required
     @handle_errors
     def export_plants():
         """Export plants data"""
@@ -894,6 +937,7 @@ def create_app():
         return jsonify({"error": "Unsupported format"}), 400
 
     @app.route("/api/plants/bulk-import", methods=["POST"])
+    @data_access_required
     @handle_errors
     def bulk_import_plants():
         """Bulk import plants"""
@@ -930,6 +974,7 @@ def create_app():
 
     # Products endpoints
     @app.route("/api/products", methods=["GET"])
+    @login_required
     @handle_errors
     def get_products():
         """Get all products"""
@@ -941,6 +986,7 @@ def create_app():
         return jsonify(result)
 
     @app.route("/api/products", methods=["POST"])
+    @data_access_required
     @handle_errors
     def create_product():
         """Create new product"""
@@ -963,6 +1009,7 @@ def create_app():
             )
 
     @app.route("/api/products/<int:product_id>", methods=["PUT"])
+    @data_access_required
     @handle_errors
     def update_product(product_id):
         """Update product"""
@@ -988,6 +1035,7 @@ def create_app():
             )
 
     @app.route("/api/products/<int:product_id>", methods=["DELETE"])
+    @data_access_required
     @handle_errors
     def delete_product(product_id):
         """Delete product"""
@@ -999,6 +1047,7 @@ def create_app():
 
     # Clients endpoints
     @app.route("/api/clients", methods=["GET"])
+    @login_required
     @handle_errors
     def get_clients():
         """Get all clients"""
@@ -1010,6 +1059,7 @@ def create_app():
         return jsonify(result)
 
     @app.route("/api/clients", methods=["POST"])
+    @data_access_required
     @handle_errors
     def create_client():
         """Create new client"""
@@ -1036,6 +1086,7 @@ def create_app():
             )
 
     @app.route("/api/clients/<int:client_id>", methods=["PUT"])
+    @data_access_required
     @handle_errors
     def update_client(client_id):
         """Update client"""
@@ -1061,6 +1112,7 @@ def create_app():
             )
 
     @app.route("/api/clients/<int:client_id>", methods=["DELETE"])
+    @data_access_required
     @handle_errors
     def delete_client(client_id):
         """Delete client"""
@@ -1072,6 +1124,7 @@ def create_app():
 
     # Projects endpoints
     @app.route("/api/projects", methods=["GET"])
+    @login_required
     @handle_errors
     def get_projects():
         """Get all projects"""
@@ -1086,6 +1139,7 @@ def create_app():
         return jsonify(result)
 
     @app.route("/api/projects", methods=["POST"])
+    @data_access_required
     @handle_errors
     def create_project():
         """Create new project"""
@@ -1108,6 +1162,7 @@ def create_app():
             )
 
     @app.route("/api/projects/<int:project_id>", methods=["PUT"])
+    @data_access_required
     @handle_errors
     def update_project(project_id):
         """Update project"""
@@ -1133,6 +1188,7 @@ def create_app():
             )
 
     @app.route("/api/projects/<int:project_id>", methods=["DELETE"])
+    @data_access_required
     @handle_errors
     def delete_project(project_id):
         """Delete project"""
@@ -1164,9 +1220,13 @@ def main():
 
         flask_env = os.environ.get("FLASK_ENV", "development")
         port = int(os.environ.get("PORT", 5000))
-        # Use 0.0.0.0 for testing to allow CI container access,
-        # 127.0.0.1 for development
-        host = "0.0.0.0" if flask_env == "testing" else "127.0.0.1"
+        # Secure host binding:
+        # - 127.0.0.1 for development (secure)
+        # - 0.0.0.0 only for testing or when explicitly enabled for production
+        if flask_env == "testing" or os.environ.get("ALLOW_ALL_INTERFACES", "").lower() == "true":
+            host = "0.0.0.0"  # nosec B104 # Controlled by environment variable for containerized deployments
+        else:
+            host = "127.0.0.1"
 
         logger.info("Starting Landscape Architecture Management System...")
         logger.info(f"Backend API will be available at: http://{host}:{port}")

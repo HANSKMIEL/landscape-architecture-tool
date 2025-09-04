@@ -8,7 +8,10 @@ including adding plants, updating quantities, and generating reports.
 import logging
 
 from flask import Blueprint, jsonify, request
+from pydantic import ValidationError
+from werkzeug.exceptions import HTTPException
 
+from src.routes.user import data_access_required
 from src.schemas import ProjectPlantCreateSchema, ProjectPlantUpdateSchema
 from src.services.project_plant import ProjectPlantService
 from src.utils.error_handlers import handle_errors
@@ -20,11 +23,19 @@ service = ProjectPlantService()
 
 
 @project_plants_bp.route("/api/projects/<int:project_id>/plants", methods=["POST"])
-@handle_errors
+@data_access_required
 def add_plant_to_project(project_id):
     """Add a plant to a project"""
     try:
+        # Handle missing or invalid content type
+        if not request.is_json:
+            return jsonify({"error": "Content-Type must be application/json"}), 400
+
         data = request.get_json()
+
+        # Check if JSON data was provided
+        if data is None:
+            return jsonify({"error": "JSON data is required"}), 400
 
         # Validate input
         schema = ProjectPlantCreateSchema(**data)
@@ -40,7 +51,14 @@ def add_plant_to_project(project_id):
 
         return jsonify(project_plant.to_dict()), 201
 
-    except ValueError as e:
+    except HTTPException as e:
+        if e.code == 415:
+            return jsonify({"error": "Invalid content type. JSON required"}), 400
+        return jsonify({"error": e.description}), e.code
+    except ValidationError as e:
+        # Provide a minimal, generic error message; do not leak internals
+        return jsonify({"error": "Validation failed", "fields": [err.get("loc", []) for err in e.errors()]}), 400
+    except (ValueError, TypeError) as e:
         return jsonify({"error": str(e)}), 400
     except Exception as e:
         logger.error(f"Error adding plant to project: {e}")
@@ -130,7 +148,14 @@ def get_plant_order_list(project_id):
     """Generate plant order list for suppliers"""
     try:
         order_list = service.generate_plant_order_list(project_id)
-        return jsonify(order_list)
+        return jsonify(
+            {
+                "project_id": project_id,
+                "suppliers": order_list,
+                "total_suppliers": len(order_list),
+                "total_cost": sum(supplier.get("total_cost", 0) for supplier in order_list),
+            }
+        )
 
     except ValueError as e:
         return jsonify({"error": str(e)}), 400

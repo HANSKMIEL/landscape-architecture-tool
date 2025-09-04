@@ -37,6 +37,7 @@ jobs:
     env:
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/app_test
       TEST_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/app_test
+      FLASK_ENV: testing
       PIP_DISABLE_PIP_VERSION_CHECK: 1
       PYTHONUNBUFFERED: "1"
       CI: "true"
