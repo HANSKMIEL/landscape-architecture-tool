@@ -1,0 +1,35 @@
+# Global code owners
+* @HANSKMIEL
+
+# Frontend components
+/frontend/ @HANSKMIEL
+
+# Backend services
+/src/ @HANSKMIEL
+
+# Database migrations
+/migrations/ @HANSKMIEL
+
+# CI/CD workflows
+/.github/workflows/ @HANSKMIEL
+
+# Documentation
+/docs/ @HANSKMIEL
+/README.md @HANSKMIEL
+/CONTRIBUTING.md @HANSKMIEL
+
+# Configuration files
+*.yml @HANSKMIEL
+*.yaml @HANSKMIEL
+*.json @HANSKMIEL
+requirements*.txt @HANSKMIEL
+package.json @HANSKMIEL
+
+# Vectorworks integration
+/src/services/vectorworks_integration.py @HANSKMIEL
+
+# Plant recommendation system
+/src/services/plant_recommendation.py @HANSKMIEL
+
+# Client presentation system
+/src/services/client_presentation.py @HANSKMIEL
