@@ -6,6 +6,7 @@ This test specifically validates the fix for the transaction handling logic
 where both code paths now have consistent cleanup mechanisms.
 """
 
+import os
 import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.pool import StaticPool
@@ -44,7 +45,7 @@ class TestTransactionHandlingConsistency:
         # This test verifies the fix: unified try/finally block handles both transaction states
 
         # Read the conftest.py file and verify the unified cleanup approach
-        conftest_path = "/home/runner/work/landscape-architecture-tool/" "landscape-architecture-tool/tests/conftest.py"
+        conftest_path = os.path.join(os.path.dirname(__file__), "conftest.py")
         with open(conftest_path) as f:
             content = f.read()
 

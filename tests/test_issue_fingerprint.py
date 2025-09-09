@@ -42,20 +42,29 @@ class IssueFingerprinter:
         """Normalize text by removing timestamps, dynamic content, and whitespace variations."""
         import re
 
-        # Remove timestamps and dates (order matters - full timestamps first)
-        text = re.sub(r"\d{4}-\d{2}-\d{2}[Tt\s]\d{2}:\d{2}:\d{2}", "[TIMESTAMP]", text)
+        # Remove timestamps and dates (more comprehensive patterns)
+        text = re.sub(r"\d{4}-\d{2}-\d{2}[T\s]\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})?", "[TIMESTAMP]", text)
         text = re.sub(r"\d{4}-\d{2}-\d{2}", "[DATE]", text)
+        text = re.sub(r"\d{2}:\d{2}:\d{2}", "[TIME]", text)
 
         # Remove issue/PR numbers that might change
         text = re.sub(r"#\d+", "[ISSUE_REF]", text)
 
-        # Remove dynamic IDs and hashes
+        # Remove dynamic IDs and hashes (but preserve meaningful content)
         text = re.sub(r"\b[a-f0-9]{8,}\b", "[HASH]", text)
 
-        # Normalize whitespace
-        text = re.sub(r"\s+", " ", text)
+        # Remove version numbers and build IDs
+        text = re.sub(r"\bv?\d+\.\d+\.\d+(?:\.\d+)?\b", "[VERSION]", text)
+        text = re.sub(r"\bbuild-\d+\b", "[BUILD_ID]", text)
 
-        return text.strip()
+        # Remove file paths that might vary
+        text = re.sub(r"(?:/[^/\s]+)+", "[PATH]", text)
+
+        # Normalize whitespace and punctuation
+        text = re.sub(r"\s+", " ", text)
+        text = re.sub(r'[^\w\s\[\].,?!:;]', " ", text)  # Keep word chars, spaces, brackets, and key punctuation
+
+        return text.strip().lower()
 
     def _classify_issue_type(self, issue_data: dict[str, Any]) -> str:
         """Classify issue type for fingerprinting purposes."""
