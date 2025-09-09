@@ -449,7 +449,7 @@ class TestPlantRecommendationErrorHandling:
     def test_criteria_options_success(self, authenticated_client, app, db_setup):
         """Test successful criteria options retrieval"""
         with app.app_context():
-            response = client.get("/api/plant-recommendations/criteria-options")
+            response = authenticated_client.get("/api/plant-recommendations/criteria-options")
             assert response.status_code == 200
 
             data = json.loads(response.data)
@@ -550,7 +550,7 @@ class TestPlantRecommendationIntegration:
     def test_session_handling(self, authenticated_client, app, db_setup):
         """Test session ID generation and handling"""
         with app.app_context():
-            with client.session_transaction() as sess:
+            with authenticated_client.session_transaction() as sess:
                 # Should not have session_id initially
                 assert "session_id" not in sess
 
@@ -563,11 +563,11 @@ class TestPlantRecommendationIntegration:
             assert response.status_code == 200
 
             # Session should now have session_id (if logging works)
-            with client.session_transaction() as sess:
+            with authenticated_client.session_transaction() as sess:
                 # May or may not have session_id depending on logging success
                 pass  # Just verify no errors occurred
 
-    def test_empty_plant_database(self, client, app):
+    def test_empty_plant_database(self, authenticated_client, app):
         """Test recommendations with empty plant database"""
         with app.app_context():
             db.create_all()  # Empty database

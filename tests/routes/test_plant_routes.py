@@ -28,7 +28,7 @@ class TestPlantRoutes(DatabaseTestMixin):
         db.session.commit()
         
         # Login
-        response = client.post("/api/auth/login", json={"username": "testuser", "password": "testpass"})
+        response = authenticated_client.post("/api/auth/login", json={"username": "testuser", "password": "testpass"})
         assert response.status_code == 200
         
         return client
@@ -167,7 +167,7 @@ class TestPlantRoutes(DatabaseTestMixin):
             "supplier_id": sample_supplier.id,
         }
 
-        response = client.post("/api/plants", data=json.dumps(plant_data), content_type="application/json")
+        response = authenticated_client.post("/api/plants", data=json.dumps(plant_data), content_type="application/json")
 
         assert response.status_code == 201
         data = response.get_json()
@@ -183,7 +183,7 @@ class TestPlantRoutes(DatabaseTestMixin):
         """Test creating plant with minimal required data"""
         plant_data = {"name": "Minimal Plant", "category": "Tree"}
 
-        response = client.post("/api/plants", data=json.dumps(plant_data), content_type="application/json")
+        response = authenticated_client.post("/api/plants", data=json.dumps(plant_data), content_type="application/json")
 
         assert response.status_code == 201
         data = response.get_json()
@@ -194,7 +194,7 @@ class TestPlantRoutes(DatabaseTestMixin):
         """Test creating plant with missing required fields"""
         plant_data = {"common_name": "Missing Name Plant"}
 
-        response = client.post("/api/plants", data=json.dumps(plant_data), content_type="application/json")
+        response = authenticated_client.post("/api/plants", data=json.dumps(plant_data), content_type="application/json")
 
         assert response.status_code == 422
         data = response.get_json()
@@ -209,7 +209,7 @@ class TestPlantRoutes(DatabaseTestMixin):
             "price": "invalid_price",
         }
 
-        response = client.post("/api/plants", data=json.dumps(plant_data), content_type="application/json")
+        response = authenticated_client.post("/api/plants", data=json.dumps(plant_data), content_type="application/json")
 
         assert response.status_code == 422
         data = response.get_json()
@@ -377,7 +377,7 @@ class TestPlantRoutes(DatabaseTestMixin):
             ]
         }
 
-        response = client.post(
+        response = authenticated_client.post(
             "/api/plants/bulk-import",
             data=json.dumps(plants_data),
             content_type="application/json",
@@ -393,12 +393,12 @@ class TestPlantRoutes(DatabaseTestMixin):
     def test_plants_error_handling(self, authenticated_client, app_context):
         """Test API error handling"""
         # Test invalid JSON
-        response = client.post("/api/plants", data="invalid json", content_type="application/json")
+        response = authenticated_client.post("/api/plants", data="invalid json", content_type="application/json")
 
         assert response.status_code == 400
 
         # Test missing content type
-        response = client.post("/api/plants", data='{"name": "Test"}')
+        response = authenticated_client.post("/api/plants", data='{"name": "Test"}')
 
         assert response.status_code == 400
 
@@ -412,7 +412,7 @@ class TestPlantRoutes(DatabaseTestMixin):
             "price": "not_a_number",
         }
 
-        response = client.post("/api/plants", data=json.dumps(plant_data), content_type="application/json")
+        response = authenticated_client.post("/api/plants", data=json.dumps(plant_data), content_type="application/json")
 
         assert response.status_code == 422
         data = response.get_json()
@@ -442,7 +442,7 @@ class TestPlantRoutesIntegration(DatabaseTestMixin):
         }
 
         # 1. Create plant
-        response = client.post("/api/plants", data=json.dumps(plant_data), content_type="application/json")
+        response = authenticated_client.post("/api/plants", data=json.dumps(plant_data), content_type="application/json")
         assert response.status_code == 201
         created_plant = response.get_json()
         plant_id = created_plant["id"]
