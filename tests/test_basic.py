@@ -49,9 +49,9 @@ class TestAPIDocumentation:
 class TestSupplierEndpoints:
     """Test supplier-related endpoints"""
 
-    def test_get_suppliers_empty(self, client):
+    def test_get_suppliers_empty(self, authenticated_client):
         """Test getting suppliers when database is empty"""
-        response = client.get("/api/suppliers")
+        response = authenticated_client.get("/api/suppliers")
         assert response.status_code == 200
         data = response.get_json()
         assert isinstance(data, dict)
@@ -59,7 +59,7 @@ class TestSupplierEndpoints:
         assert data["suppliers"] == []
         assert data["total"] == 0
 
-    def test_create_supplier_valid(self, client):
+    def test_create_supplier_valid(self, authenticated_client):
         """Test creating a valid supplier"""
         supplier_data = {
             "name": "Test Supplier",
@@ -69,30 +69,30 @@ class TestSupplierEndpoints:
             "address": "123 Test St",
         }
 
-        response = client.post("/api/suppliers", json=supplier_data)
+        response = authenticated_client.post("/api/suppliers", json=supplier_data)
         assert response.status_code == 201
 
         data = response.get_json()
         assert data["name"] == supplier_data["name"]
         assert data["email"] == supplier_data["email"]
 
-    def test_create_supplier_invalid(self, client):
+    def test_create_supplier_invalid(self, authenticated_client):
         """Test creating supplier with invalid data"""
         invalid_data = {
             "name": "",  # Empty name should be invalid
             "email": "invalid-email",  # Invalid email format
         }
 
-        response = client.post("/api/suppliers", json=invalid_data)
+        response = authenticated_client.post("/api/suppliers", json=invalid_data)
         assert response.status_code in [400, 422]  # Should return validation error
 
 
 class TestPlantEndpoints:
     """Test plant-related endpoints"""
 
-    def test_get_plants_empty(self, client):
+    def test_get_plants_empty(self, authenticated_client):
         """Test getting plants when database is empty"""
-        response = client.get("/api/plants")
+        response = authenticated_client.get("/api/plants")
         assert response.status_code == 200
         data = response.get_json()
         assert isinstance(data, dict)
@@ -100,7 +100,7 @@ class TestPlantEndpoints:
         assert data["plants"] == []
         assert data["total"] == 0
 
-    def test_create_plant_valid(self, client):
+    def test_create_plant_valid(self, authenticated_client):
         """Test creating a valid plant"""
         plant_data = {
             "name": "Testicus planticus",
@@ -110,7 +110,7 @@ class TestPlantEndpoints:
             "notes": "A test plant for testing",
         }
 
-        response = client.post("/api/plants", json=plant_data)
+        response = authenticated_client.post("/api/plants", json=plant_data)
         assert response.status_code == 201
 
         data = response.get_json()
