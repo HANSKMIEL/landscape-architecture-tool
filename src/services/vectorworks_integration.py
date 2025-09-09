@@ -1,6 +1,6 @@
 """
 Enhanced Vectorworks Integration Service
-Provides comprehensive integration with Vectorworks 2024 for landscape architecture workflows
+Provides comprehensive integration with Vectorworks 2024 for landscape architecture workflows.
 """
 
 import json
