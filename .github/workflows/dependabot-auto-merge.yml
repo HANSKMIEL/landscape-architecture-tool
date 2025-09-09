@@ -1,0 +1,463 @@
+name: Dependabot Auto-merge
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  dependabot-auto-merge:
+    runs-on: ubuntu-latest
+    if: github.actor == 'dependabot[bot]'
+    
+    permissions:
+      contents: write
+      pull-requests: write
+      checks: read
+      
+    steps:
+      - name: Check if PR is from Dependabot
+        id: check-dependabot
+        run: |
+          if [[ "${{ github.actor }}" == "dependabot[bot]" ]]; then
+            echo "is_dependabot=true" >> $GITHUB_OUTPUT
+          else
+            echo "is_dependabot=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Fetch PR details
+        id: pr-details
+        if: steps.check-dependabot.outputs.is_dependabot == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number
+            });
+            
+            const title = pr.data.title;
+            const body = pr.data.body || '';
+            
+            // Extract update type from Dependabot PR title
+            // Dependabot PRs typically have format: "deps(scope): bump package from x.y.z to a.b.c"
+            const updateTypeRegex = /bump .+ from ([\d.]+) to ([\d.]+)/;
+            const match = title.match(updateTypeRegex);
+            
+            let updateType = 'unknown';
+            let isSecurityUpdate = false;
+            
+            if (match) {
+              const [, fromVersion, toVersion] = match;
+              const fromParts = fromVersion.split('.').map(Number);
+              const toParts = toVersion.split('.').map(Number);
+              
+              // Determine update type based on semantic versioning
+              if (fromParts[0] !== toParts[0]) {
+                updateType = 'major';
+              } else if (fromParts[1] !== toParts[1]) {
+                updateType = 'minor';
+              } else {
+                updateType = 'patch';
+              }
+            }
+            
+            // Check if it's a security update
+            if (body.includes('security') || body.includes('vulnerability') || 
+                title.includes('security') || pr.data.labels.some(label => 
+                label.name === 'security')) {
+              isSecurityUpdate = true;
+            }
+            
+            console.log(`Update type: ${updateType}, Security: ${isSecurityUpdate}`);
+            
+            return {
+              updateType,
+              isSecurityUpdate,
+              title,
+              labels: pr.data.labels.map(label => label.name)
+            };
+
+      - name: Determine auto-merge eligibility
+        id: auto-merge-check
+        if: steps.check-dependabot.outputs.is_dependabot == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const prDetails = ${{ steps.pr-details.outputs.result }};
+            const { updateType, isSecurityUpdate, title, labels } = prDetails;
+            
+            // Define rules for auto-merge eligibility
+            let shouldAutoMerge = false;
+            let reason = '';
+            
+            // Critical dependencies that should never auto-merge
+            const criticalDeps = [
+              'flask', 'django', 'react', 'express', 'webpack',
+              'babel', 'typescript', 'eslint', 'pytest', 'requests'
+            ];
+            
+            const hasCriticalDep = criticalDeps.some(dep => 
+              title.toLowerCase().includes(dep.toLowerCase())
+            );
+            
+            if (hasCriticalDep) {
+              reason = 'Contains critical dependency - requires manual review';
+            } else if (updateType === 'major') {
+              reason = 'Major version update - requires manual review';
+            } else if (isSecurityUpdate) {
+              // Security updates can auto-merge if they're patch/minor
+              if (updateType === 'patch' || updateType === 'minor') {
+                shouldAutoMerge = true;
+                reason = 'Security update - auto-merging after CI passes';
+              } else {
+                reason = 'Major security update - requires manual review';
+              }
+            } else if (updateType === 'patch' || updateType === 'minor') {
+              shouldAutoMerge = true;
+              reason = `${updateType} update - safe for auto-merge`;
+            } else {
+              reason = 'Unknown update type - requires manual review';
+            }
+            
+            console.log(`Auto-merge decision: ${shouldAutoMerge}, Reason: ${reason}`);
+            
+            return {
+              shouldAutoMerge,
+              reason,
+              updateType,
+              isSecurityUpdate
+            };
+
+      - name: Wait for CI checks
+        id: wait-for-ci
+        if: fromJSON(steps.auto-merge-check.outputs.result).shouldAutoMerge == true
+        uses: actions/github-script@v7
+        env:
+          MAX_WAIT_TIME_MS: ${{ env.MAX_WAIT_TIME_MS || '600000' }} # default 10 minutes
+          CHECK_INTERVAL_MS: ${{ env.CHECK_INTERVAL_MS || '30000' }} # default 30 seconds
+        with:
+          script: |
+            const maxWaitTime = parseInt(process.env.MAX_WAIT_TIME_MS, 10);
+            const checkInterval = parseInt(process.env.CHECK_INTERVAL_MS, 10);
+            const startTime = Date.now();
+            
+            while (Date.now() - startTime < maxWaitTime) {
+              const { data: checks } = await github.rest.checks.listForRef({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                ref: context.payload.pull_request.head.sha
+              });
+              
+              const { data: statuses } = await github.rest.repos.listCommitStatusesForRef({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                ref: context.payload.pull_request.head.sha
+              });
+              
+              // Check if all checks are completed
+              const allChecks = [...checks.check_runs, ...statuses];
+              const pendingChecks = allChecks.filter(check => 
+                check.status === 'in_progress' || check.status === 'queued' ||
+                check.state === 'pending'
+              );
+              
+              if (pendingChecks.length === 0) {
+                // All checks completed, check if they passed
+                const failedChecks = allChecks.filter(check => 
+                  check.conclusion === 'failure' || check.conclusion === 'cancelled' ||
+                  check.state === 'failure' || check.state === 'error'
+                );
+                
+                if (failedChecks.length === 0) {
+                  console.log('All CI checks passed');
+                  return { ciPassed: true };
+                } else {
+                  console.log(`${failedChecks.length} checks failed`);
+                  return { ciPassed: false, failedChecks: failedChecks.length };
+                }
+              }
+              
+              console.log(`${pendingChecks.length} checks still pending, waiting...`);
+              await new Promise(resolve => setTimeout(resolve, checkInterval));
+            }
+            
+            console.log('Timeout waiting for CI checks');
+            return { ciPassed: false, timeout: true };
+
+      - name: Auto-approve PR
+        if: |
+          fromJSON(steps.auto-merge-check.outputs.result).shouldAutoMerge == true &&
+          fromJSON(steps.wait-for-ci.outputs.result).ciPassed == true
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.pulls.createReview({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number,
+              event: 'APPROVE',
+              body: '✅ Auto-approved by Dependabot auto-merge workflow\n\nThis PR contains safe dependency updates that passed all CI checks.'
+            });
+
+      - name: Enable auto-merge
+        if: |
+          fromJSON(steps.auto-merge-check.outputs.result).shouldAutoMerge == true &&
+          fromJSON(steps.wait-for-ci.outputs.result).ciPassed == true
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const decision = ${{ steps.auto-merge-check.outputs.result }};
+            
+            try {
+              await github.rest.pulls.enableAutoMerge({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: context.issue.number,
+                merge_method: 'squash'
+              });
+              
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: "🤖 **Dependabot Auto-merge Enabled**\n\n" +
+                      "**Update Type:** " + decision.updateType + "\n" +
+                      "**Security Update:** " + (decision.isSecurityUpdate ? 'Yes' : 'No') + "\n" +
+                      "**Reason:** " + decision.reason + "\n\n" +
+                      "This PR will be automatically merged once all required checks pass.\n\n" +
+                      "*Auto-merge configured with squash merge to maintain clean commit history.*"
+              });
+              
+              console.log('Auto-merge enabled successfully');
+            } catch (error) {
+              console.error('Failed to enable auto-merge:', error);
+              
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: "⚠️ **Auto-merge Failed**\n\n" +
+                      "Could not enable auto-merge for this PR. This may be due to repository settings or branch protection rules.\n\n" +
+                      "**Error:** " + error.message + "\n\n" +
+                      "Please review and merge manually if appropriate."
+              });
+            }
+
+      - name: Create Copilot analysis issue for critical PRs
+        if: |
+          steps.check-dependabot.outputs.is_dependabot == 'true' &&
+          fromJSON(steps.auto-merge-check.outputs.result).shouldAutoMerge == false
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const decision = ${{ steps.auto-merge-check.outputs.result }};
+            const prDetails = ${{ steps.pr-details.outputs.result }};
+            const pr = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number
+            });
+            
+            // Determine priority and complexity
+            const isCriticalDep = prDetails.title.toLowerCase().match(/(flask|django|react|express|webpack|babel|typescript|eslint|pytest|requests|sqlalchemy|vite|tailwindcss)/);
+            const isMajorUpdate = decision.updateType === 'major';
+            const isSecurityUpdate = decision.isSecurityUpdate;
+            
+            let priority = 'medium';
+            let complexity = 'medium';
+            
+            if (isSecurityUpdate) {
+              priority = 'high';
+            }
+            if (isCriticalDep && isMajorUpdate) {
+              priority = 'critical';
+              complexity = 'high';
+            } else if (isCriticalDep || isMajorUpdate) {
+              complexity = 'high';
+            }
+            
+            // Create comprehensive analysis issue
+            const title = `🤖 Copilot Analysis: ${prDetails.title}`;
+            const issueBody = [
+              `## Dependabot Critical Dependency Analysis Request`,
+              ``,
+              `**PR:** #${context.issue.number}`,
+              `**Update Type:** ${decision.updateType}`,
+              `**Security Update:** ${isSecurityUpdate ? 'Yes' : 'No'}`,
+              `**Priority:** ${priority}`,
+              `**Complexity:** ${complexity}`,
+              `**Reason for Manual Review:** ${decision.reason}`,
+              ``,
+              `### 🎯 Analysis Required`,
+              ``,
+              `@copilot Please analyze this critical dependency update and provide:`,
+              ``,
+              `1. **Impact Assessment:**`,
+              `   - [ ] Review breaking changes in release notes`,
+              `   - [ ] Identify affected code areas`,
+              `   - [ ] Assess compatibility with current codebase`,
+              `   - [ ] Check for deprecated features we're using`,
+              ``,
+              `2. **Testing Strategy:**`,
+              `   - [ ] Run existing test suite to identify failures`,
+              `   - [ ] Create additional tests for new functionality`,
+              `   - [ ] Test critical user workflows`,
+              `   - [ ] Validate API compatibility`,
+              ``,
+              `3. **Migration Plan:**`,
+              `   - [ ] List required code changes`,
+              `   - [ ] Update configuration files`,
+              `   - [ ] Update documentation`,
+              `   - [ ] Plan rollback strategy`,
+              ``,
+              `4. **Security Validation:**`,
+              `   - [ ] Review security implications`,
+              `   - [ ] Check for known vulnerabilities`,
+              `   - [ ] Validate security-related configuration`,
+              `   - [ ] Update security policies if needed`,
+              ``,
+              `### 📋 Implementation Checklist`,
+              ``,
+              `- [ ] **Phase 1: Analysis**`,
+              `  - [ ] Clone repository and checkout PR branch`,
+              `  - [ ] Review dependency changelog and breaking changes`,
+              `  - [ ] Run comprehensive test suite`,
+              `  - [ ] Document test failures and compatibility issues`,
+              ``,
+              `- [ ] **Phase 2: Code Updates**`,
+              `  - [ ] Fix breaking changes in application code`,
+              `  - [ ] Update configuration files`,
+              `  - [ ] Add new tests for updated functionality`,
+              `  - [ ] Update documentation`,
+              ``,
+              `- [ ] **Phase 3: Validation**`,
+              `  - [ ] Run full test suite and ensure all tests pass`,
+              `  - [ ] Test critical application workflows manually`,
+              `  - [ ] Verify security and performance implications`,
+              `  - [ ] Test build and deployment process`,
+              ``,
+              `- [ ] **Phase 4: Deployment**`,
+              `  - [ ] Create detailed migration notes`,
+              `  - [ ] Merge the dependency update`,
+              `  - [ ] Monitor application health post-merge`,
+              `  - [ ] Document lessons learned`,
+              ``,
+              `### 🔧 Technical Details`,
+              ``,
+              `**Dependency:** ${prDetails.title.match(/bump (.*?) from/)?.[1] || 'Unknown'}`,
+              `**Repository:** ${context.repo.owner}/${context.repo.repo}`,
+              `**PR Branch:** ${pr.data.head.ref}`,
+              `**Base Branch:** ${pr.data.base.ref}`,
+              ``,
+              `### 📊 Risk Assessment`,
+              ``,
+              isMajorUpdate ? `⚠️ **HIGH RISK** - Major version update with potential breaking changes` : 
+              isCriticalDep ? `⚠️ **MEDIUM-HIGH RISK** - Critical dependency update` :
+              isSecurityUpdate ? `⚠️ **MEDIUM RISK** - Security update requiring validation` :
+              `⚠️ **MEDIUM RISK** - Manual review required`,
+              ``,
+              `### 🚀 Expected Outcome`,
+              ``,
+              `After analysis and implementation:`,
+              `- Dependency safely updated with all compatibility issues resolved`,
+              `- Full test suite passing`,
+              `- Application functionality validated`,
+              `- Documentation updated`,
+              `- Migration path documented for future reference`,
+              ``,
+              `### 🔍 Validation Commands`,
+              ``,
+              `Use these commands for comprehensive validation:`,
+              `\`\`\`bash`,
+              `# Clone and setup`,
+              `git checkout ${pr.data.head.ref}`,
+              `make clean && make install`,
+              ``,
+              `# Run comprehensive tests`,
+              `make backend-test`,
+              `make lint`,
+              `cd frontend && npm run test:vitest:run`,
+              ``,
+              `# Manual validation`,
+              `make build`,
+              `# Test application functionality`,
+              `\`\`\``,
+              ``,
+              `---`,
+              `*This issue was automatically created by the Dependabot Auto-merge workflow.*`,
+              `*Estimated time: ${complexity === 'high' ? '2-4 hours' : '1-2 hours'}*`,
+              `*Please complete analysis and implementation systematically.*`
+            ].join('\n');
+            
+            // Create the issue
+            const issue = await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: title,
+              body: issueBody,
+              assignees: ['copilot'],
+              labels: [
+                'dependabot-analysis',
+                'automated',
+                `priority-${priority}`,
+                `complexity-${complexity}`,
+                decision.updateType,
+                isSecurityUpdate ? 'security' : 'enhancement',
+                isCriticalDep ? 'critical-dependency' : 'dependency'
+              ]
+            });
+            
+            console.log(`Created Copilot analysis issue #${issue.data.number}`);
+            
+            // Comment on the PR with link to analysis issue
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: "🤖 **Copilot Analysis Requested**\n\n" +
+                    "**Update Type:** " + decision.updateType + "\n" +
+                    "**Security Update:** " + (decision.isSecurityUpdate ? 'Yes' : 'No') + "\n" +
+                    "**Reason:** " + decision.reason + "\n\n" +
+                    `**Analysis Issue:** #${issue.data.number}\n\n` +
+                    "This critical dependency update has been assigned to @copilot for comprehensive analysis, testing, and safe implementation.\n\n" +
+                    `**Estimated Resolution Time:** ${complexity === 'high' ? '2-4 hours' : '1-2 hours'}\n\n` +
+                    "The analysis will include:\n" +
+                    "- Impact assessment and breaking change review\n" +
+                    "- Comprehensive testing strategy\n" +
+                    "- Code migration plan\n" +
+                    "- Security validation\n" +
+                    "- Safe implementation with full validation\n\n" +
+                    "*This saves manual review time while ensuring thorough analysis and testing.*"
+            });
+            
+            return issue.data.number;
+
+      - name: Comment on CI failures
+        if: |
+          fromJSON(steps.auto-merge-check.outputs.result).shouldAutoMerge == true &&
+          fromJSON(steps.wait-for-ci.outputs.result).ciPassed == false
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const ciResult = ${{ steps.wait-for-ci.outputs.result }};
+            const decision = ${{ steps.auto-merge-check.outputs.result }};
+            
+            let message = "❌ **Auto-merge Blocked - CI Checks Failed**\n\n" +
+                         "**Update Type:** " + decision.updateType + "\n" +
+                         "**Security Update:** " + (decision.isSecurityUpdate ? 'Yes' : 'No');
+            
+            if (ciResult.timeout) {
+              message += '\n\n**Issue:** CI checks did not complete within 10 minutes.';
+            } else if (ciResult.failedChecks) {
+              message += '\n\n**Issue:** ' + ciResult.failedChecks + ' CI checks failed.';
+            }
+            
+            message += '\n\nPlease fix the failing checks and the PR will be re-evaluated for auto-merge.';
+            
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: message
+            });
