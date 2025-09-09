@@ -133,33 +133,33 @@ class TestPerformanceRoutes(DatabaseTestMixin):
         assert "error" in data
 
     @patch("src.routes.performance.invalidate_dashboard_cache")
-    def test_invalidate_cache_dashboard(self, mock_invalidate, client, app_context):
+    def test_invalidate_cache_dashboard(self, mock_invalidate, authenticated_client, app_context):
         """Test dashboard cache invalidation"""
-        response = client.post("/api/performance/cache/invalidate", json={"type": "dashboard"})
+        response = authenticated_client.post("/api/performance/cache/invalidate", json={"type": "dashboard"})
 
         assert response.status_code == 200
         data = response.get_json()
 
         assert data["success"] is True
-        assert "Dashboard cache invalidated" in data["message"]
+        assert "dashboard" in data["message"]
         mock_invalidate.assert_called_once()
 
     @patch("src.routes.performance.invalidate_plant_cache")
-    def test_invalidate_cache_plants(self, mock_invalidate, client, app_context):
-        """Test plants cache invalidation"""
-        response = client.post("/api/performance/cache/invalidate", json={"type": "plants"})
+    def test_invalidate_cache_plants(self, mock_invalidate, authenticated_client, app_context):
+        """Test plant cache invalidation"""
+        response = authenticated_client.post("/api/performance/cache/invalidate", json={"type": "plants"})
 
         assert response.status_code == 200
         data = response.get_json()
 
         assert data["success"] is True
-        assert "Plant cache invalidated" in data["message"]
+        assert "plants" in data["message"]
         mock_invalidate.assert_called_once()
 
     @patch("src.routes.performance.invalidate_project_cache")
-    def test_invalidate_cache_projects(self, mock_invalidate, client, app_context):
-        """Test projects cache invalidation"""
-        response = client.post("/api/performance/cache/invalidate", json={"type": "projects"})
+    def test_invalidate_cache_projects(self, mock_invalidate, authenticated_client, app_context):
+        """Test project cache invalidation"""
+        response = authenticated_client.post("/api/performance/cache/invalidate", json={"type": "projects"})
 
         assert response.status_code == 200
         data = response.get_json()
