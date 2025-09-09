@@ -19,6 +19,8 @@ from datetime import datetime
 from pathlib import Path
 
 # Import dynamic PR analyzer
+# Note: Using sys.path for self-contained script execution
+# Production code should use PYTHONPATH=. as per repository guidelines
 try:
     sys.path.insert(0, str(Path(__file__).parent.parent))
     from src.utils.pr_analyzer import PRAnalyzer
@@ -555,6 +557,14 @@ print('Database initialized')
 
         print("=" * 50)
 
+    def finalize_validation(self):
+        """Generate final results and output for validation runs"""
+        self.generate_overall_status()
+        self.generate_summary()
+        self.add_dynamic_pr_analysis()
+        self.print_summary()
+        return self.save_report()
+
     def run_full_validation(self):
         """Run the complete validation suite"""
         print("🚀 Starting Automated Validation...")
@@ -583,18 +593,10 @@ print('Database initialized')
                 }
 
         # Generate final results
-        self.generate_overall_status()
-        self.generate_summary()
-        
-        # Add dynamic PR analysis (replacing hardcoded values)
-        self.add_dynamic_pr_analysis()
-
-        # Output results
         duration = time.time() - start_time
         print(f"\n⏱️ Validation completed in {duration:.1f} seconds")
-
-        self.print_summary()
-        report_file = self.save_report()
+        
+        report_file = self.finalize_validation()
 
         # Return status for programmatic use
         return {
@@ -625,11 +627,7 @@ def main():
             return
         
         # For partial runs, still generate results with PR analysis
-        validator.generate_overall_status()
-        validator.generate_summary()
-        validator.add_dynamic_pr_analysis()
-        validator.print_summary()
-        validator.save_report()
+        validator.finalize_validation()
     else:
         # Run full validation
         result = validator.run_full_validation()

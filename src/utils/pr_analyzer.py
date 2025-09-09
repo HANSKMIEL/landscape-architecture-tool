@@ -85,14 +85,12 @@ class PRAnalyzer:
         
         Args:
             github_token: GitHub API token (optional, can use env var GITHUB_TOKEN)
-            owner: Repository owner (required, can use env var GITHUB_OWNER)
-            repo: Repository name (required, can use env var GITHUB_REPO)
+            owner: Repository owner (defaults to HANSKMIEL, can use env var GITHUB_OWNER)
+            repo: Repository name (defaults to landscape-architecture-tool, can use env var GITHUB_REPO)
         """
-        self.owner = owner or os.getenv("GITHUB_OWNER")
-        self.repo = repo or os.getenv("GITHUB_REPO")
+        self.owner = owner or os.getenv("GITHUB_OWNER", "HANSKMIEL")
+        self.repo = repo or os.getenv("GITHUB_REPO", "landscape-architecture-tool")
         self.github_token = github_token or os.getenv("GITHUB_TOKEN")
-        if not self.owner or not self.repo:
-            raise ValueError("Repository owner and name must be provided via arguments or environment variables (GITHUB_OWNER, GITHUB_REPO).")
         
         # Default categorization rules
         self.critical_dependencies = [
@@ -136,7 +134,7 @@ class PRAnalyzer:
             }
             
             try:
-                response = requests.get(url, headers=self.get_headers(), params=params, timeout=30)
+                response = requests.get(url, headers=self.get_headers(), params=params, timeout=60)
                 response.raise_for_status()
                 data = response.json()
                 
@@ -211,19 +209,21 @@ class PRAnalyzer:
             "major_updates": major_updates
         }
     
-    def generate_pr_counts(self, categorized_prs: dict[str, list[PRInfo]] | None = None) -> dict[str, Any]:
+    def generate_pr_counts(self, categorized_prs: dict[str, list[PRInfo]] | None = None, 
+                          all_prs: list[PRInfo] | None = None) -> dict[str, Any]:
         """
         Generate PR count statistics.
         
         Args:
             categorized_prs: Pre-categorized PRs (optional, will fetch if not provided)
+            all_prs: All PRs for context (optional, will fetch if not provided)
             
         Returns:
             Dictionary with PR count statistics
         """
-        if categorized_prs is None:
-            prs = self.fetch_pull_requests()
-            categorized_prs = self.categorize_dependabot_prs(prs)
+        if categorized_prs is None or all_prs is None:
+            all_prs = self.fetch_pull_requests()
+            categorized_prs = self.categorize_dependabot_prs(all_prs)
         
         safe_count = len(categorized_prs["safe_auto_merge"])
         manual_count = len(categorized_prs["manual_review"])
@@ -231,9 +231,6 @@ class PRAnalyzer:
         
         # Additional statistics
         total_dependabot = safe_count + manual_count + major_count
-        
-        # Get all open PRs for context
-        all_prs = self.fetch_pull_requests()
         total_open_prs = len(all_prs)
         non_dependabot_prs = total_open_prs - total_dependabot
         

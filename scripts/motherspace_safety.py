@@ -204,21 +204,21 @@ class MotherSpaceSafetyManager:
             return ""
         
         # Remove timestamps
-        text = re.sub(r'\b\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})?\b', '[TIMESTAMP]', text)
-        text = re.sub(r'\b\d{2}[/-]\d{2}[/-]\d{4}\b', '[DATE]', text)
+        text = re.sub(r"\b\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})?\b", "[TIMESTAMP]", text)
+        text = re.sub(r"\b\d{2}[/-]\d{2}[/-]\d{4}\b", "[DATE]", text)
         
         # Remove issue/PR numbers
-        text = re.sub(r'#\d+', '#[NUM]', text)
+        text = re.sub(r"#\d+", "#[NUM]", text)
         
         # Remove file paths
-        text = re.sub(r'/[a-zA-Z0-9/_.-]+\.(py|js|json|yml|yaml|md|txt)', '/[PATH].[EXT]', text)
+        text = re.sub(r"/[a-zA-Z0-9/_.-]+\.(py|js|json|yml|yaml|md|txt)", "/[PATH].[EXT]", text)
         
         # Remove UUIDs and long hex strings
-        text = re.sub(r'\b[a-f0-9]{32,}\b', '[HASH]', text, flags=re.IGNORECASE)
-        text = re.sub(r'\b[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}\b', '[UUID]', text, flags=re.IGNORECASE)
+        text = re.sub(r"\b[a-f0-9]{32,}\b", "[HASH]", text, flags=re.IGNORECASE)
+        text = re.sub(r"\b[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}\b", "[UUID]", text, flags=re.IGNORECASE)
         
         # Normalize whitespace
-        text = re.sub(r'\s+', ' ', text).strip()
+        text = re.sub(r"\s+", " ", text).strip()
         
         return text.lower()
     
