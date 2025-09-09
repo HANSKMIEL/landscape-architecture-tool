@@ -6,8 +6,9 @@ const API_BASE_URL = getApiBaseUrl();
 
 class ApiService {
   async request(endpoint, options = {}) {
-    // Use mock API for static demo (GitHub Pages)
-    if (isStaticDemo()) {
+    // Use mock API for static demo (GitHub Pages) or when explicitly flagged
+    if (isStaticDemo() || API_BASE_URL === 'MOCK_API') {
+      console.log('Using mock API - detected GitHub Pages or mock flag');
       return this.handleMockRequest(endpoint, options);
     }
     const url = `${API_BASE_URL}${endpoint}`;
