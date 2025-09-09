@@ -157,7 +157,7 @@ class TestPlantRecommendationExportRoute:
             db.session.commit()
             
             # Login
-            response = client.post("/api/auth/login", json={"username": "testuser", "password": "testpass"})
+            response = authenticated_client.post("/api/auth/login", json={"username": "testuser", "password": "testpass"})
             assert response.status_code == 200
             
             return client
@@ -188,10 +188,10 @@ class TestPlantRecommendationExportRoute:
             data = json.loads(response.data)
             assert "Only CSV format is currently supported" in data["error"]
 
-    def test_export_nonexistent_request(self, client, app, db_setup):
+    def test_export_nonexistent_request(self, authenticated_client, app, db_setup):
         """Test export with non-existent request_id"""
         with app.app_context():
-            response = client.post(
+            response = authenticated_client.post(
                 "/api/plant-recommendations/export",
                 data=json.dumps({"request_id": 99999, "format": "csv"}),
                 content_type="application/json",
@@ -201,13 +201,13 @@ class TestPlantRecommendationExportRoute:
             data = json.loads(response.data)
             assert "not found" in data["error"]
 
-    def test_export_successful_csv(self, client, app, db_setup):
+    def test_export_successful_csv(self, authenticated_client, app, db_setup):
         """Test successful CSV export"""
         with app.app_context():
             # First create a recommendation request
             request_data = {"hardiness_zone": "5-8", "maintenance_level": "Low"}
 
-            rec_response = client.post(
+            rec_response = authenticated_client.post(
                 "/api/plant-recommendations",
                 data=json.dumps(request_data),
                 content_type="application/json",
@@ -219,7 +219,7 @@ class TestPlantRecommendationExportRoute:
 
             # Now export
             if request_id:  # Only test if we got a valid request_id
-                response = client.post(
+                response = authenticated_client.post(
                     "/api/plant-recommendations/export",
                     data=json.dumps({"request_id": request_id, "format": "csv"}),
                     content_type="application/json",
@@ -228,13 +228,13 @@ class TestPlantRecommendationExportRoute:
                 assert response.mimetype == "text/csv"
                 assert "attachment" in response.headers.get("Content-Disposition", "")
 
-    def test_export_error_handling(self, client, app, db_setup):
+    def test_export_error_handling(self, authenticated_client, app, db_setup):
         """Test error handling in export endpoint"""
         with app.app_context():
             with patch("src.routes.plant_recommendations.db.session.get") as mock_get:
                 mock_get.side_effect = Exception("Database error")
 
-                response = client.post(
+                response = authenticated_client.post(
                     "/api/plant-recommendations/export",
                     data=json.dumps({"request_id": 123, "format": "csv"}),
                     content_type="application/json",
@@ -248,19 +248,37 @@ class TestPlantRecommendationExportRoute:
 class TestPlantRecommendationImportRoute:
     """Test the plant data import endpoint"""
 
-    def test_import_no_file(self, client, app, db_setup):
+    @pytest.fixture
+    def authenticated_client(self, client, app):
+        """Create an authenticated test client"""
+        with app.app_context():
+            from src.models.user import User, db
+            
+            # Create test user
+            user = User(username="testuser", email="test@example.com", role="admin")
+            user.set_password("testpass")
+            db.session.add(user)
+            db.session.commit()
+            
+            # Login
+            response = authenticated_client.post("/api/auth/login", json={"username": "testuser", "password": "testpass"})
+            assert response.status_code == 200
+            
+            return client
+
+    def test_import_no_file(self, authenticated_client, app, db_setup):
         """Test import without file"""
         with app.app_context():
-            response = client.post("/api/plant-recommendations/import")
+            response = authenticated_client.post("/api/plant-recommendations/import")
             assert response.status_code == 400
 
             data = json.loads(response.data)
             assert "No file provided" in data["error"]
 
-    def test_import_empty_filename(self, client, app, db_setup):
+    def test_import_empty_filename(self, authenticated_client, app, db_setup):
         """Test import with empty filename"""
         with app.app_context():
-            response = client.post(
+            response = authenticated_client.post(
                 "/api/plant-recommendations/import",
                 data={"file": (io.BytesIO(b""), "")},
             )
@@ -269,10 +287,10 @@ class TestPlantRecommendationImportRoute:
             data = json.loads(response.data)
             assert "No file selected" in data["error"]
 
-    def test_import_non_csv_file(self, client, app, db_setup):
+    def test_import_non_csv_file(self, authenticated_client, app, db_setup):
         """Test import with non-CSV file"""
         with app.app_context():
-            response = client.post(
+            response = authenticated_client.post(
                 "/api/plant-recommendations/import",
                 data={"file": (io.BytesIO(b"test data"), "test.txt")},
             )
@@ -281,7 +299,7 @@ class TestPlantRecommendationImportRoute:
             data = json.loads(response.data)
             assert "Only CSV files are supported" in data["error"]
 
-    def test_import_valid_csv(self, client, app, db_setup):
+    def test_import_valid_csv(self, authenticated_client, app, db_setup):
         """Test import with valid CSV data"""
         with app.app_context():
             # Create test CSV content
@@ -293,7 +311,7 @@ class TestPlantRecommendationImportRoute:
 
             csv_file = io.BytesIO(csv_content.encode("utf-8"))
 
-            response = client.post(
+            response = authenticated_client.post(
                 "/api/plant-recommendations/import",
                 data={"file": (csv_file, "plants.csv")},
             )
@@ -303,7 +321,7 @@ class TestPlantRecommendationImportRoute:
             assert "Successfully imported" in data["message"]
             assert "imported_plants" in data
 
-    def test_import_csv_with_errors(self, client, app, db_setup):
+    def test_import_csv_with_errors(self, authenticated_client, app, db_setup):
         """Test import with CSV containing errors"""
         with app.app_context():
             # Create CSV with missing required field (name)
@@ -313,7 +331,7 @@ Valid Plant,Valid Common,Tree"""
 
             csv_file = io.BytesIO(csv_content.encode("utf-8"))
 
-            response = client.post(
+            response = authenticated_client.post(
                 "/api/plant-recommendations/import",
                 data={"file": (csv_file, "plants.csv")},
             )
@@ -323,7 +341,7 @@ Valid Plant,Valid Common,Tree"""
             assert "Import failed due to errors" in data["error"]
             assert "errors" in data
 
-    def test_import_error_handling(self, client, app, db_setup):
+    def test_import_error_handling(self, authenticated_client, app, db_setup):
         """Test error handling in import endpoint"""
         with app.app_context():
             with patch("csv.DictReader") as mock_reader:
@@ -331,7 +349,7 @@ Valid Plant,Valid Common,Tree"""
 
                 csv_file = io.BytesIO(b"name,category\nTest,Shrub")
 
-                response = client.post(
+                response = authenticated_client.post(
                     "/api/plant-recommendations/import",
                     data={"file": (csv_file, "plants.csv")},
                 )
@@ -387,10 +405,28 @@ class TestPlantRecommendationHelperFunctions:
 class TestPlantRecommendationErrorHandling:
     """Test error handling scenarios"""
 
-    def test_get_recommendations_invalid_json(self, client, app, db_setup):
+    @pytest.fixture
+    def authenticated_client(self, client, app):
+        """Create an authenticated test client"""
+        with app.app_context():
+            from src.models.user import User, db
+            
+            # Create test user
+            user = User(username="testuser", email="test@example.com", role="admin")
+            user.set_password("testpass")
+            db.session.add(user)
+            db.session.commit()
+            
+            # Login
+            response = authenticated_client.post("/api/auth/login", json={"username": "testuser", "password": "testpass"})
+            assert response.status_code == 200
+            
+            return client
+
+    def test_get_recommendations_invalid_json(self, authenticated_client, app, db_setup):
         """Test recommendations endpoint with invalid JSON"""
         with app.app_context():
-            response = client.post(
+            response = authenticated_client.post(
                 "/api/plant-recommendations",
                 data="invalid json",
                 content_type="application/json",
@@ -403,7 +439,7 @@ class TestPlantRecommendationErrorHandling:
             with patch("src.routes.plant_recommendations.Plant.query") as mock_query:
                 mock_query.side_effect = Exception("Database error")
 
-                response = client.post(
+                response = authenticated_client.post(
                     "/api/plant-recommendations",
                     data=json.dumps({"hardiness_zone": "5-8"}),
                     content_type="application/json",
@@ -437,7 +473,7 @@ class TestPlantRecommendationErrorHandling:
     def test_feedback_missing_request_id(self, client, app, db_setup):
         """Test feedback endpoint without request_id"""
         with app.app_context():
-            response = client.post(
+            response = authenticated_client.post(
                 "/api/plant-recommendations/feedback",
                 data=json.dumps({"feedback": {"helpful": True}}),
                 content_type="application/json",
@@ -450,7 +486,7 @@ class TestPlantRecommendationErrorHandling:
     def test_feedback_nonexistent_request(self, client, app, db_setup):
         """Test feedback endpoint with non-existent request_id"""
         with app.app_context():
-            response = client.post(
+            response = authenticated_client.post(
                 "/api/plant-recommendations/feedback",
                 data=json.dumps({"request_id": 99999, "feedback": {"helpful": True}}),
                 content_type="application/json",
@@ -464,7 +500,7 @@ class TestPlantRecommendationErrorHandling:
             with patch(patch_path) as mock_save:
                 mock_save.side_effect = Exception("Database error")
 
-                response = client.post(
+                response = authenticated_client.post(
                     "/api/plant-recommendations/feedback",
                     data=json.dumps({"request_id": 123, "feedback": {"helpful": True}}),
                     content_type="application/json",
@@ -482,7 +518,7 @@ class TestPlantRecommendationIntegration:
             with patch(patch_path) as mock_log:
                 mock_log.side_effect = Exception("Logging error")
 
-                response = client.post(
+                response = authenticated_client.post(
                     "/api/plant-recommendations",
                     data=json.dumps({"hardiness_zone": "5-8"}),
                     content_type="application/json",
@@ -501,7 +537,7 @@ class TestPlantRecommendationIntegration:
                 assert "session_id" not in sess
 
             # Make request which should generate session_id
-            response = client.post(
+            response = authenticated_client.post(
                 "/api/plant-recommendations",
                 data=json.dumps({"hardiness_zone": "5-8"}),
                 content_type="application/json",
@@ -518,7 +554,7 @@ class TestPlantRecommendationIntegration:
         with app.app_context():
             db.create_all()  # Empty database
 
-            response = client.post(
+            response = authenticated_client.post(
                 "/api/plant-recommendations",
                 data=json.dumps({"hardiness_zone": "5-8"}),
                 content_type="application/json",
