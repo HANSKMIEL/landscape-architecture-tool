@@ -34,6 +34,8 @@ jobs:
           npm ci
 
       - name: Build frontend
+        env:
+          NODE_ENV: production
         run: |
           cd frontend
           npm run build
