@@ -14,6 +14,10 @@ from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
+# Plant classification constants for maintainable and extensible classification
+TREE_CLASSIFICATION_KEYWORDS = ["boom", "tree"]
+SHRUB_CLASSIFICATION_KEYWORDS = ["struik", "shrub"]
+
 @dataclass
 class PresentationConfig:
     """Configuration for client presentations"""
@@ -70,11 +74,16 @@ class ClientPresentationGenerator:
         self.db = database_connection
         self.templates = self._load_presentation_templates()
         
-        # Define contact information constants
-        self.DEFAULT_CONTACT_INFO = {
-            "phone": "+31 (0)20 123 4567",
-            "email": "info@landscapearchitect.nl",
-            "website": "www.landscapearchitect.nl"
+        # Define contact information constants (configurable)
+        self.DEFAULT_CONTACT_INFO = self._get_contact_info_config()
+    
+    def _get_contact_info_config(self) -> Dict[str, str]:
+        """Get contact information from configuration or environment variables"""
+        import os
+        return {
+            "phone": os.getenv('COMPANY_PHONE', "+31 (0)20 123 4567"),
+            "email": os.getenv('COMPANY_EMAIL', "info@landscapearchitect.nl"),
+            "website": os.getenv('COMPANY_WEBSITE', "www.landscapearchitect.nl")
         }
     
     def _load_presentation_templates(self) -> Dict[str, Dict]:
@@ -456,9 +465,9 @@ class ClientPresentationGenerator:
                                         plants: List[PlantPresentationData],
                                         config: PresentationConfig, order: int) -> PresentationSlide:
         """Generate plant communities slide"""
-        # Define plant type constants for better maintainability
-        TREE_KEYWORDS = ["boom", "tree"]
-        SHRUB_KEYWORDS = ["struik", "shrub"]
+        # Use global constants for plant classification
+        TREE_KEYWORDS = TREE_CLASSIFICATION_KEYWORDS
+        SHRUB_KEYWORDS = SHRUB_CLASSIFICATION_KEYWORDS
         
         # Group plants by type/layer using robust classification
         trees = [p for p in plants if self._is_plant_type(p, TREE_KEYWORDS)]
