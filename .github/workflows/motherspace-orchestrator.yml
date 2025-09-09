@@ -219,18 +219,16 @@ jobs:
           
           # Run the Python-based fingerprinting and deduplication
           python -c "
-          from scripts.issue_fingerprinter import IssueFingerprinter
           from scripts.motherspace_safety import MotherSpaceSafetyManager
           
-          # Initialize managers with pr_safe_operations support
-          fingerprinter = IssueFingerprinter()
+          # Initialize manager with pr_safe_operations support
           safety_manager = MotherSpaceSafetyManager()
           
           # Check if operations willInterfereWithPRs using calculateIssueSimilarity
           def calculateIssueSimilarity(issue1, issue2):
-            # Fingerprint-based similarity calculation
-            fp1 = fingerprinter.generate_fingerprint(issue1)
-            fp2 = fingerprinter.generate_fingerprint(issue2) 
+            # Fingerprint-based similarity calculation using MotherSpaceSafetyManager
+            fp1 = safety_manager.generate_fingerprint(issue1)
+            fp2 = safety_manager.generate_fingerprint(issue2)
             return fp1 == fp2
           
           def willInterfereWithPRs():
