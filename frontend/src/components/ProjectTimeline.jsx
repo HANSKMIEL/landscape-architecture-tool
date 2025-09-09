@@ -57,13 +57,13 @@ const ProjectTimeline = ({ user }) => {
 
   useEffect(() => {
     fetchProjects()
-  }, [])
+  }, [fetchProjects])
 
   useEffect(() => {
     if (selectedProject) {
       fetchProjectTimeline(selectedProject.id)
     }
-  }, [selectedProject])
+  }, [selectedProject, fetchProjectTimeline])
 
   const fetchProjects = async () => {
     try {

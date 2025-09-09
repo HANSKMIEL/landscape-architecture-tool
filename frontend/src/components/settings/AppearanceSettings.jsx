@@ -103,7 +103,7 @@ const AppearanceSettings = ({ language = 'nl' }) => {
       setFontFamily(settings.fontFamily || 'inter')
       setCompanyColors(settings.companyColors || companyColors)
     }
-  }, [])
+  }, [companyColors])
 
   const saveSettings = () => {
     const settings = {
@@ -199,10 +199,8 @@ const AppearanceSettings = ({ language = 'nl' }) => {
     applySettings(defaultSettings)
     
     alert(language === 'nl' ? 'Standaardwaarden hersteld!' : 'Defaults restored!')
-  }
-
-  // Live preview effect
-  useEffect(() => {
+   useEffect(() => {
+    // Apply current settings
     const currentSettings = {
       theme,
       colorScheme,
@@ -212,8 +210,7 @@ const AppearanceSettings = ({ language = 'nl' }) => {
       companyLogo
     }
     applySettings(currentSettings)
-  }, [theme, colorScheme, fontSize, fontFamily, companyColors])
-
+  }, [theme, colorScheme, fontSize, fontFamily, companyColors, companyLogo, applySettings])
   return (
     <div className="space-y-6">
       <div>
