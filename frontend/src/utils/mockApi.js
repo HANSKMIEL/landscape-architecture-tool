@@ -197,7 +197,26 @@ export const mockApi = {
 
 // Check if we're running in a static environment (GitHub Pages)
 export const isStaticDemo = () => {
-  return window.location.hostname.includes('github.io') || 
-         window.location.protocol === 'file:' ||
-         (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1')
+  // Always use mock API on GitHub Pages
+  if (window.location.hostname.includes('github.io')) {
+    console.log('GitHub Pages detected - using mock API');
+    return true;
+  }
+  
+  // Also use mock API for file protocol or non-localhost environments
+  if (window.location.protocol === 'file:') {
+    console.log('File protocol detected - using mock API');
+    return true;
+  }
+  
+  // For any non-development environment, use mock API
+  if (window.location.hostname !== 'localhost' && 
+      window.location.hostname !== '127.0.0.1' && 
+      !window.location.hostname.includes('manusvm.computer')) {
+    console.log('Non-development environment detected - using mock API');
+    return true;
+  }
+  
+  console.log('Development environment detected - using real API');
+  return false;
 }
