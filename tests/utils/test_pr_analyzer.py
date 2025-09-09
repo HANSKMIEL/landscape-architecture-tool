@@ -120,7 +120,7 @@ class TestPRAnalyzer:
     
     def test_headers_with_token(self):
         """Test header generation with token."""
-        test_token = "test_token"  # noqa: S105
+        test_token = "fake_token_for_testing"  # noqa: S105
         analyzer = PRAnalyzer(github_token=test_token)
         headers = analyzer.get_headers()
         assert headers["Authorization"] == f"token {test_token}"
