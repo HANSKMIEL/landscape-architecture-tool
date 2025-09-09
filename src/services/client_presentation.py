@@ -465,13 +465,11 @@ class ClientPresentationGenerator:
                                         plants: List[PlantPresentationData],
                                         config: PresentationConfig, order: int) -> PresentationSlide:
         """Generate plant communities slide"""
-        # Use global constants for plant classification
-        TREE_KEYWORDS = TREE_CLASSIFICATION_KEYWORDS
-        SHRUB_KEYWORDS = SHRUB_CLASSIFICATION_KEYWORDS
+        # Use global constants directly for plant classification
         
         # Group plants by type/layer using robust classification
-        trees = [p for p in plants if self._is_plant_type(p, TREE_KEYWORDS)]
-        shrubs = [p for p in plants if self._is_plant_type(p, SHRUB_KEYWORDS)]
+        trees = [p for p in plants if self._is_plant_type(p, TREE_CLASSIFICATION_KEYWORDS)]
+        shrubs = [p for p in plants if self._is_plant_type(p, SHRUB_CLASSIFICATION_KEYWORDS)]
         perennials = [p for p in plants if p not in trees and p not in shrubs]
         
         return PresentationSlide(

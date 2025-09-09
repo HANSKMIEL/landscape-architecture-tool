@@ -92,6 +92,9 @@ class VectorworksSDKInterface:
 class VectorworksDataExtractor:
     """Extract data from Vectorworks files"""
     
+    # Class constants
+    OUTPUT_FILENAME = "extraction_output.json"
+    
     def __init__(self, sdk_interface: VectorworksSDKInterface):
         self.sdk = sdk_interface
         
@@ -126,9 +129,8 @@ class VectorworksDataExtractor:
     
     def _generate_extraction_script(self, vwx_file_path: str) -> str:
         """Generate Vectorscript for data extraction"""
-        # Define output filename as constant to avoid duplication
-        OUTPUT_FILENAME = "extraction_output.json"
-        output_path = f"{self.sdk.temp_dir}/{OUTPUT_FILENAME}"
+        # Use class constant for output filename
+        output_path = f"{self.sdk.temp_dir}/{self.OUTPUT_FILENAME}"
         
         return f"""
         {{ Vectorscript for extracting landscape architecture data }}
@@ -227,8 +229,7 @@ class VectorworksDataExtractor:
             result = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
             
             if result.returncode == 0:
-                OUTPUT_FILENAME = "extraction_output.json"
-                output_file = os.path.join(self.sdk.temp_dir, OUTPUT_FILENAME)
+                output_file = os.path.join(self.sdk.temp_dir, self.OUTPUT_FILENAME)
                 if os.path.exists(output_file):
                     with open(output_file, 'r') as f:
                         return json.load(f)

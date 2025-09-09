@@ -28,7 +28,7 @@ class TestPlantRoutes(DatabaseTestMixin):
         db.session.commit()
         
         # Login
-        response = authenticated_client.post("/api/auth/login", json={"username": "testuser", "password": "testpass"})
+        response = client.post("/api/auth/login", json={"username": "testuser", "password": "testpass"})
         assert response.status_code == 200
         
         return client
