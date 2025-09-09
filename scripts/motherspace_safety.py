@@ -255,19 +255,12 @@ class MotherSpaceSafetyManager:
         fingerprint = hashlib.sha256(fingerprint_data.encode()).hexdigest()[:16]
         
         return fingerprint
-    
-=======
 
     def get_issue_fingerprint(self, issue_data: dict[str, Any]) -> str:
         """Generate fingerprint for issue using the fingerprinting system."""
-        # Import the fingerprinter from our test module
-        sys.path.insert(0, str(self.repo_path))
-        from tests.test_issue_fingerprint import IssueFingerprinter
+        # Use embedded fingerprinter to avoid pytest dependency
+        return self._generate_fingerprint_embedded(issue_data)
 
-        fingerprinter = IssueFingerprinter()
-        return fingerprinter.generate_fingerprint(issue_data)
-
->>>>>>> main
     def find_existing_tracking_issue(self, fingerprint: str) -> dict[str, Any] | None:
         """Find existing tracking issue with the same fingerprint."""
         tracking_file = self.safety_dir / "tracking_issues.json"
