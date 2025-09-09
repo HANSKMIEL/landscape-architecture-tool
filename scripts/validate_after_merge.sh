@@ -82,7 +82,7 @@ test_critical_functionality() {
     
     # Run a subset of backend tests focusing on core functionality
     echo "  🔬 Running core backend tests..."
-    PYTHONPATH=. FLASK_ENV=testing python -m pytest tests/test_basic.py -v --tb=short > /dev/null 2>&1 && echo "✅ Core tests passed" || echo "⚠️ Some core tests failed"
+    PYTHONPATH=. FLASK_ENV=testing python -m pytest tests/test_basic.py -v --tb=short > /dev/null && echo "✅ Core tests passed" || echo "⚠️ Some core tests failed"
     
     # Test database operations
     echo "  🗄️ Testing database operations..."
