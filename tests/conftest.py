@@ -324,15 +324,10 @@ def retry_on_failure_fixture():
 def authenticated_user(app, db_session):
     """Create an authenticated user for testing protected endpoints."""
     from src.models.user import User
-    
+
     with app.app_context():
         # Create test user
-        user = User(
-            username="testuser",
-            email="test@example.com", 
-            role="admin",
-            is_active=True
-        )
+        user = User(username="testuser", email="test@example.com", role="admin", is_active=True)
         user.set_password("testpass")
         db_session.add(user)
         db_session.commit()
@@ -340,7 +335,7 @@ def authenticated_user(app, db_session):
         return user
 
 
-@pytest.fixture 
+@pytest.fixture
 def authenticated_client(client, authenticated_user):
     """Create an authenticated test client with user logged in."""
     # Set up session authentication manually for tests

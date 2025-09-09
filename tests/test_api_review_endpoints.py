@@ -174,7 +174,9 @@ class TestPlantRecommendationsAPI:
         assert response.status_code == 400
 
         # Test invalid JSON
-        response = authenticated_client.post("/api/plant-recommendations", data="invalid json", content_type="application/json")
+        response = authenticated_client.post(
+            "/api/plant-recommendations", data="invalid json", content_type="application/json"
+        )
         assert response.status_code == 400
 
     def test_recommendation_history_endpoint(self, authenticated_client, app_context):
@@ -317,7 +319,9 @@ class TestProjectPlantsAPI:
         assert response.status_code == 400
 
         # Test adding plant with invalid data
-        response = authenticated_client.post("/api/projects/1/plants", data=json.dumps({}), content_type="application/json")
+        response = authenticated_client.post(
+            "/api/projects/1/plants", data=json.dumps({}), content_type="application/json"
+        )
         assert response.status_code == 400
 
 
