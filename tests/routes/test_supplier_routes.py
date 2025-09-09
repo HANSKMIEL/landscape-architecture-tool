@@ -7,6 +7,7 @@ Comprehensive tests for supplier API endpoints.
 import json
 
 import pytest
+from tests.fixtures.auth_fixtures import authenticated_test_user, setup_test_authentication
 
 from src.models.landscape import Product, Supplier
 from src.models.user import db

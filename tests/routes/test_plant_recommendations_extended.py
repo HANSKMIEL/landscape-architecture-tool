@@ -9,6 +9,7 @@ import json
 from unittest.mock import patch
 
 import pytest
+from tests.fixtures.auth_fixtures import authenticated_test_user, setup_test_authentication
 
 from src.main import create_app
 from src.models.user import db
@@ -569,20 +570,7 @@ class TestPlantRecommendationIntegration:
 
     def test_empty_plant_database(self, authenticated_client, app):
         """Test recommendations with empty plant database"""
-                # Create a test user in the database
-        from src.models.user import User, db
-        
-        test_user = User(username='test_user', email='test@example.com', role='admin')
-        test_user.set_password('password')
-        db.session.add(test_user)
-        db.session.commit()
-        
-        # Set up authentication in session
-        with client.session_transaction() as sess:
-            sess['user_id'] = test_user.id
-            sess['username'] = test_user.username
-            sess['role'] = test_user.role
-        
+    # Authentication handled by authenticated_test_user fixture
         with app.app_context():
             db.create_all()  # Empty database
 

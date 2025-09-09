@@ -7,6 +7,7 @@ Comprehensive tests for analytics service layer business logic.
 from datetime import UTC, datetime, timedelta
 
 import pytest
+from tests.fixtures.auth_fixtures import authenticated_test_user, setup_test_authentication
 
 from src.models.landscape import (
     PlantRecommendationRequest,
@@ -23,20 +24,7 @@ class TestAnalyticsService(DatabaseTestMixin):
 
     def test_get_plant_usage_analytics_empty(self, app_context):
         """Test getting plant usage analytics with empty database"""
-                # Create a test user in the database
-        from src.models.user import User, db
-        
-        test_user = User(username='test_user', email='test@example.com', role='admin')
-        test_user.set_password('password')
-        db.session.add(test_user)
-        db.session.commit()
-        
-        # Set up authentication in session
-        with client.session_transaction() as sess:
-            sess['user_id'] = test_user.id
-            sess['username'] = test_user.username
-            sess['role'] = test_user.role
-        
+    # Authentication handled by authenticated_test_user fixture
         analytics = AnalyticsService()
         result = analytics.get_plant_usage_analytics()
 
@@ -46,20 +34,7 @@ class TestAnalyticsService(DatabaseTestMixin):
 
     def test_get_plant_usage_analytics_with_data(self, app_context, plant_factory, project_factory, client_factory):
         """Test getting plant usage analytics with sample data"""
-                # Create a test user in the database
-        from src.models.user import User, db
-        
-        test_user = User(username='test_user', email='test@example.com', role='admin')
-        test_user.set_password('password')
-        db.session.add(test_user)
-        db.session.commit()
-        
-        # Set up authentication in session
-        with client.session_transaction() as sess:
-            sess['user_id'] = test_user.id
-            sess['username'] = test_user.username
-            sess['role'] = test_user.role
-        
+    # Authentication handled by authenticated_test_user fixture
         analytics = AnalyticsService()
 
         # Create test data
@@ -115,20 +90,7 @@ class TestAnalyticsService(DatabaseTestMixin):
         self, app_context, plant_factory, project_factory, client_factory
     ):
         """Test getting plant usage analytics with date range filter"""
-                # Create a test user in the database
-        from src.models.user import User, db
-        
-        test_user = User(username='test_user', email='test@example.com', role='admin')
-        test_user.set_password('password')
-        db.session.add(test_user)
-        db.session.commit()
-        
-        # Set up authentication in session
-        with client.session_transaction() as sess:
-            sess['user_id'] = test_user.id
-            sess['username'] = test_user.username
-            sess['role'] = test_user.role
-        
+    # Authentication handled by authenticated_test_user fixture
         analytics = AnalyticsService()
 
         client = client_factory()
@@ -159,20 +121,7 @@ class TestAnalyticsService(DatabaseTestMixin):
 
     def test_get_project_performance_analytics_empty(self, app_context):
         """Test getting project performance analytics with empty database"""
-                # Create a test user in the database
-        from src.models.user import User, db
-        
-        test_user = User(username='test_user', email='test@example.com', role='admin')
-        test_user.set_password('password')
-        db.session.add(test_user)
-        db.session.commit()
-        
-        # Set up authentication in session
-        with client.session_transaction() as sess:
-            sess['user_id'] = test_user.id
-            sess['username'] = test_user.username
-            sess['role'] = test_user.role
-        
+    # Authentication handled by authenticated_test_user fixture
         analytics = AnalyticsService()
         result = analytics.get_project_performance_analytics()
 
@@ -183,20 +132,7 @@ class TestAnalyticsService(DatabaseTestMixin):
 
     def test_get_project_performance_analytics_with_data(self, app_context, project_factory, client_factory):
         """Test getting project performance analytics with sample data"""
-                # Create a test user in the database
-        from src.models.user import User, db
-        
-        test_user = User(username='test_user', email='test@example.com', role='admin')
-        test_user.set_password('password')
-        db.session.add(test_user)
-        db.session.commit()
-        
-        # Set up authentication in session
-        with client.session_transaction() as sess:
-            sess['user_id'] = test_user.id
-            sess['username'] = test_user.username
-            sess['role'] = test_user.role
-        
+    # Authentication handled by authenticated_test_user fixture
         analytics = AnalyticsService()
 
         client = client_factory()

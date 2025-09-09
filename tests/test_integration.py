@@ -10,6 +10,7 @@ import warnings
 from pathlib import Path
 
 import pytest
+from tests.fixtures.auth_fixtures import authenticated_test_user, setup_test_authentication
 
 # Add project root to Python path using relative paths
 project_root = Path(__file__).parent.parent
@@ -104,21 +105,8 @@ class TestIntegrationEndpoints:
 
     def test_supplier_crud_operations(self, integration_client):
         """Test supplier CRUD operations as done in CI"""
-                # Create a test user in the database
-        from src.models.user import User, db
-        
-        test_user = User(username='test_user', email='test@example.com', role='admin')
-        test_user.set_password('password')
-        db.session.add(test_user)
-        db.session.commit()
-        
-        # Set up authentication in session
-        with client.session_transaction() as sess:
-            sess['user_id'] = test_user.id
-            sess['username'] = test_user.username
-            sess['role'] = test_user.role
-        
-        # Test listing suppliers first
+    # Authentication handled by authenticated_test_user fixture
+# Test listing suppliers first
         response = integration_client.get("/api/suppliers")
         assert response.status_code == 200
         initial_data = response.get_json()

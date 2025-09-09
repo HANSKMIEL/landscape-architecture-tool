@@ -11,20 +11,7 @@ class TestPlantRecommendationRequest:
 
     def test_plant_recommendation_request_to_dict(self, app_context):
         """Test PlantRecommendationRequest to_dict method"""
-                # Create a test user in the database
-        from src.models.user import User, db
-        
-        test_user = User(username='test_user', email='test@example.com', role='admin')
-        test_user.set_password('password')
-        db.session.add(test_user)
-        db.session.commit()
-        
-        # Set up authentication in session
-        with client.session_transaction() as sess:
-            sess['user_id'] = test_user.id
-            sess['username'] = test_user.username
-            sess['role'] = test_user.role
-        
+    # Authentication handled by authenticated_test_user fixture
         request = PlantRecommendationRequest(
             project_type="Garden",
             hardiness_zone="5-8",

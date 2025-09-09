@@ -5,6 +5,7 @@ Tests for error handling utilities
 import json
 
 import pytest
+from tests.fixtures.auth_fixtures import authenticated_test_user, setup_test_authentication
 from pydantic import ValidationError
 
 from src.main import create_app

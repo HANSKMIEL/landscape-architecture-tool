@@ -5,6 +5,7 @@ Comprehensive tests for plant service layer business logic.
 """
 
 import pytest
+from tests.fixtures.auth_fixtures import authenticated_test_user, setup_test_authentication
 
 from src.models.landscape import Plant
 from src.models.user import db
@@ -91,20 +92,7 @@ class TestPlantService(DatabaseTestMixin):
 
     def test_get_plant_by_id_success(self, app_context, sample_plant):
         """Test getting plant by ID successfully"""
-                # Create a test user in the database
-        from src.models.user import User, db
-        
-        test_user = User(username='test_user', email='test@example.com', role='admin')
-        test_user.set_password('password')
-        db.session.add(test_user)
-        db.session.commit()
-        
-        # Set up authentication in session
-        with client.session_transaction() as sess:
-            sess['user_id'] = test_user.id
-            sess['username'] = test_user.username
-            sess['role'] = test_user.role
-        
+    # Authentication handled by authenticated_test_user fixture
         plant = PlantService.get_plant_by_id(sample_plant.id)
         assert plant is not None
         assert plant.id == sample_plant.id
@@ -112,39 +100,13 @@ class TestPlantService(DatabaseTestMixin):
 
     def test_get_plant_by_id_not_found(self, app_context):
         """Test getting plant by non-existent ID"""
-                # Create a test user in the database
-        from src.models.user import User, db
-        
-        test_user = User(username='test_user', email='test@example.com', role='admin')
-        test_user.set_password('password')
-        db.session.add(test_user)
-        db.session.commit()
-        
-        # Set up authentication in session
-        with client.session_transaction() as sess:
-            sess['user_id'] = test_user.id
-            sess['username'] = test_user.username
-            sess['role'] = test_user.role
-        
+    # Authentication handled by authenticated_test_user fixture
         plant = PlantService.get_plant_by_id(999)
         assert plant is None
 
     def test_create_plant_success(self, app_context):
         """Test creating a plant successfully"""
-                # Create a test user in the database
-        from src.models.user import User, db
-        
-        test_user = User(username='test_user', email='test@example.com', role='admin')
-        test_user.set_password('password')
-        db.session.add(test_user)
-        db.session.commit()
-        
-        # Set up authentication in session
-        with client.session_transaction() as sess:
-            sess['user_id'] = test_user.id
-            sess['username'] = test_user.username
-            sess['role'] = test_user.role
-        
+    # Authentication handled by authenticated_test_user fixture
         plant_data = {
             "name": "Test Plant",
             "common_name": "Common Test Plant",
@@ -167,20 +129,7 @@ class TestPlantService(DatabaseTestMixin):
 
     def test_create_plant_minimal_data(self, app_context):
         """Test creating plant with minimal required data"""
-                # Create a test user in the database
-        from src.models.user import User, db
-        
-        test_user = User(username='test_user', email='test@example.com', role='admin')
-        test_user.set_password('password')
-        db.session.add(test_user)
-        db.session.commit()
-        
-        # Set up authentication in session
-        with client.session_transaction() as sess:
-            sess['user_id'] = test_user.id
-            sess['username'] = test_user.username
-            sess['role'] = test_user.role
-        
+    # Authentication handled by authenticated_test_user fixture
         plant_data = {"name": "Minimal Plant", "category": "Tree"}
 
         plant = PlantService.create_plant(plant_data)
@@ -191,20 +140,7 @@ class TestPlantService(DatabaseTestMixin):
 
     def test_update_plant_success(self, app_context, sample_plant):
         """Test updating a plant successfully"""
-                # Create a test user in the database
-        from src.models.user import User, db
-        
-        test_user = User(username='test_user', email='test@example.com', role='admin')
-        test_user.set_password('password')
-        db.session.add(test_user)
-        db.session.commit()
-        
-        # Set up authentication in session
-        with client.session_transaction() as sess:
-            sess['user_id'] = test_user.id
-            sess['username'] = test_user.username
-            sess['role'] = test_user.role
-        
+    # Authentication handled by authenticated_test_user fixture
         update_data = {"name": "Updated Plant Name", "price": 35.99}
 
         updated_plant = PlantService.update_plant(sample_plant.id, update_data)
@@ -216,40 +152,14 @@ class TestPlantService(DatabaseTestMixin):
 
     def test_update_plant_not_found(self, app_context):
         """Test updating non-existent plant"""
-                # Create a test user in the database
-        from src.models.user import User, db
-        
-        test_user = User(username='test_user', email='test@example.com', role='admin')
-        test_user.set_password('password')
-        db.session.add(test_user)
-        db.session.commit()
-        
-        # Set up authentication in session
-        with client.session_transaction() as sess:
-            sess['user_id'] = test_user.id
-            sess['username'] = test_user.username
-            sess['role'] = test_user.role
-        
+    # Authentication handled by authenticated_test_user fixture
         update_data = {"name": "Updated Name"}
         result = PlantService.update_plant(999, update_data)
         assert result is None
 
     def test_delete_plant_success(self, app_context, sample_plant):
         """Test deleting a plant successfully"""
-                # Create a test user in the database
-        from src.models.user import User, db
-        
-        test_user = User(username='test_user', email='test@example.com', role='admin')
-        test_user.set_password('password')
-        db.session.add(test_user)
-        db.session.commit()
-        
-        # Set up authentication in session
-        with client.session_transaction() as sess:
-            sess['user_id'] = test_user.id
-            sess['username'] = test_user.username
-            sess['role'] = test_user.role
-        
+    # Authentication handled by authenticated_test_user fixture
         plant_id = sample_plant.id
 
         result = PlantService.delete_plant(plant_id)
@@ -263,20 +173,7 @@ class TestPlantService(DatabaseTestMixin):
 
     def test_delete_plant_not_found(self, app_context):
         """Test deleting non-existent plant"""
-                # Create a test user in the database
-        from src.models.user import User, db
-        
-        test_user = User(username='test_user', email='test@example.com', role='admin')
-        test_user.set_password('password')
-        db.session.add(test_user)
-        db.session.commit()
-        
-        # Set up authentication in session
-        with client.session_transaction() as sess:
-            sess['user_id'] = test_user.id
-            sess['username'] = test_user.username
-            sess['role'] = test_user.role
-        
+    # Authentication handled by authenticated_test_user fixture
         result = PlantService.delete_plant(999)
         assert result is False
 
@@ -308,20 +205,7 @@ class TestPlantService(DatabaseTestMixin):
 
     def test_get_plant_categories(self, app_context, plant_factory):
         """Test getting unique plant categories"""
-                # Create a test user in the database
-        from src.models.user import User, db
-        
-        test_user = User(username='test_user', email='test@example.com', role='admin')
-        test_user.set_password('password')
-        db.session.add(test_user)
-        db.session.commit()
-        
-        # Set up authentication in session
-        with client.session_transaction() as sess:
-            sess['user_id'] = test_user.id
-            sess['username'] = test_user.username
-            sess['role'] = test_user.role
-        
+    # Authentication handled by authenticated_test_user fixture
         plant_factory(category="Tree")
         plant_factory(category="Shrub")
         plant_factory(category="Tree")  # Duplicate
@@ -335,20 +219,7 @@ class TestPlantService(DatabaseTestMixin):
 
     def test_validate_plant_data_success(self, app_context):
         """Test validating correct plant data"""
-                # Create a test user in the database
-        from src.models.user import User, db
-        
-        test_user = User(username='test_user', email='test@example.com', role='admin')
-        test_user.set_password('password')
-        db.session.add(test_user)
-        db.session.commit()
-        
-        # Set up authentication in session
-        with client.session_transaction() as sess:
-            sess['user_id'] = test_user.id
-            sess['username'] = test_user.username
-            sess['role'] = test_user.role
-        
+    # Authentication handled by authenticated_test_user fixture
         valid_data = {
             "name": "Valid Plant",
             "category": "Tree",
@@ -362,20 +233,7 @@ class TestPlantService(DatabaseTestMixin):
 
     def test_validate_plant_data_missing_required(self, app_context):
         """Test validating plant data with missing required fields"""
-                # Create a test user in the database
-        from src.models.user import User, db
-        
-        test_user = User(username='test_user', email='test@example.com', role='admin')
-        test_user.set_password('password')
-        db.session.add(test_user)
-        db.session.commit()
-        
-        # Set up authentication in session
-        with client.session_transaction() as sess:
-            sess['user_id'] = test_user.id
-            sess['username'] = test_user.username
-            sess['role'] = test_user.role
-        
+    # Authentication handled by authenticated_test_user fixture
         invalid_data = {}
 
         errors = PlantService.validate_plant_data(invalid_data)
@@ -384,20 +242,7 @@ class TestPlantService(DatabaseTestMixin):
 
     def test_validate_plant_data_negative_numbers(self, app_context):
         """Test validating plant data with negative numbers"""
-                # Create a test user in the database
-        from src.models.user import User, db
-        
-        test_user = User(username='test_user', email='test@example.com', role='admin')
-        test_user.set_password('password')
-        db.session.add(test_user)
-        db.session.commit()
-        
-        # Set up authentication in session
-        with client.session_transaction() as sess:
-            sess['user_id'] = test_user.id
-            sess['username'] = test_user.username
-            sess['role'] = test_user.role
-        
+    # Authentication handled by authenticated_test_user fixture
         invalid_data = {
             "name": "Test Plant",
             "category": "Tree",
@@ -411,20 +256,7 @@ class TestPlantService(DatabaseTestMixin):
 
     def test_validate_plant_data_height_range_invalid(self, app_context):
         """Test validating plant data with invalid height range"""
-                # Create a test user in the database
-        from src.models.user import User, db
-        
-        test_user = User(username='test_user', email='test@example.com', role='admin')
-        test_user.set_password('password')
-        db.session.add(test_user)
-        db.session.commit()
-        
-        # Set up authentication in session
-        with client.session_transaction() as sess:
-            sess['user_id'] = test_user.id
-            sess['username'] = test_user.username
-            sess['role'] = test_user.role
-        
+    # Authentication handled by authenticated_test_user fixture
         invalid_data = {
             "name": "Test Plant",
             "category": "Tree",
@@ -437,20 +269,7 @@ class TestPlantService(DatabaseTestMixin):
 
     def test_validate_plant_data_invalid_ph_range(self, app_context):
         """Test validating plant data with invalid pH range"""
-                # Create a test user in the database
-        from src.models.user import User, db
-        
-        test_user = User(username='test_user', email='test@example.com', role='admin')
-        test_user.set_password('password')
-        db.session.add(test_user)
-        db.session.commit()
-        
-        # Set up authentication in session
-        with client.session_transaction() as sess:
-            sess['user_id'] = test_user.id
-            sess['username'] = test_user.username
-            sess['role'] = test_user.role
-        
+    # Authentication handled by authenticated_test_user fixture
         invalid_data = {
             "name": "Test Plant",
             "category": "Tree",
@@ -463,20 +282,7 @@ class TestPlantService(DatabaseTestMixin):
 
     def test_validate_plant_data_ph_out_of_range(self, app_context):
         """Test validating plant data with pH values out of range"""
-                # Create a test user in the database
-        from src.models.user import User, db
-        
-        test_user = User(username='test_user', email='test@example.com', role='admin')
-        test_user.set_password('password')
-        db.session.add(test_user)
-        db.session.commit()
-        
-        # Set up authentication in session
-        with client.session_transaction() as sess:
-            sess['user_id'] = test_user.id
-            sess['username'] = test_user.username
-            sess['role'] = test_user.role
-        
+    # Authentication handled by authenticated_test_user fixture
         invalid_data = {
             "name": "Test Plant",
             "category": "Tree",
@@ -489,20 +295,7 @@ class TestPlantService(DatabaseTestMixin):
 
     def test_validate_plant_data_invalid_number_format(self, app_context):
         """Test validating plant data with invalid number formats"""
-                # Create a test user in the database
-        from src.models.user import User, db
-        
-        test_user = User(username='test_user', email='test@example.com', role='admin')
-        test_user.set_password('password')
-        db.session.add(test_user)
-        db.session.commit()
-        
-        # Set up authentication in session
-        with client.session_transaction() as sess:
-            sess['user_id'] = test_user.id
-            sess['username'] = test_user.username
-            sess['role'] = test_user.role
-        
+    # Authentication handled by authenticated_test_user fixture
         invalid_data = {
             "name": "Test Plant",
             "category": "Tree",
@@ -521,20 +314,7 @@ class TestPlantServiceIntegration(DatabaseTestMixin):
 
     def test_full_plant_lifecycle(self, app_context, supplier_factory):
         """Test complete plant lifecycle from creation to deletion"""
-                # Create a test user in the database
-        from src.models.user import User, db
-        
-        test_user = User(username='test_user', email='test@example.com', role='admin')
-        test_user.set_password('password')
-        db.session.add(test_user)
-        db.session.commit()
-        
-        # Set up authentication in session
-        with client.session_transaction() as sess:
-            sess['user_id'] = test_user.id
-            sess['username'] = test_user.username
-            sess['role'] = test_user.role
-        
+    # Authentication handled by authenticated_test_user fixture
         supplier = supplier_factory()
 
         # Create plant

@@ -87,20 +87,7 @@ class TestCoverageBoost:
 
     def test_post_endpoints_coverage(self, app_context):
         """Test POST endpoints for coverage"""
-                # Create a test user in the database
-        from src.models.user import User, db
-        
-        test_user = User(username='test_user', email='test@example.com', role='admin')
-        test_user.set_password('password')
-        db.session.add(test_user)
-        db.session.commit()
-        
-        # Set up authentication in session
-        with client.session_transaction() as sess:
-            sess['user_id'] = test_user.id
-            sess['username'] = test_user.username
-            sess['role'] = test_user.role
-        
+    # Authentication handled by authenticated_test_user fixture
         app = app_context
         with app.test_client() as client:
             # Test supplier creation
@@ -238,20 +225,7 @@ class TestCoverageBoost:
 
     def test_plant_recommendation_request_to_dict(self):
         """Test PlantRecommendationRequest to_dict method for coverage"""
-                # Create a test user in the database
-        from src.models.user import User, db
-        
-        test_user = User(username='test_user', email='test@example.com', role='admin')
-        test_user.set_password('password')
-        db.session.add(test_user)
-        db.session.commit()
-        
-        # Set up authentication in session
-        with client.session_transaction() as sess:
-            sess['user_id'] = test_user.id
-            sess['username'] = test_user.username
-            sess['role'] = test_user.role
-        
+    # Authentication handled by authenticated_test_user fixture
         from src.models.landscape import PlantRecommendationRequest
 
         # Create a PlantRecommendationRequest with minimal required fields

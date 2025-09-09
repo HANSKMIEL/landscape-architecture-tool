@@ -5,6 +5,7 @@ Comprehensive tests for project service layer business logic.
 """
 
 import pytest
+from tests.fixtures.auth_fixtures import authenticated_test_user, setup_test_authentication
 
 from src.models.landscape import Project, ProjectPlant
 from src.models.user import db
@@ -91,20 +92,7 @@ class TestProjectService(DatabaseTestMixin):
 
     def test_get_project_by_id_success(self, app_context, sample_project):
         """Test getting project by ID successfully"""
-                # Create a test user in the database
-        from src.models.user import User, db
-        
-        test_user = User(username='test_user', email='test@example.com', role='admin')
-        test_user.set_password('password')
-        db.session.add(test_user)
-        db.session.commit()
-        
-        # Set up authentication in session
-        with client.session_transaction() as sess:
-            sess['user_id'] = test_user.id
-            sess['username'] = test_user.username
-            sess['role'] = test_user.role
-        
+    # Authentication handled by authenticated_test_user fixture
         project = ProjectService.get_project_by_id(sample_project.id)
         assert project is not None
         assert project.id == sample_project.id
@@ -112,39 +100,13 @@ class TestProjectService(DatabaseTestMixin):
 
     def test_get_project_by_id_not_found(self, app_context):
         """Test getting project by non-existent ID"""
-                # Create a test user in the database
-        from src.models.user import User, db
-        
-        test_user = User(username='test_user', email='test@example.com', role='admin')
-        test_user.set_password('password')
-        db.session.add(test_user)
-        db.session.commit()
-        
-        # Set up authentication in session
-        with client.session_transaction() as sess:
-            sess['user_id'] = test_user.id
-            sess['username'] = test_user.username
-            sess['role'] = test_user.role
-        
+    # Authentication handled by authenticated_test_user fixture
         project = ProjectService.get_project_by_id(999)
         assert project is None
 
     def test_create_project_success(self, app_context, sample_client):
         """Test creating a project successfully"""
-                # Create a test user in the database
-        from src.models.user import User, db
-        
-        test_user = User(username='test_user', email='test@example.com', role='admin')
-        test_user.set_password('password')
-        db.session.add(test_user)
-        db.session.commit()
-        
-        # Set up authentication in session
-        with client.session_transaction() as sess:
-            sess['user_id'] = test_user.id
-            sess['username'] = test_user.username
-            sess['role'] = test_user.role
-        
+    # Authentication handled by authenticated_test_user fixture
         project_data = {
             "name": "Test Project",
             "description": "A test project description",
@@ -168,20 +130,7 @@ class TestProjectService(DatabaseTestMixin):
 
     def test_create_project_minimal_data(self, app_context, sample_client):
         """Test creating project with minimal required data"""
-                # Create a test user in the database
-        from src.models.user import User, db
-        
-        test_user = User(username='test_user', email='test@example.com', role='admin')
-        test_user.set_password('password')
-        db.session.add(test_user)
-        db.session.commit()
-        
-        # Set up authentication in session
-        with client.session_transaction() as sess:
-            sess['user_id'] = test_user.id
-            sess['username'] = test_user.username
-            sess['role'] = test_user.role
-        
+    # Authentication handled by authenticated_test_user fixture
         project_data = {"name": "Minimal Project", "client_id": sample_client.id}
 
         project = ProjectService.create_project(project_data)
@@ -192,20 +141,7 @@ class TestProjectService(DatabaseTestMixin):
 
     def test_update_project_success(self, app_context, sample_project):
         """Test updating a project successfully"""
-                # Create a test user in the database
-        from src.models.user import User, db
-        
-        test_user = User(username='test_user', email='test@example.com', role='admin')
-        test_user.set_password('password')
-        db.session.add(test_user)
-        db.session.commit()
-        
-        # Set up authentication in session
-        with client.session_transaction() as sess:
-            sess['user_id'] = test_user.id
-            sess['username'] = test_user.username
-            sess['role'] = test_user.role
-        
+    # Authentication handled by authenticated_test_user fixture
         update_data = {
             "name": "Updated Project Name",
             "budget": 15000.0,
@@ -222,40 +158,14 @@ class TestProjectService(DatabaseTestMixin):
 
     def test_update_project_not_found(self, app_context):
         """Test updating non-existent project"""
-                # Create a test user in the database
-        from src.models.user import User, db
-        
-        test_user = User(username='test_user', email='test@example.com', role='admin')
-        test_user.set_password('password')
-        db.session.add(test_user)
-        db.session.commit()
-        
-        # Set up authentication in session
-        with client.session_transaction() as sess:
-            sess['user_id'] = test_user.id
-            sess['username'] = test_user.username
-            sess['role'] = test_user.role
-        
+    # Authentication handled by authenticated_test_user fixture
         update_data = {"name": "Updated Name"}
         result = ProjectService.update_project(999, update_data)
         assert result is None
 
     def test_delete_project_success(self, app_context, sample_project):
         """Test deleting a project successfully"""
-                # Create a test user in the database
-        from src.models.user import User, db
-        
-        test_user = User(username='test_user', email='test@example.com', role='admin')
-        test_user.set_password('password')
-        db.session.add(test_user)
-        db.session.commit()
-        
-        # Set up authentication in session
-        with client.session_transaction() as sess:
-            sess['user_id'] = test_user.id
-            sess['username'] = test_user.username
-            sess['role'] = test_user.role
-        
+    # Authentication handled by authenticated_test_user fixture
         project_id = sample_project.id
 
         result = ProjectService.delete_project(project_id)
@@ -269,20 +179,7 @@ class TestProjectService(DatabaseTestMixin):
 
     def test_delete_project_not_found(self, app_context):
         """Test deleting non-existent project"""
-                # Create a test user in the database
-        from src.models.user import User, db
-        
-        test_user = User(username='test_user', email='test@example.com', role='admin')
-        test_user.set_password('password')
-        db.session.add(test_user)
-        db.session.commit()
-        
-        # Set up authentication in session
-        with client.session_transaction() as sess:
-            sess['user_id'] = test_user.id
-            sess['username'] = test_user.username
-            sess['role'] = test_user.role
-        
+    # Authentication handled by authenticated_test_user fixture
         result = ProjectService.delete_project(999)
         assert result is False
 
@@ -312,20 +209,7 @@ class TestProjectService(DatabaseTestMixin):
 
     def test_add_plant_to_project_success(self, app_context, sample_project, sample_plant):
         """Test adding a plant to a project successfully"""
-                # Create a test user in the database
-        from src.models.user import User, db
-        
-        test_user = User(username='test_user', email='test@example.com', role='admin')
-        test_user.set_password('password')
-        db.session.add(test_user)
-        db.session.commit()
-        
-        # Set up authentication in session
-        with client.session_transaction() as sess:
-            sess['user_id'] = test_user.id
-            sess['username'] = test_user.username
-            sess['role'] = test_user.role
-        
+    # Authentication handled by authenticated_test_user fixture
         result = ProjectService.add_plant_to_project(sample_project.id, sample_plant.id, quantity=5, unit_cost=25.99)
 
         assert result is True
@@ -340,21 +224,8 @@ class TestProjectService(DatabaseTestMixin):
     def test_add_plant_to_project_existing_plant(self, app_context, sample_project, sample_plant):
         """Test adding a plant that already exists in project
         (should increase quantity)"""
-                # Create a test user in the database
-        from src.models.user import User, db
-        
-        test_user = User(username='test_user', email='test@example.com', role='admin')
-        test_user.set_password('password')
-        db.session.add(test_user)
-        db.session.commit()
-        
-        # Set up authentication in session
-        with client.session_transaction() as sess:
-            sess['user_id'] = test_user.id
-            sess['username'] = test_user.username
-            sess['role'] = test_user.role
-        
-        # Add plant first time
+    # Authentication handled by authenticated_test_user fixture
+# Add plant first time
         ProjectService.add_plant_to_project(sample_project.id, sample_plant.id, quantity=3)
 
         # Add same plant again
@@ -369,59 +240,20 @@ class TestProjectService(DatabaseTestMixin):
 
     def test_add_plant_to_project_invalid_project(self, app_context, sample_plant):
         """Test adding plant to non-existent project"""
-                # Create a test user in the database
-        from src.models.user import User, db
-        
-        test_user = User(username='test_user', email='test@example.com', role='admin')
-        test_user.set_password('password')
-        db.session.add(test_user)
-        db.session.commit()
-        
-        # Set up authentication in session
-        with client.session_transaction() as sess:
-            sess['user_id'] = test_user.id
-            sess['username'] = test_user.username
-            sess['role'] = test_user.role
-        
+    # Authentication handled by authenticated_test_user fixture
         result = ProjectService.add_plant_to_project(999, sample_plant.id, quantity=1)
         assert result is False
 
     def test_add_plant_to_project_invalid_plant(self, app_context, sample_project):
         """Test adding non-existent plant to project"""
-                # Create a test user in the database
-        from src.models.user import User, db
-        
-        test_user = User(username='test_user', email='test@example.com', role='admin')
-        test_user.set_password('password')
-        db.session.add(test_user)
-        db.session.commit()
-        
-        # Set up authentication in session
-        with client.session_transaction() as sess:
-            sess['user_id'] = test_user.id
-            sess['username'] = test_user.username
-            sess['role'] = test_user.role
-        
+    # Authentication handled by authenticated_test_user fixture
         result = ProjectService.add_plant_to_project(sample_project.id, 999, quantity=1)
         assert result is False
 
     def test_remove_plant_from_project_success(self, app_context, sample_project, sample_plant):
         """Test removing a plant from project successfully"""
-                # Create a test user in the database
-        from src.models.user import User, db
-        
-        test_user = User(username='test_user', email='test@example.com', role='admin')
-        test_user.set_password('password')
-        db.session.add(test_user)
-        db.session.commit()
-        
-        # Set up authentication in session
-        with client.session_transaction() as sess:
-            sess['user_id'] = test_user.id
-            sess['username'] = test_user.username
-            sess['role'] = test_user.role
-        
-        # First add the plant
+    # Authentication handled by authenticated_test_user fixture
+# First add the plant
         ProjectService.add_plant_to_project(sample_project.id, sample_plant.id, quantity=5)
 
         # Then remove it
@@ -436,39 +268,13 @@ class TestProjectService(DatabaseTestMixin):
 
     def test_remove_plant_from_project_not_found(self, app_context, sample_project, sample_plant):
         """Test removing plant that's not in project"""
-                # Create a test user in the database
-        from src.models.user import User, db
-        
-        test_user = User(username='test_user', email='test@example.com', role='admin')
-        test_user.set_password('password')
-        db.session.add(test_user)
-        db.session.commit()
-        
-        # Set up authentication in session
-        with client.session_transaction() as sess:
-            sess['user_id'] = test_user.id
-            sess['username'] = test_user.username
-            sess['role'] = test_user.role
-        
+    # Authentication handled by authenticated_test_user fixture
         result = ProjectService.remove_plant_from_project(sample_project.id, sample_plant.id)
         assert result is False
 
     def test_get_project_plants(self, app_context, sample_project, plant_factory):
         """Test getting plants associated with a project"""
-                # Create a test user in the database
-        from src.models.user import User, db
-        
-        test_user = User(username='test_user', email='test@example.com', role='admin')
-        test_user.set_password('password')
-        db.session.add(test_user)
-        db.session.commit()
-        
-        # Set up authentication in session
-        with client.session_transaction() as sess:
-            sess['user_id'] = test_user.id
-            sess['username'] = test_user.username
-            sess['role'] = test_user.role
-        
+    # Authentication handled by authenticated_test_user fixture
         plant1 = plant_factory(name="Plant 1", price=10.0)
         plant2 = plant_factory(name="Plant 2", price=20.0)
 
@@ -488,20 +294,7 @@ class TestProjectService(DatabaseTestMixin):
 
     def test_calculate_project_cost(self, app_context, sample_project, plant_factory):
         """Test calculating total cost for a project"""
-                # Create a test user in the database
-        from src.models.user import User, db
-        
-        test_user = User(username='test_user', email='test@example.com', role='admin')
-        test_user.set_password('password')
-        db.session.add(test_user)
-        db.session.commit()
-        
-        # Set up authentication in session
-        with client.session_transaction() as sess:
-            sess['user_id'] = test_user.id
-            sess['username'] = test_user.username
-            sess['role'] = test_user.role
-        
+    # Authentication handled by authenticated_test_user fixture
         plant1 = plant_factory(name="Plant 1")
         plant2 = plant_factory(name="Plant 2")
 
@@ -521,20 +314,7 @@ class TestProjectService(DatabaseTestMixin):
 
     def test_update_project_status(self, app_context, sample_project):
         """Test updating project status"""
-                # Create a test user in the database
-        from src.models.user import User, db
-        
-        test_user = User(username='test_user', email='test@example.com', role='admin')
-        test_user.set_password('password')
-        db.session.add(test_user)
-        db.session.commit()
-        
-        # Set up authentication in session
-        with client.session_transaction() as sess:
-            sess['user_id'] = test_user.id
-            sess['username'] = test_user.username
-            sess['role'] = test_user.role
-        
+    # Authentication handled by authenticated_test_user fixture
         original_status = sample_project.status  # noqa: F841
 
         updated_project = ProjectService.update_project_status(sample_project.id, "completed")
@@ -545,39 +325,13 @@ class TestProjectService(DatabaseTestMixin):
 
     def test_update_project_status_not_found(self, app_context):
         """Test updating status of non-existent project"""
-                # Create a test user in the database
-        from src.models.user import User, db
-        
-        test_user = User(username='test_user', email='test@example.com', role='admin')
-        test_user.set_password('password')
-        db.session.add(test_user)
-        db.session.commit()
-        
-        # Set up authentication in session
-        with client.session_transaction() as sess:
-            sess['user_id'] = test_user.id
-            sess['username'] = test_user.username
-            sess['role'] = test_user.role
-        
+    # Authentication handled by authenticated_test_user fixture
         result = ProjectService.update_project_status(999, "completed")
         assert result is None
 
     def test_validate_project_data_success(self, app_context, sample_client):
         """Test validating correct project data"""
-                # Create a test user in the database
-        from src.models.user import User, db
-        
-        test_user = User(username='test_user', email='test@example.com', role='admin')
-        test_user.set_password('password')
-        db.session.add(test_user)
-        db.session.commit()
-        
-        # Set up authentication in session
-        with client.session_transaction() as sess:
-            sess['user_id'] = test_user.id
-            sess['username'] = test_user.username
-            sess['role'] = test_user.role
-        
+    # Authentication handled by authenticated_test_user fixture
         valid_data = {
             "name": "Valid Project",
             "client_id": sample_client.id,
@@ -591,20 +345,7 @@ class TestProjectService(DatabaseTestMixin):
 
     def test_validate_project_data_missing_required(self, app_context):
         """Test validating project data with missing required fields"""
-                # Create a test user in the database
-        from src.models.user import User, db
-        
-        test_user = User(username='test_user', email='test@example.com', role='admin')
-        test_user.set_password('password')
-        db.session.add(test_user)
-        db.session.commit()
-        
-        # Set up authentication in session
-        with client.session_transaction() as sess:
-            sess['user_id'] = test_user.id
-            sess['username'] = test_user.username
-            sess['role'] = test_user.role
-        
+    # Authentication handled by authenticated_test_user fixture
         invalid_data = {}
 
         errors = ProjectService.validate_project_data(invalid_data)
@@ -613,20 +354,7 @@ class TestProjectService(DatabaseTestMixin):
 
     def test_validate_project_data_invalid_client(self, app_context):
         """Test validating project data with invalid client ID"""
-                # Create a test user in the database
-        from src.models.user import User, db
-        
-        test_user = User(username='test_user', email='test@example.com', role='admin')
-        test_user.set_password('password')
-        db.session.add(test_user)
-        db.session.commit()
-        
-        # Set up authentication in session
-        with client.session_transaction() as sess:
-            sess['user_id'] = test_user.id
-            sess['username'] = test_user.username
-            sess['role'] = test_user.role
-        
+    # Authentication handled by authenticated_test_user fixture
         invalid_data = {"name": "Test Project", "client_id": 999}  # Non-existent client
 
         errors = ProjectService.validate_project_data(invalid_data)
@@ -634,20 +362,7 @@ class TestProjectService(DatabaseTestMixin):
 
     def test_validate_project_data_negative_numbers(self, app_context, sample_client):
         """Test validating project data with negative numbers"""
-                # Create a test user in the database
-        from src.models.user import User, db
-        
-        test_user = User(username='test_user', email='test@example.com', role='admin')
-        test_user.set_password('password')
-        db.session.add(test_user)
-        db.session.commit()
-        
-        # Set up authentication in session
-        with client.session_transaction() as sess:
-            sess['user_id'] = test_user.id
-            sess['username'] = test_user.username
-            sess['role'] = test_user.role
-        
+    # Authentication handled by authenticated_test_user fixture
         invalid_data = {
             "name": "Test Project",
             "client_id": sample_client.id,
@@ -661,20 +376,7 @@ class TestProjectService(DatabaseTestMixin):
 
     def test_validate_project_data_invalid_status(self, app_context, sample_client):
         """Test validating project data with invalid status"""
-                # Create a test user in the database
-        from src.models.user import User, db
-        
-        test_user = User(username='test_user', email='test@example.com', role='admin')
-        test_user.set_password('password')
-        db.session.add(test_user)
-        db.session.commit()
-        
-        # Set up authentication in session
-        with client.session_transaction() as sess:
-            sess['user_id'] = test_user.id
-            sess['username'] = test_user.username
-            sess['role'] = test_user.role
-        
+    # Authentication handled by authenticated_test_user fixture
         invalid_data = {
             "name": "Test Project",
             "client_id": sample_client.id,
@@ -691,20 +393,7 @@ class TestProjectServiceIntegration(DatabaseTestMixin):
 
     def test_full_project_lifecycle(self, app_context, client_factory, plant_factory):
         """Test complete project lifecycle from creation to deletion"""
-                # Create a test user in the database
-        from src.models.user import User, db
-        
-        test_user = User(username='test_user', email='test@example.com', role='admin')
-        test_user.set_password('password')
-        db.session.add(test_user)
-        db.session.commit()
-        
-        # Set up authentication in session
-        with client.session_transaction() as sess:
-            sess['user_id'] = test_user.id
-            sess['username'] = test_user.username
-            sess['role'] = test_user.role
-        
+    # Authentication handled by authenticated_test_user fixture
         client = client_factory()
         plant = plant_factory(price=15.0)
 
@@ -751,20 +440,7 @@ class TestProjectServiceIntegration(DatabaseTestMixin):
 
     def test_complex_project_plant_management(self, app_context, project_factory, plant_factory, client_factory):
         """Test complex project-plant relationship management"""
-                # Create a test user in the database
-        from src.models.user import User, db
-        
-        test_user = User(username='test_user', email='test@example.com', role='admin')
-        test_user.set_password('password')
-        db.session.add(test_user)
-        db.session.commit()
-        
-        # Set up authentication in session
-        with client.session_transaction() as sess:
-            sess['user_id'] = test_user.id
-            sess['username'] = test_user.username
-            sess['role'] = test_user.role
-        
+    # Authentication handled by authenticated_test_user fixture
         client = client_factory()
         project = project_factory(client=client)
 
@@ -795,21 +471,8 @@ class TestProjectServiceIntegration(DatabaseTestMixin):
 
     def test_project_search_and_filtering(self, app_context, project_factory, client_factory):
         """Test complex search and filtering scenarios"""
-                # Create a test user in the database
-        from src.models.user import User, db
-        
-        test_user = User(username='test_user', email='test@example.com', role='admin')
-        test_user.set_password('password')
-        db.session.add(test_user)
-        db.session.commit()
-        
-        # Set up authentication in session
-        with client.session_transaction() as sess:
-            sess['user_id'] = test_user.id
-            sess['username'] = test_user.username
-            sess['role'] = test_user.role
-        
-        # Create clients
+    # Authentication handled by authenticated_test_user fixture
+# Create clients
         client1 = client_factory(name="Alpha Corp")
         client2 = client_factory(name="Beta LLC")
 

@@ -9,6 +9,7 @@ where both code paths now have consistent cleanup mechanisms.
 import os
 
 import pytest
+from tests.fixtures.auth_fixtures import authenticated_test_user, setup_test_authentication
 from sqlalchemy import create_engine
 from sqlalchemy.pool import StaticPool
 

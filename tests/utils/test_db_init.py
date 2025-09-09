@@ -5,6 +5,7 @@ Tests for database initialization utilities
 from unittest.mock import Mock, patch
 
 import pytest
+from tests.fixtures.auth_fixtures import authenticated_test_user, setup_test_authentication
 
 from src.utils.db_init import initialize_database, populate_sample_data
 
@@ -143,21 +144,8 @@ class TestPopulateSampleData:
 
     def test_populate_sample_data_supplier_data_structure(self, app_context):
         """Test that supplier data has expected structure"""
-                # Create a test user in the database
-        from src.models.user import User, db
-        
-        test_user = User(username='test_user', email='test@example.com', role='admin')
-        test_user.set_password('password')
-        db.session.add(test_user)
-        db.session.commit()
-        
-        # Set up authentication in session
-        with client.session_transaction() as sess:
-            sess['user_id'] = test_user.id
-            sess['username'] = test_user.username
-            sess['role'] = test_user.role
-        
-        # This tests the actual data structure without mocking
+    # Authentication handled by authenticated_test_user fixture
+# This tests the actual data structure without mocking
         with patch("src.utils.db_init.db.session") as mock_session:
             mock_session.add = Mock()
             mock_session.flush = Mock()
@@ -203,20 +191,7 @@ class TestPopulateSampleData:
 
     def test_populate_sample_data_plant_data_structure(self, app_context):
         """Test that plant data has expected structure"""
-                # Create a test user in the database
-        from src.models.user import User, db
-        
-        test_user = User(username='test_user', email='test@example.com', role='admin')
-        test_user.set_password('password')
-        db.session.add(test_user)
-        db.session.commit()
-        
-        # Set up authentication in session
-        with client.session_transaction() as sess:
-            sess['user_id'] = test_user.id
-            sess['username'] = test_user.username
-            sess['role'] = test_user.role
-        
+    # Authentication handled by authenticated_test_user fixture
         with patch("src.utils.db_init.db.session") as mock_session:
             mock_session.add = Mock()
             mock_session.flush = Mock()
@@ -268,20 +243,7 @@ class TestPopulateSampleData:
 
     def test_populate_sample_data_project_data_structure(self, app_context):
         """Test that project data has expected structure"""
-                # Create a test user in the database
-        from src.models.user import User, db
-        
-        test_user = User(username='test_user', email='test@example.com', role='admin')
-        test_user.set_password('password')
-        db.session.add(test_user)
-        db.session.commit()
-        
-        # Set up authentication in session
-        with client.session_transaction() as sess:
-            sess['user_id'] = test_user.id
-            sess['username'] = test_user.username
-            sess['role'] = test_user.role
-        
+    # Authentication handled by authenticated_test_user fixture
         with patch("src.utils.db_init.db.session") as mock_session:
             mock_session.add = Mock()
             mock_session.flush = Mock()

@@ -8,6 +8,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 import pytest
+from tests.fixtures.auth_fixtures import authenticated_test_user, setup_test_authentication
 
 # Add project root to Python path using relative paths
 project_root = Path(__file__).parent.parent
@@ -49,22 +50,9 @@ class TestAPIDocumentation:
 class TestSupplierEndpoints:
     """Test supplier-related endpoints"""
 
-    def test_get_suppliers_empty(self, client):
+    def test_get_suppliers_empty(self, client, authenticated_test_user):
         """Test getting suppliers when database is empty"""
-        # Create a test user in the database
-        from src.models.user import User, db
-        
-        test_user = User(username='test_user', email='test@example.com', role='admin')
-        test_user.set_password('password')
-        db.session.add(test_user)
-        db.session.commit()
-        
-        # Set up authentication in session
-        with client.session_transaction() as sess:
-            sess['user_id'] = test_user.id
-            sess['username'] = test_user.username
-            sess['role'] = test_user.role
-        
+        # Authentication handled by authenticated_test_user fixture
         response = client.get("/api/suppliers")
         assert response.status_code == 200
         data = response.get_json()
@@ -73,22 +61,9 @@ class TestSupplierEndpoints:
         assert data["suppliers"] == []
         assert data["total"] == 0
 
-    def test_create_supplier_valid(self, client):
-        """Test creating a valid supplier"""
-                # Create a test user in the database
-        from src.models.user import User, db
-        
-        test_user = User(username='test_user', email='test@example.com', role='admin')
-        test_user.set_password('password')
-        db.session.add(test_user)
-        db.session.commit()
-        
-        # Set up authentication in session
-        with client.session_transaction() as sess:
-            sess['user_id'] = test_user.id
-            sess['username'] = test_user.username
-            sess['role'] = test_user.role
-        
+    def test_create_supplier_valid(self, client, authenticated_test_user):
+        """test_create_supplier_valid"""
+        # Authentication handled by authenticated_test_user fixture
         supplier_data = {
             "name": "Test Supplier",
             "contact_person": "John Doe",
@@ -104,22 +79,9 @@ class TestSupplierEndpoints:
         assert data["name"] == supplier_data["name"]
         assert data["email"] == supplier_data["email"]
 
-    def test_create_supplier_invalid(self, client):
-        """Test creating supplier with invalid data"""
-                # Create a test user in the database
-        from src.models.user import User, db
-        
-        test_user = User(username='test_user', email='test@example.com', role='admin')
-        test_user.set_password('password')
-        db.session.add(test_user)
-        db.session.commit()
-        
-        # Set up authentication in session
-        with client.session_transaction() as sess:
-            sess['user_id'] = test_user.id
-            sess['username'] = test_user.username
-            sess['role'] = test_user.role
-        
+    def test_create_supplier_invalid(self, client, authenticated_test_user):
+        """test_create_supplier_invalid"""
+        # Authentication handled by authenticated_test_user fixture
         invalid_data = {
             "name": "",  # Empty name should be invalid
             "email": "invalid-email",  # Invalid email format
@@ -132,22 +94,9 @@ class TestSupplierEndpoints:
 class TestPlantEndpoints:
     """Test plant-related endpoints"""
 
-    def test_get_plants_empty(self, client):
-        """Test getting plants when database is empty"""
-        # Create a test user in the database
-        from src.models.user import User, db
-        
-        test_user = User(username='test_user', email='test@example.com', role='admin')
-        test_user.set_password('password')
-        db.session.add(test_user)
-        db.session.commit()
-        
-        # Set up authentication in session
-        with client.session_transaction() as sess:
-            sess['user_id'] = test_user.id
-            sess['username'] = test_user.username
-            sess['role'] = test_user.role
-        
+    def test_get_plants_empty(self, client, authenticated_test_user):
+        """test_get_plants_empty"""
+        # Authentication handled by authenticated_test_user fixture
         response = client.get("/api/plants")
         assert response.status_code == 200
         data = response.get_json()
@@ -156,22 +105,9 @@ class TestPlantEndpoints:
         assert data["plants"] == []
         assert data["total"] == 0
 
-    def test_create_plant_valid(self, client):
-        """Test creating a valid plant"""
-                # Create a test user in the database
-        from src.models.user import User, db
-        
-        test_user = User(username='test_user', email='test@example.com', role='admin')
-        test_user.set_password('password')
-        db.session.add(test_user)
-        db.session.commit()
-        
-        # Set up authentication in session
-        with client.session_transaction() as sess:
-            sess['user_id'] = test_user.id
-            sess['username'] = test_user.username
-            sess['role'] = test_user.role
-        
+    def test_create_plant_valid(self, client, authenticated_test_user):
+        """test_create_plant_valid"""
+        # Authentication handled by authenticated_test_user fixture
         plant_data = {
             "name": "Testicus planticus",
             "common_name": "Test Plant",

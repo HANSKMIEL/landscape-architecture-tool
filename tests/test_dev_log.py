@@ -12,6 +12,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 import pytest
+from tests.fixtures.auth_fixtures import authenticated_test_user, setup_test_authentication
 
 # Add project root to Python path using relative paths
 project_root = Path(__file__).parent.parent
@@ -52,20 +53,7 @@ class TestDevLogManager:
 
     def test_create_log_header(self, log_manager):
         """Test log header creation"""
-                # Create a test user in the database
-        from src.models.user import User, db
-        
-        test_user = User(username='test_user', email='test@example.com', role='admin')
-        test_user.set_password('password')
-        db.session.add(test_user)
-        db.session.commit()
-        
-        # Set up authentication in session
-        with client.session_transaction() as sess:
-            sess['user_id'] = test_user.id
-            sess['username'] = test_user.username
-            sess['role'] = test_user.role
-        
+    # Authentication handled by authenticated_test_user fixture
         header = log_manager.create_log_header()
 
         assert "Development Log - Landscape Architecture Tool" in header
@@ -109,20 +97,7 @@ class TestDevLogManager:
 
     def test_add_entry_creates_new_file(self, log_manager):
         """Test that adding an entry creates a new log file if it doesn't exist"""
-                # Create a test user in the database
-        from src.models.user import User, db
-        
-        test_user = User(username='test_user', email='test@example.com', role='admin')
-        test_user.set_password('password')
-        db.session.add(test_user)
-        db.session.commit()
-        
-        # Set up authentication in session
-        with client.session_transaction() as sess:
-            sess['user_id'] = test_user.id
-            sess['username'] = test_user.username
-            sess['role'] = test_user.role
-        
+    # Authentication handled by authenticated_test_user fixture
         assert not log_manager.log_file.exists()
 
         success = log_manager.add_entry("feature_added", "Initial feature", "developer")
@@ -141,21 +116,8 @@ class TestDevLogManager:
 
     def test_add_entry_appends_to_existing_file(self, log_manager):
         """Test that adding entries to existing file works correctly"""
-                # Create a test user in the database
-        from src.models.user import User, db
-        
-        test_user = User(username='test_user', email='test@example.com', role='admin')
-        test_user.set_password('password')
-        db.session.add(test_user)
-        db.session.commit()
-        
-        # Set up authentication in session
-        with client.session_transaction() as sess:
-            sess['user_id'] = test_user.id
-            sess['username'] = test_user.username
-            sess['role'] = test_user.role
-        
-        # Create initial entry
+    # Authentication handled by authenticated_test_user fixture
+# Create initial entry
         log_manager.add_entry("feature_added", "First feature", "dev1")
 
         # Add second entry
@@ -175,20 +137,7 @@ class TestDevLogManager:
 
     def test_add_entry_invalid_action(self, log_manager):
         """Test that invalid actions are handled gracefully"""
-                # Create a test user in the database
-        from src.models.user import User, db
-        
-        test_user = User(username='test_user', email='test@example.com', role='admin')
-        test_user.set_password('password')
-        db.session.add(test_user)
-        db.session.commit()
-        
-        # Set up authentication in session
-        with client.session_transaction() as sess:
-            sess['user_id'] = test_user.id
-            sess['username'] = test_user.username
-            sess['role'] = test_user.role
-        
+    # Authentication handled by authenticated_test_user fixture
         with patch("builtins.print") as mock_print:
             success = log_manager.add_entry("invalid_action", "Test description", "test_author")
 

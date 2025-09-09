@@ -8,6 +8,7 @@ CRUD operations, cost calculations, and business logic validation.
 import json
 
 import pytest
+from tests.fixtures.auth_fixtures import authenticated_test_user, setup_test_authentication
 
 from src.main import create_app
 from src.models.landscape import Client, Plant, Project, Supplier
@@ -95,20 +96,7 @@ class TestProjectPlantService:
 
     def test_add_plant_to_project(self, app, init_database):
         """Test adding a plant to a project"""
-                # Create a test user in the database
-        from src.models.user import User, db
-        
-        test_user = User(username='test_user', email='test@example.com', role='admin')
-        test_user.set_password('password')
-        db.session.add(test_user)
-        db.session.commit()
-        
-        # Set up authentication in session
-        with client.session_transaction() as sess:
-            sess['user_id'] = test_user.id
-            sess['username'] = test_user.username
-            sess['role'] = test_user.role
-        
+    # Authentication handled by authenticated_test_user fixture
         with app.app_context():
             service = ProjectPlantService()
             data = init_database
@@ -131,20 +119,7 @@ class TestProjectPlantService:
 
     def test_add_duplicate_plant_updates_quantity(self, app, init_database):
         """Test adding the same plant twice updates quantity"""
-                # Create a test user in the database
-        from src.models.user import User, db
-        
-        test_user = User(username='test_user', email='test@example.com', role='admin')
-        test_user.set_password('password')
-        db.session.add(test_user)
-        db.session.commit()
-        
-        # Set up authentication in session
-        with client.session_transaction() as sess:
-            sess['user_id'] = test_user.id
-            sess['username'] = test_user.username
-            sess['role'] = test_user.role
-        
+    # Authentication handled by authenticated_test_user fixture
         with app.app_context():
             service = ProjectPlantService()
             data = init_database
@@ -162,20 +137,7 @@ class TestProjectPlantService:
 
     def test_update_plant_quantity(self, app, init_database):
         """Test updating plant quantities"""
-                # Create a test user in the database
-        from src.models.user import User, db
-        
-        test_user = User(username='test_user', email='test@example.com', role='admin')
-        test_user.set_password('password')
-        db.session.add(test_user)
-        db.session.commit()
-        
-        # Set up authentication in session
-        with client.session_transaction() as sess:
-            sess['user_id'] = test_user.id
-            sess['username'] = test_user.username
-            sess['role'] = test_user.role
-        
+    # Authentication handled by authenticated_test_user fixture
         with app.app_context():
             service = ProjectPlantService()
             data = init_database
@@ -194,20 +156,7 @@ class TestProjectPlantService:
 
     def test_update_plant_status(self, app, init_database):
         """Test updating plant status"""
-                # Create a test user in the database
-        from src.models.user import User, db
-        
-        test_user = User(username='test_user', email='test@example.com', role='admin')
-        test_user.set_password('password')
-        db.session.add(test_user)
-        db.session.commit()
-        
-        # Set up authentication in session
-        with client.session_transaction() as sess:
-            sess['user_id'] = test_user.id
-            sess['username'] = test_user.username
-            sess['role'] = test_user.role
-        
+    # Authentication handled by authenticated_test_user fixture
         with app.app_context():
             service = ProjectPlantService()
             data = init_database
@@ -226,20 +175,7 @@ class TestProjectPlantService:
 
     def test_calculate_project_cost(self, app, init_database):
         """Test project cost calculations"""
-                # Create a test user in the database
-        from src.models.user import User, db
-        
-        test_user = User(username='test_user', email='test@example.com', role='admin')
-        test_user.set_password('password')
-        db.session.add(test_user)
-        db.session.commit()
-        
-        # Set up authentication in session
-        with client.session_transaction() as sess:
-            sess['user_id'] = test_user.id
-            sess['username'] = test_user.username
-            sess['role'] = test_user.role
-        
+    # Authentication handled by authenticated_test_user fixture
         with app.app_context():
             service = ProjectPlantService()
             data = init_database
@@ -271,20 +207,7 @@ class TestProjectPlantService:
 
     def test_generate_plant_order_list(self, app, init_database):
         """Test plant order list generation"""
-                # Create a test user in the database
-        from src.models.user import User, db
-        
-        test_user = User(username='test_user', email='test@example.com', role='admin')
-        test_user.set_password('password')
-        db.session.add(test_user)
-        db.session.commit()
-        
-        # Set up authentication in session
-        with client.session_transaction() as sess:
-            sess['user_id'] = test_user.id
-            sess['username'] = test_user.username
-            sess['role'] = test_user.role
-        
+    # Authentication handled by authenticated_test_user fixture
         with app.app_context():
             service = ProjectPlantService()
             data = init_database
@@ -316,20 +239,7 @@ class TestProjectPlantService:
 
     def test_remove_plant_from_project(self, app, init_database):
         """Test removing a plant from project"""
-                # Create a test user in the database
-        from src.models.user import User, db
-        
-        test_user = User(username='test_user', email='test@example.com', role='admin')
-        test_user.set_password('password')
-        db.session.add(test_user)
-        db.session.commit()
-        
-        # Set up authentication in session
-        with client.session_transaction() as sess:
-            sess['user_id'] = test_user.id
-            sess['username'] = test_user.username
-            sess['role'] = test_user.role
-        
+    # Authentication handled by authenticated_test_user fixture
         with app.app_context():
             service = ProjectPlantService()
             data = init_database
@@ -377,20 +287,7 @@ class TestProjectPlantAPI:
 
     def test_add_plant_to_project_endpoint(self, client, init_database):
         """Test API endpoint for adding plant to project"""
-                # Create a test user in the database
-        from src.models.user import User, db
-        
-        test_user = User(username='test_user', email='test@example.com', role='admin')
-        test_user.set_password('password')
-        db.session.add(test_user)
-        db.session.commit()
-        
-        # Set up authentication in session
-        with client.session_transaction() as sess:
-            sess['user_id'] = test_user.id
-            sess['username'] = test_user.username
-            sess['role'] = test_user.role
-        
+    # Authentication handled by authenticated_test_user fixture
         data = init_database
 
         response = client.post(
@@ -414,20 +311,7 @@ class TestProjectPlantAPI:
 
     def test_get_project_plants_endpoint(self, client, init_database):
         """Test API endpoint for getting project plants"""
-                # Create a test user in the database
-        from src.models.user import User, db
-        
-        test_user = User(username='test_user', email='test@example.com', role='admin')
-        test_user.set_password('password')
-        db.session.add(test_user)
-        db.session.commit()
-        
-        # Set up authentication in session
-        with client.session_transaction() as sess:
-            sess['user_id'] = test_user.id
-            sess['username'] = test_user.username
-            sess['role'] = test_user.role
-        
+    # Authentication handled by authenticated_test_user fixture
         data = init_database
 
         # Add plant first
@@ -447,20 +331,7 @@ class TestProjectPlantAPI:
 
     def test_update_project_plant_endpoint(self, client, init_database):
         """Test API endpoint for updating project plant"""
-                # Create a test user in the database
-        from src.models.user import User, db
-        
-        test_user = User(username='test_user', email='test@example.com', role='admin')
-        test_user.set_password('password')
-        db.session.add(test_user)
-        db.session.commit()
-        
-        # Set up authentication in session
-        with client.session_transaction() as sess:
-            sess['user_id'] = test_user.id
-            sess['username'] = test_user.username
-            sess['role'] = test_user.role
-        
+    # Authentication handled by authenticated_test_user fixture
         data = init_database
 
         # Add plant first
@@ -502,20 +373,7 @@ class TestProjectPlantAPI:
 
     def test_get_plant_order_list_endpoint(self, client, init_database):
         """Test API endpoint for plant order list"""
-                # Create a test user in the database
-        from src.models.user import User, db
-        
-        test_user = User(username='test_user', email='test@example.com', role='admin')
-        test_user.set_password('password')
-        db.session.add(test_user)
-        db.session.commit()
-        
-        # Set up authentication in session
-        with client.session_transaction() as sess:
-            sess['user_id'] = test_user.id
-            sess['username'] = test_user.username
-            sess['role'] = test_user.role
-        
+    # Authentication handled by authenticated_test_user fixture
         data = init_database
 
         # Add plants first
@@ -538,20 +396,7 @@ class TestProjectPlantAPI:
 
     def test_remove_plant_endpoint(self, client, init_database):
         """Test API endpoint for removing plant from project"""
-                # Create a test user in the database
-        from src.models.user import User, db
-        
-        test_user = User(username='test_user', email='test@example.com', role='admin')
-        test_user.set_password('password')
-        db.session.add(test_user)
-        db.session.commit()
-        
-        # Set up authentication in session
-        with client.session_transaction() as sess:
-            sess['user_id'] = test_user.id
-            sess['username'] = test_user.username
-            sess['role'] = test_user.role
-        
+    # Authentication handled by authenticated_test_user fixture
         data = init_database
 
         # Add plant first
@@ -573,20 +418,7 @@ class TestProjectPlantAPI:
 
     def test_batch_add_plants_endpoint(self, client, init_database):
         """Test API endpoint for adding multiple plants"""
-                # Create a test user in the database
-        from src.models.user import User, db
-        
-        test_user = User(username='test_user', email='test@example.com', role='admin')
-        test_user.set_password('password')
-        db.session.add(test_user)
-        db.session.commit()
-        
-        # Set up authentication in session
-        with client.session_transaction() as sess:
-            sess['user_id'] = test_user.id
-            sess['username'] = test_user.username
-            sess['role'] = test_user.role
-        
+    # Authentication handled by authenticated_test_user fixture
         data = init_database
 
         response = client.post(
@@ -622,20 +454,7 @@ class TestProjectPlantIntegration:
 
     def test_full_project_workflow(self, client, init_database):
         """Test complete project-plant workflow"""
-                # Create a test user in the database
-        from src.models.user import User, db
-        
-        test_user = User(username='test_user', email='test@example.com', role='admin')
-        test_user.set_password('password')
-        db.session.add(test_user)
-        db.session.commit()
-        
-        # Set up authentication in session
-        with client.session_transaction() as sess:
-            sess['user_id'] = test_user.id
-            sess['username'] = test_user.username
-            sess['role'] = test_user.role
-        
+    # Authentication handled by authenticated_test_user fixture
         data = init_database
 
         # 1. Add plants to project

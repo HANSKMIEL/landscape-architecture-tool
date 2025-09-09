@@ -5,6 +5,7 @@ Tests for base service functionality
 from unittest.mock import Mock, patch
 
 import pytest
+from tests.fixtures.auth_fixtures import authenticated_test_user, setup_test_authentication
 
 from src.main import create_app
 from src.models.landscape import Plant
@@ -160,20 +161,7 @@ class TestBaseService:
 
     def test_create_success(self, app, db_setup):
         """Test create method with valid data"""
-                # Create a test user in the database
-        from src.models.user import User, db
-        
-        test_user = User(username='test_user', email='test@example.com', role='admin')
-        test_user.set_password('password')
-        db.session.add(test_user)
-        db.session.commit()
-        
-        # Set up authentication in session
-        with client.session_transaction() as sess:
-            sess['user_id'] = test_user.id
-            sess['username'] = test_user.username
-            sess['role'] = test_user.role
-        
+    # Authentication handled by authenticated_test_user fixture
         with app.app_context():
             service = BaseService(Plant)
 
@@ -197,20 +185,7 @@ class TestBaseService:
 
     def test_update_success(self, app, db_setup):
         """Test update method with valid data"""
-                # Create a test user in the database
-        from src.models.user import User, db
-        
-        test_user = User(username='test_user', email='test@example.com', role='admin')
-        test_user.set_password('password')
-        db.session.add(test_user)
-        db.session.commit()
-        
-        # Set up authentication in session
-        with client.session_transaction() as sess:
-            sess['user_id'] = test_user.id
-            sess['username'] = test_user.username
-            sess['role'] = test_user.role
-        
+    # Authentication handled by authenticated_test_user fixture
         with app.app_context():
             # Create initial plant
             plant = create_test_plant(name="Original Plant")
@@ -231,20 +206,7 @@ class TestBaseService:
 
     def test_update_not_found(self, app, db_setup):
         """Test update method with invalid ID"""
-                # Create a test user in the database
-        from src.models.user import User, db
-        
-        test_user = User(username='test_user', email='test@example.com', role='admin')
-        test_user.set_password('password')
-        db.session.add(test_user)
-        db.session.commit()
-        
-        # Set up authentication in session
-        with client.session_transaction() as sess:
-            sess['user_id'] = test_user.id
-            sess['username'] = test_user.username
-            sess['role'] = test_user.role
-        
+    # Authentication handled by authenticated_test_user fixture
         with app.app_context():
             service = BaseService(Plant)
             result = service.update(99999, {"name": "Updated"})
@@ -253,20 +215,7 @@ class TestBaseService:
 
     def test_delete_success(self, app, db_setup):
         """Test delete method with valid ID"""
-                # Create a test user in the database
-        from src.models.user import User, db
-        
-        test_user = User(username='test_user', email='test@example.com', role='admin')
-        test_user.set_password('password')
-        db.session.add(test_user)
-        db.session.commit()
-        
-        # Set up authentication in session
-        with client.session_transaction() as sess:
-            sess['user_id'] = test_user.id
-            sess['username'] = test_user.username
-            sess['role'] = test_user.role
-        
+    # Authentication handled by authenticated_test_user fixture
         with app.app_context():
             plant = create_test_plant(name="Plant to Delete")
             db.session.add(plant)
@@ -284,20 +233,7 @@ class TestBaseService:
 
     def test_delete_not_found(self, app, db_setup):
         """Test delete method with invalid ID"""
-                # Create a test user in the database
-        from src.models.user import User, db
-        
-        test_user = User(username='test_user', email='test@example.com', role='admin')
-        test_user.set_password('password')
-        db.session.add(test_user)
-        db.session.commit()
-        
-        # Set up authentication in session
-        with client.session_transaction() as sess:
-            sess['user_id'] = test_user.id
-            sess['username'] = test_user.username
-            sess['role'] = test_user.role
-        
+    # Authentication handled by authenticated_test_user fixture
         with app.app_context():
             service = BaseService(Plant)
             result = service.delete(99999)
@@ -332,20 +268,7 @@ class TestBaseService:
 
     def test_create_error_handling(self, app, db_setup):
         """Test create error handling"""
-                # Create a test user in the database
-        from src.models.user import User, db
-        
-        test_user = User(username='test_user', email='test@example.com', role='admin')
-        test_user.set_password('password')
-        db.session.add(test_user)
-        db.session.commit()
-        
-        # Set up authentication in session
-        with client.session_transaction() as sess:
-            sess['user_id'] = test_user.id
-            sess['username'] = test_user.username
-            sess['role'] = test_user.role
-        
+    # Authentication handled by authenticated_test_user fixture
         with app.app_context():
             service = BaseService(Plant)
 
@@ -357,20 +280,7 @@ class TestBaseService:
 
     def test_update_error_handling(self, app, db_setup):
         """Test update error handling"""
-                # Create a test user in the database
-        from src.models.user import User, db
-        
-        test_user = User(username='test_user', email='test@example.com', role='admin')
-        test_user.set_password('password')
-        db.session.add(test_user)
-        db.session.commit()
-        
-        # Set up authentication in session
-        with client.session_transaction() as sess:
-            sess['user_id'] = test_user.id
-            sess['username'] = test_user.username
-            sess['role'] = test_user.role
-        
+    # Authentication handled by authenticated_test_user fixture
         with app.app_context():
             # Create a plant first
             plant = create_test_plant(name="Test Plant")
@@ -387,20 +297,7 @@ class TestBaseService:
 
     def test_delete_error_handling(self, app, db_setup):
         """Test delete error handling"""
-                # Create a test user in the database
-        from src.models.user import User, db
-        
-        test_user = User(username='test_user', email='test@example.com', role='admin')
-        test_user.set_password('password')
-        db.session.add(test_user)
-        db.session.commit()
-        
-        # Set up authentication in session
-        with client.session_transaction() as sess:
-            sess['user_id'] = test_user.id
-            sess['username'] = test_user.username
-            sess['role'] = test_user.role
-        
+    # Authentication handled by authenticated_test_user fixture
         with app.app_context():
             # Create a plant first
             plant = create_test_plant(name="Test Plant")
