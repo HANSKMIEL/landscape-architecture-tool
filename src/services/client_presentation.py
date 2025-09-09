@@ -1,6 +1,6 @@
 """
 Enhanced Client Presentation System
-Provides dynamic, editable presentations for landscape architecture projects
+Provides dynamic, editable presentations for landscape architecture projects.
 """
 
 import json
