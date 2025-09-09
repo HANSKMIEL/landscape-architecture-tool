@@ -433,7 +433,7 @@ class TestPlantRecommendationErrorHandling:
             )
             assert response.status_code == 400
 
-    def test_get_recommendations_database_error(self, client, app, db_setup):
+    def test_get_recommendations_database_error(self, authenticated_client, app, db_setup):
         """Test recommendations endpoint with database error"""
         with app.app_context():
             with patch("src.routes.plant_recommendations.Plant.query") as mock_query:
@@ -446,7 +446,7 @@ class TestPlantRecommendationErrorHandling:
                 )
                 assert response.status_code == 500
 
-    def test_criteria_options_success(self, client, app, db_setup):
+    def test_criteria_options_success(self, authenticated_client, app, db_setup):
         """Test successful criteria options retrieval"""
         with app.app_context():
             response = client.get("/api/plant-recommendations/criteria-options")
@@ -470,7 +470,7 @@ class TestPlantRecommendationErrorHandling:
             for field in expected_fields:
                 assert field in data
 
-    def test_feedback_missing_request_id(self, client, app, db_setup):
+    def test_feedback_missing_request_id(self, authenticated_client, app, db_setup):
         """Test feedback endpoint without request_id"""
         with app.app_context():
             response = authenticated_client.post(
@@ -483,7 +483,7 @@ class TestPlantRecommendationErrorHandling:
             data = json.loads(response.data)
             assert "request_id is required" in data["error"]
 
-    def test_feedback_nonexistent_request(self, client, app, db_setup):
+    def test_feedback_nonexistent_request(self, authenticated_client, app, db_setup):
         """Test feedback endpoint with non-existent request_id"""
         with app.app_context():
             response = authenticated_client.post(
@@ -493,7 +493,7 @@ class TestPlantRecommendationErrorHandling:
             )
             assert response.status_code == 404
 
-    def test_feedback_database_error(self, client, app, db_setup):
+    def test_feedback_database_error(self, authenticated_client, app, db_setup):
         """Test feedback endpoint with database error"""
         with app.app_context():
             patch_path = "src.routes.plant_recommendations." "recommendation_engine.save_user_feedback"
@@ -511,7 +511,25 @@ class TestPlantRecommendationErrorHandling:
 class TestPlantRecommendationIntegration:
     """Test integration scenarios"""
 
-    def test_recommendation_with_logging_failure(self, client, app, db_setup):
+    @pytest.fixture
+    def authenticated_client(self, client, app):
+        """Create an authenticated test client"""
+        with app.app_context():
+            from src.models.user import User, db
+            
+            # Create test user
+            user = User(username="testuser", email="test@example.com", role="admin")
+            user.set_password("testpass")
+            db.session.add(user)
+            db.session.commit()
+            
+            # Login
+            response = client.post("/api/auth/login", json={"username": "testuser", "password": "testpass"})
+            assert response.status_code == 200
+            
+            return client
+
+    def test_recommendation_with_logging_failure(self, authenticated_client, app, db_setup):
         """Test recommendations when logging fails but recommendations succeed"""
         with app.app_context():
             patch_path = "src.routes.plant_recommendations." "recommendation_engine.log_recommendation_request"
@@ -529,7 +547,7 @@ class TestPlantRecommendationIntegration:
                 assert "recommendations" in data
                 assert data["request_id"] is None  # Should be None due to logging failure
 
-    def test_session_handling(self, client, app, db_setup):
+    def test_session_handling(self, authenticated_client, app, db_setup):
         """Test session ID generation and handling"""
         with app.app_context():
             with client.session_transaction() as sess:

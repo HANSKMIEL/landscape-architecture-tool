@@ -16,9 +16,26 @@ from tests.fixtures.database import DatabaseTestMixin
 class TestPlantRoutes(DatabaseTestMixin):
     """Test Plant API endpoints"""
 
-    def test_get_plants_empty(self, client, app_context):
+    @pytest.fixture
+    def authenticated_client(self, client, app_context):
+        """Create an authenticated test client"""
+        from src.models.user import User, db
+        
+        # Create test user
+        user = User(username="testuser", email="test@example.com", role="admin")
+        user.set_password("testpass")
+        db.session.add(user)
+        db.session.commit()
+        
+        # Login
+        response = client.post("/api/auth/login", json={"username": "testuser", "password": "testpass"})
+        assert response.status_code == 200
+        
+        return client
+
+    def test_get_plants_empty(self, authenticated_client, app_context):
         """Test getting plants when database is empty"""
-        response = client.get("/api/plants")
+        response = authenticated_client.get("/api/plants")
 
         assert response.status_code == 200
         data = response.get_json()
@@ -29,9 +46,9 @@ class TestPlantRoutes(DatabaseTestMixin):
         assert data["current_page"] == 1
         assert data["pages"] == 0
 
-    def test_get_plants_with_data(self, client, app_context, sample_plants):
+    def test_get_plants_with_data(self, authenticated_client, app_context, sample_plants):
         """Test getting plants with sample data"""
-        response = client.get("/api/plants")
+        response = authenticated_client.get("/api/plants")
 
         assert response.status_code == 200
         data = response.get_json()
@@ -40,69 +57,69 @@ class TestPlantRoutes(DatabaseTestMixin):
         assert all("id" in plant for plant in data["plants"])
         assert all("name" in plant for plant in data["plants"])
 
-    def test_get_plants_with_search(self, client, app_context, plant_factory):
+    def test_get_plants_with_search(self, authenticated_client, app_context, plant_factory):
         """Test getting plants with search parameter"""
         plant1 = plant_factory(name="Rose Garden", common_name="Red Rose")  # noqa: F841
         plant2 = plant_factory(name="Lily Pond", common_name="Water Lily")  # noqa: F841
         plant3 = plant_factory(name="Oak Tree", common_name="White Oak")  # noqa: F841
 
         # Search by name
-        response = client.get("/api/plants?search=Rose")
+        response = authenticated_client.get("/api/plants?search=Rose")
         assert response.status_code == 200
         data = response.get_json()
         assert len(data["plants"]) == 1
         assert data["plants"][0]["name"] == "Rose Garden"
 
         # Search by common name
-        response = client.get("/api/plants?search=Lily")
+        response = authenticated_client.get("/api/plants?search=Lily")
         assert response.status_code == 200
         data = response.get_json()
         assert len(data["plants"]) == 1
         assert data["plants"][0]["name"] == "Lily Pond"
 
-    def test_get_plants_with_category_filter(self, client, app_context, plant_factory):
+    def test_get_plants_with_category_filter(self, authenticated_client, app_context, plant_factory):
         """Test getting plants with category filter"""
         plant1 = plant_factory(category="Tree")  # noqa: F841
         plant2 = plant_factory(category="Shrub")  # noqa: F841
         plant3 = plant_factory(category="Tree")  # noqa: F841
 
-        response = client.get("/api/plants?category=Tree")
+        response = authenticated_client.get("/api/plants?category=Tree")
         assert response.status_code == 200
         data = response.get_json()
         assert len(data["plants"]) == 2
         assert all(plant["category"] == "Tree" for plant in data["plants"])
 
-    def test_get_plants_with_sun_requirements_filter(self, client, app_context, plant_factory):
+    def test_get_plants_with_sun_requirements_filter(self, authenticated_client, app_context, plant_factory):
         """Test getting plants with sun requirements filter"""
         plant1 = plant_factory(sun_exposure="full_sun")  # noqa: F841
         plant2 = plant_factory(sun_exposure="partial_shade")  # noqa: F841
         plant3 = plant_factory(sun_exposure="full_sun")  # noqa: F841
 
-        response = client.get("/api/plants?sun_exposure=full_sun")
+        response = authenticated_client.get("/api/plants?sun_exposure=full_sun")
         assert response.status_code == 200
         data = response.get_json()
         assert len(data["plants"]) == 2
         assert all(plant["sun_exposure"] == "full_sun" for plant in data["plants"])
 
-    def test_get_plants_with_native_filter(self, client, app_context, plant_factory):
+    def test_get_plants_with_native_filter(self, authenticated_client, app_context, plant_factory):
         """Test getting plants with native filter"""
         native_plant = plant_factory(native=True)  # noqa: F841
         non_native_plant = plant_factory(native=False)  # noqa: F841
 
-        response = client.get("/api/plants?native_only=true")
+        response = authenticated_client.get("/api/plants?native_only=true")
         assert response.status_code == 200
         data = response.get_json()
         assert len(data["plants"]) == 1
         assert data["plants"][0]["native"] is True
 
-    def test_get_plants_pagination(self, client, app_context, plant_factory):
+    def test_get_plants_pagination(self, authenticated_client, app_context, plant_factory):
         """Test plants pagination"""
         # Create 15 plants
         for i in range(15):
             plant_factory(name=f"Plant {i}")
 
         # Test first page
-        response = client.get("/api/plants?page=1&per_page=10")
+        response = authenticated_client.get("/api/plants?page=1&per_page=10")
         assert response.status_code == 200
         data = response.get_json()
         assert len(data["plants"]) == 10
@@ -111,13 +128,13 @@ class TestPlantRoutes(DatabaseTestMixin):
         assert data["current_page"] == 1
 
         # Test second page
-        response = client.get("/api/plants?page=2&per_page=10")
+        response = authenticated_client.get("/api/plants?page=2&per_page=10")
         assert response.status_code == 200
         data = response.get_json()
         assert len(data["plants"]) == 5
         assert data["current_page"] == 2
 
-    def test_get_plants_combined_filters(self, client, app_context, plant_factory):
+    def test_get_plants_combined_filters(self, authenticated_client, app_context, plant_factory):
         """Test getting plants with multiple filters combined"""
         _ = plant_factory(name="Native Oak", category="Tree", native=True, sun_exposure="full_sun")
         plant2 = plant_factory(  # noqa: F841
@@ -131,13 +148,13 @@ class TestPlantRoutes(DatabaseTestMixin):
         )
 
         # Filter by category and native status
-        response = client.get("/api/plants?category=Tree&native_only=true")
+        response = authenticated_client.get("/api/plants?category=Tree&native_only=true")
         assert response.status_code == 200
         data = response.get_json()
         assert len(data["plants"]) == 2
         assert all(plant["category"] == "Tree" and plant["native"] for plant in data["plants"])
 
-    def test_create_plant_success(self, client, app_context, sample_supplier):
+    def test_create_plant_success(self, authenticated_client, app_context, sample_supplier):
         """Test creating a plant successfully"""
         plant_data = {
             "name": "Test Plant",
@@ -162,7 +179,7 @@ class TestPlantRoutes(DatabaseTestMixin):
         # Verify in database
         self.assert_record_count(Plant, 1)
 
-    def test_create_plant_minimal_data(self, client, app_context):
+    def test_create_plant_minimal_data(self, authenticated_client, app_context):
         """Test creating plant with minimal required data"""
         plant_data = {"name": "Minimal Plant", "category": "Tree"}
 
@@ -173,7 +190,7 @@ class TestPlantRoutes(DatabaseTestMixin):
         assert data["name"] == "Minimal Plant"
         assert data["category"] == "Tree"
 
-    def test_create_plant_missing_required_fields(self, client, app_context):
+    def test_create_plant_missing_required_fields(self, authenticated_client, app_context):
         """Test creating plant with missing required fields"""
         plant_data = {"common_name": "Missing Name Plant"}
 
@@ -183,7 +200,7 @@ class TestPlantRoutes(DatabaseTestMixin):
         data = response.get_json()
         assert "error" in data
 
-    def test_create_plant_invalid_data_types(self, client, app_context):
+    def test_create_plant_invalid_data_types(self, authenticated_client, app_context):
         """Test creating plant with invalid data types"""
         plant_data = {
             "name": "Test Plant",
@@ -198,24 +215,24 @@ class TestPlantRoutes(DatabaseTestMixin):
         data = response.get_json()
         assert "error" in data
 
-    def test_get_plant_by_id_success(self, client, app_context, sample_plant):
+    def test_get_plant_by_id_success(self, authenticated_client, app_context, sample_plant):
         """Test getting a specific plant by ID"""
-        response = client.get(f"/api/plants/{sample_plant.id}")
+        response = authenticated_client.get(f"/api/plants/{sample_plant.id}")
 
         assert response.status_code == 200
         data = response.get_json()
         assert data["id"] == sample_plant.id
         assert data["name"] == sample_plant.name
 
-    def test_get_plant_by_id_not_found(self, client, app_context):
+    def test_get_plant_by_id_not_found(self, authenticated_client, app_context):
         """Test getting plant by non-existent ID"""
-        response = client.get("/api/plants/999")
+        response = authenticated_client.get("/api/plants/999")
 
         assert response.status_code == 404
         data = response.get_json()
         assert "error" in data
 
-    def test_update_plant_success(self, client, app_context, sample_plant):
+    def test_update_plant_success(self, authenticated_client, app_context, sample_plant):
         """Test updating a plant successfully"""
         update_data = {
             "name": "Updated Plant Name",
@@ -235,7 +252,7 @@ class TestPlantRoutes(DatabaseTestMixin):
         assert data["price"] == 35.99
         assert data["notes"] == "Updated notes"
 
-    def test_update_plant_not_found(self, client, app_context):
+    def test_update_plant_not_found(self, authenticated_client, app_context):
         """Test updating non-existent plant"""
         update_data = {"name": "Updated Name"}
 
@@ -249,7 +266,7 @@ class TestPlantRoutes(DatabaseTestMixin):
         data = response.get_json()
         assert "error" in data
 
-    def test_update_plant_invalid_data(self, client, app_context, sample_plant):
+    def test_update_plant_invalid_data(self, authenticated_client, app_context, sample_plant):
         """Test updating plant with invalid data"""
         update_data = {"height_min": 200.0, "height_max": 100.0}  # Invalid: max < min
 
@@ -263,7 +280,7 @@ class TestPlantRoutes(DatabaseTestMixin):
         data = response.get_json()
         assert "error" in data
 
-    def test_delete_plant_success(self, client, app_context, sample_plant):
+    def test_delete_plant_success(self, authenticated_client, app_context, sample_plant):
         """Test deleting a plant successfully"""
         plant_id = sample_plant.id
 
@@ -276,7 +293,7 @@ class TestPlantRoutes(DatabaseTestMixin):
         # Verify deletion
         self.assert_record_count(Plant, 0)
 
-    def test_delete_plant_not_found(self, client, app_context):
+    def test_delete_plant_not_found(self, authenticated_client, app_context):
         """Test deleting non-existent plant"""
         response = client.delete("/api/plants/999")
 
@@ -301,14 +318,14 @@ class TestPlantRoutes(DatabaseTestMixin):
         # If referential integrity is enforced, should fail
         assert response.status_code in [200, 400, 409]
 
-    def test_get_plant_categories(self, client, app_context, plant_factory):
+    def test_get_plant_categories(self, authenticated_client, app_context, plant_factory):
         """Test getting unique plant categories"""
         plant_factory(category="Tree")
         plant_factory(category="Shrub")
         plant_factory(category="Tree")  # Duplicate
         plant_factory(category="Perennial")
 
-        response = client.get("/api/plants/categories")
+        response = authenticated_client.get("/api/plants/categories")
 
         assert response.status_code == 200
         data = response.get_json()
@@ -319,13 +336,13 @@ class TestPlantRoutes(DatabaseTestMixin):
         assert "Shrub" in categories
         assert "Perennial" in categories
 
-    def test_plant_search_suggestions(self, client, app_context, plant_factory):
+    def test_plant_search_suggestions(self, authenticated_client, app_context, plant_factory):
         """Test plant search suggestions endpoint"""
         plant_factory(name="Rose Garden", common_name="Red Rose")
         plant_factory(name="Rose Bush", common_name="Pink Rose")
         plant_factory(name="Lily Pond", common_name="Water Lily")
 
-        response = client.get("/api/plants/search-suggestions?q=Rose")
+        response = authenticated_client.get("/api/plants/search-suggestions?q=Rose")
 
         assert response.status_code == 200
         data = response.get_json()
@@ -334,16 +351,16 @@ class TestPlantRoutes(DatabaseTestMixin):
         assert len(suggestions) == 2
         assert all("Rose" in suggestion["name"] for suggestion in suggestions)
 
-    def test_plants_export(self, client, app_context, sample_plants):
+    def test_plants_export(self, authenticated_client, app_context, sample_plants):
         """Test exporting plants data"""
-        response = client.get("/api/plants/export?format=json")
+        response = authenticated_client.get("/api/plants/export?format=json")
 
         assert response.status_code == 200
         data = response.get_json()
         assert "plants" in data
         assert len(data["plants"]) == 5
 
-    def test_plants_bulk_import(self, client, app_context, sample_supplier):
+    def test_plants_bulk_import(self, authenticated_client, app_context, sample_supplier):
         """Test bulk importing plants"""
         plants_data = {
             "plants": [
@@ -373,7 +390,7 @@ class TestPlantRoutes(DatabaseTestMixin):
         # Verify in database
         self.assert_record_count(Plant, 2)
 
-    def test_plants_error_handling(self, client, app_context):
+    def test_plants_error_handling(self, authenticated_client, app_context):
         """Test API error handling"""
         # Test invalid JSON
         response = client.post("/api/plants", data="invalid json", content_type="application/json")
@@ -385,7 +402,7 @@ class TestPlantRoutes(DatabaseTestMixin):
 
         assert response.status_code == 400
 
-    def test_plants_validation_detailed(self, client, app_context):
+    def test_plants_validation_detailed(self, authenticated_client, app_context):
         """Test detailed validation responses"""
         plant_data = {
             "name": "",  # Empty name
@@ -408,7 +425,7 @@ class TestPlantRoutes(DatabaseTestMixin):
 class TestPlantRoutesIntegration(DatabaseTestMixin):
     """Integration tests for Plant API endpoints"""
 
-    def test_full_plant_api_workflow(self, client, app_context, supplier_factory):
+    def test_full_plant_api_workflow(self, authenticated_client, app_context, supplier_factory):
         """Test complete plant API workflow"""
         supplier = supplier_factory()
 
@@ -431,7 +448,7 @@ class TestPlantRoutesIntegration(DatabaseTestMixin):
         plant_id = created_plant["id"]
 
         # 2. Get plant by ID
-        response = client.get(f"/api/plants/{plant_id}")
+        response = authenticated_client.get(f"/api/plants/{plant_id}")
         assert response.status_code == 200
         retrieved_plant = response.get_json()
         assert retrieved_plant["name"] == "Workflow Test Plant"
@@ -448,7 +465,7 @@ class TestPlantRoutesIntegration(DatabaseTestMixin):
         assert updated_plant["price"] == 55.99
 
         # 4. Search for plant
-        response = client.get("/api/plants?search=Workflow")
+        response = authenticated_client.get("/api/plants?search=Workflow")
         assert response.status_code == 200
         search_results = response.get_json()
         assert len(search_results["plants"]) == 1
@@ -459,10 +476,10 @@ class TestPlantRoutesIntegration(DatabaseTestMixin):
         assert response.status_code == 200
 
         # 6. Verify deletion
-        response = client.get(f"/api/plants/{plant_id}")
+        response = authenticated_client.get(f"/api/plants/{plant_id}")
         assert response.status_code == 404
 
-    def test_plant_filtering_combinations(self, client, app_context, plant_factory):
+    def test_plant_filtering_combinations(self, authenticated_client, app_context, plant_factory):
         """Test various combinations of plant filters"""
         # Create diverse plants
         plants = [  # noqa: F841
@@ -488,46 +505,46 @@ class TestPlantRoutesIntegration(DatabaseTestMixin):
         ]
 
         # Test category + native filter
-        response = client.get("/api/plants?category=Tree&native_only=true")
+        response = authenticated_client.get("/api/plants?category=Tree&native_only=true")
         assert response.status_code == 200
         data = response.get_json()
         assert len(data["plants"]) == 2
 
         # Test sun exposure + native filter
-        response = client.get("/api/plants?sun_exposure=full_sun&native_only=true")
+        response = authenticated_client.get("/api/plants?sun_exposure=full_sun&native_only=true")
         assert response.status_code == 200
         data = response.get_json()
         assert len(data["plants"]) == 1
         assert data["plants"][0]["name"] == "Native Oak"
 
         # Test search + category filter
-        response = client.get("/api/plants?search=Native&category=Tree")
+        response = authenticated_client.get("/api/plants?search=Native&category=Tree")
         assert response.status_code == 200
         data = response.get_json()
         assert len(data["plants"]) == 2
 
-    def test_plant_pagination_edge_cases(self, client, app_context, plant_factory):
+    def test_plant_pagination_edge_cases(self, authenticated_client, app_context, plant_factory):
         """Test plant pagination edge cases"""
         # Create exactly 10 plants
         for i in range(10):
             plant_factory(name=f"Plant {i:02d}")
 
         # Test page beyond available data
-        response = client.get("/api/plants?page=5&per_page=10")
+        response = authenticated_client.get("/api/plants?page=5&per_page=10")
         assert response.status_code == 200
         data = response.get_json()
         assert len(data["plants"]) == 0
         assert data["current_page"] == 5
 
         # Test large per_page value
-        response = client.get("/api/plants?per_page=1000")
+        response = authenticated_client.get("/api/plants?per_page=1000")
         assert response.status_code == 200
         data = response.get_json()
         assert len(data["plants"]) == 10
 
         # Test invalid page parameters
-        response = client.get("/api/plants?page=-1")
+        response = authenticated_client.get("/api/plants?page=-1")
         assert response.status_code == 422
 
-        response = client.get("/api/plants?per_page=0")
+        response = authenticated_client.get("/api/plants?per_page=0")
         assert response.status_code == 422
