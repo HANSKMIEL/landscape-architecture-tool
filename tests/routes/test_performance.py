@@ -12,8 +12,25 @@ from tests.fixtures.database import DatabaseTestMixin
 class TestPerformanceRoutes(DatabaseTestMixin):
     """Test class for performance monitoring routes"""
 
+    @pytest.fixture
+    def authenticated_client(self, client, app_context):
+        """Create an authenticated test client"""
+        from src.models.user import User, db
+        
+        # Create test user
+        user = User(username="testuser", email="test@example.com", role="admin")
+        user.set_password("testpass")
+        db.session.add(user)
+        db.session.commit()
+        
+        # Login
+        response = client.post("/api/auth/login", json={"username": "testuser", "password": "testpass"})
+        assert response.status_code == 200
+        
+        return client
+
     @patch("src.routes.performance.get_cache_stats")
-    def test_get_performance_stats_success(self, mock_get_stats, client, app_context):
+    def test_get_performance_stats_success(self, mock_get_stats, authenticated_client, app_context):
         """Test successful performance stats retrieval"""
         # Mock cache stats
         mock_stats = {
@@ -25,7 +42,7 @@ class TestPerformanceRoutes(DatabaseTestMixin):
         }
         mock_get_stats.return_value = mock_stats
 
-        response = client.get("/api/performance/stats")
+        response = authenticated_client.get("/api/performance/stats")
 
         assert response.status_code == 200
         data = response.get_json()
@@ -37,12 +54,12 @@ class TestPerformanceRoutes(DatabaseTestMixin):
         assert data["cache"] == mock_stats
 
     @patch("src.routes.performance.get_cache_stats")
-    def test_get_performance_stats_error(self, mock_get_stats, client, app_context):
+    def test_get_performance_stats_error(self, mock_get_stats, authenticated_client, app_context):
         """Test performance stats error handling"""
         # Mock exception
         mock_get_stats.side_effect = Exception("Cache connection failed")
 
-        response = client.get("/api/performance/stats")
+        response = authenticated_client.get("/api/performance/stats")
 
         assert response.status_code == 500
         data = response.get_json()
@@ -78,11 +95,11 @@ class TestPerformanceRoutes(DatabaseTestMixin):
         assert "error" in data
 
     @patch("src.routes.performance.cache")
-    def test_clear_cache_success(self, mock_cache, client, app_context):
+    def test_clear_cache_success(self, mock_cache, authenticated_client, app_context):
         """Test successful cache clearing"""
         mock_cache.clear.return_value = True
 
-        response = client.post("/api/performance/cache/clear")
+        response = authenticated_client.post("/api/performance/cache/clear")
 
         assert response.status_code == 200
         data = response.get_json()
@@ -92,11 +109,11 @@ class TestPerformanceRoutes(DatabaseTestMixin):
         mock_cache.clear.assert_called_once()
 
     @patch("src.routes.performance.cache")
-    def test_clear_cache_failure(self, mock_cache, client, app_context):
+    def test_clear_cache_failure(self, mock_cache, authenticated_client, app_context):
         """Test cache clearing failure"""
         mock_cache.clear.return_value = False
 
-        response = client.post("/api/performance/cache/clear")
+        response = authenticated_client.post("/api/performance/cache/clear")
 
         assert response.status_code == 500
         data = response.get_json()
@@ -105,11 +122,11 @@ class TestPerformanceRoutes(DatabaseTestMixin):
         assert "Failed to clear cache" in data["error"]
 
     @patch("src.routes.performance.cache")
-    def test_clear_cache_exception(self, mock_cache, client, app_context):
+    def test_clear_cache_exception(self, mock_cache, authenticated_client, app_context):
         """Test cache clearing with exception"""
         mock_cache.clear.side_effect = Exception("Cache error")
 
-        response = client.post("/api/performance/cache/clear")
+        response = authenticated_client.post("/api/performance/cache/clear")
 
         assert response.status_code == 500
         data = response.get_json()
@@ -396,7 +413,7 @@ class TestPerformanceRoutesIntegration(DatabaseTestMixin):
         assert response.status_code in [200, 500]  # May fail due to cache issues
 
         # 2. Clear cache
-        response = client.post("/api/performance/cache/clear")
+        response = authenticated_client.post("/api/performance/cache/clear")
         assert response.status_code in [200, 500]  # May fail due to cache issues
 
         # 3. Invalidate specific cache
