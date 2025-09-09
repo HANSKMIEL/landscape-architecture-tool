@@ -141,7 +141,7 @@ class TestPerformanceRoutes(DatabaseTestMixin):
         data = response.get_json()
 
         assert data["success"] is True
-        assert "dashboard" in data["message"]
+        assert "Dashboard cache invalidated" in data["message"]
         mock_invalidate.assert_called_once()
 
     @patch("src.routes.performance.invalidate_plant_cache")
@@ -153,7 +153,7 @@ class TestPerformanceRoutes(DatabaseTestMixin):
         data = response.get_json()
 
         assert data["success"] is True
-        assert "plants" in data["message"]
+        assert "Plant cache invalidated" in data["message"]
         mock_invalidate.assert_called_once()
 
     @patch("src.routes.performance.invalidate_project_cache")
