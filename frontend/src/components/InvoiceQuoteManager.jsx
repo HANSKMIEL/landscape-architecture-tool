@@ -2,6 +2,38 @@ import React, { useState, useEffect } from 'react';
 import { Download, FileText, Euro, Calendar, User, MapPin, Package } from 'lucide-react';
 import apiService from '../services/api';
 
+// Helper component to eliminate button code duplication
+const GenerateButton = ({ onClick, icon: Icon, text, variant, isLoading, disabled }) => {
+  const baseClasses = "inline-flex items-center px-3 py-2 text-sm leading-4 font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed";
+  
+  const variantClasses = {
+    outline: "border border-gray-300 shadow-sm text-gray-700 bg-white hover:bg-gray-50",
+    solid: "border border-transparent text-white bg-green-600 hover:bg-green-700"
+  };
+
+  const spinnerBorderColor = variant === 'outline' ? 'border-gray-700' : 'border-white';
+
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      className={`${baseClasses} ${variantClasses[variant]}`}
+    >
+      {isLoading ? (
+        <>
+          <div className={`animate-spin rounded-full h-4 w-4 border-b-2 ${spinnerBorderColor} mr-2`}></div>
+          Genereren...
+        </>
+      ) : (
+        <>
+          <Icon className="h-4 w-4 mr-2" />
+          {text}
+        </>
+      )}
+    </button>
+  );
+};
+
 const InvoiceQuoteManager = () => {
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -54,7 +86,7 @@ const InvoiceQuoteManager = () => {
       setGeneratingPdf(projectId);
       
       if (format === 'pdf') {
-        const response = await apiService.generateInvoice(projectId, { format: 'pdf' });
+        await apiService.generateInvoice(projectId, { format: 'pdf' });
         
         // Create a temporary link to download the PDF
         const url = `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}/api/invoices/invoice/${projectId}`;
@@ -220,41 +252,23 @@ const InvoiceQuoteManager = () => {
                   </div>
 
                   <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3 ml-6">
-                    <button
+                    <GenerateButton
                       onClick={() => generateQuote(project.id)}
+                      icon={FileText}
+                      text="Offerte"
+                      variant="outline"
+                      isLoading={generatingPdf === project.id}
                       disabled={generatingPdf === project.id}
-                      className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {generatingPdf === project.id ? (
-                        <>
-                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-700 mr-2"></div>
-                          Genereren...
-                        </>
-                      ) : (
-                        <>
-                          <FileText className="h-4 w-4 mr-2" />
-                          Offerte
-                        </>
-                      )}
-                    </button>
+                    />
 
-                    <button
+                    <GenerateButton
                       onClick={() => generateInvoice(project.id)}
+                      icon={Download}
+                      text="Factuur"
+                      variant="solid"
+                      isLoading={generatingPdf === project.id}
                       disabled={generatingPdf === project.id}
-                      className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {generatingPdf === project.id ? (
-                        <>
-                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                          Genereren...
-                        </>
-                      ) : (
-                        <>
-                          <Download className="h-4 w-4 mr-2" />
-                          Factuur
-                        </>
-                      )}
-                    </button>
+                    />
                   </div>
                 </div>
               </div>
