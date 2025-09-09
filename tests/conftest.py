@@ -8,7 +8,6 @@ from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy.pool import StaticPool
 
 # Import test data fixtures to make them available to all tests
-from tests.fixtures.test_data import *  # noqa: F403
 from tests.fixtures.test_stability import (
     cleanup_test_data,
     error_recovery_context,

@@ -203,12 +203,67 @@ class MotherSpaceSafetyManager:
     
     def get_issue_fingerprint(self, issue_data: dict[str, Any]) -> str:
         """Generate fingerprint for issue using the fingerprinting system."""
-        # Import the fingerprinter from our test module
-        sys.path.insert(0, str(self.repo_path))
-        from tests.test_issue_fingerprint import IssueFingerprinter
+        # Use embedded fingerprinter to avoid pytest dependency
+        return self._generate_fingerprint_embedded(issue_data)
+    
+    def _normalize_text(self, text: str) -> str:
+        """Normalize text by removing timestamps, IDs, and paths while preserving structure."""
+        import re
+        if not text:
+            return ""
         
-        fingerprinter = IssueFingerprinter()
-        return fingerprinter.generate_fingerprint(issue_data)
+        # Remove timestamps
+        text = re.sub(r'\b\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})?\b', '[TIMESTAMP]', text)
+        text = re.sub(r'\b\d{2}[/-]\d{2}[/-]\d{4}\b', '[DATE]', text)
+        
+        # Remove issue/PR numbers
+        text = re.sub(r'#\d+', '#[NUM]', text)
+        
+        # Remove file paths
+        text = re.sub(r'/[a-zA-Z0-9/_.-]+\.(py|js|json|yml|yaml|md|txt)', '/[PATH].[EXT]', text)
+        
+        # Remove UUIDs and long hex strings
+        text = re.sub(r'\b[a-f0-9]{32,}\b', '[HASH]', text, flags=re.IGNORECASE)
+        text = re.sub(r'\b[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}\b', '[UUID]', text, flags=re.IGNORECASE)
+        
+        # Normalize whitespace
+        text = re.sub(r'\s+', ' ', text).strip()
+        
+        return text.lower()
+    
+    def _generate_fingerprint_embedded(self, issue_data: dict[str, Any]) -> str:
+        """Generate a stable fingerprint for an issue (embedded implementation)."""
+        salt = "motherspace-orchestrator-v1.1.0"
+        
+        # Extract and normalize title and body
+        title = issue_data.get("title", "")
+        body = issue_data.get("body", "")
+        
+        normalized_title = self._normalize_text(title)
+        normalized_body = self._normalize_text(body)
+        
+        # Create content hash from normalized text
+        content = f"{normalized_title}|{normalized_body}"
+        content_hash = hashlib.sha256(content.encode()).hexdigest()[:16]
+        
+        # Process labels - handle both string labels and label objects
+        labels = issue_data.get("labels", [])
+        if labels:
+            # Handle GitHub API label format (list of dicts with 'name' key)
+            if isinstance(labels[0], dict):
+                label_names = [label.get("name", "") for label in labels]
+            else:
+                # Handle simple string list
+                label_names = labels
+            labels_str = "|".join(sorted(label_names))
+        else:
+            labels_str = "no_labels"
+        
+        # Create final fingerprint
+        fingerprint_data = f"{content_hash}|{labels_str}|{salt}"
+        fingerprint = hashlib.sha256(fingerprint_data.encode()).hexdigest()[:16]
+        
+        return fingerprint
     
     def find_existing_tracking_issue(self, fingerprint: str) -> dict[str, Any] | None:
         """Find existing tracking issue with the same fingerprint."""

@@ -13,6 +13,13 @@
       "created_at": "2025-09-02T13:53:06.540320",
       "last_updated": "2025-09-02T13:53:06.540601",
       "update_count": 2
+    },
+    "614e1665152b15fe": {
+      "issue_number": 123,
+      "title": "Test Issue",
+      "created_at": "2025-09-09T05:40:35.290246",
+      "last_updated": "2025-09-09T05:40:35.290249",
+      "update_count": 1
     }
   }
 }

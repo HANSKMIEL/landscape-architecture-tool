@@ -4,8 +4,7 @@ Test for issue fingerprinting system to prevent spam and enable deduplication.
 
 import hashlib
 import json
-from typing import Any, Dict, List, Optional
-from unittest.mock import MagicMock, patch
+from typing import Any
 
 import pytest
 
