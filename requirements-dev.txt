@@ -176,7 +176,7 @@ importlib-metadata==8.7.0
     # via opentelemetry-api
 iniconfig==2.1.0
     # via pytest
-ipython==9.4.0
+ipython==9.5.0
     # via -r requirements-dev.in
 ipython-pygments-lexers==1.1.1
     # via ipython
