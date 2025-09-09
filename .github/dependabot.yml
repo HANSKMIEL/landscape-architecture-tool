@@ -22,6 +22,7 @@ updates:
       - "dependencies"
       - "python"
       - "security"
+      - "auto-merge-candidate"
     ignore:
       # Ignore patch updates for stable dependencies
       - dependency-name: "gunicorn"
@@ -64,6 +65,7 @@ updates:
       - "dependencies"
       - "frontend"
       - "javascript"
+      - "auto-merge-candidate"
     ignore:
       # Ignore patch updates for stable UI libraries
       - dependency-name: "react"
@@ -108,6 +110,7 @@ updates:
       - "dependencies"
       - "docker"
       - "infrastructure"
+      - "auto-merge-candidate"
 
   # Enable version updates for Frontend Docker
   - package-ecosystem: "docker"
@@ -128,6 +131,7 @@ updates:
       - "dependencies"
       - "docker"
       - "frontend"
+      - "auto-merge-candidate"
 
   # Enable version updates for GitHub Actions
   - package-ecosystem: "github-actions"
@@ -148,3 +152,4 @@ updates:
       - "dependencies"
       - "github-actions"
       - "ci-cd"
+      - "auto-merge-candidate"
