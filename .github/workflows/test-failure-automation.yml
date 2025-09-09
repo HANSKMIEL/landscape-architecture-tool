@@ -1,0 +1,275 @@
+name: Test Failure Issue Automation
+
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
+  schedule:
+    # Check for failures every 30 minutes during work hours
+    - cron: "*/30 8-18 * * 1-5"
+  workflow_dispatch:
+
+jobs:
+  analyze_failures:
+    if: ${{ github.event.workflow_run.conclusion == 'failure' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      actions: read
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Get failed workflow run details
+        if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+        id: get_failure_details
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const run = context.payload.workflow_run;
+            
+            // Get job details for the failed run
+            const jobs = await github.rest.actions.listJobsForWorkflowRun({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              run_id: run.id
+            });
+            
+            const failedJobs = jobs.data.jobs.filter(job => job.conclusion === 'failure');
+            
+            let failures = [];
+            for (const job of failedJobs) {
+              // Get logs for each failed job
+              try {
+                const logs = await github.rest.actions.downloadJobLogsForWorkflowRun({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  job_id: job.id
+                });
+                
+                // Parse common error patterns
+                const logText = logs.data || '';
+                const errorPatterns = [
+                  /FAILED.*::(.*)/g,
+                  /ERROR.*::(.*)/g,
+                  /AssertionError: (.*)/g,
+                  /ModuleNotFoundError: (.*)/g,
+                  /SyntaxError: (.*)/g,
+                  /TypeError: (.*)/g,
+                  /ValueError: (.*)/g
+                ];
+                
+                let jobFailures = [];
+                for (const pattern of errorPatterns) {
+                  const matches = [...logText.matchAll(pattern)];
+                  jobFailures.push(...matches.map(m => m[1]?.trim()).filter(Boolean));
+                }
+                
+                if (jobFailures.length > 0) {
+                  failures.push({
+                    job: job.name,
+                    step: job.steps?.find(s => s.conclusion === 'failure')?.name || 'Unknown step',
+                    errors: jobFailures.slice(0, 5) // Limit to first 5 errors per job
+                  });
+                }
+              } catch (error) {
+                console.log(`Could not get logs for job ${job.name}: ${error.message}`);
+                failures.push({
+                  job: job.name,
+                  step: 'Unknown step',
+                  errors: [`Failed job (logs unavailable): ${job.conclusion}`]
+                });
+              }
+            }
+            
+            core.setOutput('failures', JSON.stringify(failures));
+            core.setOutput('run_url', run.html_url);
+            core.setOutput('run_id', run.id);
+            return failures;
+
+      - name: Check for recent test failures (scheduled)
+        if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
+        id: check_recent_failures
+        uses: actions/github-script@v7
+        with:
+          script: |
+            // Get recent workflow runs
+            const runs = await github.rest.actions.listWorkflowRunsForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              status: 'failure',
+              per_page: 10
+            });
+            
+            const recentFailures = runs.data.workflow_runs
+              .filter(run => {
+                const runDate = new Date(run.created_at);
+                const dayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+                return runDate > dayAgo;
+              })
+              .slice(0, 3); // Limit to 3 most recent failures
+            
+            let allFailures = [];
+            for (const run of recentFailures) {
+              const jobs = await github.rest.actions.listJobsForWorkflowRun({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                run_id: run.id
+              });
+              
+              const failedJobs = jobs.data.jobs.filter(job => job.conclusion === 'failure');
+              for (const job of failedJobs) {
+                allFailures.push({
+                  run_id: run.id,
+                  run_url: run.html_url,
+                  job: job.name,
+                  workflow: run.name,
+                  errors: [`${job.name} failed in workflow ${run.name}`]
+                });
+              }
+            }
+            
+            core.setOutput('failures', JSON.stringify(allFailures));
+            return allFailures;
+
+      - name: Create issues for test failures
+        if: ${{ steps.get_failure_details.outputs.failures != '[]' || steps.check_recent_failures.outputs.failures != '[]' }}
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const failures = JSON.parse('${{ steps.get_failure_details.outputs.failures || steps.check_recent_failures.outputs.failures }}');
+            const runUrl = '${{ steps.get_failure_details.outputs.run_url }}' || 'Recent failures check';
+            const runId = '${{ steps.get_failure_details.outputs.run_id }}' || 'multiple';
+            
+            if (!failures || failures.length === 0) {
+              console.log('No failures to process');
+              return;
+            }
+            
+            // Check if there's already an open issue for recent test failures
+            const existingIssues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'test-failure,automated',
+              per_page: 5
+            });
+            
+            const recentIssue = existingIssues.data.find(issue => {
+              const created = new Date(issue.created_at);
+              const dayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+              return created > dayAgo;
+            });
+            
+            if (recentIssue && failures.length < 5) {
+              console.log(`Found recent test failure issue #${recentIssue.number}, adding comment instead of new issue`);
+              
+              const comment = [
+                `## 🔄 Additional Test Failure Detected`,
+                ``,
+                `**Workflow Run:** ${runUrl}`,
+                `**Time:** ${new Date().toISOString()}`,
+                ``,
+                `### Failed Tests:`,
+                ...failures.map(f => {
+                  const errorList = f.errors.map(e => `  - ${e}`).join('\n');
+                  return `**${f.job}** (${f.step || 'Unknown step'}):\n${errorList}`;
+                }),
+                ``,
+                `---`,
+                `*This comment was automatically generated by the test failure automation workflow.*`
+              ].join('\n');
+              
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: recentIssue.number,
+                body: comment
+              });
+              
+              return;
+            }
+            
+            // Create main issue
+            const title = `🚨 Test Failures Detected - Run ${runId}`;
+            const body = [
+              `## Test Failure Analysis`,
+              ``,
+              `**Workflow Run:** ${runUrl}`,
+              `**Detection Time:** ${new Date().toISOString()}`,
+              `**Failed Jobs:** ${failures.length}`,
+              ``,
+              `### Summary of Failures:`,
+              ...failures.map((f, i) => {
+                const errorList = f.errors.slice(0, 3).map(e => `  - ${e}`).join('\n');
+                const moreErrors = f.errors.length > 3 ? `  - ... and ${f.errors.length - 3} more errors` : '';
+                return `${i + 1}. **${f.job}** (${f.step || 'Unknown step'}):\n${errorList}${moreErrors}`;
+              }),
+              ``,
+              `### Next Steps:`,
+              `- [ ] Investigate root cause of failures`,
+              `- [ ] Check if failures are related to recent changes`,
+              `- [ ] Review test logs for detailed error information`,
+              `- [ ] Create specific sub-issues for complex failures`,
+              `- [ ] Update tests if needed`,
+              `- [ ] Verify fixes with test runs`,
+              ``,
+              `### Sub-Issues:`,
+              `Sub-issues will be created automatically for each major failure category.`,
+              ``,
+              `---`,
+              `*This issue was automatically created by the test failure automation workflow.*`,
+              `*Workflow: Test Failure Issue Automation*`
+            ].join('\n');
+            
+            const mainIssue = await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: title,
+              body: body,
+              labels: ['test-failure', 'automated', 'bug', 'priority-high']
+            });
+            
+            console.log(`Created main issue #${mainIssue.data.number}`);
+            
+            // Create sub-issues for each significant failure
+            for (let i = 0; i < Math.min(failures.length, 5); i++) {
+              const failure = failures[i];
+              const subTitle = `🔧 Fix: ${failure.job} Test Failure`;
+              const subBody = [
+                `## Test Failure Details`,
+                ``,
+                `**Parent Issue:** #${mainIssue.data.number}`,
+                `**Job:** ${failure.job}`,
+                `**Step:** ${failure.step || 'Unknown step'}`,
+                `**Workflow Run:** ${runUrl}`,
+                ``,
+                `### Error Details:`,
+                ...failure.errors.map(e => `- ${e}`),
+                ``,
+                `### Investigation Checklist:`,
+                `- [ ] Reproduce the failure locally`,
+                `- [ ] Identify the root cause`,
+                `- [ ] Check related code changes`,
+                `- [ ] Review test setup and dependencies`,
+                `- [ ] Implement fix`,
+                `- [ ] Verify fix with test run`,
+                `- [ ] Update documentation if needed`,
+                ``,
+                `### Technical Details:`,
+                `Please add technical investigation findings, code snippets, and solution approaches here.`,
+                ``,
+                `---`,
+                `*This sub-issue was automatically created for systematic failure resolution.*`
+              ].join('\n');
+              
+              const subIssue = await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: subTitle,
+                body: subBody,
+                labels: ['test-failure', 'automated', 'sub-issue', failure.job.toLowerCase().includes('backend') ? 'backend' : 'frontend']
+              });
+              
+              console.log(`Created sub-issue #${subIssue.data.number} for ${failure.job}`);
+            }

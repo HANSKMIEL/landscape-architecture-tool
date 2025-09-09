@@ -15,11 +15,13 @@ from src.models.landscape import (
     project_plants,
     project_products,
 )
+from src.routes.user import data_access_required, login_required
 
 projects_bp = Blueprint("projects", __name__)
 
 
 @projects_bp.route("/api/projects", methods=["GET"])
+@login_required
 def get_projects():
     """Get all projects with optional filtering"""
     try:
@@ -117,6 +119,7 @@ def get_projects():
 
 
 @projects_bp.route("/api/projects", methods=["POST"])
+@data_access_required
 def create_project():
     """Create a new project"""
     try:
@@ -263,6 +266,7 @@ def get_project(project_id):
 
 
 @projects_bp.route("/api/projects/<int:project_id>", methods=["PUT"])
+@data_access_required
 def update_project(project_id):
     """Update an existing project"""
     try:
@@ -331,6 +335,7 @@ def update_project(project_id):
 
 
 @projects_bp.route("/api/projects/<int:project_id>", methods=["DELETE"])
+@data_access_required
 def delete_project(project_id):
     """Delete a project"""
     try:
@@ -432,6 +437,7 @@ def get_project_stats():
 
 
 @projects_bp.route("/api/projects/<int:project_id>/plants", methods=["POST"])
+@data_access_required
 def add_plant_to_project(project_id):
     """Add a plant to a project"""
     try:
@@ -461,6 +467,7 @@ def add_plant_to_project(project_id):
 
 
 @projects_bp.route("/api/projects/<int:project_id>/plants/<int:plant_id>", methods=["DELETE"])
+@data_access_required
 def remove_plant_from_project(project_id, plant_id):
     """Remove a plant from a project"""
     try:
@@ -483,6 +490,7 @@ def remove_plant_from_project(project_id, plant_id):
 
 
 @projects_bp.route("/api/projects/<int:project_id>/products", methods=["POST"])
+@data_access_required
 def add_product_to_project(project_id):
     """Add a product to a project"""
     try:
@@ -518,6 +526,7 @@ def add_product_to_project(project_id):
     "/api/projects/<int:project_id>/products/<int:product_id>",
     methods=["DELETE"],
 )
+@data_access_required
 def remove_product_from_project(project_id, product_id):
     """Remove a product from a project"""
     try:

@@ -1,0 +1,232 @@
+{
+  "name": "Project Created Automation",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "project-created",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-project-created",
+      "name": "Webhook - Project Created",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [100, 300],
+      "webhookId": "project-created"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "number": [
+            {
+              "value1": "={{$json.project_id}}",
+              "operation": "isNotEmpty"
+            }
+          ]
+        }
+      },
+      "id": "validate-project-data",
+      "name": "Validate Project Data",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [300, 300]
+    },
+    {
+      "parameters": {
+        "url": "=http://landscape-backend:5000/api/clients/{{$json.client_id}}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "get-client-details",
+      "name": "Get Client Details",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [500, 200]
+    },
+    {
+      "parameters": {
+        "url": "=http://landscape-backend:5000/api/projects/{{$json.project_id}}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "get-project-details",
+      "name": "Get Project Details",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [500, 400]
+    },
+    {
+      "parameters": {
+        "values": [
+          {
+            "name": "base_url",
+            "value": "={{$env['BASE_URL'] || 'https://example.com'}}"
+          }
+        ]
+      },
+      "id": "set-base-url",
+      "name": "Set Base URL",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [600, 200]
+    },
+    {
+      "parameters": {
+        "sendTo": "={{$node['Get Client Details'].json.client.email}}",
+        "subject": "Project Started: {{$json.project_name}}",
+        "emailType": "html",
+        "message": "=<!DOCTYPE html>\n<html>\n<head>\n    <style>\n        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }\n        .header { background-color: #2E7D32; color: white; padding: 20px; text-align: center; }\n        .content { padding: 20px; }\n        .footer { background-color: #f1f1f1; padding: 10px; text-align: center; font-size: 12px; }\n        .highlight { background-color: #E8F5E8; padding: 15px; border-radius: 5px; margin: 15px 0; }\n        .button { background-color: #2E7D32; color: white; padding: 15px 25px; text-decoration: none; border-radius: 5px; display: inline-block; margin: 20px 0; }\n    </style>\n</head>\n<body>\n    <div class=\"header\">\n        <h1>🌱 Your Landscape Project Has Started!</h1>\n    </div>\n    <div class=\"content\">\n        <h2>Dear {{$node['Get Client Details'].json.client.name}},</h2>\n        \n        <p>Great news! We've officially started your landscape architecture project:</p>\n        \n        <div class=\"highlight\">\n            <h3>📋 Project Details</h3>\n            <ul>\n                <li><strong>Project Name:</strong> {{$json.project_name}}</li>\n                <li><strong>Project ID:</strong> {{$json.project_id}}</li>\n                <li><strong>Start Date:</strong> {{$json.timestamp.split('T')[0]}}</li>\n                <li><strong>Status:</strong> In Progress</li>\n            </ul>\n        </div>\n        \n        <h3>🎯 What Happens Next?</h3>\n        <ul>\n            <li>✅ Site analysis and measurements (Week 1-2)</li>\n            <li>📐 Design concept development (Week 2-3)</li>\n            <li>🎨 3D visualization and plans (Week 3-4)</li>\n            <li>💰 Final quote and timeline (Week 4)</li>\n            <li>🚀 Implementation begins (Week 5+)</li>\n        </ul>\n        \n        <p>You'll receive regular updates on your project progress, including photos and milestone notifications.</p>\n        \n        <a href=\"{{$json.base_url}}/projects/{{$json.project_id}}\" class=\"button\">View Project Progress</a>\n        \n        <p>Have questions? Our team is here to help:</p>\n        <ul>\n            <li>📧 Email: projects@landscapetool.com</li>\n            <li>📞 Phone: +31 20 123 4567</li>\n            <li>💬 Project Portal: Live chat available</li>\n        </ul>\n        \n        <p>We're excited to create your dream outdoor space!</p>\n        \n        <p>Best regards,<br>\n        <strong>The Landscape Architecture Team</strong></p>\n    </div>\n    <div class=\"footer\">\n        <p>Project notification sent automatically. Visit your client portal for more details.</p>\n    </div>\n</body>\n</html>",
+        "options": {
+          "allowUnauthorizedCerts": true
+        }
+      },
+      "id": "send-project-start-email",
+      "name": "Send Project Start Email",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [700, 200],
+      "credentials": {
+        "smtp": {
+          "id": "1",
+          "name": "Landscape SMTP"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=http://landscape-backend:5000/api/n8n/receive/email-sent",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"email_type\": \"project_start\",\n  \"recipient\": \"{{$node['Get Client Details'].json.client.email}}\",\n  \"project_id\": {{$json.project_id}},\n  \"client_id\": {{$json.client_id}},\n  \"status\": \"sent\"\n}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "notify-backend-email-sent",
+      "name": "Notify Backend Email Sent",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [900, 200]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"status\": \"success\",\n  \"message\": \"Project start workflow completed\",\n  \"project_id\": {{$json.project_id}},\n  \"notifications_sent\": 1\n}"
+      },
+      "id": "respond-success",
+      "name": "Respond Success",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1100, 300]
+    }
+  ],
+  "connections": {
+    "Webhook - Project Created": {
+      "main": [
+        [
+          {
+            "node": "Validate Project Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Project Data": {
+      "main": [
+        [
+          {
+            "node": "Get Client Details",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get Project Details",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Client Details": {
+      "main": [
+        [
+          {
+            "node": "Send Project Start Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Project Start Email": {
+      "main": [
+        [
+          {
+            "node": "Notify Backend Email Sent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notify Backend Email Sent": {
+      "main": [
+        [
+          {
+            "node": "Respond Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {},
+  "versionId": "1",
+  "id": "4",
+  "meta": {
+    "version": 1,
+    "templateCredsSetupCompleted": false
+  },
+  "tags": [
+    {
+      "createdAt": "2024-01-01T12:00:00.000Z",
+      "updatedAt": "2024-01-01T12:00:00.000Z",
+      "id": "1",
+      "name": "landscape-automation"
+    }
+  ]
+}

@@ -3,6 +3,7 @@
 # This file handles all report generation operations
 
 import io
+import logging
 from datetime import UTC, datetime
 
 from flask import Blueprint, jsonify, request, send_file
@@ -21,11 +22,13 @@ from src.models.landscape import (
     Supplier,
     db,
 )
+from src.routes.user import login_required
 
 reports_bp = Blueprint("reports", __name__)
 
 
 @reports_bp.route("/api/reports/business-summary", methods=["GET"])
+@login_required
 def generate_business_summary():
     """Generate business summary report"""
     try:
@@ -384,8 +387,9 @@ def generate_business_summary_pdf(data):
             mimetype="application/pdf",
         )
 
-    except Exception as e:
-        return jsonify({"error": f"PDF generation failed: {e!s}"}), 500
+    except Exception:
+        logging.exception("Error generating business summary PDF")
+        return jsonify({"error": "Failed to generate PDF report. Please try again later."}), 500
 
 
 @reports_bp.route("/api/reports/project/<int:project_id>", methods=["GET"])

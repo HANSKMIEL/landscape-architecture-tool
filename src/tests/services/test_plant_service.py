@@ -257,7 +257,7 @@ class TestPlantService:
                 mock_model_class.return_value = mock_plant
                 mock_model_class.__name__ = "Plant"
 
-                with pytest.raises(Exception):  # noqa: B017
+                with pytest.raises(Exception, match="Database error"):
                     plant_service.create(sample_plant_data)
 
                 mock_session.rollback.assert_called_once()

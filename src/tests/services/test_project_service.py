@@ -83,7 +83,7 @@ class TestProjectService:
                 mock_model_class.return_value = mock_project
                 mock_model_class.__name__ = "Project"
 
-                with pytest.raises(Exception):  # noqa: B017
+                with pytest.raises(Exception, match="Database constraint error"):
                     project_service.create(sample_project_data)
 
                 mock_session.rollback.assert_called_once()
@@ -321,7 +321,7 @@ class TestProjectService:
                 mock_model_class.return_value = mock_project
                 mock_model_class.__name__ = "Project"
 
-                with pytest.raises(Exception):  # noqa: B017
+                with pytest.raises(Exception, match="Database error"):
                     project_service.create(sample_project_data)
 
                 mock_session.rollback.assert_called_once()

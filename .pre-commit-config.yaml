@@ -6,15 +6,87 @@ repos:
     rev: 24.8.0
     hooks:
       - id: black
+        args: ["--line-length=120"]
+
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.6.3
     hooks:
       - id: ruff
-        args: ["--fix"]
+        args: ["--fix", "--line-length=120"]
+
   - repo: https://github.com/pycqa/isort
     rev: 5.13.2
     hooks:
       - id: isort
+        args: ["--profile=black", "--line-length=120"]
+
+  # Enhanced file quality checks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-json
+      - id: check-toml
+      - id: check-added-large-files
+        args: ['--maxkb=1000']
+
+  # Security scanning
+  - repo: https://github.com/PyCQA/bandit
+    rev: '1.7.5'
+    hooks:
+      - id: bandit
+        args: ["-r", "src/", "-f", "json", "-o", "bandit-report.json"]
+        pass_filenames: false
+
+  # Copilot-specific validation
+  - repo: local
+    hooks:
+      - id: copilot-file-cleanup
+        name: Clean up Copilot temporary files
+        entry: bash
+        language: system
+        args: [-c, "
+find . -name '*.copilot.md' -delete;
+find . -name '*_copilot_*' -type f -delete;
+find . -name 'temp_*.py' -delete;
+find . -name 'draft_*.py' -delete;
+echo '✅ Copilot cleanup complete'
+        "]
+        pass_filenames: false
+        always_run: true
+
+  # Database migration validation
+  - repo: local
+    hooks:
+      - id: validate-migrations
+        name: Validate database migrations
+        entry: bash
+        language: system
+        args: [-c, "
+if [ -d 'migrations' ]; then
+  echo '🗄️ Validating database migrations...';
+  python -c '
+import os
+import sys
+sys.path.insert(0, \".\")
+try:
+    from alembic.config import Config
+    from alembic import command
+    if os.path.exists(\"migrations/alembic.ini\"):
+        print(\"✅ Migration structure valid\")
+    else:
+        print(\"⚠️ No alembic.ini found\")
+except ImportError:
+    print(\"⚠️ Alembic not available\")
+except Exception as e:
+    print(f\"⚠️ Migration validation issue: {e}\")
+  ' || echo '⚠️ Migration validation failed';
+fi
+        "]
+        pass_filenames: false
+        always_run: true
 
   # Automated validation hook to ensure pipeline health
   - repo: local

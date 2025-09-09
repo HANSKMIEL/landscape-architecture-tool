@@ -15,6 +15,9 @@ from typing import Any
 import redis
 from flask import current_app, request
 
+# Setup logger
+logger = logging.getLogger(__name__)
+
 # Simple in-memory cache as fallback
 _memory_cache = {}
 
@@ -243,8 +246,8 @@ def get_cache_stats() -> dict[str, Any]:
             misses = stats["redis_keyspace_misses"]
             if hits + misses > 0:
                 stats["cache_hit_rate"] = round(hits / (hits + misses) * 100, 2)
-        except Exception:
-            pass
+        except Exception as e:
+            logger.warning(f"Cache hit rate calculation failed: {e}")
 
     return stats
 
@@ -257,8 +260,8 @@ def clear_cache_by_pattern(pattern: str) -> bool:
                 keys = cache.redis_client.keys(pattern)
                 if keys:
                     cache.redis_client.delete(*keys)
-            except Exception:
-                pass
+            except Exception as e:
+                logger.warning(f"Cache invalidation failed: {e}")
 
         # Clear memory cache entries (simple pattern matching)
         keys_to_delete = [k for k in _memory_cache if pattern.replace("*", "") in k]

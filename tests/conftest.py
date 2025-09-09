@@ -8,7 +8,6 @@ from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy.pool import StaticPool
 
 # Import test data fixtures to make them available to all tests
-from tests.fixtures.test_data import *  # noqa: F403
 from tests.fixtures.test_stability import (
     cleanup_test_data,
     error_recovery_context,
@@ -111,18 +110,26 @@ def connection(engine):
         flask_db.metadata.create_all(bind=engine)
         logger.info("Database tables created successfully")
 
-        # Enhanced transaction handling with better cleanup
+        # Enhanced transaction handling that ensures reversible outer transaction
+        # even when conn.in_transaction() is already true (addresses issue #306)
+        outer_tx = None
+
+        # Always create a reversible outer transaction for consistent isolation
         if conn.in_transaction():
+            # Connection already in transaction - create savepoint for isolation
+            outer_tx = conn.begin_nested()
+            logger.debug("Created nested transaction (savepoint) on existing transaction")
+
             try:
                 yield conn
             finally:
-                # Enhanced cleanup with error handling
+                # Enhanced cleanup with consistent rollback behavior
                 try:
-                    if conn.in_transaction():
-                        conn.rollback()
-                        logger.debug("Rolled back active transaction")
+                    if outer_tx and outer_tx.is_active:
+                        outer_tx.rollback()
+                        logger.debug("Rolled back nested transaction (savepoint)")
                 except Exception as e:
-                    logger.warning(f"Transaction rollback warning: {e}")
+                    logger.warning(f"Nested transaction rollback warning: {e}")
 
                 try:
                     if not conn.closed:
@@ -131,17 +138,20 @@ def connection(engine):
                 except Exception as e:
                     logger.warning(f"Connection close warning: {e}")
         else:
+            # Connection not in transaction - create regular transaction
             outer_tx = conn.begin()
+            logger.debug("Created new outer transaction")
+
             try:
                 yield conn
             finally:
-                # Enhanced cleanup with error handling
+                # Enhanced cleanup with consistent rollback behavior
                 try:
-                    if outer_tx.is_active:
+                    if outer_tx and outer_tx.is_active:
                         outer_tx.rollback()
                         logger.debug("Rolled back outer transaction")
                 except Exception as e:
-                    logger.warning(f"Outer transaction rollback warning: {e}")
+                    logger.warning(f"Transaction rollback warning: {e}")
 
                 try:
                     if not conn.closed:

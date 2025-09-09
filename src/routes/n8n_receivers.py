@@ -155,7 +155,8 @@ def receive_external_data():
 
     source_system = data["source_system"]
     data_type = data.get("data_type")
-    payload = data.get("payload", {})  # noqa: F841 - Reserved for future use
+    # Note: payload extraction available for future use when needed
+    # payload = data.get("payload", {})
 
     # Process data based on source system and type
     if source_system == "crm" and data_type == "new_lead":

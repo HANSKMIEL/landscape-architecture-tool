@@ -5,6 +5,7 @@ Provides endpoints for monitoring cache performance and system health.
 
 from flask import Blueprint, current_app, jsonify, request
 
+from src.routes.user import data_access_required, login_required
 from src.services.performance import (
     cache,
     get_cache_stats,
@@ -17,6 +18,7 @@ performance_bp = Blueprint("performance", __name__, url_prefix="/api/performance
 
 
 @performance_bp.route("/stats", methods=["GET"])
+@login_required
 def get_performance_stats():
     """Get comprehensive performance statistics."""
     try:
@@ -38,6 +40,7 @@ def get_cache_statistics():
 
 
 @performance_bp.route("/cache/clear", methods=["POST"])
+@data_access_required
 def clear_cache():
     """Clear all cache entries."""
     try:
@@ -51,6 +54,7 @@ def clear_cache():
 
 
 @performance_bp.route("/cache/invalidate", methods=["POST"])
+@data_access_required
 def invalidate_cache():
     """Invalidate specific cache patterns."""
     try:

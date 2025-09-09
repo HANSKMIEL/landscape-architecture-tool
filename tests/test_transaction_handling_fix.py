@@ -6,6 +6,7 @@ This test specifically validates the fix for the transaction handling logic
 where both code paths now have consistent cleanup mechanisms.
 """
 
+import os
 import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.pool import StaticPool
@@ -40,11 +41,11 @@ class TestTransactionHandlingConsistency:
         conn.close()
 
     def test_both_code_paths_have_cleanup_mechanisms(self):
-        """Test that both code paths in connection fixture have proper cleanup"""
-        # This test verifies the fix: both paths should now have try/finally blocks
+        """Test that connection fixture has proper cleanup mechanism"""
+        # This test verifies the fix: unified try/finally block handles both transaction states
 
-        # Read the conftest.py file and verify both paths have cleanup
-        conftest_path = "/home/runner/work/landscape-architecture-tool/" "landscape-architecture-tool/tests/conftest.py"
+        # Read the conftest.py file and verify the unified cleanup approach
+        conftest_path = os.path.join(os.path.dirname(__file__), "conftest.py")
         with open(conftest_path) as f:
             content = f.read()
 
@@ -53,10 +54,10 @@ class TestTransactionHandlingConsistency:
         in_connection_fixture = False
         found_if_transaction = False
         found_else_path = False
-        if_has_finally = False
-        else_has_finally = False
+        has_unified_finally = False
+        has_yield = False
 
-        for i, line in enumerate(lines):
+        for _i, line in enumerate(lines):
             if "def connection(engine):" in line:
                 in_connection_fixture = True
                 continue
@@ -64,33 +65,21 @@ class TestTransactionHandlingConsistency:
             if in_connection_fixture:
                 if "if conn.in_transaction():" in line:
                     found_if_transaction = True
-                    # Check if the if block has a finally
-                    for j in range(i + 1, min(i + 10, len(lines))):
-                        if "finally:" in lines[j]:
-                            if_has_finally = True
-                            break
-                        if "else:" in lines[j]:
-                            break
-
                 elif line.strip() == "else:" and found_if_transaction:
                     found_else_path = True
-                    # Check if the else block has a finally
-                    for j in range(i + 1, min(i + 10, len(lines))):
-                        if "finally:" in lines[j]:
-                            else_has_finally = True
-                            break
-                        if line.strip() and not line.startswith(" ") and not line.startswith("\t"):
-                            break
-
+                elif "yield conn" in line:
+                    has_yield = True
+                elif "finally:" in line and has_yield:
+                    has_unified_finally = True
                 # Exit when we reach the next fixture
                 elif "def " in line and not line.strip().startswith("#"):
                     break
 
-        # Verify both paths have cleanup mechanisms
+        # Verify the unified cleanup approach
         assert found_if_transaction, "Could not find if conn.in_transaction() path"
         assert found_else_path, "Could not find else path"
-        assert if_has_finally, "The if conn.in_transaction() path should have a finally block for cleanup"
-        assert else_has_finally, "The else path should have a finally block for cleanup"
+        assert has_yield, "Could not find yield statement in connection fixture"
+        assert has_unified_finally, "Connection fixture should have a unified finally block for cleanup"
 
 
 if __name__ == "__main__":

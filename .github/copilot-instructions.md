@@ -60,6 +60,82 @@ docker compose up --build  # Note: use 'docker compose' (with space), not 'docke
 
 **KNOWN ISSUE**: The Dockerfile currently has a syntax error in a multi-line Python RUN command. Docker builds will fail until this is fixed.
 
+## Architecture and Patterns
+
+### Database Transaction Patterns
+
+**CRITICAL**: Always use proper transaction isolation in tests. The repository uses enhanced SAVEPOINT-based isolation to handle edge cases:
+
+```python
+# In tests/conftest.py - Enhanced transaction handling
+@pytest.fixture(scope="session")
+def connection(engine):
+    conn = engine.connect()
+    
+    # Always create reversible outer transaction for consistent isolation
+    if conn.in_transaction():
+        # Connection already in transaction - create savepoint for isolation
+        outer_tx = conn.begin_nested()
+    else:
+        # Connection not in transaction - create regular transaction
+        outer_tx = conn.begin()
+    
+    try:
+        yield conn
+    finally:
+        if outer_tx and outer_tx.is_active:
+            outer_tx.rollback()
+        if not conn.closed:
+            conn.close()
+```
+
+**Key Patterns**:
+- Always use `conn.begin_nested()` for SAVEPOINT-based isolation when `conn.in_transaction()` is true
+- Use regular `conn.begin()` for fresh connections
+- Always rollback transactions in test cleanup
+- Handle both transaction states consistently
+
+### Service Layer Patterns
+
+All business logic should follow the service layer pattern:
+
+```python
+# Example: src/services/base_service.py
+class BaseService:
+    def __init__(self, db_session):
+        self.db = db_session
+    
+    def create(self, data):
+        try:
+            instance = self.model(**data)
+            self.db.add(instance)
+            self.db.commit()
+            return instance
+        except Exception:
+            self.db.rollback()
+            raise
+```
+
+### API Route Patterns
+
+All API routes should follow these patterns:
+
+```python
+# Example: src/routes/suppliers.py
+@suppliers_bp.route('/', methods=['POST'])
+def create_supplier():
+    try:
+        data = request.get_json()
+        # Validate with schema
+        supplier = supplier_service.create(data)
+        return jsonify({"supplier": supplier.to_dict()}), 201
+    except ValidationError as e:
+        return jsonify({"error": str(e)}), 400
+    except Exception as e:
+        logger.error(f"Supplier creation failed: {e}")
+        return jsonify({"error": "Internal server error"}), 500
+```
+
 ## Testing and Validation
 
 ### Backend Testing
@@ -98,6 +174,137 @@ curl http://localhost:5000/health
 
 # Test API endpoints
 curl http://localhost:5000/api/suppliers
+
+# Test frontend accessibility  
+curl http://localhost:5174/
+```
+
+## 🎯 MotherSpace Orchestration System
+
+**CRITICAL**: The repository implements a comprehensive multi-space orchestration system for optimal development harmony and task coordination.
+
+### MotherSpace Orchestrator (`.github/workflows/motherspace-orchestrator.yml`)
+- **Master orchestrator** that analyzes all spaces for optimal harmony (target: ≥85% harmony score)
+- **Task delegation** in chronological development order with quality/security checks
+- **Issue/PR optimization** for efficient cross-space collaboration
+- **Harmony monitoring** with automated intervention and comprehensive system analysis
+- **Cross-space communication** coordination and conflict resolution
+- **Triggers**: Issues, PRs, workflow completions, scheduled every 2 hours, manual dispatch
+
+### Daughter Space - UI/UX Manager (`.github/workflows/daughter-space-uiux.yml`)
+- **Visual appeal analysis** with accessibility and responsive design assessment
+- **User workflow optimization** including data import/export evaluation  
+- **Integration requirement reporting** with detailed enhancement recommendations
+- **"Daughter-Integration Manager" issues** for major integration needs (manual assignment)
+- **Professional UI standards** enforcement and enhancement guidance
+- **Triggers**: Issues labeled 'daughter' or 'ui-ux', manual dispatch with target issue
+
+### IntegrationManager Space (`.github/workflows/integrationmanager-space.yml`)
+- **Modules repository creation** and management for external integrations
+- **Cross-profession adaptation** for Architecture, Engineering, Planning, Design
+- **External system integration** (Vectorworks, CRM, AI, APIs)
+- **Module development analysis** with priority recommendations
+- **Repository synchronization** between main tool and modules repo
+- **Triggers**: Issues labeled 'integration-manager' or 'integration', manual dispatch
+
+### Space Communication Patterns
+
+**MotherSpace → All Spaces:**
+```yaml
+# Harmony monitoring and task delegation
+harmony_score: 85%  # Target threshold
+delegation_queue: chronological_order
+quality_checks: [security, functionality, efficiency]
+intervention_mode: automatic_when_below_threshold
+```
+
+**Daughter → MotherSpace Reporting:**
+```yaml
+# UI/UX analysis and integration requirements
+analysis_types: [visual_appeal, user_workflow, data_management, accessibility]
+report_format: comprehensive_github_comment
+integration_issues: "Daughter-Integration Manager [Date Time]"
+assignment: manual_to_HANSKMIEL
+```
+
+**IntegrationManager → Cross-Repo:**
+```yaml
+# Module development and external integration
+modules_repo: landscape-modules
+supported_integrations: [vectorworks, crm, ai, apis]
+cross_profession: [architecture, engineering, planning, design]
+sync_interval: 6_hours
+```
+
+## CI/CD and Automation Patterns
+
+### GitHub Workflows
+
+The repository includes automated workflows:
+
+1. **CI Workflow** (`.github/workflows/ci.yml`):
+   - Runs on every push and PR
+   - Executes formatting, linting, tests
+   - Enhanced security scanning with bandit and safety
+   - Generates coverage reports
+
+2. **Nightly Maintenance** (`.github/workflows/nightly-maintenance.yml`):
+   - Runs at 19:30 Europe/Amsterdam time (configurable via REPO_TZ variable)
+   - Repository cleanup, security checks, health monitoring
+   - Manual trigger available via workflow_dispatch
+
+3. **Post-Merge Automation** (`.github/workflows/post-merge.yml`):
+   - Analyzes changes for follow-up requirements
+   - Auto-creates issues for API, N8n, and documentation reviews
+   - Processes README auto-update markers
+
+4. **Issue Verification** (`.github/workflows/verify-issue-closed.yml`):
+   - Validates critical issues after closure
+   - Runs appropriate tests based on issue type
+   - Adds validation comments
+
+### N8n Workflow Integration
+
+The repository includes N8n workflow templates in `n8n-workflows/`:
+
+```python
+# Trigger N8n workflows from application code
+import requests
+
+def trigger_client_onboarding(client_id, client_name, client_email):
+    requests.post(
+        'http://n8n:5678/webhook/client-onboarding',
+        json={
+            'client_id': client_id,
+            'client_name': client_name,
+            'client_email': client_email,
+            'timestamp': datetime.now().isoformat()
+        }
+    )
+```
+
+**Available Workflows**:
+- `client-onboarding.json` - Automated client welcome process
+- `project-milestone-tracking.json` - Project progress notifications
+- `inventory-management.json` - Stock level monitoring
+
+### Pre-commit Hooks
+
+Always run pre-commit hooks before committing:
+
+```bash
+# Install hooks
+pre-commit install
+
+# Run manually
+pre-commit run --all-files
+
+# Hooks include:
+# - Black formatting
+# - Ruff linting with security checks
+# - Import sorting with isort
+# - Automated validation
+```
 
 # Test frontend accessibility  
 curl http://localhost:5174/
@@ -412,6 +619,72 @@ The repository includes comprehensive CI/CD problem prevention:
 - **Health monitoring**: Pipeline status monitoring and reporting
 
 Use `python scripts/phase4_validation.py` for comprehensive validation of prevention measures.
+
+## Repository Organization and Clutter Management
+
+### File Organization Structure
+
+**ALWAYS organize generated files appropriately to prevent root directory clutter:**
+
+```
+reports/
+├── validation/          # automated_validation_report_*.json
+├── health/             # pipeline_health_report_*.json  
+└── security/           # bandit-report.json, safety-report.json
+
+docs/
+├── solutions/          # *_SOLUTION*.md, *_SUMMARY*.md
+└── planning/           # *_PLAN*.md, *_ROADMAP*.md, dev_log.md
+
+archive/                # Historical files no longer actively used
+```
+
+### Clutter Prevention Rules
+
+**Scripts and tools should save outputs to appropriate subfolders:**
+
+```python
+# Good: Save reports to appropriate subfolder
+report_path = f"reports/validation/automated_validation_report_{timestamp}.json"
+
+# Bad: Save reports to root directory  
+report_path = f"automated_validation_report_{timestamp}.json"
+```
+
+**The `.gitignore` includes patterns to prevent root clutter:**
+- `/*_SOLUTION*.md` → should go in `docs/solutions/`
+- `/*_PLAN*.md` → should go in `docs/planning/`
+- `*_report_*.json` → should go in `reports/*/`
+
+### Space Management Automation
+
+**Automated workflows monitor and maintain Copilot Space effectiveness:**
+
+1. **Space Update Detection**: Triggers when architecture, workflows, or patterns change
+2. **Clutter Monitoring**: Alerts when root directory accumulates >10 loose files
+3. **Test Failure Automation**: Creates issues with sub-issues for systematic bug resolution
+
+**Key workflows:**
+- `.github/workflows/space-management.yml` - Weekly space validation
+- `.github/workflows/test-failure-automation.yml` - Automatic issue creation for test failures
+- Clutter prevention via enhanced `.gitignore` and folder structure
+
+### Copilot Space Validation
+
+**Use these prompts to test space effectiveness after updates:**
+
+```
+"Explain the database transaction isolation pattern with code examples"
+"Show me how to add a new API route following our conventions"  
+"What's our current testing strategy and how do I add tests?"
+"How should I organize generated reports and prevent clutter?"
+"Create a new service following our transaction patterns"
+```
+
+**Space files to maintain:**
+- `.github/copilot-instructions.md` - This file with all patterns and conventions
+- `docs/SPACE_OVERVIEW.md` - Overview and usage guide
+- `docs/ARCHITECTURE.md` - Detailed architecture documentation
 
 ---
 

@@ -78,12 +78,52 @@ def trigger_project_created():
     )
 
 
+@bp.route("/n8n/client-onboarding", methods=["POST"])
+@handle_errors
+def trigger_client_onboarding():
+    """
+    Trigger N8n workflow when a new client is created for onboarding
+    Expected payload: {
+        'client_id': int, 'client_name': str, 'client_email': str,
+        'contact_person': str (optional), 'phone': str (optional)
+    }
+    """
+    data = request.get_json()
+
+    if not data or "client_id" not in data or "client_email" not in data:
+        return jsonify({"error": "client_id and client_email are required"}), 400
+
+    workflow_data = {
+        "event": "client_onboarding",
+        "client_id": data["client_id"],
+        "client_name": data.get("client_name", ""),
+        "client_email": data["client_email"],
+        "contact_person": data.get("contact_person", ""),
+        "phone": data.get("phone", ""),
+        "timestamp": data.get("timestamp", datetime.now(UTC).isoformat()),
+    }
+
+    success = trigger_n8n_workflow("client-onboarding", workflow_data)
+
+    if success:
+        return (
+            jsonify({"status": "workflow_triggered", "webhook": "client-onboarding"}),
+            200,
+        )
+    return (
+        jsonify({"status": "workflow_failed", "webhook": "client-onboarding"}),
+        500,
+    )
+
+
 @bp.route("/n8n/client-updated", methods=["POST"])
 @handle_errors
 def trigger_client_updated():
     """
-    Trigger N8n workflow when client information is updated  # noqa: E501
-    Expected payload: {'client_id': int, 'updated_fields': list, 'client_data': dict}  # noqa: E501
+    Trigger N8n workflow when client information is updated
+
+    Expected payload:
+    {'client_id': int, 'updated_fields': list, 'client_data': dict}
     """
     data = request.get_json()
 
@@ -115,7 +155,8 @@ def trigger_client_updated():
 @handle_errors
 def trigger_project_milestone():
     """
-    Trigger N8n workflow when a project reaches a milestone  # noqa: E501
+    Trigger N8n workflow when a project reaches a milestone
+
     Expected payload: {'project_id': int, 'milestone': str, 'status': str}
     """
     data = request.get_json()
@@ -154,8 +195,10 @@ def trigger_project_milestone():
 @handle_errors
 def trigger_inventory_alert():
     """
-    Trigger N8n workflow for low inventory alerts  # noqa: E501
-    Expected payload: {'plant_id': int, 'current_stock': int, 'minimum_threshold': int}  # noqa: E501
+    Trigger N8n workflow for low inventory alerts
+
+    Expected payload:
+    {'plant_id': int, 'current_stock': int, 'minimum_threshold': int}
     """
     data = request.get_json()
 

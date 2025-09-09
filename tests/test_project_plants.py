@@ -376,8 +376,11 @@ class TestProjectPlantAPI:
 
         assert response.status_code == 200
         response_data = json.loads(response.data)
-        assert len(response_data) == 1
-        assert response_data[0]["supplier_name"] == "Test Nursery"
+        assert "suppliers" in response_data
+        assert "project_id" in response_data
+        assert "total_suppliers" in response_data
+        assert len(response_data["suppliers"]) == 1
+        assert response_data["suppliers"][0]["supplier_name"] == "Test Nursery"
 
     def test_remove_plant_endpoint(self, client, init_database):
         """Test API endpoint for removing plant from project"""
@@ -483,8 +486,9 @@ class TestProjectPlantIntegration:
         response = client.get(f'/api/projects/{data["project_id"]}/plant-order-list')
         assert response.status_code == 200
         order_data = json.loads(response.data)
-        assert len(order_data) == 1
-        assert order_data[0]["supplier_name"] == "Test Nursery"
+        assert "suppliers" in order_data
+        assert len(order_data["suppliers"]) == 1
+        assert order_data["suppliers"][0]["supplier_name"] == "Test Nursery"
 
         # 5. Update remaining plants to planted
         response = client.put(
