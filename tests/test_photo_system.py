@@ -211,6 +211,20 @@ class TestPhotoAPI:
 
     def test_delete_photo(self, auth_client, app):
         """Test deleting photo."""
+                # Create a test user in the database
+        from src.models.user import User, db
+        
+        test_user = User(username='test_user', email='test@example.com', role='admin')
+        test_user.set_password('password')
+        db.session.add(test_user)
+        db.session.commit()
+        
+        # Set up authentication in session
+        with client.session_transaction() as sess:
+            sess['user_id'] = test_user.id
+            sess['username'] = test_user.username
+            sess['role'] = test_user.role
+        
         # Upload a photo first
         img_data = create_test_image()
         upload_response = auth_client.post(

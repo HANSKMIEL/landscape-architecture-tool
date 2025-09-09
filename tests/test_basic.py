@@ -51,6 +51,20 @@ class TestSupplierEndpoints:
 
     def test_get_suppliers_empty(self, client):
         """Test getting suppliers when database is empty"""
+        # Create a test user in the database
+        from src.models.user import User, db
+        
+        test_user = User(username='test_user', email='test@example.com', role='admin')
+        test_user.set_password('password')
+        db.session.add(test_user)
+        db.session.commit()
+        
+        # Set up authentication in session
+        with client.session_transaction() as sess:
+            sess['user_id'] = test_user.id
+            sess['username'] = test_user.username
+            sess['role'] = test_user.role
+        
         response = client.get("/api/suppliers")
         assert response.status_code == 200
         data = response.get_json()
@@ -61,6 +75,20 @@ class TestSupplierEndpoints:
 
     def test_create_supplier_valid(self, client):
         """Test creating a valid supplier"""
+                # Create a test user in the database
+        from src.models.user import User, db
+        
+        test_user = User(username='test_user', email='test@example.com', role='admin')
+        test_user.set_password('password')
+        db.session.add(test_user)
+        db.session.commit()
+        
+        # Set up authentication in session
+        with client.session_transaction() as sess:
+            sess['user_id'] = test_user.id
+            sess['username'] = test_user.username
+            sess['role'] = test_user.role
+        
         supplier_data = {
             "name": "Test Supplier",
             "contact_person": "John Doe",
@@ -78,6 +106,20 @@ class TestSupplierEndpoints:
 
     def test_create_supplier_invalid(self, client):
         """Test creating supplier with invalid data"""
+                # Create a test user in the database
+        from src.models.user import User, db
+        
+        test_user = User(username='test_user', email='test@example.com', role='admin')
+        test_user.set_password('password')
+        db.session.add(test_user)
+        db.session.commit()
+        
+        # Set up authentication in session
+        with client.session_transaction() as sess:
+            sess['user_id'] = test_user.id
+            sess['username'] = test_user.username
+            sess['role'] = test_user.role
+        
         invalid_data = {
             "name": "",  # Empty name should be invalid
             "email": "invalid-email",  # Invalid email format
@@ -92,6 +134,20 @@ class TestPlantEndpoints:
 
     def test_get_plants_empty(self, client):
         """Test getting plants when database is empty"""
+        # Create a test user in the database
+        from src.models.user import User, db
+        
+        test_user = User(username='test_user', email='test@example.com', role='admin')
+        test_user.set_password('password')
+        db.session.add(test_user)
+        db.session.commit()
+        
+        # Set up authentication in session
+        with client.session_transaction() as sess:
+            sess['user_id'] = test_user.id
+            sess['username'] = test_user.username
+            sess['role'] = test_user.role
+        
         response = client.get("/api/plants")
         assert response.status_code == 200
         data = response.get_json()
@@ -102,6 +158,20 @@ class TestPlantEndpoints:
 
     def test_create_plant_valid(self, client):
         """Test creating a valid plant"""
+                # Create a test user in the database
+        from src.models.user import User, db
+        
+        test_user = User(username='test_user', email='test@example.com', role='admin')
+        test_user.set_password('password')
+        db.session.add(test_user)
+        db.session.commit()
+        
+        # Set up authentication in session
+        with client.session_transaction() as sess:
+            sess['user_id'] = test_user.id
+            sess['username'] = test_user.username
+            sess['role'] = test_user.role
+        
         plant_data = {
             "name": "Testicus planticus",
             "common_name": "Test Plant",

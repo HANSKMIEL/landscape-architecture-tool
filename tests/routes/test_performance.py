@@ -475,6 +475,20 @@ class TestPerformanceRoutesEdgeCases(DatabaseTestMixin):
 
     def test_post_requests_to_get_endpoints(self, client, app_context):
         """Test POST requests to GET-only endpoints"""
+                # Create a test user in the database
+        from src.models.user import User, db
+        
+        test_user = User(username='test_user', email='test@example.com', role='admin')
+        test_user.set_password('password')
+        db.session.add(test_user)
+        db.session.commit()
+        
+        # Set up authentication in session
+        with client.session_transaction() as sess:
+            sess['user_id'] = test_user.id
+            sess['username'] = test_user.username
+            sess['role'] = test_user.role
+        
         get_endpoints = [
             "/api/performance/stats",
             "/api/performance/cache/stats",
@@ -489,6 +503,20 @@ class TestPerformanceRoutesEdgeCases(DatabaseTestMixin):
 
     def test_get_requests_to_post_endpoints(self, client, app_context):
         """Test GET requests to POST-only endpoints"""
+                # Create a test user in the database
+        from src.models.user import User, db
+        
+        test_user = User(username='test_user', email='test@example.com', role='admin')
+        test_user.set_password('password')
+        db.session.add(test_user)
+        db.session.commit()
+        
+        # Set up authentication in session
+        with client.session_transaction() as sess:
+            sess['user_id'] = test_user.id
+            sess['username'] = test_user.username
+            sess['role'] = test_user.role
+        
         post_endpoints = [
             "/api/performance/cache/clear",
             "/api/performance/cache/invalidate",

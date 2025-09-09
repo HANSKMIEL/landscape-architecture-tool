@@ -297,6 +297,20 @@ class TestIssueDeduplicationWorkflow:
 
     def test_workflow_integration_mock(self):
         """Test integration with workflow using mocks."""
+                # Create a test user in the database
+        from src.models.user import User, db
+        
+        test_user = User(username='test_user', email='test@example.com', role='admin')
+        test_user.set_password('password')
+        db.session.add(test_user)
+        db.session.commit()
+        
+        # Set up authentication in session
+        with client.session_transaction() as sess:
+            sess['user_id'] = test_user.id
+            sess['username'] = test_user.username
+            sess['role'] = test_user.role
+        
         fingerprinter = IssueFingerprinter()
 
         # Mock GitHub API responses

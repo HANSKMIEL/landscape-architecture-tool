@@ -142,6 +142,20 @@ class TestPlantRecommendationsAPI:
 
     def test_plant_recommendations_endpoint(self, client, app_context):
         """Test basic plant recommendations functionality"""
+        # Create a test user in the database
+        from src.models.user import User, db
+        
+        test_user = User(username='test_user', email='test@example.com', role='admin')
+        test_user.set_password('password')
+        db.session.add(test_user)
+        db.session.commit()
+        
+        # Set up authentication in session
+        with client.session_transaction() as sess:
+            sess['user_id'] = test_user.id
+            sess['username'] = test_user.username
+            sess['role'] = test_user.role
+        
         request_data = {"hardiness_zone": "5-9", "sun_exposure": "Full Sun", "max_results": 3, "min_score": 0.3}
 
         response = client.post(
@@ -169,6 +183,20 @@ class TestPlantRecommendationsAPI:
 
     def test_plant_recommendations_error_handling(self, client, app_context):
         """Test error handling for plant recommendations"""
+                # Create a test user in the database
+        from src.models.user import User, db
+        
+        test_user = User(username='test_user', email='test@example.com', role='admin')
+        test_user.set_password('password')
+        db.session.add(test_user)
+        db.session.commit()
+        
+        # Set up authentication in session
+        with client.session_transaction() as sess:
+            sess['user_id'] = test_user.id
+            sess['username'] = test_user.username
+            sess['role'] = test_user.role
+        
         # Test empty request body
         response = client.post("/api/plant-recommendations", data="", content_type="application/json")
         assert response.status_code == 400
@@ -215,6 +243,20 @@ class TestProjectPlantsAPI:
 
     def test_add_plant_to_project(self, client, app_context, sample_project, sample_plant):
         """Test adding a plant to a project"""
+                # Create a test user in the database
+        from src.models.user import User, db
+        
+        test_user = User(username='test_user', email='test@example.com', role='admin')
+        test_user.set_password('password')
+        db.session.add(test_user)
+        db.session.commit()
+        
+        # Set up authentication in session
+        with client.session_transaction() as sess:
+            sess['user_id'] = test_user.id
+            sess['username'] = test_user.username
+            sess['role'] = test_user.role
+        
         request_data = {"plant_id": sample_plant.id, "quantity": 5, "unit_cost": 25.50, "notes": "Test plant addition"}
 
         response = client.post(
@@ -242,6 +284,20 @@ class TestProjectPlantsAPI:
 
     def test_get_project_plants(self, client, app_context, sample_project):
         """Test getting plants for a project"""
+                # Create a test user in the database
+        from src.models.user import User, db
+        
+        test_user = User(username='test_user', email='test@example.com', role='admin')
+        test_user.set_password('password')
+        db.session.add(test_user)
+        db.session.commit()
+        
+        # Set up authentication in session
+        with client.session_transaction() as sess:
+            sess['user_id'] = test_user.id
+            sess['username'] = test_user.username
+            sess['role'] = test_user.role
+        
         response = client.get(f"/api/projects/{sample_project.id}/plants")
 
         assert response.status_code == 200
@@ -250,6 +306,20 @@ class TestProjectPlantsAPI:
 
     def test_update_project_plant(self, client, app_context, sample_project, sample_plant):
         """Test updating project plant details"""
+                # Create a test user in the database
+        from src.models.user import User, db
+        
+        test_user = User(username='test_user', email='test@example.com', role='admin')
+        test_user.set_password('password')
+        db.session.add(test_user)
+        db.session.commit()
+        
+        # Set up authentication in session
+        with client.session_transaction() as sess:
+            sess['user_id'] = test_user.id
+            sess['username'] = test_user.username
+            sess['role'] = test_user.role
+        
         # First add a plant
         add_data = {"plant_id": sample_plant.id, "quantity": 3}
         client.post(
@@ -270,6 +340,20 @@ class TestProjectPlantsAPI:
 
     def test_project_cost_analysis(self, client, app_context, sample_project):
         """Test project cost analysis endpoint"""
+                # Create a test user in the database
+        from src.models.user import User, db
+        
+        test_user = User(username='test_user', email='test@example.com', role='admin')
+        test_user.set_password('password')
+        db.session.add(test_user)
+        db.session.commit()
+        
+        # Set up authentication in session
+        with client.session_transaction() as sess:
+            sess['user_id'] = test_user.id
+            sess['username'] = test_user.username
+            sess['role'] = test_user.role
+        
         response = client.get(f"/api/projects/{sample_project.id}/cost-analysis")
 
         assert response.status_code == 200
@@ -280,6 +364,20 @@ class TestProjectPlantsAPI:
 
     def test_plant_order_list(self, client, app_context, sample_project):
         """Test plant order list generation"""
+                # Create a test user in the database
+        from src.models.user import User, db
+        
+        test_user = User(username='test_user', email='test@example.com', role='admin')
+        test_user.set_password('password')
+        db.session.add(test_user)
+        db.session.commit()
+        
+        # Set up authentication in session
+        with client.session_transaction() as sess:
+            sess['user_id'] = test_user.id
+            sess['username'] = test_user.username
+            sess['role'] = test_user.role
+        
         response = client.get(f"/api/projects/{sample_project.id}/plant-order-list")
 
         assert response.status_code == 200
@@ -288,6 +386,20 @@ class TestProjectPlantsAPI:
 
     def test_batch_add_plants(self, client, app_context, sample_project, sample_plant):
         """Test adding multiple plants at once"""
+                # Create a test user in the database
+        from src.models.user import User, db
+        
+        test_user = User(username='test_user', email='test@example.com', role='admin')
+        test_user.set_password('password')
+        db.session.add(test_user)
+        db.session.commit()
+        
+        # Set up authentication in session
+        with client.session_transaction() as sess:
+            sess['user_id'] = test_user.id
+            sess['username'] = test_user.username
+            sess['role'] = test_user.role
+        
         request_data = {
             "plants": [
                 {"plant_id": sample_plant.id, "quantity": 2},
@@ -312,6 +424,20 @@ class TestProjectPlantsAPI:
 
     def test_project_plants_error_handling(self, client, app_context):
         """Test error handling for invalid project/plant IDs"""
+                # Create a test user in the database
+        from src.models.user import User, db
+        
+        test_user = User(username='test_user', email='test@example.com', role='admin')
+        test_user.set_password('password')
+        db.session.add(test_user)
+        db.session.commit()
+        
+        # Set up authentication in session
+        with client.session_transaction() as sess:
+            sess['user_id'] = test_user.id
+            sess['username'] = test_user.username
+            sess['role'] = test_user.role
+        
         # Test invalid project ID
         response = client.get("/api/projects/999/plants")
         assert response.status_code == 400
@@ -327,6 +453,20 @@ class TestReportsAPI:
 
     def test_business_summary_json(self, client, app_context):
         """Test business summary report in JSON format"""
+                # Create a test user in the database
+        from src.models.user import User, db
+        
+        test_user = User(username='test_user', email='test@example.com', role='admin')
+        test_user.set_password('password')
+        db.session.add(test_user)
+        db.session.commit()
+        
+        # Set up authentication in session
+        with client.session_transaction() as sess:
+            sess['user_id'] = test_user.id
+            sess['username'] = test_user.username
+            sess['role'] = test_user.role
+        
         response = client.get("/api/reports/business-summary")
 
         assert response.status_code == 200
@@ -348,6 +488,20 @@ class TestReportsAPI:
 
     def test_business_summary_with_date_filter(self, client, app_context):
         """Test business summary with date filtering"""
+                # Create a test user in the database
+        from src.models.user import User, db
+        
+        test_user = User(username='test_user', email='test@example.com', role='admin')
+        test_user.set_password('password')
+        db.session.add(test_user)
+        db.session.commit()
+        
+        # Set up authentication in session
+        with client.session_transaction() as sess:
+            sess['user_id'] = test_user.id
+            sess['username'] = test_user.username
+            sess['role'] = test_user.role
+        
         response = client.get(
             "/api/reports/business-summary" "?start_date=2025-01-01T00:00:00" "&end_date=2025-12-31T23:59:59"
         )
@@ -359,6 +513,20 @@ class TestReportsAPI:
 
     def test_project_report_json(self, client, app_context, sample_project):
         """Test project report in JSON format"""
+                # Create a test user in the database
+        from src.models.user import User, db
+        
+        test_user = User(username='test_user', email='test@example.com', role='admin')
+        test_user.set_password('password')
+        db.session.add(test_user)
+        db.session.commit()
+        
+        # Set up authentication in session
+        with client.session_transaction() as sess:
+            sess['user_id'] = test_user.id
+            sess['username'] = test_user.username
+            sess['role'] = test_user.role
+        
         response = client.get(f"/api/reports/project/{sample_project.id}")
 
         assert response.status_code == 200
@@ -381,11 +549,39 @@ class TestReportsAPI:
 
     def test_project_report_not_found(self, client, app_context):
         """Test project report with invalid project ID"""
+                # Create a test user in the database
+        from src.models.user import User, db
+        
+        test_user = User(username='test_user', email='test@example.com', role='admin')
+        test_user.set_password('password')
+        db.session.add(test_user)
+        db.session.commit()
+        
+        # Set up authentication in session
+        with client.session_transaction() as sess:
+            sess['user_id'] = test_user.id
+            sess['username'] = test_user.username
+            sess['role'] = test_user.role
+        
         response = client.get("/api/reports/project/999")
         assert response.status_code == 404
 
     def test_plant_usage_report(self, client, app_context):
         """Test plant usage statistics report"""
+                # Create a test user in the database
+        from src.models.user import User, db
+        
+        test_user = User(username='test_user', email='test@example.com', role='admin')
+        test_user.set_password('password')
+        db.session.add(test_user)
+        db.session.commit()
+        
+        # Set up authentication in session
+        with client.session_transaction() as sess:
+            sess['user_id'] = test_user.id
+            sess['username'] = test_user.username
+            sess['role'] = test_user.role
+        
         response = client.get("/api/reports/plant-usage")
 
         assert response.status_code == 200
@@ -404,6 +600,20 @@ class TestReportsAPI:
 
     def test_supplier_performance_report(self, client, app_context):
         """Test supplier performance report"""
+                # Create a test user in the database
+        from src.models.user import User, db
+        
+        test_user = User(username='test_user', email='test@example.com', role='admin')
+        test_user.set_password('password')
+        db.session.add(test_user)
+        db.session.commit()
+        
+        # Set up authentication in session
+        with client.session_transaction() as sess:
+            sess['user_id'] = test_user.id
+            sess['username'] = test_user.username
+            sess['role'] = test_user.role
+        
         response = client.get("/api/reports/supplier-performance")
 
         assert response.status_code == 200
@@ -420,6 +630,20 @@ class TestReportsAPI:
 
     def test_reports_error_handling(self, client, app_context):
         """Test error handling for reports"""
+                # Create a test user in the database
+        from src.models.user import User, db
+        
+        test_user = User(username='test_user', email='test@example.com', role='admin')
+        test_user.set_password('password')
+        db.session.add(test_user)
+        db.session.commit()
+        
+        # Set up authentication in session
+        with client.session_transaction() as sess:
+            sess['user_id'] = test_user.id
+            sess['username'] = test_user.username
+            sess['role'] = test_user.role
+        
         # Test invalid date format
         response = client.get("/api/reports/business-summary?start_date=invalid-date")
         assert response.status_code == 500
@@ -452,6 +676,20 @@ class TestAPIIntegrationScenarios:
 
     def test_project_plant_management_workflow(self, client, app_context, sample_project, sample_plant):
         """Test complete project plant management workflow"""
+                # Create a test user in the database
+        from src.models.user import User, db
+        
+        test_user = User(username='test_user', email='test@example.com', role='admin')
+        test_user.set_password('password')
+        db.session.add(test_user)
+        db.session.commit()
+        
+        # Set up authentication in session
+        with client.session_transaction() as sess:
+            sess['user_id'] = test_user.id
+            sess['username'] = test_user.username
+            sess['role'] = test_user.role
+        
         # 1. Add plant to project
         add_data = {"plant_id": sample_plant.id, "quantity": 5}
         response = client.post(
@@ -484,6 +722,20 @@ class TestAPIIntegrationScenarios:
 
     def test_reporting_workflow(self, client, app_context, sample_project):
         """Test complete reporting workflow"""
+                # Create a test user in the database
+        from src.models.user import User, db
+        
+        test_user = User(username='test_user', email='test@example.com', role='admin')
+        test_user.set_password('password')
+        db.session.add(test_user)
+        db.session.commit()
+        
+        # Set up authentication in session
+        with client.session_transaction() as sess:
+            sess['user_id'] = test_user.id
+            sess['username'] = test_user.username
+            sess['role'] = test_user.role
+        
         # 1. Business summary
         response = client.get("/api/reports/business-summary")
         assert response.status_code == 200
@@ -521,6 +773,20 @@ class TestAPIAuthenticationAndAuthorization:
 
     def test_post_endpoints_validation(self, client, app_context):
         """Test POST endpoints have proper validation"""
+                # Create a test user in the database
+        from src.models.user import User, db
+        
+        test_user = User(username='test_user', email='test@example.com', role='admin')
+        test_user.set_password('password')
+        db.session.add(test_user)
+        db.session.commit()
+        
+        # Set up authentication in session
+        with client.session_transaction() as sess:
+            sess['user_id'] = test_user.id
+            sess['username'] = test_user.username
+            sess['role'] = test_user.role
+        
         # Test plant recommendations requires valid JSON
         response = client.post("/api/plant-recommendations")
         assert response.status_code == 400

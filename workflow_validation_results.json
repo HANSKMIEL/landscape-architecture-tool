@@ -1,0 +1,204 @@
+{
+  "total_files": 22,
+  "valid_syntax": 19,
+  "valid_structure": 0,
+  "files": {
+    "automated-validation.yml": {
+      "syntax_valid": true,
+      "structure_issues": [
+        "Missing 'on' trigger configuration"
+      ],
+      "recommendations": [
+        "Consider adding timeout-minutes to prevent hanging jobs",
+        "Environment variables detected - verify they are properly documented"
+      ]
+    },
+    "ci.yml": {
+      "syntax_valid": true,
+      "structure_issues": [
+        "Missing 'on' trigger configuration"
+      ],
+      "recommendations": [
+        "Environment variables detected - verify they are properly documented"
+      ]
+    },
+    "codeql.yml": {
+      "syntax_valid": true,
+      "structure_issues": [
+        "Missing 'on' trigger configuration"
+      ],
+      "recommendations": [
+        "Consider adding timeout-minutes to prevent hanging jobs"
+      ]
+    },
+    "daughter-space-uiux.yml": {
+      "syntax_valid": true,
+      "structure_issues": [
+        "Missing 'on' trigger configuration"
+      ],
+      "recommendations": [
+        "Consider adding timeout-minutes to prevent hanging jobs",
+        "Environment variables detected - verify they are properly documented"
+      ]
+    },
+    "enhanced-deployment.yml": {
+      "syntax_valid": false,
+      "structure_issues": [],
+      "recommendations": [],
+      "syntax_error": "while scanning a simple key\n  in \"/home/ubuntu/landscape-architecture-tool/.github/workflows/enhanced-deployment.yml\", line 264, column 1\ncould not find expected ':'\n  in \"/home/ubuntu/landscape-architecture-tool/.github/workflows/enhanced-deployment.yml\", line 265, column 1"
+    },
+    "integrationmanager-space.yml": {
+      "syntax_valid": true,
+      "structure_issues": [
+        "Missing 'on' trigger configuration"
+      ],
+      "recommendations": [
+        "Consider adding timeout-minutes to prevent hanging jobs",
+        "Secrets detected - ensure they are properly configured in repository settings",
+        "Environment variables detected - verify they are properly documented"
+      ]
+    },
+    "makefile-test.yml": {
+      "syntax_valid": true,
+      "structure_issues": [
+        "Missing 'on' trigger configuration"
+      ],
+      "recommendations": [
+        "Consider adding timeout-minutes to prevent hanging jobs",
+        "Environment variables detected - verify they are properly documented"
+      ]
+    },
+    "motherspace-orchestrator.yml": {
+      "syntax_valid": true,
+      "structure_issues": [
+        "Missing 'on' trigger configuration"
+      ],
+      "recommendations": [
+        "Consider adding timeout-minutes to prevent hanging jobs",
+        "Environment variables detected - verify they are properly documented"
+      ]
+    },
+    "nightly-maintenance.yml": {
+      "syntax_valid": true,
+      "structure_issues": [
+        "Missing 'on' trigger configuration"
+      ],
+      "recommendations": [
+        "Environment variables detected - verify they are properly documented"
+      ]
+    },
+    "post-merge.yml": {
+      "syntax_valid": true,
+      "structure_issues": [
+        "Missing 'on' trigger configuration"
+      ],
+      "recommendations": []
+    },
+    "production-deployment.yml": {
+      "syntax_valid": true,
+      "structure_issues": [
+        "Missing 'on' trigger configuration"
+      ],
+      "recommendations": [
+        "Consider adding timeout-minutes to prevent hanging jobs",
+        "Secrets detected - ensure they are properly configured in repository settings",
+        "Environment variables detected - verify they are properly documented"
+      ]
+    },
+    "space-management.yml": {
+      "syntax_valid": true,
+      "structure_issues": [
+        "Missing 'on' trigger configuration"
+      ],
+      "recommendations": [
+        "Consider adding timeout-minutes to prevent hanging jobs"
+      ]
+    },
+    "stale.yml": {
+      "syntax_valid": true,
+      "structure_issues": [
+        "Missing 'on' trigger configuration"
+      ],
+      "recommendations": [
+        "Consider adding timeout-minutes to prevent hanging jobs",
+        "Secrets detected - ensure they are properly configured in repository settings"
+      ]
+    },
+    "summary.yml": {
+      "syntax_valid": true,
+      "structure_issues": [
+        "Missing 'on' trigger configuration"
+      ],
+      "recommendations": [
+        "Consider adding timeout-minutes to prevent hanging jobs",
+        "Secrets detected - ensure they are properly configured in repository settings",
+        "Environment variables detected - verify they are properly documented"
+      ]
+    },
+    "test-failure-automation.yml": {
+      "syntax_valid": true,
+      "structure_issues": [
+        "Missing 'on' trigger configuration"
+      ],
+      "recommendations": [
+        "Consider adding timeout-minutes to prevent hanging jobs"
+      ]
+    },
+    "verify-issue-closed.yml": {
+      "syntax_valid": true,
+      "structure_issues": [
+        "Missing 'on' trigger configuration"
+      ],
+      "recommendations": []
+    },
+    "copilot-analysis-monitor.yml": {
+      "syntax_valid": true,
+      "structure_issues": [
+        "Missing 'on' trigger configuration"
+      ],
+      "recommendations": [
+        "Consider adding timeout-minutes to prevent hanging jobs"
+      ]
+    },
+    "copilot-dependency-analysis.yml": {
+      "syntax_valid": true,
+      "structure_issues": [
+        "Missing 'on' trigger configuration"
+      ],
+      "recommendations": [
+        "Consider adding timeout-minutes to prevent hanging jobs"
+      ]
+    },
+    "dependabot-auto-merge.yml": {
+      "syntax_valid": true,
+      "structure_issues": [
+        "Missing 'on' trigger configuration"
+      ],
+      "recommendations": [
+        "Consider adding timeout-minutes to prevent hanging jobs",
+        "Environment variables detected - verify they are properly documented"
+      ]
+    },
+    "ci-enhanced.yml": {
+      "syntax_valid": true,
+      "structure_issues": [
+        "Missing 'on' trigger configuration"
+      ],
+      "recommendations": [
+        "Environment variables detected - verify they are properly documented"
+      ]
+    },
+    "issue-triage.yml": {
+      "syntax_valid": false,
+      "structure_issues": [],
+      "recommendations": [],
+      "syntax_error": "while scanning a simple key\n  in \"/home/ubuntu/landscape-architecture-tool/.github/workflows/issue-triage.yml\", line 108, column 1\ncould not find expected ':'\n  in \"/home/ubuntu/landscape-architecture-tool/.github/workflows/issue-triage.yml\", line 110, column 1"
+    },
+    "pr-automation.yml": {
+      "syntax_valid": false,
+      "structure_issues": [],
+      "recommendations": [],
+      "syntax_error": "while scanning a simple key\n  in \"/home/ubuntu/landscape-architecture-tool/.github/workflows/pr-automation.yml\", line 104, column 1\ncould not find expected ':'\n  in \"/home/ubuntu/landscape-architecture-tool/.github/workflows/pr-automation.yml\", line 106, column 1"
+    }
+  }
+}

@@ -52,6 +52,20 @@ class TestDevLogManager:
 
     def test_create_log_header(self, log_manager):
         """Test log header creation"""
+                # Create a test user in the database
+        from src.models.user import User, db
+        
+        test_user = User(username='test_user', email='test@example.com', role='admin')
+        test_user.set_password('password')
+        db.session.add(test_user)
+        db.session.commit()
+        
+        # Set up authentication in session
+        with client.session_transaction() as sess:
+            sess['user_id'] = test_user.id
+            sess['username'] = test_user.username
+            sess['role'] = test_user.role
+        
         header = log_manager.create_log_header()
 
         assert "Development Log - Landscape Architecture Tool" in header
@@ -95,6 +109,20 @@ class TestDevLogManager:
 
     def test_add_entry_creates_new_file(self, log_manager):
         """Test that adding an entry creates a new log file if it doesn't exist"""
+                # Create a test user in the database
+        from src.models.user import User, db
+        
+        test_user = User(username='test_user', email='test@example.com', role='admin')
+        test_user.set_password('password')
+        db.session.add(test_user)
+        db.session.commit()
+        
+        # Set up authentication in session
+        with client.session_transaction() as sess:
+            sess['user_id'] = test_user.id
+            sess['username'] = test_user.username
+            sess['role'] = test_user.role
+        
         assert not log_manager.log_file.exists()
 
         success = log_manager.add_entry("feature_added", "Initial feature", "developer")
@@ -113,6 +141,20 @@ class TestDevLogManager:
 
     def test_add_entry_appends_to_existing_file(self, log_manager):
         """Test that adding entries to existing file works correctly"""
+                # Create a test user in the database
+        from src.models.user import User, db
+        
+        test_user = User(username='test_user', email='test@example.com', role='admin')
+        test_user.set_password('password')
+        db.session.add(test_user)
+        db.session.commit()
+        
+        # Set up authentication in session
+        with client.session_transaction() as sess:
+            sess['user_id'] = test_user.id
+            sess['username'] = test_user.username
+            sess['role'] = test_user.role
+        
         # Create initial entry
         log_manager.add_entry("feature_added", "First feature", "dev1")
 
@@ -133,6 +175,20 @@ class TestDevLogManager:
 
     def test_add_entry_invalid_action(self, log_manager):
         """Test that invalid actions are handled gracefully"""
+                # Create a test user in the database
+        from src.models.user import User, db
+        
+        test_user = User(username='test_user', email='test@example.com', role='admin')
+        test_user.set_password('password')
+        db.session.add(test_user)
+        db.session.commit()
+        
+        # Set up authentication in session
+        with client.session_transaction() as sess:
+            sess['user_id'] = test_user.id
+            sess['username'] = test_user.username
+            sess['role'] = test_user.role
+        
         with patch("builtins.print") as mock_print:
             success = log_manager.add_entry("invalid_action", "Test description", "test_author")
 

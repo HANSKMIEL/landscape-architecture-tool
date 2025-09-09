@@ -103,6 +103,20 @@ class TestSupplierService(DatabaseTestMixin):
 
     def test_get_supplier_by_id_success(self, app_context, sample_supplier):
         """Test getting supplier by ID successfully"""
+                # Create a test user in the database
+        from src.models.user import User, db
+        
+        test_user = User(username='test_user', email='test@example.com', role='admin')
+        test_user.set_password('password')
+        db.session.add(test_user)
+        db.session.commit()
+        
+        # Set up authentication in session
+        with client.session_transaction() as sess:
+            sess['user_id'] = test_user.id
+            sess['username'] = test_user.username
+            sess['role'] = test_user.role
+        
         supplier = SupplierService.get_supplier_by_id(sample_supplier.id)
         assert supplier is not None
         assert supplier.id == sample_supplier.id
@@ -110,11 +124,39 @@ class TestSupplierService(DatabaseTestMixin):
 
     def test_get_supplier_by_id_not_found(self, app_context):
         """Test getting supplier by non-existent ID"""
+                # Create a test user in the database
+        from src.models.user import User, db
+        
+        test_user = User(username='test_user', email='test@example.com', role='admin')
+        test_user.set_password('password')
+        db.session.add(test_user)
+        db.session.commit()
+        
+        # Set up authentication in session
+        with client.session_transaction() as sess:
+            sess['user_id'] = test_user.id
+            sess['username'] = test_user.username
+            sess['role'] = test_user.role
+        
         supplier = SupplierService.get_supplier_by_id(999)
         assert supplier is None
 
     def test_create_supplier_success(self, app_context):
         """Test creating a supplier successfully"""
+                # Create a test user in the database
+        from src.models.user import User, db
+        
+        test_user = User(username='test_user', email='test@example.com', role='admin')
+        test_user.set_password('password')
+        db.session.add(test_user)
+        db.session.commit()
+        
+        # Set up authentication in session
+        with client.session_transaction() as sess:
+            sess['user_id'] = test_user.id
+            sess['username'] = test_user.username
+            sess['role'] = test_user.role
+        
         supplier_data = {
             "name": "Test Supplier",
             "contact_person": "John Doe",
@@ -140,6 +182,20 @@ class TestSupplierService(DatabaseTestMixin):
 
     def test_create_supplier_minimal_data(self, app_context):
         """Test creating supplier with minimal required data"""
+                # Create a test user in the database
+        from src.models.user import User, db
+        
+        test_user = User(username='test_user', email='test@example.com', role='admin')
+        test_user.set_password('password')
+        db.session.add(test_user)
+        db.session.commit()
+        
+        # Set up authentication in session
+        with client.session_transaction() as sess:
+            sess['user_id'] = test_user.id
+            sess['username'] = test_user.username
+            sess['role'] = test_user.role
+        
         supplier_data = {"name": "Minimal Supplier"}
 
         supplier = SupplierService.create_supplier(supplier_data)
@@ -149,6 +205,20 @@ class TestSupplierService(DatabaseTestMixin):
 
     def test_update_supplier_success(self, app_context, sample_supplier):
         """Test updating a supplier successfully"""
+                # Create a test user in the database
+        from src.models.user import User, db
+        
+        test_user = User(username='test_user', email='test@example.com', role='admin')
+        test_user.set_password('password')
+        db.session.add(test_user)
+        db.session.commit()
+        
+        # Set up authentication in session
+        with client.session_transaction() as sess:
+            sess['user_id'] = test_user.id
+            sess['username'] = test_user.username
+            sess['role'] = test_user.role
+        
         update_data = {
             "name": "Updated Supplier Name",
             "email": "updated@supplier.com",
@@ -165,12 +235,40 @@ class TestSupplierService(DatabaseTestMixin):
 
     def test_update_supplier_not_found(self, app_context):
         """Test updating non-existent supplier"""
+                # Create a test user in the database
+        from src.models.user import User, db
+        
+        test_user = User(username='test_user', email='test@example.com', role='admin')
+        test_user.set_password('password')
+        db.session.add(test_user)
+        db.session.commit()
+        
+        # Set up authentication in session
+        with client.session_transaction() as sess:
+            sess['user_id'] = test_user.id
+            sess['username'] = test_user.username
+            sess['role'] = test_user.role
+        
         update_data = {"name": "Updated Name"}
         result = SupplierService.update_supplier(999, update_data)
         assert result is None
 
     def test_delete_supplier_success(self, app_context, sample_supplier):
         """Test deleting a supplier successfully"""
+                # Create a test user in the database
+        from src.models.user import User, db
+        
+        test_user = User(username='test_user', email='test@example.com', role='admin')
+        test_user.set_password('password')
+        db.session.add(test_user)
+        db.session.commit()
+        
+        # Set up authentication in session
+        with client.session_transaction() as sess:
+            sess['user_id'] = test_user.id
+            sess['username'] = test_user.username
+            sess['role'] = test_user.role
+        
         supplier_id = sample_supplier.id
 
         result = SupplierService.delete_supplier(supplier_id)
@@ -184,6 +282,20 @@ class TestSupplierService(DatabaseTestMixin):
 
     def test_delete_supplier_with_products(self, app_context, sample_supplier, product_factory):
         """Test deleting supplier with products should fail"""
+                # Create a test user in the database
+        from src.models.user import User, db
+        
+        test_user = User(username='test_user', email='test@example.com', role='admin')
+        test_user.set_password('password')
+        db.session.add(test_user)
+        db.session.commit()
+        
+        # Set up authentication in session
+        with client.session_transaction() as sess:
+            sess['user_id'] = test_user.id
+            sess['username'] = test_user.username
+            sess['role'] = test_user.role
+        
         # Add product to supplier
         product_factory(supplier=sample_supplier)
 
@@ -195,6 +307,20 @@ class TestSupplierService(DatabaseTestMixin):
 
     def test_delete_supplier_with_plants(self, app_context, sample_supplier, plant_factory):
         """Test deleting supplier with plants should fail"""
+                # Create a test user in the database
+        from src.models.user import User, db
+        
+        test_user = User(username='test_user', email='test@example.com', role='admin')
+        test_user.set_password('password')
+        db.session.add(test_user)
+        db.session.commit()
+        
+        # Set up authentication in session
+        with client.session_transaction() as sess:
+            sess['user_id'] = test_user.id
+            sess['username'] = test_user.username
+            sess['role'] = test_user.role
+        
         # Add plant to supplier
         plant_factory(supplier=sample_supplier)
 
@@ -206,11 +332,39 @@ class TestSupplierService(DatabaseTestMixin):
 
     def test_delete_supplier_not_found(self, app_context):
         """Test deleting non-existent supplier"""
+                # Create a test user in the database
+        from src.models.user import User, db
+        
+        test_user = User(username='test_user', email='test@example.com', role='admin')
+        test_user.set_password('password')
+        db.session.add(test_user)
+        db.session.commit()
+        
+        # Set up authentication in session
+        with client.session_transaction() as sess:
+            sess['user_id'] = test_user.id
+            sess['username'] = test_user.username
+            sess['role'] = test_user.role
+        
         result = SupplierService.delete_supplier(999)
         assert result is False
 
     def test_get_supplier_products(self, app_context, sample_supplier, product_factory):
         """Test getting products for a supplier"""
+                # Create a test user in the database
+        from src.models.user import User, db
+        
+        test_user = User(username='test_user', email='test@example.com', role='admin')
+        test_user.set_password('password')
+        db.session.add(test_user)
+        db.session.commit()
+        
+        # Set up authentication in session
+        with client.session_transaction() as sess:
+            sess['user_id'] = test_user.id
+            sess['username'] = test_user.username
+            sess['role'] = test_user.role
+        
         product_factory(supplier=sample_supplier, name="Product 1")
         product_factory(supplier=sample_supplier, name="Product 2")
         other_supplier = product_factory().supplier
@@ -226,6 +380,20 @@ class TestSupplierService(DatabaseTestMixin):
 
     def test_get_supplier_plants(self, app_context, sample_supplier, plant_factory):
         """Test getting plants for a supplier"""
+                # Create a test user in the database
+        from src.models.user import User, db
+        
+        test_user = User(username='test_user', email='test@example.com', role='admin')
+        test_user.set_password('password')
+        db.session.add(test_user)
+        db.session.commit()
+        
+        # Set up authentication in session
+        with client.session_transaction() as sess:
+            sess['user_id'] = test_user.id
+            sess['username'] = test_user.username
+            sess['role'] = test_user.role
+        
         plant1 = plant_factory(supplier=sample_supplier, name="Plant 1")  # noqa: F841
         plant2 = plant_factory(supplier=sample_supplier, name="Plant 2")  # noqa: F841
         other_supplier = plant_factory().supplier
@@ -241,6 +409,20 @@ class TestSupplierService(DatabaseTestMixin):
 
     def test_get_supplier_statistics(self, app_context, sample_supplier, product_factory, plant_factory):
         """Test getting statistical information for a supplier"""
+                # Create a test user in the database
+        from src.models.user import User, db
+        
+        test_user = User(username='test_user', email='test@example.com', role='admin')
+        test_user.set_password('password')
+        db.session.add(test_user)
+        db.session.commit()
+        
+        # Set up authentication in session
+        with client.session_transaction() as sess:
+            sess['user_id'] = test_user.id
+            sess['username'] = test_user.username
+            sess['role'] = test_user.role
+        
         # Create products and plants with different prices and quantities
         product_factory(supplier=sample_supplier, price=10.0, stock_quantity=5)
         product_factory(supplier=sample_supplier, price=20.0, stock_quantity=3)
@@ -259,6 +441,20 @@ class TestSupplierService(DatabaseTestMixin):
 
     def test_get_supplier_statistics_no_items(self, app_context, sample_supplier):
         """Test getting statistics for supplier with no products/plants"""
+                # Create a test user in the database
+        from src.models.user import User, db
+        
+        test_user = User(username='test_user', email='test@example.com', role='admin')
+        test_user.set_password('password')
+        db.session.add(test_user)
+        db.session.commit()
+        
+        # Set up authentication in session
+        with client.session_transaction() as sess:
+            sess['user_id'] = test_user.id
+            sess['username'] = test_user.username
+            sess['role'] = test_user.role
+        
         stats = SupplierService.get_supplier_statistics(sample_supplier.id)
 
         assert stats["total_products"] == 0
@@ -268,6 +464,20 @@ class TestSupplierService(DatabaseTestMixin):
 
     def test_get_supplier_statistics_not_found(self, app_context):
         """Test getting statistics for non-existent supplier"""
+                # Create a test user in the database
+        from src.models.user import User, db
+        
+        test_user = User(username='test_user', email='test@example.com', role='admin')
+        test_user.set_password('password')
+        db.session.add(test_user)
+        db.session.commit()
+        
+        # Set up authentication in session
+        with client.session_transaction() as sess:
+            sess['user_id'] = test_user.id
+            sess['username'] = test_user.username
+            sess['role'] = test_user.role
+        
         stats = SupplierService.get_supplier_statistics(999)
         assert stats == {}
 
@@ -318,6 +528,20 @@ class TestSupplierService(DatabaseTestMixin):
 
     def test_get_supplier_specializations(self, app_context, supplier_factory):
         """Test getting unique supplier specializations"""
+                # Create a test user in the database
+        from src.models.user import User, db
+        
+        test_user = User(username='test_user', email='test@example.com', role='admin')
+        test_user.set_password('password')
+        db.session.add(test_user)
+        db.session.commit()
+        
+        # Set up authentication in session
+        with client.session_transaction() as sess:
+            sess['user_id'] = test_user.id
+            sess['username'] = test_user.username
+            sess['role'] = test_user.role
+        
         supplier_factory(specialization="Native Plants")
         supplier_factory(specialization="Garden Tools")
         supplier_factory(specialization="Native Plants")  # Duplicate
@@ -332,6 +556,20 @@ class TestSupplierService(DatabaseTestMixin):
 
     def test_validate_supplier_data_success(self, app_context):
         """Test validating correct supplier data"""
+                # Create a test user in the database
+        from src.models.user import User, db
+        
+        test_user = User(username='test_user', email='test@example.com', role='admin')
+        test_user.set_password('password')
+        db.session.add(test_user)
+        db.session.commit()
+        
+        # Set up authentication in session
+        with client.session_transaction() as sess:
+            sess['user_id'] = test_user.id
+            sess['username'] = test_user.username
+            sess['role'] = test_user.role
+        
         valid_data = {
             "name": "Valid Supplier",
             "email": "valid@supplier.com",
@@ -344,6 +582,20 @@ class TestSupplierService(DatabaseTestMixin):
 
     def test_validate_supplier_data_missing_required(self, app_context):
         """Test validating supplier data with missing required fields"""
+                # Create a test user in the database
+        from src.models.user import User, db
+        
+        test_user = User(username='test_user', email='test@example.com', role='admin')
+        test_user.set_password('password')
+        db.session.add(test_user)
+        db.session.commit()
+        
+        # Set up authentication in session
+        with client.session_transaction() as sess:
+            sess['user_id'] = test_user.id
+            sess['username'] = test_user.username
+            sess['role'] = test_user.role
+        
         invalid_data = {}
 
         errors = SupplierService.validate_supplier_data(invalid_data)
@@ -351,6 +603,20 @@ class TestSupplierService(DatabaseTestMixin):
 
     def test_validate_supplier_data_invalid_email(self, app_context):
         """Test validating supplier data with invalid email"""
+                # Create a test user in the database
+        from src.models.user import User, db
+        
+        test_user = User(username='test_user', email='test@example.com', role='admin')
+        test_user.set_password('password')
+        db.session.add(test_user)
+        db.session.commit()
+        
+        # Set up authentication in session
+        with client.session_transaction() as sess:
+            sess['user_id'] = test_user.id
+            sess['username'] = test_user.username
+            sess['role'] = test_user.role
+        
         invalid_data = {"name": "Test Supplier", "email": "invalid-email-format"}
 
         errors = SupplierService.validate_supplier_data(invalid_data)
@@ -358,6 +624,20 @@ class TestSupplierService(DatabaseTestMixin):
 
     def test_validate_supplier_data_duplicate_email(self, app_context, sample_supplier):
         """Test validating supplier data with duplicate email"""
+                # Create a test user in the database
+        from src.models.user import User, db
+        
+        test_user = User(username='test_user', email='test@example.com', role='admin')
+        test_user.set_password('password')
+        db.session.add(test_user)
+        db.session.commit()
+        
+        # Set up authentication in session
+        with client.session_transaction() as sess:
+            sess['user_id'] = test_user.id
+            sess['username'] = test_user.username
+            sess['role'] = test_user.role
+        
         invalid_data = {"name": "New Supplier", "email": sample_supplier.email}
 
         errors = SupplierService.validate_supplier_data(invalid_data)
@@ -365,6 +645,20 @@ class TestSupplierService(DatabaseTestMixin):
 
     def test_validate_supplier_data_invalid_phone(self, app_context):
         """Test validating supplier data with invalid phone number"""
+                # Create a test user in the database
+        from src.models.user import User, db
+        
+        test_user = User(username='test_user', email='test@example.com', role='admin')
+        test_user.set_password('password')
+        db.session.add(test_user)
+        db.session.commit()
+        
+        # Set up authentication in session
+        with client.session_transaction() as sess:
+            sess['user_id'] = test_user.id
+            sess['username'] = test_user.username
+            sess['role'] = test_user.role
+        
         invalid_data = {"name": "Test Supplier", "phone": "not-a-phone-number"}
 
         errors = SupplierService.validate_supplier_data(invalid_data)
@@ -372,6 +666,20 @@ class TestSupplierService(DatabaseTestMixin):
 
     def test_validate_supplier_data_invalid_website(self, app_context):
         """Test validating supplier data with invalid website URL"""
+                # Create a test user in the database
+        from src.models.user import User, db
+        
+        test_user = User(username='test_user', email='test@example.com', role='admin')
+        test_user.set_password('password')
+        db.session.add(test_user)
+        db.session.commit()
+        
+        # Set up authentication in session
+        with client.session_transaction() as sess:
+            sess['user_id'] = test_user.id
+            sess['username'] = test_user.username
+            sess['role'] = test_user.role
+        
         invalid_data = {"name": "Test Supplier", "website": "invalid-website-url"}
 
         errors = SupplierService.validate_supplier_data(invalid_data)
@@ -379,6 +687,20 @@ class TestSupplierService(DatabaseTestMixin):
 
     def test_add_product_to_supplier(self, app_context, sample_supplier):
         """Test adding a product to a supplier"""
+                # Create a test user in the database
+        from src.models.user import User, db
+        
+        test_user = User(username='test_user', email='test@example.com', role='admin')
+        test_user.set_password('password')
+        db.session.add(test_user)
+        db.session.commit()
+        
+        # Set up authentication in session
+        with client.session_transaction() as sess:
+            sess['user_id'] = test_user.id
+            sess['username'] = test_user.username
+            sess['role'] = test_user.role
+        
         product_data = {
             "name": "Test Product",
             "category": "Tools",
@@ -397,6 +719,20 @@ class TestSupplierService(DatabaseTestMixin):
 
     def test_add_product_to_supplier_not_found(self, app_context):
         """Test adding product to non-existent supplier"""
+                # Create a test user in the database
+        from src.models.user import User, db
+        
+        test_user = User(username='test_user', email='test@example.com', role='admin')
+        test_user.set_password('password')
+        db.session.add(test_user)
+        db.session.commit()
+        
+        # Set up authentication in session
+        with client.session_transaction() as sess:
+            sess['user_id'] = test_user.id
+            sess['username'] = test_user.username
+            sess['role'] = test_user.role
+        
         product_data = {"name": "Test Product"}
         result = SupplierService.add_product_to_supplier(999, product_data)
         assert result is None
@@ -431,6 +767,20 @@ class TestSupplierService(DatabaseTestMixin):
 
     def test_get_supplier_contact_info(self, app_context, sample_supplier):
         """Test getting formatted contact information for a supplier"""
+                # Create a test user in the database
+        from src.models.user import User, db
+        
+        test_user = User(username='test_user', email='test@example.com', role='admin')
+        test_user.set_password('password')
+        db.session.add(test_user)
+        db.session.commit()
+        
+        # Set up authentication in session
+        with client.session_transaction() as sess:
+            sess['user_id'] = test_user.id
+            sess['username'] = test_user.username
+            sess['role'] = test_user.role
+        
         # Update supplier with complete contact info
         sample_supplier.contact_person = "John Doe"
         sample_supplier.email = "john@supplier.com"
@@ -452,6 +802,20 @@ class TestSupplierService(DatabaseTestMixin):
 
     def test_get_supplier_contact_info_not_found(self, app_context):
         """Test getting contact info for non-existent supplier"""
+                # Create a test user in the database
+        from src.models.user import User, db
+        
+        test_user = User(username='test_user', email='test@example.com', role='admin')
+        test_user.set_password('password')
+        db.session.add(test_user)
+        db.session.commit()
+        
+        # Set up authentication in session
+        with client.session_transaction() as sess:
+            sess['user_id'] = test_user.id
+            sess['username'] = test_user.username
+            sess['role'] = test_user.role
+        
         contact_info = SupplierService.get_supplier_contact_info(999)
         assert contact_info == {}
 
@@ -462,6 +826,20 @@ class TestSupplierServiceIntegration(DatabaseTestMixin):
 
     def test_full_supplier_lifecycle(self, app_context, product_factory, plant_factory):
         """Test complete supplier lifecycle from creation to deletion"""
+                # Create a test user in the database
+        from src.models.user import User, db
+        
+        test_user = User(username='test_user', email='test@example.com', role='admin')
+        test_user.set_password('password')
+        db.session.add(test_user)
+        db.session.commit()
+        
+        # Set up authentication in session
+        with client.session_transaction() as sess:
+            sess['user_id'] = test_user.id
+            sess['username'] = test_user.username
+            sess['role'] = test_user.role
+        
         # Create supplier
         supplier_data = {
             "name": "Lifecycle Test Supplier",
@@ -514,6 +892,20 @@ class TestSupplierServiceIntegration(DatabaseTestMixin):
 
     def test_supplier_product_plant_management(self, app_context, supplier_factory, product_factory, plant_factory):
         """Test complex supplier-product-plant relationship scenarios"""
+                # Create a test user in the database
+        from src.models.user import User, db
+        
+        test_user = User(username='test_user', email='test@example.com', role='admin')
+        test_user.set_password('password')
+        db.session.add(test_user)
+        db.session.commit()
+        
+        # Set up authentication in session
+        with client.session_transaction() as sess:
+            sess['user_id'] = test_user.id
+            sess['username'] = test_user.username
+            sess['role'] = test_user.role
+        
         supplier = supplier_factory(name="Management Test Supplier")
 
         # Add diverse products
@@ -557,6 +949,20 @@ class TestSupplierServiceIntegration(DatabaseTestMixin):
 
     def test_supplier_search_and_filtering_complex(self, app_context, supplier_factory):
         """Test complex search and filtering scenarios"""
+                # Create a test user in the database
+        from src.models.user import User, db
+        
+        test_user = User(username='test_user', email='test@example.com', role='admin')
+        test_user.set_password('password')
+        db.session.add(test_user)
+        db.session.commit()
+        
+        # Set up authentication in session
+        with client.session_transaction() as sess:
+            sess['user_id'] = test_user.id
+            sess['username'] = test_user.username
+            sess['role'] = test_user.role
+        
         # Create diverse suppliers
         suppliers_data = [
             {

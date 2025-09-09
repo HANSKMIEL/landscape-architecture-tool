@@ -89,6 +89,20 @@ class TestDashboardService(DatabaseTestMixin):
 
     def test_get_project_analytics_empty(self, app_context):
         """Test getting project analytics with empty database"""
+                # Create a test user in the database
+        from src.models.user import User, db
+        
+        test_user = User(username='test_user', email='test@example.com', role='admin')
+        test_user.set_password('password')
+        db.session.add(test_user)
+        db.session.commit()
+        
+        # Set up authentication in session
+        with client.session_transaction() as sess:
+            sess['user_id'] = test_user.id
+            sess['username'] = test_user.username
+            sess['role'] = test_user.role
+        
         analytics = DashboardService.get_project_analytics()
 
         assert analytics["projects_over_time"] == []
@@ -98,6 +112,20 @@ class TestDashboardService(DatabaseTestMixin):
 
     def test_get_project_analytics_with_data(self, app_context, client_factory, project_factory):
         """Test getting project analytics with sample data"""
+                # Create a test user in the database
+        from src.models.user import User, db
+        
+        test_user = User(username='test_user', email='test@example.com', role='admin')
+        test_user.set_password('password')
+        db.session.add(test_user)
+        db.session.commit()
+        
+        # Set up authentication in session
+        with client.session_transaction() as sess:
+            sess['user_id'] = test_user.id
+            sess['username'] = test_user.username
+            sess['role'] = test_user.role
+        
         # Create clients
         client1 = client_factory(name="Alpha Corp")
         client2 = client_factory(name="Beta LLC")
@@ -151,6 +179,20 @@ class TestDashboardService(DatabaseTestMixin):
 
     def test_get_plant_analytics_empty(self, app_context):
         """Test getting plant analytics with empty database"""
+                # Create a test user in the database
+        from src.models.user import User, db
+        
+        test_user = User(username='test_user', email='test@example.com', role='admin')
+        test_user.set_password('password')
+        db.session.add(test_user)
+        db.session.commit()
+        
+        # Set up authentication in session
+        with client.session_transaction() as sess:
+            sess['user_id'] = test_user.id
+            sess['username'] = test_user.username
+            sess['role'] = test_user.role
+        
         analytics = DashboardService.get_plant_analytics()
 
         assert analytics["most_used_plants"] == []
@@ -161,6 +203,20 @@ class TestDashboardService(DatabaseTestMixin):
 
     def test_get_plant_analytics_with_data(self, app_context, plant_factory, project_factory, client_factory):
         """Test getting plant analytics with sample data"""
+                # Create a test user in the database
+        from src.models.user import User, db
+        
+        test_user = User(username='test_user', email='test@example.com', role='admin')
+        test_user.set_password('password')
+        db.session.add(test_user)
+        db.session.commit()
+        
+        # Set up authentication in session
+        with client.session_transaction() as sess:
+            sess['user_id'] = test_user.id
+            sess['username'] = test_user.username
+            sess['role'] = test_user.role
+        
         # Create plants with different categories and properties
         plant1 = plant_factory(name="Rose Bush", category="Shrub", sun_exposure="full_sun", native=True)
         plant2 = plant_factory(name="Oak Tree", category="Tree", sun_exposure="partial_shade", native=True)
@@ -247,6 +303,20 @@ class TestDashboardService(DatabaseTestMixin):
 
     def test_get_supplier_analytics_empty(self, app_context):
         """Test getting supplier analytics with empty database"""
+                # Create a test user in the database
+        from src.models.user import User, db
+        
+        test_user = User(username='test_user', email='test@example.com', role='admin')
+        test_user.set_password('password')
+        db.session.add(test_user)
+        db.session.commit()
+        
+        # Set up authentication in session
+        with client.session_transaction() as sess:
+            sess['user_id'] = test_user.id
+            sess['username'] = test_user.username
+            sess['role'] = test_user.role
+        
         analytics = DashboardService.get_supplier_analytics()
 
         assert analytics["total_suppliers"] == 0
@@ -255,6 +325,20 @@ class TestDashboardService(DatabaseTestMixin):
 
     def test_get_supplier_analytics_with_data(self, app_context, supplier_factory, product_factory, plant_factory):
         """Test getting supplier analytics with sample data"""
+                # Create a test user in the database
+        from src.models.user import User, db
+        
+        test_user = User(username='test_user', email='test@example.com', role='admin')
+        test_user.set_password('password')
+        db.session.add(test_user)
+        db.session.commit()
+        
+        # Set up authentication in session
+        with client.session_transaction() as sess:
+            sess['user_id'] = test_user.id
+            sess['username'] = test_user.username
+            sess['role'] = test_user.role
+        
         # Clear cache to ensure fresh data
         from src.services.performance import cache
 

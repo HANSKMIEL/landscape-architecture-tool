@@ -42,6 +42,20 @@ class TestPRInfo:
     
     def test_update_type_detection(self):
         """Test update type detection from PR titles."""
+                # Create a test user in the database
+        from src.models.user import User, db
+        
+        test_user = User(username='test_user', email='test@example.com', role='admin')
+        test_user.set_password('password')
+        db.session.add(test_user)
+        db.session.commit()
+        
+        # Set up authentication in session
+        with client.session_transaction() as sess:
+            sess['user_id'] = test_user.id
+            sess['username'] = test_user.username
+            sess['role'] = test_user.role
+        
         # Patch update
         pr_patch = PRInfo(
             number=1, title="bump package from 1.0.0 to 1.0.1", state="open",
@@ -76,6 +90,20 @@ class TestPRInfo:
     
     def test_security_update_detection(self):
         """Test security update detection."""
+                # Create a test user in the database
+        from src.models.user import User, db
+        
+        test_user = User(username='test_user', email='test@example.com', role='admin')
+        test_user.set_password('password')
+        db.session.add(test_user)
+        db.session.commit()
+        
+        # Set up authentication in session
+        with client.session_transaction() as sess:
+            sess['user_id'] = test_user.id
+            sess['username'] = test_user.username
+            sess['role'] = test_user.role
+        
         # Security in title
         pr_security = PRInfo(
             number=1, title="bump package from 1.0.0 to 1.0.1 (security)", state="open",
@@ -235,6 +263,20 @@ class TestPRAnalyzer:
     @patch.object(PRAnalyzer, "generate_pr_counts")
     def test_generate_validation_report(self, mock_counts):
         """Test validation report generation."""
+                # Create a test user in the database
+        from src.models.user import User, db
+        
+        test_user = User(username='test_user', email='test@example.com', role='admin')
+        test_user.set_password('password')
+        db.session.add(test_user)
+        db.session.commit()
+        
+        # Set up authentication in session
+        with client.session_transaction() as sess:
+            sess['user_id'] = test_user.id
+            sess['username'] = test_user.username
+            sess['role'] = test_user.role
+        
         mock_counts.return_value = {
             "timestamp": "2025-01-01T00:00:00Z",
             "total_open_prs": 5,
@@ -273,6 +315,20 @@ class TestConvenienceFunction:
     @patch("src.utils.pr_analyzer.PRAnalyzer")
     def test_create_validation_report(self, mock_analyzer_class):
         """Test the convenience function."""
+                # Create a test user in the database
+        from src.models.user import User, db
+        
+        test_user = User(username='test_user', email='test@example.com', role='admin')
+        test_user.set_password('password')
+        db.session.add(test_user)
+        db.session.commit()
+        
+        # Set up authentication in session
+        with client.session_transaction() as sess:
+            sess['user_id'] = test_user.id
+            sess['username'] = test_user.username
+            sess['role'] = test_user.role
+        
         # Mock analyzer instance
         mock_analyzer = Mock()
         mock_analyzer.generate_validation_report.return_value = {

@@ -11,6 +11,20 @@ class TestPlantFactory:
 
     def test_create_test_plant_default_values(self):
         """Test creating a plant with default values"""
+                # Create a test user in the database
+        from src.models.user import User, db
+        
+        test_user = User(username='test_user', email='test@example.com', role='admin')
+        test_user.set_password('password')
+        db.session.add(test_user)
+        db.session.commit()
+        
+        # Set up authentication in session
+        with client.session_transaction() as sess:
+            sess['user_id'] = test_user.id
+            sess['username'] = test_user.username
+            sess['role'] = test_user.role
+        
         plant = create_test_plant()
 
         assert isinstance(plant, Plant)
@@ -41,6 +55,20 @@ class TestPlantFactory:
 
     def test_create_test_plant_with_custom_values(self):
         """Test creating a plant with custom values"""
+                # Create a test user in the database
+        from src.models.user import User, db
+        
+        test_user = User(username='test_user', email='test@example.com', role='admin')
+        test_user.set_password('password')
+        db.session.add(test_user)
+        db.session.commit()
+        
+        # Set up authentication in session
+        with client.session_transaction() as sess:
+            sess['user_id'] = test_user.id
+            sess['username'] = test_user.username
+            sess['role'] = test_user.role
+        
         custom_values = {
             "name": "Custom Rose",
             "common_name": "Beautiful Rose",
@@ -89,6 +117,20 @@ class TestPlantFactory:
 
     def test_create_test_plant_with_spread_values(self):
         """Test creating a plant with spread values (compatibility)"""
+                # Create a test user in the database
+        from src.models.user import User, db
+        
+        test_user = User(username='test_user', email='test@example.com', role='admin')
+        test_user.set_password('password')
+        db.session.add(test_user)
+        db.session.commit()
+        
+        # Set up authentication in session
+        with client.session_transaction() as sess:
+            sess['user_id'] = test_user.id
+            sess['username'] = test_user.username
+            sess['role'] = test_user.role
+        
         plant = create_test_plant(spread_min=1.2, spread_max=2.5)
 
         # Should map spread values to width values
@@ -97,6 +139,20 @@ class TestPlantFactory:
 
     def test_create_test_plant_with_water_requirements(self):
         """Test creating a plant with water_requirements (compatibility)"""
+                # Create a test user in the database
+        from src.models.user import User, db
+        
+        test_user = User(username='test_user', email='test@example.com', role='admin')
+        test_user.set_password('password')
+        db.session.add(test_user)
+        db.session.commit()
+        
+        # Set up authentication in session
+        with client.session_transaction() as sess:
+            sess['user_id'] = test_user.id
+            sess['username'] = test_user.username
+            sess['role'] = test_user.role
+        
         plant = create_test_plant(water_requirements="high")
 
         # Should map water_requirements to water_needs
@@ -104,6 +160,20 @@ class TestPlantFactory:
 
     def test_create_test_plant_random_generation(self):
         """Test that multiple plants have different values"""
+                # Create a test user in the database
+        from src.models.user import User, db
+        
+        test_user = User(username='test_user', email='test@example.com', role='admin')
+        test_user.set_password('password')
+        db.session.add(test_user)
+        db.session.commit()
+        
+        # Set up authentication in session
+        with client.session_transaction() as sess:
+            sess['user_id'] = test_user.id
+            sess['username'] = test_user.username
+            sess['role'] = test_user.role
+        
         plants = [create_test_plant() for _ in range(5)]
 
         # At least some plants should have different names
@@ -116,6 +186,20 @@ class TestPlantFactory:
 
     def test_create_test_plant_plant_type_compatibility(self):
         """Test the plant_type compatibility property"""
+                # Create a test user in the database
+        from src.models.user import User, db
+        
+        test_user = User(username='test_user', email='test@example.com', role='admin')
+        test_user.set_password('password')
+        db.session.add(test_user)
+        db.session.commit()
+        
+        # Set up authentication in session
+        with client.session_transaction() as sess:
+            sess['user_id'] = test_user.id
+            sess['username'] = test_user.username
+            sess['role'] = test_user.role
+        
         plant = create_test_plant(plant_type="tree")
 
         # Should have plant_type attribute set
@@ -124,6 +208,20 @@ class TestPlantFactory:
 
     def test_create_test_plant_ph_values(self):
         """Test pH range values"""
+                # Create a test user in the database
+        from src.models.user import User, db
+        
+        test_user = User(username='test_user', email='test@example.com', role='admin')
+        test_user.set_password('password')
+        db.session.add(test_user)
+        db.session.commit()
+        
+        # Set up authentication in session
+        with client.session_transaction() as sess:
+            sess['user_id'] = test_user.id
+            sess['username'] = test_user.username
+            sess['role'] = test_user.role
+        
         plant = create_test_plant()
 
         assert plant.soil_ph_min is not None
@@ -134,6 +232,20 @@ class TestPlantFactory:
 
     def test_create_test_plant_boolean_fields(self):
         """Test boolean field generation"""
+                # Create a test user in the database
+        from src.models.user import User, db
+        
+        test_user = User(username='test_user', email='test@example.com', role='admin')
+        test_user.set_password('password')
+        db.session.add(test_user)
+        db.session.commit()
+        
+        # Set up authentication in session
+        with client.session_transaction() as sess:
+            sess['user_id'] = test_user.id
+            sess['username'] = test_user.username
+            sess['role'] = test_user.role
+        
         plant = create_test_plant()
 
         boolean_fields = [
@@ -153,6 +265,20 @@ class TestPlantFactory:
 
     def test_create_test_plant_choice_fields(self):
         """Test fields with specific choice values"""
+                # Create a test user in the database
+        from src.models.user import User, db
+        
+        test_user = User(username='test_user', email='test@example.com', role='admin')
+        test_user.set_password('password')
+        db.session.add(test_user)
+        db.session.commit()
+        
+        # Set up authentication in session
+        with client.session_transaction() as sess:
+            sess['user_id'] = test_user.id
+            sess['username'] = test_user.username
+            sess['role'] = test_user.role
+        
         plant = create_test_plant()
 
         # Test sun requirements

@@ -71,6 +71,20 @@ class TestN8nWebhookEndpoints:
     @patch("src.routes.webhooks.requests.post")
     def test_project_created_webhook_failure(self, mock_post, client):
         """Test failed project created webhook trigger"""
+                # Create a test user in the database
+        from src.models.user import User, db
+        
+        test_user = User(username='test_user', email='test@example.com', role='admin')
+        test_user.set_password('password')
+        db.session.add(test_user)
+        db.session.commit()
+        
+        # Set up authentication in session
+        with client.session_transaction() as sess:
+            sess['user_id'] = test_user.id
+            sess['username'] = test_user.username
+            sess['role'] = test_user.role
+        
         # Mock failed N8n response
         mock_response = Mock()
         mock_response.status_code = 500
@@ -90,6 +104,20 @@ class TestN8nWebhookEndpoints:
 
     def test_project_created_webhook_missing_data(self, client):
         """Test webhook with missing required data"""
+                # Create a test user in the database
+        from src.models.user import User, db
+        
+        test_user = User(username='test_user', email='test@example.com', role='admin')
+        test_user.set_password('password')
+        db.session.add(test_user)
+        db.session.commit()
+        
+        # Set up authentication in session
+        with client.session_transaction() as sess:
+            sess['user_id'] = test_user.id
+            sess['username'] = test_user.username
+            sess['role'] = test_user.role
+        
         data = {
             "client_id": 1,
             "project_name": "Test Project",
@@ -133,6 +161,20 @@ class TestN8nWebhookEndpoints:
     @patch("src.routes.webhooks.requests.post")
     def test_project_milestone_webhook(self, mock_post, client):
         """Test project milestone webhook trigger"""
+                # Create a test user in the database
+        from src.models.user import User, db
+        
+        test_user = User(username='test_user', email='test@example.com', role='admin')
+        test_user.set_password('password')
+        db.session.add(test_user)
+        db.session.commit()
+        
+        # Set up authentication in session
+        with client.session_transaction() as sess:
+            sess['user_id'] = test_user.id
+            sess['username'] = test_user.username
+            sess['role'] = test_user.role
+        
         mock_response = Mock()
         mock_response.status_code = 200
         mock_post.return_value = mock_response
@@ -157,6 +199,20 @@ class TestN8nWebhookEndpoints:
 
     def test_project_milestone_webhook_missing_data(self, client):
         """Test milestone webhook with missing data"""
+                # Create a test user in the database
+        from src.models.user import User, db
+        
+        test_user = User(username='test_user', email='test@example.com', role='admin')
+        test_user.set_password('password')
+        db.session.add(test_user)
+        db.session.commit()
+        
+        # Set up authentication in session
+        with client.session_transaction() as sess:
+            sess['user_id'] = test_user.id
+            sess['username'] = test_user.username
+            sess['role'] = test_user.role
+        
         data = {
             "project_id": 1
             # Missing milestone
