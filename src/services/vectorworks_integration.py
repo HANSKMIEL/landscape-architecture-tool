@@ -126,6 +126,10 @@ class VectorworksDataExtractor:
     
     def _generate_extraction_script(self, vwx_file_path: str) -> str:
         """Generate Vectorscript for data extraction"""
+        # Define output filename as constant to avoid duplication
+        OUTPUT_FILENAME = "extraction_output.json"
+        output_path = f"{self.sdk.temp_dir}/{OUTPUT_FILENAME}"
+        
         return f"""
         {{ Vectorscript for extracting landscape architecture data }}
         PROCEDURE ExtractLandscapeData;
@@ -141,7 +145,7 @@ class VectorworksDataExtractor:
             outputFile: STRING;
             
         BEGIN
-            outputFile := '{self.sdk.temp_dir}/extraction_output.json';
+            outputFile := '{output_path}';
             
             {{ Initialize JSON output }}
             WriteToFile(outputFile, '{{"layers": [');
@@ -223,7 +227,8 @@ class VectorworksDataExtractor:
             result = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
             
             if result.returncode == 0:
-                output_file = os.path.join(self.sdk.temp_dir, "extraction_output.json")
+                OUTPUT_FILENAME = "extraction_output.json"
+                output_file = os.path.join(self.sdk.temp_dir, OUTPUT_FILENAME)
                 if os.path.exists(output_file):
                     with open(output_file, 'r') as f:
                         return json.load(f)

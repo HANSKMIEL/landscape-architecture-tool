@@ -69,6 +69,13 @@ class ClientPresentationGenerator:
     def __init__(self, database_connection):
         self.db = database_connection
         self.templates = self._load_presentation_templates()
+        
+        # Define contact information constants
+        self.DEFAULT_CONTACT_INFO = {
+            "phone": "+31 (0)20 123 4567",
+            "email": "info@landscapearchitect.nl",
+            "website": "www.landscapearchitect.nl"
+        }
     
     def _load_presentation_templates(self) -> Dict[str, Dict]:
         """Load presentation templates"""
@@ -119,6 +126,13 @@ class ClientPresentationGenerator:
                 }
             }
         }
+    
+    def _is_plant_type(self, plant: PlantPresentationData, keywords: List[str]) -> bool:
+        """Helper method to classify plants by type using keywords"""
+        plant_name_lower = plant.name.lower()
+        plant_type_lower = plant.characteristics.get("type", "").lower()
+        
+        return any(keyword in plant_name_lower or keyword in plant_type_lower for keyword in keywords)
     
     def create_presentation(self, project_id: int, template: str = "modern", 
                           config: Optional[PresentationConfig] = None) -> Dict:
@@ -442,9 +456,13 @@ class ClientPresentationGenerator:
                                         plants: List[PlantPresentationData],
                                         config: PresentationConfig, order: int) -> PresentationSlide:
         """Generate plant communities slide"""
-        # Group plants by type/layer
-        trees = [p for p in plants if "boom" in p.name.lower() or "tree" in p.characteristics.get("type", "").lower()]
-        shrubs = [p for p in plants if "struik" in p.name.lower() or "shrub" in p.characteristics.get("type", "").lower()]
+        # Define plant type constants for better maintainability
+        TREE_KEYWORDS = ["boom", "tree"]
+        SHRUB_KEYWORDS = ["struik", "shrub"]
+        
+        # Group plants by type/layer using robust classification
+        trees = [p for p in plants if self._is_plant_type(p, TREE_KEYWORDS)]
+        shrubs = [p for p in plants if self._is_plant_type(p, SHRUB_KEYWORDS)]
         perennials = [p for p in plants if p not in trees and p not in shrubs]
         
         return PresentationSlide(
@@ -745,9 +763,9 @@ class ClientPresentationGenerator:
                 ],
                 "contact_info": {
                     "company": config.company_name,
-                    "phone": "+31 (0)20 123 4567",
-                    "email": "info@landscapearchitect.nl",
-                    "website": "www.landscapearchitect.nl"
+                    "phone": getattr(config, 'contact_phone', self.DEFAULT_CONTACT_INFO["phone"]),
+                    "email": getattr(config, 'contact_email', self.DEFAULT_CONTACT_INFO["email"]),
+                    "website": getattr(config, 'contact_website', self.DEFAULT_CONTACT_INFO["website"])
                 },
                 "call_to_action": "Laten we uw droomtuin realiseren!" if config.language == "nl" 
                                 else "Let's create your dream garden!"
