@@ -42,7 +42,7 @@ If applicable, add screenshots to help explain your problem.
 - **OS:** [e.g. iOS 16, Android 13]
 - **Browser:** [e.g. Safari, Chrome]
 
-###  дополнительный контекст
+### 📋 Additional Context
 
 Add any other context about the problem here.
 
