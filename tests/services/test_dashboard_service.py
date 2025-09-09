@@ -7,6 +7,7 @@ Comprehensive tests for dashboard service layer business logic.
 from datetime import datetime, timedelta
 
 import pytest
+from tests.fixtures.auth_fixtures import authenticated_test_user, setup_test_authentication
 
 from src.models.landscape import Client, Plant, Project, ProjectPlant, Supplier
 from src.models.user import db
@@ -89,6 +90,7 @@ class TestDashboardService(DatabaseTestMixin):
 
     def test_get_project_analytics_empty(self, app_context):
         """Test getting project analytics with empty database"""
+    # Authentication handled by authenticated_test_user fixture
         analytics = DashboardService.get_project_analytics()
 
         assert analytics["projects_over_time"] == []
@@ -98,7 +100,8 @@ class TestDashboardService(DatabaseTestMixin):
 
     def test_get_project_analytics_with_data(self, app_context, client_factory, project_factory):
         """Test getting project analytics with sample data"""
-        # Create clients
+    # Authentication handled by authenticated_test_user fixture
+# Create clients
         client1 = client_factory(name="Alpha Corp")
         client2 = client_factory(name="Beta LLC")
         client3 = client_factory(name="Gamma Inc")  # noqa: F841
@@ -151,6 +154,7 @@ class TestDashboardService(DatabaseTestMixin):
 
     def test_get_plant_analytics_empty(self, app_context):
         """Test getting plant analytics with empty database"""
+    # Authentication handled by authenticated_test_user fixture
         analytics = DashboardService.get_plant_analytics()
 
         assert analytics["most_used_plants"] == []
@@ -161,7 +165,8 @@ class TestDashboardService(DatabaseTestMixin):
 
     def test_get_plant_analytics_with_data(self, app_context, plant_factory, project_factory, client_factory):
         """Test getting plant analytics with sample data"""
-        # Create plants with different categories and properties
+    # Authentication handled by authenticated_test_user fixture
+# Create plants with different categories and properties
         plant1 = plant_factory(name="Rose Bush", category="Shrub", sun_exposure="full_sun", native=True)
         plant2 = plant_factory(name="Oak Tree", category="Tree", sun_exposure="partial_shade", native=True)
         plant3 = plant_factory(name="Tulip", category="Perennial", sun_exposure="full_sun", native=False)
@@ -247,6 +252,7 @@ class TestDashboardService(DatabaseTestMixin):
 
     def test_get_supplier_analytics_empty(self, app_context):
         """Test getting supplier analytics with empty database"""
+    # Authentication handled by authenticated_test_user fixture
         analytics = DashboardService.get_supplier_analytics()
 
         assert analytics["total_suppliers"] == 0
@@ -255,7 +261,8 @@ class TestDashboardService(DatabaseTestMixin):
 
     def test_get_supplier_analytics_with_data(self, app_context, supplier_factory, product_factory, plant_factory):
         """Test getting supplier analytics with sample data"""
-        # Clear cache to ensure fresh data
+    # Authentication handled by authenticated_test_user fixture
+# Clear cache to ensure fresh data
         from src.services.performance import cache
 
         cache.clear()

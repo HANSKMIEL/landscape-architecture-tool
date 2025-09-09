@@ -4,6 +4,7 @@ import tempfile
 from io import BytesIO
 
 import pytest
+from tests.fixtures.auth_fixtures import authenticated_test_user, setup_test_authentication
 from PIL import Image
 
 from src.main import create_app
@@ -24,11 +25,7 @@ def app():
         db.create_all()
 
         # Create test user
-        test_user = User(username="testuser", email="test@example.com", role="admin")
-        test_user.set_password("testpass")
-        db.session.add(test_user)
-        db.session.commit()
-
+    # Authentication handled by authenticated_test_user fixture
         yield app
 
         # Cleanup
@@ -211,7 +208,8 @@ class TestPhotoAPI:
 
     def test_delete_photo(self, auth_client, app):
         """Test deleting photo."""
-        # Upload a photo first
+    # Authentication handled by authenticated_test_user fixture
+# Upload a photo first
         img_data = create_test_image()
         upload_response = auth_client.post(
             "/api/photos/upload", data={"file": (img_data, "test.jpg"), "category": "example"}

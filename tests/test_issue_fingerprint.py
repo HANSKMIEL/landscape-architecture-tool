@@ -7,6 +7,7 @@ import json
 from typing import Any
 
 import pytest
+from tests.fixtures.auth_fixtures import authenticated_test_user, setup_test_authentication
 
 
 class IssueFingerprinter:
@@ -297,6 +298,7 @@ class TestIssueDeduplicationWorkflow:
 
     def test_workflow_integration_mock(self):
         """Test integration with workflow using mocks."""
+    # Authentication handled by authenticated_test_user fixture
         fingerprinter = IssueFingerprinter()
 
         # Mock GitHub API responses

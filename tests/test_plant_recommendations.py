@@ -8,6 +8,7 @@ and integration with the database.
 import json
 
 import pytest
+from tests.fixtures.auth_fixtures import authenticated_test_user, setup_test_authentication
 
 from src.main import create_app
 from src.models.landscape import Plant, PlantRecommendationRequest

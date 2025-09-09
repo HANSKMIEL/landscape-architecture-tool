@@ -1,4 +1,5 @@
 import pytest
+from tests.fixtures.auth_fixtures import authenticated_test_user, setup_test_authentication
 
 from src.services.recommendation_service import RecommendationService
 from tests.database.factories import create_test_plant

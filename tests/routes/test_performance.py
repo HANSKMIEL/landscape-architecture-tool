@@ -4,6 +4,7 @@
 from unittest.mock import patch
 
 import pytest
+from tests.fixtures.auth_fixtures import authenticated_test_user, setup_test_authentication
 
 from tests.fixtures.database import DatabaseTestMixin
 
@@ -475,6 +476,7 @@ class TestPerformanceRoutesEdgeCases(DatabaseTestMixin):
 
     def test_post_requests_to_get_endpoints(self, client, app_context):
         """Test POST requests to GET-only endpoints"""
+    # Authentication handled by authenticated_test_user fixture
         get_endpoints = [
             "/api/performance/stats",
             "/api/performance/cache/stats",
@@ -489,6 +491,7 @@ class TestPerformanceRoutesEdgeCases(DatabaseTestMixin):
 
     def test_get_requests_to_post_endpoints(self, client, app_context):
         """Test GET requests to POST-only endpoints"""
+    # Authentication handled by authenticated_test_user fixture
         post_endpoints = [
             "/api/performance/cache/clear",
             "/api/performance/cache/invalidate",

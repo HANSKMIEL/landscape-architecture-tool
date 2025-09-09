@@ -10,6 +10,7 @@ import sys
 from pathlib import Path
 
 import pytest
+from tests.fixtures.auth_fixtures import authenticated_test_user, setup_test_authentication
 
 # Add project root to Python path (for test isolation, use fixture below)
 project_root = Path(__file__).parent.parent

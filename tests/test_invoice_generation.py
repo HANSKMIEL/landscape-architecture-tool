@@ -1,4 +1,5 @@
 import pytest
+from tests.fixtures.auth_fixtures import authenticated_test_user, setup_test_authentication
 
 from tests.fixtures.database import DatabaseTestMixin
 
@@ -125,6 +126,7 @@ class TestInvoiceGeneration(DatabaseTestMixin):
 
     def test_invalid_project_id(self, client, app_context):
         """Test handling of invalid project ID"""
+    # Authentication handled by authenticated_test_user fixture
         response = client.get("/api/invoices/quote/99999?format=json")
         assert response.status_code == 404
 

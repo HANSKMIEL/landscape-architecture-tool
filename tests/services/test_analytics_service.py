@@ -7,6 +7,7 @@ Comprehensive tests for analytics service layer business logic.
 from datetime import UTC, datetime, timedelta
 
 import pytest
+from tests.fixtures.auth_fixtures import authenticated_test_user, setup_test_authentication
 
 from src.models.landscape import (
     PlantRecommendationRequest,
@@ -23,6 +24,7 @@ class TestAnalyticsService(DatabaseTestMixin):
 
     def test_get_plant_usage_analytics_empty(self, app_context):
         """Test getting plant usage analytics with empty database"""
+    # Authentication handled by authenticated_test_user fixture
         analytics = AnalyticsService()
         result = analytics.get_plant_usage_analytics()
 
@@ -32,6 +34,7 @@ class TestAnalyticsService(DatabaseTestMixin):
 
     def test_get_plant_usage_analytics_with_data(self, app_context, plant_factory, project_factory, client_factory):
         """Test getting plant usage analytics with sample data"""
+    # Authentication handled by authenticated_test_user fixture
         analytics = AnalyticsService()
 
         # Create test data
@@ -87,6 +90,7 @@ class TestAnalyticsService(DatabaseTestMixin):
         self, app_context, plant_factory, project_factory, client_factory
     ):
         """Test getting plant usage analytics with date range filter"""
+    # Authentication handled by authenticated_test_user fixture
         analytics = AnalyticsService()
 
         client = client_factory()
@@ -117,6 +121,7 @@ class TestAnalyticsService(DatabaseTestMixin):
 
     def test_get_project_performance_analytics_empty(self, app_context):
         """Test getting project performance analytics with empty database"""
+    # Authentication handled by authenticated_test_user fixture
         analytics = AnalyticsService()
         result = analytics.get_project_performance_analytics()
 
@@ -127,6 +132,7 @@ class TestAnalyticsService(DatabaseTestMixin):
 
     def test_get_project_performance_analytics_with_data(self, app_context, project_factory, client_factory):
         """Test getting project performance analytics with sample data"""
+    # Authentication handled by authenticated_test_user fixture
         analytics = AnalyticsService()
 
         client = client_factory()

@@ -7,6 +7,7 @@ Comprehensive tests for plant API endpoints.
 import json
 
 import pytest
+from tests.fixtures.auth_fixtures import authenticated_test_user, setup_test_authentication
 
 from src.models.landscape import Plant
 from tests.fixtures.database import DatabaseTestMixin

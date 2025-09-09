@@ -12,6 +12,7 @@ import time
 from contextlib import contextmanager
 
 import pytest
+from tests.fixtures.auth_fixtures import authenticated_test_user, setup_test_authentication
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 

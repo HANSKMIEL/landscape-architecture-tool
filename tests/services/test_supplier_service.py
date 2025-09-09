@@ -5,6 +5,7 @@ Comprehensive tests for supplier service layer business logic.
 """
 
 import pytest
+from tests.fixtures.auth_fixtures import authenticated_test_user, setup_test_authentication
 
 from src.models.landscape import Product, Supplier
 from src.models.user import db
@@ -103,6 +104,7 @@ class TestSupplierService(DatabaseTestMixin):
 
     def test_get_supplier_by_id_success(self, app_context, sample_supplier):
         """Test getting supplier by ID successfully"""
+    # Authentication handled by authenticated_test_user fixture
         supplier = SupplierService.get_supplier_by_id(sample_supplier.id)
         assert supplier is not None
         assert supplier.id == sample_supplier.id
@@ -110,11 +112,13 @@ class TestSupplierService(DatabaseTestMixin):
 
     def test_get_supplier_by_id_not_found(self, app_context):
         """Test getting supplier by non-existent ID"""
+    # Authentication handled by authenticated_test_user fixture
         supplier = SupplierService.get_supplier_by_id(999)
         assert supplier is None
 
     def test_create_supplier_success(self, app_context):
         """Test creating a supplier successfully"""
+    # Authentication handled by authenticated_test_user fixture
         supplier_data = {
             "name": "Test Supplier",
             "contact_person": "John Doe",
@@ -140,6 +144,7 @@ class TestSupplierService(DatabaseTestMixin):
 
     def test_create_supplier_minimal_data(self, app_context):
         """Test creating supplier with minimal required data"""
+    # Authentication handled by authenticated_test_user fixture
         supplier_data = {"name": "Minimal Supplier"}
 
         supplier = SupplierService.create_supplier(supplier_data)
@@ -149,6 +154,7 @@ class TestSupplierService(DatabaseTestMixin):
 
     def test_update_supplier_success(self, app_context, sample_supplier):
         """Test updating a supplier successfully"""
+    # Authentication handled by authenticated_test_user fixture
         update_data = {
             "name": "Updated Supplier Name",
             "email": "updated@supplier.com",
@@ -165,12 +171,14 @@ class TestSupplierService(DatabaseTestMixin):
 
     def test_update_supplier_not_found(self, app_context):
         """Test updating non-existent supplier"""
+    # Authentication handled by authenticated_test_user fixture
         update_data = {"name": "Updated Name"}
         result = SupplierService.update_supplier(999, update_data)
         assert result is None
 
     def test_delete_supplier_success(self, app_context, sample_supplier):
         """Test deleting a supplier successfully"""
+    # Authentication handled by authenticated_test_user fixture
         supplier_id = sample_supplier.id
 
         result = SupplierService.delete_supplier(supplier_id)
@@ -184,7 +192,8 @@ class TestSupplierService(DatabaseTestMixin):
 
     def test_delete_supplier_with_products(self, app_context, sample_supplier, product_factory):
         """Test deleting supplier with products should fail"""
-        # Add product to supplier
+    # Authentication handled by authenticated_test_user fixture
+# Add product to supplier
         product_factory(supplier=sample_supplier)
 
         result = SupplierService.delete_supplier(sample_supplier.id)
@@ -195,7 +204,8 @@ class TestSupplierService(DatabaseTestMixin):
 
     def test_delete_supplier_with_plants(self, app_context, sample_supplier, plant_factory):
         """Test deleting supplier with plants should fail"""
-        # Add plant to supplier
+    # Authentication handled by authenticated_test_user fixture
+# Add plant to supplier
         plant_factory(supplier=sample_supplier)
 
         result = SupplierService.delete_supplier(sample_supplier.id)
@@ -206,11 +216,13 @@ class TestSupplierService(DatabaseTestMixin):
 
     def test_delete_supplier_not_found(self, app_context):
         """Test deleting non-existent supplier"""
+    # Authentication handled by authenticated_test_user fixture
         result = SupplierService.delete_supplier(999)
         assert result is False
 
     def test_get_supplier_products(self, app_context, sample_supplier, product_factory):
         """Test getting products for a supplier"""
+    # Authentication handled by authenticated_test_user fixture
         product_factory(supplier=sample_supplier, name="Product 1")
         product_factory(supplier=sample_supplier, name="Product 2")
         other_supplier = product_factory().supplier
@@ -226,6 +238,7 @@ class TestSupplierService(DatabaseTestMixin):
 
     def test_get_supplier_plants(self, app_context, sample_supplier, plant_factory):
         """Test getting plants for a supplier"""
+    # Authentication handled by authenticated_test_user fixture
         plant1 = plant_factory(supplier=sample_supplier, name="Plant 1")  # noqa: F841
         plant2 = plant_factory(supplier=sample_supplier, name="Plant 2")  # noqa: F841
         other_supplier = plant_factory().supplier
@@ -241,7 +254,8 @@ class TestSupplierService(DatabaseTestMixin):
 
     def test_get_supplier_statistics(self, app_context, sample_supplier, product_factory, plant_factory):
         """Test getting statistical information for a supplier"""
-        # Create products and plants with different prices and quantities
+    # Authentication handled by authenticated_test_user fixture
+# Create products and plants with different prices and quantities
         product_factory(supplier=sample_supplier, price=10.0, stock_quantity=5)
         product_factory(supplier=sample_supplier, price=20.0, stock_quantity=3)
         plant_factory(supplier=sample_supplier, price=15.0)
@@ -259,6 +273,7 @@ class TestSupplierService(DatabaseTestMixin):
 
     def test_get_supplier_statistics_no_items(self, app_context, sample_supplier):
         """Test getting statistics for supplier with no products/plants"""
+    # Authentication handled by authenticated_test_user fixture
         stats = SupplierService.get_supplier_statistics(sample_supplier.id)
 
         assert stats["total_products"] == 0
@@ -268,6 +283,7 @@ class TestSupplierService(DatabaseTestMixin):
 
     def test_get_supplier_statistics_not_found(self, app_context):
         """Test getting statistics for non-existent supplier"""
+    # Authentication handled by authenticated_test_user fixture
         stats = SupplierService.get_supplier_statistics(999)
         assert stats == {}
 
@@ -318,6 +334,7 @@ class TestSupplierService(DatabaseTestMixin):
 
     def test_get_supplier_specializations(self, app_context, supplier_factory):
         """Test getting unique supplier specializations"""
+    # Authentication handled by authenticated_test_user fixture
         supplier_factory(specialization="Native Plants")
         supplier_factory(specialization="Garden Tools")
         supplier_factory(specialization="Native Plants")  # Duplicate
@@ -332,6 +349,7 @@ class TestSupplierService(DatabaseTestMixin):
 
     def test_validate_supplier_data_success(self, app_context):
         """Test validating correct supplier data"""
+    # Authentication handled by authenticated_test_user fixture
         valid_data = {
             "name": "Valid Supplier",
             "email": "valid@supplier.com",
@@ -344,6 +362,7 @@ class TestSupplierService(DatabaseTestMixin):
 
     def test_validate_supplier_data_missing_required(self, app_context):
         """Test validating supplier data with missing required fields"""
+    # Authentication handled by authenticated_test_user fixture
         invalid_data = {}
 
         errors = SupplierService.validate_supplier_data(invalid_data)
@@ -351,6 +370,7 @@ class TestSupplierService(DatabaseTestMixin):
 
     def test_validate_supplier_data_invalid_email(self, app_context):
         """Test validating supplier data with invalid email"""
+    # Authentication handled by authenticated_test_user fixture
         invalid_data = {"name": "Test Supplier", "email": "invalid-email-format"}
 
         errors = SupplierService.validate_supplier_data(invalid_data)
@@ -358,6 +378,7 @@ class TestSupplierService(DatabaseTestMixin):
 
     def test_validate_supplier_data_duplicate_email(self, app_context, sample_supplier):
         """Test validating supplier data with duplicate email"""
+    # Authentication handled by authenticated_test_user fixture
         invalid_data = {"name": "New Supplier", "email": sample_supplier.email}
 
         errors = SupplierService.validate_supplier_data(invalid_data)
@@ -365,6 +386,7 @@ class TestSupplierService(DatabaseTestMixin):
 
     def test_validate_supplier_data_invalid_phone(self, app_context):
         """Test validating supplier data with invalid phone number"""
+    # Authentication handled by authenticated_test_user fixture
         invalid_data = {"name": "Test Supplier", "phone": "not-a-phone-number"}
 
         errors = SupplierService.validate_supplier_data(invalid_data)
@@ -372,6 +394,7 @@ class TestSupplierService(DatabaseTestMixin):
 
     def test_validate_supplier_data_invalid_website(self, app_context):
         """Test validating supplier data with invalid website URL"""
+    # Authentication handled by authenticated_test_user fixture
         invalid_data = {"name": "Test Supplier", "website": "invalid-website-url"}
 
         errors = SupplierService.validate_supplier_data(invalid_data)
@@ -379,6 +402,7 @@ class TestSupplierService(DatabaseTestMixin):
 
     def test_add_product_to_supplier(self, app_context, sample_supplier):
         """Test adding a product to a supplier"""
+    # Authentication handled by authenticated_test_user fixture
         product_data = {
             "name": "Test Product",
             "category": "Tools",
@@ -397,6 +421,7 @@ class TestSupplierService(DatabaseTestMixin):
 
     def test_add_product_to_supplier_not_found(self, app_context):
         """Test adding product to non-existent supplier"""
+    # Authentication handled by authenticated_test_user fixture
         product_data = {"name": "Test Product"}
         result = SupplierService.add_product_to_supplier(999, product_data)
         assert result is None
@@ -431,7 +456,8 @@ class TestSupplierService(DatabaseTestMixin):
 
     def test_get_supplier_contact_info(self, app_context, sample_supplier):
         """Test getting formatted contact information for a supplier"""
-        # Update supplier with complete contact info
+    # Authentication handled by authenticated_test_user fixture
+# Update supplier with complete contact info
         sample_supplier.contact_person = "John Doe"
         sample_supplier.email = "john@supplier.com"
         sample_supplier.phone = "555-123-4567"
@@ -452,6 +478,7 @@ class TestSupplierService(DatabaseTestMixin):
 
     def test_get_supplier_contact_info_not_found(self, app_context):
         """Test getting contact info for non-existent supplier"""
+    # Authentication handled by authenticated_test_user fixture
         contact_info = SupplierService.get_supplier_contact_info(999)
         assert contact_info == {}
 
@@ -462,7 +489,8 @@ class TestSupplierServiceIntegration(DatabaseTestMixin):
 
     def test_full_supplier_lifecycle(self, app_context, product_factory, plant_factory):
         """Test complete supplier lifecycle from creation to deletion"""
-        # Create supplier
+    # Authentication handled by authenticated_test_user fixture
+# Create supplier
         supplier_data = {
             "name": "Lifecycle Test Supplier",
             "contact_person": "Test Contact",
@@ -514,6 +542,7 @@ class TestSupplierServiceIntegration(DatabaseTestMixin):
 
     def test_supplier_product_plant_management(self, app_context, supplier_factory, product_factory, plant_factory):
         """Test complex supplier-product-plant relationship scenarios"""
+    # Authentication handled by authenticated_test_user fixture
         supplier = supplier_factory(name="Management Test Supplier")
 
         # Add diverse products
@@ -557,7 +586,8 @@ class TestSupplierServiceIntegration(DatabaseTestMixin):
 
     def test_supplier_search_and_filtering_complex(self, app_context, supplier_factory):
         """Test complex search and filtering scenarios"""
-        # Create diverse suppliers
+    # Authentication handled by authenticated_test_user fixture
+# Create diverse suppliers
         suppliers_data = [
             {
                 "name": "Alpha Plant Nursery",

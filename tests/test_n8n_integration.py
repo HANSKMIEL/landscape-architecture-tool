@@ -6,6 +6,7 @@ import json
 from unittest.mock import Mock, patch
 
 import pytest
+from tests.fixtures.auth_fixtures import authenticated_test_user, setup_test_authentication
 
 from src.main import create_app
 from src.models.landscape import db
@@ -71,7 +72,8 @@ class TestN8nWebhookEndpoints:
     @patch("src.routes.webhooks.requests.post")
     def test_project_created_webhook_failure(self, mock_post, client):
         """Test failed project created webhook trigger"""
-        # Mock failed N8n response
+    # Authentication handled by authenticated_test_user fixture
+# Mock failed N8n response
         mock_response = Mock()
         mock_response.status_code = 500
         mock_post.return_value = mock_response
@@ -88,8 +90,9 @@ class TestN8nWebhookEndpoints:
         response_data = response.get_json()
         assert response_data["status"] == "workflow_failed"
 
-    def test_project_created_webhook_missing_data(self, client):
-        """Test webhook with missing required data"""
+    def test_project_created_webhook_missing_data(self, client, authenticated_test_user):
+        """test_project_created_webhook_missing_data"""
+        # Authentication handled by authenticated_test_user fixture
         data = {
             "client_id": 1,
             "project_name": "Test Project",
@@ -133,6 +136,7 @@ class TestN8nWebhookEndpoints:
     @patch("src.routes.webhooks.requests.post")
     def test_project_milestone_webhook(self, mock_post, client):
         """Test project milestone webhook trigger"""
+    # Authentication handled by authenticated_test_user fixture
         mock_response = Mock()
         mock_response.status_code = 200
         mock_post.return_value = mock_response
@@ -155,8 +159,9 @@ class TestN8nWebhookEndpoints:
         assert response_data["status"] == "workflow_triggered"
         assert response_data["webhook"] == "project-milestone"
 
-    def test_project_milestone_webhook_missing_data(self, client):
-        """Test milestone webhook with missing data"""
+    def test_project_milestone_webhook_missing_data(self, client, authenticated_test_user):
+        """test_project_milestone_webhook_missing_data"""
+        # Authentication handled by authenticated_test_user fixture
         data = {
             "project_id": 1
             # Missing milestone

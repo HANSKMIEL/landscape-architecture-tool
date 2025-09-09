@@ -9,6 +9,7 @@ import json
 from unittest.mock import patch
 
 import pytest
+from tests.fixtures.auth_fixtures import authenticated_test_user, setup_test_authentication
 
 from src.main import create_app
 from src.models.user import db
@@ -569,6 +570,7 @@ class TestPlantRecommendationIntegration:
 
     def test_empty_plant_database(self, authenticated_client, app):
         """Test recommendations with empty plant database"""
+    # Authentication handled by authenticated_test_user fixture
         with app.app_context():
             db.create_all()  # Empty database
 

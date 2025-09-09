@@ -132,7 +132,7 @@ class VectorworksDataExtractor:
         # Use class constant for output filename
         output_path = f"{self.sdk.temp_dir}/{self.OUTPUT_FILENAME}"
         
-        return f"""
+        script_template = '''
         {{ Vectorscript for extracting landscape architecture data }}
         PROCEDURE ExtractLandscapeData;
         VAR
@@ -182,7 +182,7 @@ class VectorworksDataExtractor:
                 IF (objType = 86) OR (objType = 15) THEN BEGIN {{ Symbol or Group }}
                     GetSymLoc(h, x, y);
                     
-                    WriteToFile(outputFile, '{');
+                    WriteToFile(outputFile, '{{');
                     WriteToFile(outputFile, Concat('"name": "', objName, '",'));
                     WriteToFile(outputFile, Concat('"type": ', Num2Str(0, objType), ','));
                     WriteToFile(outputFile, Concat('"x": ', Num2Str(2, x), ','));
@@ -193,23 +193,25 @@ class VectorworksDataExtractor:
                     {{ Extract custom data from records }}
                     recordHandle := GetRecord(h, 1);
                     IF recordHandle <> NIL THEN BEGIN
-                        WriteToFile(outputFile, ', "data": {');
+                        WriteToFile(outputFile, ', "data": {{');
                         {{ Add record field extraction here }}
-                        WriteToFile(outputFile, '}');
+                        WriteToFile(outputFile, '}}');
                     END;
                     
-                    WriteToFile(outputFile, '},');
+                    WriteToFile(outputFile, '}}},');
                 END;
                 
                 h := NextSObj(h);
             END;
             
-            WriteToFile(outputFile, ']}');
+            WriteToFile(outputFile, ']}}');
             
         END;
         
         RUN(ExtractLandscapeData);
-        """
+        '''
+        
+        return script_template.format(output_path=output_path)
     
     def _execute_vectorscript(self, script_path: str, vwx_file_path: str) -> Optional[Dict]:
         """Execute Vectorscript and return results"""
