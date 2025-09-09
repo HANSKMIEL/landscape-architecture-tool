@@ -55,7 +55,25 @@ def db_setup(app):
 class TestPlantRecommendationHistoryRoute:
     """Test the recommendation history endpoint"""
 
-    def test_get_history_no_params(self, client, app, db_setup):
+    @pytest.fixture
+    def authenticated_client(self, client, app):
+        """Create an authenticated test client"""
+        with app.app_context():
+            from src.models.user import User, db
+            
+            # Create test user
+            user = User(username="testuser", email="test@example.com", role="admin")
+            user.set_password("testpass")
+            db.session.add(user)
+            db.session.commit()
+            
+            # Login
+            response = client.post("/api/auth/login", json={"username": "testuser", "password": "testpass"})
+            assert response.status_code == 200
+            
+            return client
+
+    def test_get_history_basic(self, client, app, db_setup):
         """Test getting history without parameters"""
         with app.app_context():
             response = client.get("/api/plant-recommendations/history")
@@ -67,13 +85,13 @@ class TestPlantRecommendationHistoryRoute:
             assert "offset" in data
             assert "has_more" in data
 
-    def test_get_history_with_session_id(self, client, app, db_setup):
+    def test_get_history_with_session_id(self, authenticated_client, app, db_setup):
         """Test getting history filtered by session_id"""
         with app.app_context():
             # First create a recommendation request
             request_data = {"hardiness_zone": "5-8", "maintenance_level": "Low"}
 
-            rec_response = client.post(
+            rec_response = authenticated_client.post(
                 "/api/plant-recommendations",
                 data=json.dumps(request_data),
                 content_type="application/json",
@@ -81,7 +99,7 @@ class TestPlantRecommendationHistoryRoute:
             assert rec_response.status_code == 200
 
             # Now get history
-            response = client.get("/api/plant-recommendations/history")
+            response = authenticated_client.get("/api/plant-recommendations/history")
             assert response.status_code == 200
 
             data = json.loads(response.data)
@@ -126,10 +144,28 @@ class TestPlantRecommendationHistoryRoute:
 class TestPlantRecommendationExportRoute:
     """Test the recommendation export endpoint"""
 
-    def test_export_missing_request_id(self, client, app, db_setup):
+    @pytest.fixture
+    def authenticated_client(self, client, app):
+        """Create an authenticated test client"""
+        with app.app_context():
+            from src.models.user import User, db
+            
+            # Create test user
+            user = User(username="testuser", email="test@example.com", role="admin")
+            user.set_password("testpass")
+            db.session.add(user)
+            db.session.commit()
+            
+            # Login
+            response = client.post("/api/auth/login", json={"username": "testuser", "password": "testpass"})
+            assert response.status_code == 200
+            
+            return client
+
+    def test_export_missing_request_id(self, authenticated_client, app, db_setup):
         """Test export without request_id"""
         with app.app_context():
-            response = client.post(
+            response = authenticated_client.post(
                 "/api/plant-recommendations/export",
                 data=json.dumps({"format": "csv"}),
                 content_type="application/json",
@@ -139,10 +175,10 @@ class TestPlantRecommendationExportRoute:
             data = json.loads(response.data)
             assert "request_id is required" in data["error"]
 
-    def test_export_unsupported_format(self, client, app, db_setup):
+    def test_export_unsupported_format(self, authenticated_client, app, db_setup):
         """Test export with unsupported format"""
         with app.app_context():
-            response = client.post(
+            response = authenticated_client.post(
                 "/api/plant-recommendations/export",
                 data=json.dumps({"request_id": 123, "format": "xlsx"}),
                 content_type="application/json",
