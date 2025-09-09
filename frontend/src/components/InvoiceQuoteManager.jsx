@@ -86,7 +86,7 @@ const InvoiceQuoteManager = () => {
       setGeneratingPdf(projectId);
       
       if (format === 'pdf') {
-        const response = await apiService.generateInvoice(projectId, { format: 'pdf' });
+        await apiService.generateInvoice(projectId, { format: 'pdf' });
         
         // Create a temporary link to download the PDF
         const url = `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}/api/invoices/invoice/${projectId}`;

@@ -1,4 +1,4 @@
-import { Menu, Globe, LogOut, User, Settings, ChevronDown } from 'lucide-react';
+import { Menu, LogOut, User, Settings, ChevronDown } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import { useLanguage, LanguageSelector } from '../i18n/LanguageProvider';
 

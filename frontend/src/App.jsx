@@ -26,7 +26,7 @@ import './enhanced_sidebar_styles.css'
 
 // Main App component with authentication and routing
 function AppContent() {
-  const { t, currentLanguage } = useLanguage()
+  const { t } = useLanguage()
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [user, setUser] = useState(null)
   const [authLoading, setAuthLoading] = useState(true)
@@ -63,7 +63,7 @@ function AppContent() {
         .replace('{username}', response.user.username)
       
       toast.success(welcomeMessage)
-    } catch (error) {
+    } catch (_error) {
       const errorMessage = t('auth.loginFailed', 'Login failed. Please check your credentials.')
       
       setLoginError(errorMessage)

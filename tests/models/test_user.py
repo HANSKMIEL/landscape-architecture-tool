@@ -68,7 +68,7 @@ class TestUserModel:
 
     def test_create_admin_user(self, app_context):
         """Test admin user creation utility"""
-        admin_user = User.create_admin_user()
+        admin_user = User.create_admin_user(password="admin123")
 
         assert admin_user.username == "admin"
         assert admin_user.email == "admin@landscape.com"

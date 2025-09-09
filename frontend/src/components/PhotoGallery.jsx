@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { Camera, Download, Trash2, Star, Eye, MoreVertical, Edit } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Camera, Download, Trash2, Star, Eye, MoreVertical } from 'lucide-react';
 import { Card, CardContent } from './ui/card';
 import { Badge } from './ui/badge';
+import { Button } from './ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -28,8 +29,8 @@ const PhotoGallery = ({
 }) => {
   const [photos, setPhotos] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selectedPhoto, setSelectedPhoto] = useState(null);
-  const { toast } = useToast();
+  // Note: useToast hook would need to be imported from your toast library
+  // const { toast } = useToast();
 
   const categoryLabels = {
     plant: 'Plant',
@@ -41,7 +42,7 @@ const PhotoGallery = ({
     reference: 'Referentie'
   };
 
-  const fetchPhotos = async () => {
+  const fetchPhotos = useCallback(async () => {
     try {
       const params = new URLSearchParams();
       if (category) params.append('category', category);
@@ -58,16 +59,16 @@ const PhotoGallery = ({
       } else {
         console.error('Failed to fetch photos');
       }
-    } catch (error) {
-      console.error('Error fetching photos:', error);
+    } catch (_error) {
+      console.error('Error fetching photos:', _error);
     } finally {
       setLoading(false);
     }
-  };
+  }, [category, entityId, maxPhotos]);
 
   useEffect(() => {
     fetchPhotos();
-  }, [category, entityId, maxPhotos]);
+  }, [fetchPhotos]);
 
   const handleSetPrimary = async (photoId) => {
     try {
@@ -77,26 +78,15 @@ const PhotoGallery = ({
       });
 
       if (response.ok) {
-        toast({
-          title: "Primaire foto ingesteld",
-          description: "Deze foto is nu de hoofdfoto."
-        });
+        console.log("Primaire foto ingesteld");
         await fetchPhotos(); // Refresh to show updated primary status
         onPhotoUpdate();
       } else {
-        const error = await response.json();
-        toast({
-          title: "Fout",
-          description: error.error || "Kon primaire foto niet instellen.",
-          variant: "destructive"
-        });
+        const errorData = await response.json();
+        console.error("Fout:", errorData.error || "Kon primaire foto niet instellen.");
       }
-    } catch (error) {
-      toast({
-        title: "Fout",
-        description: "Netwerkfout bij het instellen van primaire foto.",
-        variant: "destructive"
-      });
+    } catch (_error) {
+      console.error("Netwerkfout bij het instellen van primaire foto:", _error);
     }
   };
 
@@ -112,26 +102,15 @@ const PhotoGallery = ({
       });
 
       if (response.ok) {
-        toast({
-          title: "Foto verwijderd",
-          description: "De foto is succesvol verwijderd."
-        });
+        console.log("Foto verwijderd");
         await fetchPhotos(); // Refresh photos
         onPhotoUpdate();
       } else {
-        const error = await response.json();
-        toast({
-          title: "Fout",
-          description: error.error || "Kon foto niet verwijderen.",
-          variant: "destructive"
-        });
+        const errorData = await response.json();
+        console.error("Fout:", errorData.error || "Kon foto niet verwijderen.");
       }
-    } catch (error) {
-      toast({
-        title: "Fout",
-        description: "Netwerkfout bij het verwijderen van foto.",
-        variant: "destructive"
-      });
+    } catch (_error) {
+      console.error("Netwerkfout bij het verwijderen van foto:", _error);
     }
   };
 
