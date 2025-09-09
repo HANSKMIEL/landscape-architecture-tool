@@ -78,19 +78,21 @@ class PRAnalyzer:
     """Analyzes pull requests for validation reporting."""
     
     def __init__(self, github_token: str | None = None, 
-                 owner: str = "HANSKMIEL", 
-                 repo: str = "landscape-architecture-tool"):
+                 owner: str | None = None, 
+                 repo: str | None = None):
         """
         Initialize PR analyzer.
         
         Args:
             github_token: GitHub API token (optional, can use env var GITHUB_TOKEN)
-            owner: Repository owner
-            repo: Repository name
+            owner: Repository owner (required, can use env var GITHUB_OWNER)
+            repo: Repository name (required, can use env var GITHUB_REPO)
         """
-        self.owner = owner
-        self.repo = repo
+        self.owner = owner or os.getenv("GITHUB_OWNER")
+        self.repo = repo or os.getenv("GITHUB_REPO")
         self.github_token = github_token or os.getenv("GITHUB_TOKEN")
+        if not self.owner or not self.repo:
+            raise ValueError("Repository owner and name must be provided via arguments or environment variables (GITHUB_OWNER, GITHUB_REPO).")
         
         # Default categorization rules
         self.critical_dependencies = [
