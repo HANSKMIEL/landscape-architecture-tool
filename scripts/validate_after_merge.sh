@@ -13,7 +13,10 @@ test_backend() {
     
     # Install dependencies
     echo "  📦 Installing backend dependencies..."
-    pip install -r requirements-dev.txt > /dev/null 2>&1 || echo "  ⚠️ Dependency installation warnings"
+    if ! pip install -r requirements-dev.txt > /dev/null 2>&1; then
+        echo "❌ Dependency installation failed"
+        return 1
+    fi
     
     # Test imports
     echo "  📥 Testing critical imports..."
