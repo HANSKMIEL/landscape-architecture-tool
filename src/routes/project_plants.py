@@ -11,6 +11,7 @@ from flask import Blueprint, jsonify, request
 from pydantic import ValidationError
 from werkzeug.exceptions import HTTPException
 
+from src.routes.user import data_access_required
 from src.schemas import ProjectPlantCreateSchema, ProjectPlantUpdateSchema
 from src.services.project_plant import ProjectPlantService
 from src.utils.error_handlers import handle_errors
@@ -22,6 +23,7 @@ service = ProjectPlantService()
 
 
 @project_plants_bp.route("/api/projects/<int:project_id>/plants", methods=["POST"])
+@data_access_required
 def add_plant_to_project(project_id):
     """Add a plant to a project"""
     try:

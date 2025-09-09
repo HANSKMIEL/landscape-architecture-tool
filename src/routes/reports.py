@@ -22,11 +22,13 @@ from src.models.landscape import (
     Supplier,
     db,
 )
+from src.routes.user import login_required
 
 reports_bp = Blueprint("reports", __name__)
 
 
 @reports_bp.route("/api/reports/business-summary", methods=["GET"])
+@login_required
 def generate_business_summary():
     """Generate business summary report"""
     try:
