@@ -1,0 +1,112 @@
+name: Automated Issue Triage
+
+on:
+  issues:
+    types: [opened, edited, labeled, unlabeled]
+  issue_comment:
+    types: [created]
+
+permissions:
+  issues: write
+  contents: read
+
+jobs:
+  triage:
+    name: Issue Triage
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Auto-label based on content
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issue = context.payload.issue;
+            const title = issue.title.toLowerCase();
+            const body = issue.body ? issue.body.toLowerCase() : '';
+            const labels = [];
+
+            // Priority labeling
+            if (title.includes('critical') || title.includes('urgent') || body.includes('production')) {
+              labels.push('priority:high');
+            } else if (title.includes('minor') || body.includes('nice to have')) {
+              labels.push('priority:low');
+            } else {
+              labels.push('priority:medium');
+            }
+
+            // Type labeling
+            if (title.includes('bug') || title.includes('error') || title.includes('issue') || 
+                body.includes('error') || body.includes('bug') || body.includes('broken')) {
+              labels.push('type:bug');
+            } else if (title.includes('feature') || title.includes('enhancement') || 
+                       body.includes('feature') || body.includes('enhancement')) {
+              labels.push('type:enhancement');
+            } else if (title.includes('doc') || body.includes('documentation')) {
+              labels.push('type:documentation');
+            }
+
+            // Component labeling
+            if (body.includes('backend') || body.includes('api') || body.includes('python') || body.includes('flask')) {
+              labels.push('component:backend');
+            }
+            if (body.includes('frontend') || body.includes('ui') || body.includes('react') || body.includes('javascript')) {
+              labels.push('component:frontend');
+            }
+            if (body.includes('database') || body.includes('sql') || body.includes('migration')) {
+              labels.push('component:database');
+            }
+            if (body.includes('ci') || body.includes('workflow') || body.includes('github actions')) {
+              labels.push('component:ci-cd');
+            }
+
+            // Landscape architecture specific
+            if (body.includes('vectorworks') || body.includes('plant') || body.includes('landscape')) {
+              labels.push('domain:landscape-architecture');
+            }
+
+            // Add needs-triage label for new issues
+            if (context.payload.action === 'opened') {
+              labels.push('status:needs-triage');
+            }
+
+            // Apply labels
+            if (labels.length > 0) {
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                labels: labels
+              });
+            }
+
+      - name: Welcome new contributors
+        if: github.event.action == 'opened'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issue = context.payload.issue;
+            const author = issue.user.login;
+            
+            // Check if this is the user's first issue
+            const issues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              creator: author,
+              state: 'all'
+            });
+            
+            if (issues.data.length === 1) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                body: `👋 Welcome to the Landscape Architecture Tool project, @${author}! 
+
+Thank you for opening your first issue. Our team will review it and get back to you soon.
+
+If you're interested in contributing, please check out our [contributing guidelines](./CONTRIBUTING.md) and feel free to ask questions!`
+              });
+            }
