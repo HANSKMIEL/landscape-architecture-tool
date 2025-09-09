@@ -1,0 +1,87 @@
+# Labeler configuration for automatic PR labeling
+
+# Backend components
+'component:backend':
+  - 'src/**/*'
+  - 'requirements*.txt'
+  - 'pyproject.toml'
+  - '*.py'
+
+# Frontend components  
+'component:frontend':
+  - 'frontend/**/*'
+  - 'package*.json'
+
+# Database related
+'component:database':
+  - 'migrations/**/*'
+  - 'src/models/**/*'
+  - '**/alembic.ini'
+
+# CI/CD and workflows
+'component:ci-cd':
+  - '.github/workflows/**/*'
+  - '.github/actions/**/*'
+  - 'Dockerfile*'
+  - 'docker-compose*.yml'
+  - '.circleci/**/*'
+
+# Documentation
+'component:documentation':
+  - 'docs/**/*'
+  - 'documentation/**/*'
+  - '*.md'
+  - 'README*'
+
+# Testing
+'component:tests':
+  - 'tests/**/*'
+  - '**/test_*.py'
+  - '**/*_test.py'
+  - 'frontend/**/*.test.*'
+  - 'frontend/**/*.spec.*'
+
+# Configuration
+'component:config':
+  - '.env*'
+  - 'config/**/*'
+  - 'src/config.py'
+  - '*.ini'
+  - '*.toml'
+  - '*.yaml'
+  - '*.yml'
+
+# Dependencies
+'dependencies':
+  - 'requirements*.txt'
+  - 'package*.json'
+  - 'Pipfile*'
+  - 'poetry.lock'
+
+# Security
+'security':
+  - '.github/workflows/*security*'
+  - '.github/workflows/*audit*'
+  - 'src/utils/security*'
+
+# Performance
+'performance':
+  - '.github/workflows/*performance*'
+  - '**/benchmark*'
+  - '**/performance*'
+
+# Landscape Architecture specific
+'domain:landscape-architecture':
+  - 'src/models/landscape.py'
+  - 'src/routes/plants.py'
+  - 'src/routes/suppliers.py'
+  - 'src/routes/projects.py'
+  - 'src/services/plant*'
+  - 'frontend/src/components/Plants*'
+  - 'frontend/src/components/Projects*'
+
+# Vectorworks integration
+'integration:vectorworks':
+  - '**/vectorworks*'
+  - '**/plant_recommendations*'
+  - 'src/routes/excel_import.py'
