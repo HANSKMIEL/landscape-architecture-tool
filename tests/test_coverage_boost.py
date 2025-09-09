@@ -57,106 +57,98 @@ class TestCoverageBoost:
                 assert "status" in data
                 assert "timestamp" in data
 
-    def test_api_endpoints_basic_coverage(self, app_context):
+    def test_api_endpoints_basic_coverage(self, authenticated_client):
         """Test basic API endpoints for coverage"""
-        app = app_context
-        with app.test_client() as client:
-            # Test dashboard stats
-            response = client.get("/api/dashboard/stats")
-            assert response.status_code == 200
+        # Test dashboard stats
+        response = authenticated_client.get("/api/dashboard/stats")
+        assert response.status_code == 200
 
-            # Test suppliers endpoint
-            response = client.get("/api/suppliers")
-            assert response.status_code == 200
+        # Test suppliers endpoint
+        response = authenticated_client.get("/api/suppliers")
+        assert response.status_code == 200
 
-            # Test plants endpoint
-            response = client.get("/api/plants")
-            assert response.status_code == 200
+        # Test plants endpoint
+        response = authenticated_client.get("/api/plants")
+        assert response.status_code == 200
 
-            # Test products endpoint
-            response = client.get("/api/products")
-            assert response.status_code == 200
+        # Test products endpoint
+        response = authenticated_client.get("/api/products")
+        assert response.status_code == 200
 
-            # Test clients endpoint
-            response = client.get("/api/clients")
-            assert response.status_code == 200
+        # Test clients endpoint
+        response = authenticated_client.get("/api/clients")
+        assert response.status_code == 200
 
-            # Test projects endpoint
-            response = client.get("/api/projects")
-            assert response.status_code == 200
+        # Test projects endpoint
+        response = authenticated_client.get("/api/projects")
+        assert response.status_code == 200
 
-    def test_post_endpoints_coverage(self, app_context):
+    def test_post_endpoints_coverage(self, authenticated_client):
         """Test POST endpoints for coverage"""
-        app = app_context
-        with app.test_client() as client:
-            # Test supplier creation
-            supplier_data = {
-                "name": "Test Supplier",
-                "contact_person": "John Doe",
-                "email": "john@test.com",
-                "phone": "123-456-7890",
-                "address": "123 Test St",
-            }
-            response = client.post("/api/suppliers", json=supplier_data)
-            assert response.status_code in [200, 201]
+        # Test supplier creation
+        supplier_data = {
+            "name": "Test Supplier",
+            "contact_person": "John Doe",
+            "email": "john@test.com",
+            "phone": "123-456-7890",
+            "address": "123 Test St",
+        }
+        response = authenticated_client.post("/api/suppliers", json=supplier_data)
+        assert response.status_code in [200, 201]
 
-            # Test plant creation
-            plant_data = {
-                "name": "Test Plant",
-                "scientific_name": "Testus plantus",
-                "plant_type": "shrub",
-                "sun_requirements": "full_sun",
-                "water_requirements": "moderate",
-                "soil_type": "well_drained",
-                "hardiness_zone": "5-9",
-                "height_min": 50,
-                "height_max": 150,
-                "spread_min": 40,
-                "spread_max": 120,
-            }
-            response = client.post("/api/plants", json=plant_data)
-            assert response.status_code in [200, 201]
+        # Test plant creation
+        plant_data = {
+            "name": "Test Plant",
+            "scientific_name": "Testus plantus",
+            "plant_type": "shrub",
+            "sun_requirements": "full_sun",
+            "water_requirements": "moderate",
+            "soil_type": "well_drained",
+            "hardiness_zone": "5-9",
+            "height_min": 50,
+            "height_max": 150,
+            "spread_min": 40,
+            "spread_max": 120,
+        }
+        response = authenticated_client.post("/api/plants", json=plant_data)
+        assert response.status_code in [200, 201]
 
-    def test_error_scenarios_coverage(self, app_context):
+    def test_error_scenarios_coverage(self, authenticated_client):
         """Test error scenarios for coverage"""
-        app = app_context
-        with app.test_client() as client:
-            # Test invalid JSON - use proper handling
-            try:
-                response = client.post(
-                    "/api/suppliers",
-                    data="invalid json",
-                    content_type="application/json",
-                )
-                # Accept either 400, 422, or 500 as all are error scenarios
-                # we want to cover
-                assert response.status_code in [400, 422, 500]
-            except Exception:
-                pass
+        # Test invalid JSON - use proper handling
+        try:
+            response = authenticated_client.post(
+                "/api/suppliers",
+                data="invalid json",
+                content_type="application/json",
+            )
+            # Accept either 400, 422, or 500 as all are error scenarios
+            # we want to cover
+            assert response.status_code in [400, 422, 500]
+        except Exception:
+            pass
 
-            # Test missing required fields
-            response = client.post("/api/suppliers", json={})
-            assert response.status_code in [
-                400,
-                422,
-                500,
-            ]  # Either is acceptable for coverage
+        # Test missing required fields
+        response = authenticated_client.post("/api/suppliers", json={})
+        assert response.status_code in [
+            400,
+            422,
+            500,
+        ]  # Either is acceptable for coverage
 
-    def test_search_endpoints_coverage(self, app_context):
+    def test_search_endpoints_coverage(self, authenticated_client):
         """Test search functionality for coverage"""
-        app = app_context
-        with app.test_client() as client:
-            # Test supplier search
-            response = client.get("/api/suppliers?search=test")
-            assert response.status_code == 200
+        # Test supplier search
+        response = authenticated_client.get("/api/suppliers?search=test")
+        assert response.status_code == 200
 
-            # Test plant search
-            response = client.get("/api/plants?search=test")
-            assert response.status_code == 200
+        # Test plant search
+        response = authenticated_client.get("/api/plants?search=test")
+        assert response.status_code == 200
 
-            # Test pagination
-            response = client.get("/api/suppliers?page=1&per_page=10")
-            assert response.status_code == 200
+        # Test pagination
+        response = authenticated_client.get("/api/suppliers?page=1&per_page=10")
+        assert response.status_code == 200
 
     def test_additional_coverage_paths(self, app_context):
         """Test additional code paths for coverage"""

@@ -1,0 +1,20 @@
+Defaulting to user installation because normal site-packages is not writeable
+Collecting pandas
+  Downloading pandas-2.3.2-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata
+     - 91.2 kB 141.0 MB/s 0:00:00
+Collecting numpy>=1.26.0 (from pandas)
+  Downloading numpy-2.3.2-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl.metadata
+     - 62.1 kB 196.9 MB/s 0:00:00
+Requirement already satisfied: python-dateutil>=2.8.2 in /usr/lib/python3/dist-packages (from pandas) (2.8.2)
+Requirement already satisfied: pytz>=2020.1 in /usr/lib/python3/dist-packages (from pandas) (2024.1)
+Collecting tzdata>=2022.7 (from pandas)
+  Downloading tzdata-2025.2-py2.py3-none-any.whl.metadata
+     - 1.4 kB ? 0:00:00
+Downloading pandas-2.3.2-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
+   | 12.0 MB 138.4 MB/s 0:00:00
+Downloading numpy-2.3.2-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl
+   \ 16.6 MB 219.7 MB/s 0:00:00
+Downloading tzdata-2025.2-py2.py3-none-any.whl
+   - 347.8 kB 210.1 MB/s 0:00:00
+Installing collected packages: tzdata, numpy, pandas
+Successfully installed numpy-2.3.2 pandas-2.3.2 tzdata-2025.2

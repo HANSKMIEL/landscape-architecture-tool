@@ -120,9 +120,9 @@ def sample_project(app_context, sample_client):
 class TestPlantRecommendationsAPI:
     """Test plant recommendations API endpoints"""
 
-    def test_criteria_options_endpoint(self, client, app_context):
+    def test_criteria_options_endpoint(self, authenticated_client, app_context):
         """Test plant recommendation criteria options endpoint"""
-        response = client.get("/api/plant-recommendations/criteria-options")
+        response = authenticated_client.get("/api/plant-recommendations/criteria-options")
 
         assert response.status_code == 200
         data = response.get_json()
@@ -140,11 +140,11 @@ class TestPlantRecommendationsAPI:
             assert key in data
             assert isinstance(data[key], list)
 
-    def test_plant_recommendations_endpoint(self, client, app_context):
+    def test_plant_recommendations_endpoint(self, authenticated_client, app_context):
         """Test basic plant recommendations functionality"""
         request_data = {"hardiness_zone": "5-9", "sun_exposure": "Full Sun", "max_results": 3, "min_score": 0.3}
 
-        response = client.post(
+        response = authenticated_client.post(
             "/api/plant-recommendations", data=json.dumps(request_data), content_type="application/json"
         )
 
@@ -167,19 +167,21 @@ class TestPlantRecommendationsAPI:
             assert "match_reasons" in rec
             assert "warnings" in rec
 
-    def test_plant_recommendations_error_handling(self, client, app_context):
+    def test_plant_recommendations_error_handling(self, authenticated_client, app_context):
         """Test error handling for plant recommendations"""
         # Test empty request body
-        response = client.post("/api/plant-recommendations", data="", content_type="application/json")
+        response = authenticated_client.post("/api/plant-recommendations", data="", content_type="application/json")
         assert response.status_code == 400
 
         # Test invalid JSON
-        response = client.post("/api/plant-recommendations", data="invalid json", content_type="application/json")
+        response = authenticated_client.post(
+            "/api/plant-recommendations", data="invalid json", content_type="application/json"
+        )
         assert response.status_code == 400
 
-    def test_recommendation_history_endpoint(self, client, app_context):
+    def test_recommendation_history_endpoint(self, authenticated_client, app_context):
         """Test recommendation history endpoint"""
-        response = client.get("/api/plant-recommendations/history")
+        response = authenticated_client.get("/api/plant-recommendations/history")
 
         assert response.status_code == 200
         data = response.get_json()
@@ -191,21 +193,21 @@ class TestPlantRecommendationsAPI:
         assert "has_more" in data
         assert isinstance(data["history"], list)
 
-    def test_recommendation_history_with_params(self, client, app_context):
+    def test_recommendation_history_with_params(self, authenticated_client, app_context):
         """Test recommendation history with query parameters"""
-        response = client.get("/api/plant-recommendations/history?limit=10&offset=0")
+        response = authenticated_client.get("/api/plant-recommendations/history?limit=10&offset=0")
 
         assert response.status_code == 200
         data = response.get_json()
         assert data["limit"] == 10
         assert data["offset"] == 0
 
-    def test_recommendation_history_invalid_params(self, client, app_context):
+    def test_recommendation_history_invalid_params(self, authenticated_client, app_context):
         """Test recommendation history with invalid parameters"""
-        response = client.get("/api/plant-recommendations/history?limit=invalid")
+        response = authenticated_client.get("/api/plant-recommendations/history?limit=invalid")
         assert response.status_code == 400
 
-        response = client.get("/api/plant-recommendations/history?offset=invalid")
+        response = authenticated_client.get("/api/plant-recommendations/history?offset=invalid")
         assert response.status_code == 400
 
 
@@ -213,11 +215,11 @@ class TestPlantRecommendationsAPI:
 class TestProjectPlantsAPI:
     """Test project plants API endpoints"""
 
-    def test_add_plant_to_project(self, client, app_context, sample_project, sample_plant):
+    def test_add_plant_to_project(self, authenticated_client, app_context, sample_project, sample_plant):
         """Test adding a plant to a project"""
         request_data = {"plant_id": sample_plant.id, "quantity": 5, "unit_cost": 25.50, "notes": "Test plant addition"}
 
-        response = client.post(
+        response = authenticated_client.post(
             f"/api/projects/{sample_project.id}/plants", data=json.dumps(request_data), content_type="application/json"
         )
 
@@ -240,25 +242,25 @@ class TestProjectPlantsAPI:
         assert data["unit_cost"] == 25.50
         assert data["total_cost"] == 127.50  # 5 * 25.50
 
-    def test_get_project_plants(self, client, app_context, sample_project):
+    def test_get_project_plants(self, authenticated_client, app_context, sample_project):
         """Test getting plants for a project"""
-        response = client.get(f"/api/projects/{sample_project.id}/plants")
+        response = authenticated_client.get(f"/api/projects/{sample_project.id}/plants")
 
         assert response.status_code == 200
         data = response.get_json()
         assert isinstance(data, list)
 
-    def test_update_project_plant(self, client, app_context, sample_project, sample_plant):
+    def test_update_project_plant(self, authenticated_client, app_context, sample_project, sample_plant):
         """Test updating project plant details"""
         # First add a plant
         add_data = {"plant_id": sample_plant.id, "quantity": 3}
-        client.post(
+        authenticated_client.post(
             f"/api/projects/{sample_project.id}/plants", data=json.dumps(add_data), content_type="application/json"
         )
 
         # Update quantity
         update_data = {"quantity": 10}
-        response = client.put(
+        response = authenticated_client.put(
             f"/api/projects/{sample_project.id}/plants/{sample_plant.id}",
             data=json.dumps(update_data),
             content_type="application/json",
@@ -268,9 +270,9 @@ class TestProjectPlantsAPI:
         data = response.get_json()
         assert data["quantity"] == 10
 
-    def test_project_cost_analysis(self, client, app_context, sample_project):
+    def test_project_cost_analysis(self, authenticated_client, app_context, sample_project):
         """Test project cost analysis endpoint"""
-        response = client.get(f"/api/projects/{sample_project.id}/cost-analysis")
+        response = authenticated_client.get(f"/api/projects/{sample_project.id}/cost-analysis")
 
         assert response.status_code == 200
         data = response.get_json()
@@ -278,15 +280,15 @@ class TestProjectPlantsAPI:
         # Should have cost analysis structure
         assert isinstance(data, dict)
 
-    def test_plant_order_list(self, client, app_context, sample_project):
+    def test_plant_order_list(self, authenticated_client, app_context, sample_project):
         """Test plant order list generation"""
-        response = client.get(f"/api/projects/{sample_project.id}/plant-order-list")
+        response = authenticated_client.get(f"/api/projects/{sample_project.id}/plant-order-list")
 
         assert response.status_code == 200
         data = response.get_json()
         assert isinstance(data, dict)
 
-    def test_batch_add_plants(self, client, app_context, sample_project, sample_plant):
+    def test_batch_add_plants(self, authenticated_client, app_context, sample_project, sample_plant):
         """Test adding multiple plants at once"""
         request_data = {
             "plants": [
@@ -295,7 +297,7 @@ class TestProjectPlantsAPI:
             ]
         }
 
-        response = client.post(
+        response = authenticated_client.post(
             f"/api/projects/{sample_project.id}/plants/batch",
             data=json.dumps(request_data),
             content_type="application/json",
@@ -310,14 +312,16 @@ class TestProjectPlantsAPI:
         assert "total_added" in data
         assert "total_errors" in data
 
-    def test_project_plants_error_handling(self, client, app_context):
+    def test_project_plants_error_handling(self, authenticated_client, app_context):
         """Test error handling for invalid project/plant IDs"""
         # Test invalid project ID
-        response = client.get("/api/projects/999/plants")
+        response = authenticated_client.get("/api/projects/999/plants")
         assert response.status_code == 400
 
         # Test adding plant with invalid data
-        response = client.post("/api/projects/1/plants", data=json.dumps({}), content_type="application/json")
+        response = authenticated_client.post(
+            "/api/projects/1/plants", data=json.dumps({}), content_type="application/json"
+        )
         assert response.status_code == 400
 
 
@@ -325,9 +329,9 @@ class TestProjectPlantsAPI:
 class TestReportsAPI:
     """Test reports API endpoints"""
 
-    def test_business_summary_json(self, client, app_context):
+    def test_business_summary_json(self, authenticated_client, app_context):
         """Test business summary report in JSON format"""
-        response = client.get("/api/reports/business-summary")
+        response = authenticated_client.get("/api/reports/business-summary")
 
         assert response.status_code == 200
         data = response.get_json()
@@ -346,9 +350,9 @@ class TestReportsAPI:
             assert key in summary
             assert isinstance(summary[key], int)
 
-    def test_business_summary_with_date_filter(self, client, app_context):
+    def test_business_summary_with_date_filter(self, authenticated_client, app_context):
         """Test business summary with date filtering"""
-        response = client.get(
+        response = authenticated_client.get(
             "/api/reports/business-summary" "?start_date=2025-01-01T00:00:00" "&end_date=2025-12-31T23:59:59"
         )
 
@@ -357,9 +361,9 @@ class TestReportsAPI:
         assert data["period"]["start_date"] == "2025-01-01T00:00:00"
         assert data["period"]["end_date"] == "2025-12-31T23:59:59"
 
-    def test_project_report_json(self, client, app_context, sample_project):
+    def test_project_report_json(self, authenticated_client, app_context, sample_project):
         """Test project report in JSON format"""
-        response = client.get(f"/api/reports/project/{sample_project.id}")
+        response = authenticated_client.get(f"/api/reports/project/{sample_project.id}")
 
         assert response.status_code == 200
         data = response.get_json()
@@ -379,14 +383,14 @@ class TestReportsAPI:
         assert "status" in project_data
         assert project_data["id"] == sample_project.id
 
-    def test_project_report_not_found(self, client, app_context):
+    def test_project_report_not_found(self, authenticated_client, app_context):
         """Test project report with invalid project ID"""
-        response = client.get("/api/reports/project/999")
+        response = authenticated_client.get("/api/reports/project/999")
         assert response.status_code == 404
 
-    def test_plant_usage_report(self, client, app_context):
+    def test_plant_usage_report(self, authenticated_client, app_context):
         """Test plant usage statistics report"""
-        response = client.get("/api/reports/plant-usage")
+        response = authenticated_client.get("/api/reports/plant-usage")
 
         assert response.status_code == 200
         data = response.get_json()
@@ -402,9 +406,9 @@ class TestReportsAPI:
         assert isinstance(data["category_distribution"], dict)
         assert isinstance(data["total_unique_plants"], int)
 
-    def test_supplier_performance_report(self, client, app_context):
+    def test_supplier_performance_report(self, authenticated_client, app_context):
         """Test supplier performance report"""
-        response = client.get("/api/reports/supplier-performance")
+        response = authenticated_client.get("/api/reports/supplier-performance")
 
         assert response.status_code == 200
         data = response.get_json()
@@ -418,10 +422,10 @@ class TestReportsAPI:
         assert isinstance(data["suppliers"], list)
         assert isinstance(data["total_suppliers"], int)
 
-    def test_reports_error_handling(self, client, app_context):
+    def test_reports_error_handling(self, authenticated_client, app_context):
         """Test error handling for reports"""
         # Test invalid date format
-        response = client.get("/api/reports/business-summary?start_date=invalid-date")
+        response = authenticated_client.get("/api/reports/business-summary?start_date=invalid-date")
         assert response.status_code == 500
 
 
@@ -429,17 +433,17 @@ class TestReportsAPI:
 class TestAPIIntegrationScenarios:
     """Integration tests combining multiple API endpoints"""
 
-    def test_full_recommendation_workflow(self, client, app_context):
+    def test_full_recommendation_workflow(self, authenticated_client, app_context):
         """Test complete plant recommendation workflow"""
         # 1. Get criteria options
-        response = client.get("/api/plant-recommendations/criteria-options")
+        response = authenticated_client.get("/api/plant-recommendations/criteria-options")
         assert response.status_code == 200
         # Verify the response has expected structure
         _ = response.get_json()
 
         # 2. Make recommendation request
         request_data = {"hardiness_zone": "5-9", "sun_exposure": "Full Sun", "max_results": 2}
-        response = client.post(
+        response = authenticated_client.post(
             "/api/plant-recommendations", data=json.dumps(request_data), content_type="application/json"
         )
         assert response.status_code == 200
@@ -447,27 +451,27 @@ class TestAPIIntegrationScenarios:
         _ = response.get_json()
 
         # 3. Check history includes our request
-        response = client.get("/api/plant-recommendations/history")
+        response = authenticated_client.get("/api/plant-recommendations/history")
         assert response.status_code == 200
 
-    def test_project_plant_management_workflow(self, client, app_context, sample_project, sample_plant):
+    def test_project_plant_management_workflow(self, authenticated_client, app_context, sample_project, sample_plant):
         """Test complete project plant management workflow"""
         # 1. Add plant to project
         add_data = {"plant_id": sample_plant.id, "quantity": 5}
-        response = client.post(
+        response = authenticated_client.post(
             f"/api/projects/{sample_project.id}/plants", data=json.dumps(add_data), content_type="application/json"
         )
         assert response.status_code == 201
 
         # 2. Get project plants
-        response = client.get(f"/api/projects/{sample_project.id}/plants")
+        response = authenticated_client.get(f"/api/projects/{sample_project.id}/plants")
         assert response.status_code == 200
         plants = response.get_json()
         assert len(plants) >= 1
 
         # 3. Update plant quantity
         update_data = {"quantity": 8}
-        response = client.put(
+        response = authenticated_client.put(
             f"/api/projects/{sample_project.id}/plants/{sample_plant.id}",
             data=json.dumps(update_data),
             content_type="application/json",
@@ -475,29 +479,29 @@ class TestAPIIntegrationScenarios:
         assert response.status_code == 200
 
         # 4. Get cost analysis
-        response = client.get(f"/api/projects/{sample_project.id}/cost-analysis")
+        response = authenticated_client.get(f"/api/projects/{sample_project.id}/cost-analysis")
         assert response.status_code == 200
 
         # 5. Generate order list
-        response = client.get(f"/api/projects/{sample_project.id}/plant-order-list")
+        response = authenticated_client.get(f"/api/projects/{sample_project.id}/plant-order-list")
         assert response.status_code == 200
 
-    def test_reporting_workflow(self, client, app_context, sample_project):
+    def test_reporting_workflow(self, authenticated_client, app_context, sample_project):
         """Test complete reporting workflow"""
         # 1. Business summary
-        response = client.get("/api/reports/business-summary")
+        response = authenticated_client.get("/api/reports/business-summary")
         assert response.status_code == 200
 
         # 2. Project report
-        response = client.get(f"/api/reports/project/{sample_project.id}")
+        response = authenticated_client.get(f"/api/reports/project/{sample_project.id}")
         assert response.status_code == 200
 
         # 3. Plant usage report
-        response = client.get("/api/reports/plant-usage")
+        response = authenticated_client.get("/api/reports/plant-usage")
         assert response.status_code == 200
 
         # 4. Supplier performance report
-        response = client.get("/api/reports/supplier-performance")
+        response = authenticated_client.get("/api/reports/supplier-performance")
         assert response.status_code == 200
 
 
@@ -505,7 +509,7 @@ class TestAPIIntegrationScenarios:
 class TestAPIAuthenticationAndAuthorization:
     """Test authentication and authorization for API endpoints"""
 
-    def test_endpoints_accessible_without_auth(self, client, app_context):
+    def test_endpoints_accessible_without_auth(self, authenticated_client, app_context):
         """Test that API endpoints are accessible (no auth implemented yet)"""
         # Test key endpoints are accessible
         endpoints = [
@@ -516,17 +520,17 @@ class TestAPIAuthenticationAndAuthorization:
         ]
 
         for endpoint in endpoints:
-            response = client.get(endpoint)
+            response = authenticated_client.get(endpoint)
             assert response.status_code == 200, f"Endpoint {endpoint} should be accessible"
 
-    def test_post_endpoints_validation(self, client, app_context):
+    def test_post_endpoints_validation(self, authenticated_client, app_context):
         """Test POST endpoints have proper validation"""
         # Test plant recommendations requires valid JSON
-        response = client.post("/api/plant-recommendations")
+        response = authenticated_client.post("/api/plant-recommendations")
         assert response.status_code == 400
 
         # Test project plants requires valid data
-        response = client.post("/api/projects/1/plants")
+        response = authenticated_client.post("/api/projects/1/plants")
         assert response.status_code == 400
 
 

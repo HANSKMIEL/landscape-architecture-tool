@@ -317,3 +317,28 @@ def retry_on_failure_fixture():
         return retry_on_failure(max_retries=max_retries)
 
     return retry_decorator
+
+
+# Authentication fixtures for testing protected endpoints
+@pytest.fixture
+def authenticated_user(app, db_session):
+    """Create an authenticated user for testing protected endpoints."""
+    from src.models.user import User
+
+    with app.app_context():
+        # Create test user
+        user = User(username="testuser", email="test@example.com", role="admin", is_active=True)
+        user.set_password("testpass")
+        db_session.add(user)
+        db_session.commit()
+        db_session.refresh(user)
+        return user
+
+
+@pytest.fixture
+def authenticated_client(client, authenticated_user):
+    """Create an authenticated test client with user logged in."""
+    # Set up session authentication manually for tests
+    with client.session_transaction() as sess:
+        sess["user_id"] = authenticated_user.id
+    return client
