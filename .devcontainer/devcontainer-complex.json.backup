@@ -1,0 +1,73 @@
+{
+  "name": "Landscape Architecture Tool - Complex (Docker Compose)",
+  "description": "Full-stack development environment with Docker Compose - backup of original complex setup",
+  
+  "dockerComposeFile": "../docker-compose.yml",
+  "service": "backend",
+  "workspaceFolder": "/app",
+  
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "20"
+    },
+    "ghcr.io/devcontainers/features/git:1": {},
+    "ghcr.io/devcontainers/features/github-cli:1": {},
+    "ghcr.io/devcontainers/features/docker-in-docker:1": {}
+  },
+  
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "python.defaultInterpreterPath": "/usr/local/bin/python",
+        "python.linting.enabled": true,
+        "python.linting.pylintEnabled": false,
+        "python.linting.flake8Enabled": true,
+        "python.formatting.provider": "black",
+        "python.sortImports.provider": "isort",
+        "eslint.workingDirectories": ["frontend"],
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+          "source.organizeImports": "explicit"
+        }
+      },
+      
+      "extensions": [
+        "ms-python.python",
+        "ms-python.flake8",
+        "ms-python.black-formatter",
+        "esbenp.prettier-vscode",
+        "bradlc.vscode-tailwindcss",
+        "ms-vscode.vscode-typescript-next",
+        "github.copilot",
+        "github.copilot-chat"
+      ]
+    }
+  },
+  
+  "forwardPorts": [5000, 5174, 5432, 6379],
+  
+  "portsAttributes": {
+    "5000": {
+      "label": "Backend API",
+      "onAutoForward": "notify"
+    },
+    "5174": {
+      "label": "Frontend Dev Server", 
+      "onAutoForward": "openBrowser"
+    },
+    "5432": {
+      "label": "PostgreSQL Database",
+      "onAutoForward": "ignore"
+    },
+    "6379": {
+      "label": "Redis Cache",
+      "onAutoForward": "ignore"
+    }
+  },
+  
+  "postCreateCommand": "pip install -r requirements.txt && cd frontend && npm install",
+  
+  "postStartCommand": "echo '🚀 Landscape Architecture Tool development environment ready!'",
+  
+  "remoteUser": "vscode"
+}
