@@ -134,6 +134,57 @@ export const mockApi = {
     }))
   }),
   
+  // Authentication
+  login: (credentials) => {
+    const { username, password } = credentials;
+    // Demo credentials
+    const validCredentials = [
+      { username: 'admin', password: 'admin123', role: 'admin' },
+      { username: 'employee', password: 'employee123', role: 'employee' },
+      { username: 'client', password: 'client123', role: 'client' }
+    ];
+    
+    const user = validCredentials.find(u => u.username === username && u.password === password);
+    
+    if (user) {
+      // Store mock session
+      localStorage.setItem('mockUser', JSON.stringify(user));
+      return Promise.resolve({
+        data: {
+          success: true,
+          user: { username: user.username, role: user.role },
+          token: 'mock-jwt-token'
+        }
+      });
+    } else {
+      return Promise.reject(new Error('Invalid credentials'));
+    }
+  },
+  
+  checkAuthStatus: () => {
+    const mockUser = localStorage.getItem('mockUser');
+    if (mockUser) {
+      const user = JSON.parse(mockUser);
+      return Promise.resolve({
+        data: {
+          authenticated: true,
+          user: { username: user.username, role: user.role }
+        }
+      });
+    } else {
+      return Promise.resolve({
+        data: { authenticated: false }
+      });
+    }
+  },
+  
+  logout: () => {
+    localStorage.removeItem('mockUser');
+    return Promise.resolve({
+      data: { success: true }
+    });
+  },
+
   // Health check
   healthCheck: () => Promise.resolve({ 
     data: { 
@@ -147,5 +198,6 @@ export const mockApi = {
 // Check if we're running in a static environment (GitHub Pages)
 export const isStaticDemo = () => {
   return window.location.hostname.includes('github.io') || 
-         !window.location.hostname.includes('localhost')
+         window.location.protocol === 'file:' ||
+         (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1')
 }

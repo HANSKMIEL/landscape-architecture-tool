@@ -49,6 +49,20 @@ class ApiService {
   async handleMockRequest(endpoint, options = {}) {
     console.log('Using mock API for endpoint:', endpoint);
     
+    // Handle authentication endpoints
+    if (endpoint.includes('/auth/login')) {
+      const credentials = JSON.parse(options.body || '{}');
+      return mockApi.login(credentials);
+    }
+    
+    if (endpoint.includes('/auth/status')) {
+      return mockApi.checkAuthStatus();
+    }
+    
+    if (endpoint.includes('/auth/logout')) {
+      return mockApi.logout();
+    }
+    
     // Route to appropriate mock function
     if (endpoint.includes('/projects')) {
       if (endpoint.includes('/projects/') && !endpoint.endsWith('/projects/')) {
