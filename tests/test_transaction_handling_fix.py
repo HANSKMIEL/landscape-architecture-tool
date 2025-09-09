@@ -7,6 +7,7 @@ where both code paths now have consistent cleanup mechanisms.
 """
 
 import os
+
 import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.pool import StaticPool
