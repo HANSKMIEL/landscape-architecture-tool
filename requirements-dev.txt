@@ -102,6 +102,8 @@ dparse==0.6.4
     #   safety-schemas
 email-validator==2.2.0
     # via -r requirements.in
+et-xmlfile==2.0.0
+    # via openpyxl
 execnet==2.1.1
     # via pytest-xdist
 executing==2.2.0
@@ -242,7 +244,11 @@ multidict==6.6.3
     #   yarl
 mypy-extensions==1.1.0
     # via black
+numpy==2.3.2
+    # via pandas
 openai==1.98.0
+    # via -r requirements.in
+openpyxl==3.1.5
     # via -r requirements.in
 opentelemetry-api==1.36.0
     # via
@@ -271,6 +277,8 @@ packaging==25.0
     #   safety
     #   safety-schemas
     #   sphinx
+pandas==2.3.2
+    # via -r requirements.in
 parso==0.8.4
     # via jedi
 pathspec==0.12.1
@@ -356,9 +364,13 @@ pytest-timeout==2.1.0
 pytest-xdist==3.3.1
     # via -r requirements-dev.in
 python-dateutil==2.9.0.post0
-    # via faker
+    # via
+    #   faker
+    #   pandas
 python-dotenv==1.1.1
     # via -r requirements.in
+pytz==2025.2
+    # via pandas
 pyyaml==6.0.2
     # via bandit
 redis==4.6.0
@@ -386,7 +398,7 @@ ruamel-yaml==0.18.14
     #   safety-schemas
 ruamel-yaml-clib==0.2.12
     # via ruamel-yaml
-ruff==0.12.11
+ruff==0.12.12
     # via -r requirements-dev.in
 safety==3.2.9
     # via -r requirements-dev.in
@@ -455,6 +467,7 @@ typing-extensions==4.14.1
     #   azure-identity
     #   azure-storage-blob
     #   azure-storage-file-datalake
+    #   ipython
     #   limits
     #   openai
     #   opentelemetry-api
@@ -469,6 +482,8 @@ typing-extensions==4.14.1
     #   typing-inspection
 typing-inspection==0.4.1
     # via pydantic
+tzdata==2025.2
+    # via pandas
 urllib3==2.5.0
     # via
     #   requests
@@ -491,6 +506,8 @@ wtforms==3.2.1
     # via
     #   -r requirements.in
     #   flask-wtf
+xlrd==2.0.2
+    # via -r requirements.in
 yarl==1.20.1
     # via aiohttp
 zipp==3.23.0
