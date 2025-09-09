@@ -1,10 +1,15 @@
 // API service for landscape architecture application
 import { getApiBaseUrl } from '../lib/env.js';
+import { mockApi, isStaticDemo } from '../utils/mockApi.js';
 
 const API_BASE_URL = getApiBaseUrl();
 
 class ApiService {
   async request(endpoint, options = {}) {
+    // Use mock API for static demo (GitHub Pages)
+    if (isStaticDemo()) {
+      return this.handleMockRequest(endpoint, options);
+    }
     const url = `${API_BASE_URL}${endpoint}`;
     const config = {
       headers: {
@@ -38,6 +43,59 @@ class ApiService {
       console.error('API request failed:', error);
       throw error;
     }
+  }
+
+  // Mock request handler for static demo
+  async handleMockRequest(endpoint, options = {}) {
+    console.log('Using mock API for endpoint:', endpoint);
+    
+    // Route to appropriate mock function
+    if (endpoint.includes('/projects')) {
+      if (endpoint.includes('/projects/') && !endpoint.endsWith('/projects/')) {
+        const id = endpoint.split('/projects/')[1].split('/')[0];
+        return mockApi.getProject(id);
+      }
+      return mockApi.getProjects();
+    }
+    
+    if (endpoint.includes('/plants')) {
+      if (endpoint.includes('/plants/') && !endpoint.endsWith('/plants/')) {
+        const id = endpoint.split('/plants/')[1].split('/')[0];
+        return mockApi.getPlant(id);
+      }
+      return mockApi.getPlants();
+    }
+    
+    if (endpoint.includes('/clients')) {
+      if (endpoint.includes('/clients/') && !endpoint.endsWith('/clients/')) {
+        const id = endpoint.split('/clients/')[1].split('/')[0];
+        return mockApi.getClient(id);
+      }
+      return mockApi.getClients();
+    }
+    
+    if (endpoint.includes('/suppliers')) {
+      if (endpoint.includes('/suppliers/') && !endpoint.endsWith('/suppliers/')) {
+        const id = endpoint.split('/suppliers/')[1].split('/')[0];
+        return mockApi.getSupplier(id);
+      }
+      return mockApi.getSuppliers();
+    }
+    
+    if (endpoint.includes('/plant-recommendations')) {
+      return mockApi.getPlantRecommendations();
+    }
+    
+    if (endpoint.includes('/health')) {
+      return mockApi.healthCheck();
+    }
+    
+    // Default mock response
+    return Promise.resolve({ 
+      data: [], 
+      message: 'Mock data for static demo',
+      endpoint: endpoint 
+    });
   }
 
   // Dashboard API
