@@ -192,7 +192,10 @@ const PRODUCTION_DOMAINS = (import.meta.env.VITE_PRODUCTION_DOMAINS || '').split
 // Check if we're running in a static environment (GitHub Pages) or need to use mock API
 export const isStaticDemo = () => {
   // Check for GitHub Pages
-  const isGitHubPages = window.location.hostname.includes('github.io');
+  const isGitHubPages = (
+    window.location.hostname.endsWith('.github.io') ||
+    window.location.hostname === 'github.io'
+  );
   console.log('GitHub Pages check:', isGitHubPages);
   
   // Check for file protocol
