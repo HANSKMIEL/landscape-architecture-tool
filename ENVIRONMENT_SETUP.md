@@ -202,7 +202,7 @@ For the current VPS deployment at 72.60.176.200, the following values are being 
 
 - **VPS_HOST**: 72.60.176.200
 - **VPS_USER**: root
-- **SSH_PASSWORD**: Volisvol1988.
+- **SSH_PASSWORD**: your_ssh_password
 - **BACKEND_SERVICE**: landscape-tool
 - **VPS_FRONTEND_PATH**: /var/www/landscape-tool/frontend/dist
 - **VPS_BACKEND_PATH**: /var/www/landscape-tool/backend
