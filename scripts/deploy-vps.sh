@@ -1,12 +1,13 @@
 #!/bin/bash
 # Deployment script for VPS
 
-# Configuration
-VPS_HOST="72.60.176.200"
-VPS_USER="root"
-FRONTEND_DIST_PATH="frontend/dist"
-VPS_FRONTEND_PATH="/var/www/landscape-tool/frontend/dist"
-VPS_BACKEND_PATH="/var/www/landscape-tool/backend"
+# Configuration - Use environment variables with defaults
+VPS_HOST="${VPS_HOST:-localhost}"
+VPS_USER="${VPS_USER:-ubuntu}"
+FRONTEND_DIST_PATH="${FRONTEND_DIST_PATH:-frontend/dist}"
+VPS_FRONTEND_PATH="${VPS_FRONTEND_PATH:-/var/www/landscape-tool/frontend/dist}"
+VPS_BACKEND_PATH="${VPS_BACKEND_PATH:-/var/www/landscape-tool/backend}"
+BACKEND_SERVICE="${BACKEND_SERVICE:-landscape-tool}"
 
 # Colors for output
 GREEN='\033[0;32m'
@@ -27,8 +28,19 @@ print_error() {
   echo -e "${RED}[ERROR]${NC} $1"
 }
 
+# Validate required environment variables
+if [ -z "$VPS_HOST" ] || [ "$VPS_HOST" = "localhost" ]; then
+  print_error "VPS_HOST environment variable is required"
+  echo "Usage: VPS_HOST=your-vps-ip VPS_USER=your-user $0"
+  exit 1
+fi
+
 # Check if SSH key is provided
 if [ -z "$SSH_KEY" ]; then
+  if [ -z "$SSH_PASSWORD" ]; then
+    print_error "Either SSH_KEY or SSH_PASSWORD environment variable is required"
+    exit 1
+  fi
   print_warning "No SSH key provided, will use password authentication"
   SSH_CMD="sshpass -p \"$SSH_PASSWORD\" ssh -o StrictHostKeyChecking=no"
   SCP_CMD="sshpass -p \"$SSH_PASSWORD\" scp -o StrictHostKeyChecking=no"
@@ -76,12 +88,35 @@ fi
 
 print_status "Backend deployed successfully!"
 
-# Restart services on VPS
+# Restart services on VPS - Split into separate commands for better error handling
 print_status "Restarting services on VPS..."
-$SSH_CMD $VPS_USER@$VPS_HOST "systemctl restart nginx && cd $VPS_BACKEND_PATH && source venv/bin/activate && pkill -f gunicorn || true && gunicorn -b 127.0.0.1:5000 main:app --daemon"
 
+# Restart Nginx
+$SSH_CMD $VPS_USER@$VPS_HOST "systemctl restart nginx"
 if [ $? -ne 0 ]; then
-  print_error "Service restart failed!"
+  print_error "Nginx restart failed!"
+  exit 1
+fi
+
+# Check if backend service exists, if so use systemctl, else restart gunicorn manually
+$SSH_CMD $VPS_USER@$VPS_HOST 'bash -s' <<'ENDSSH'
+if systemctl list-unit-files | grep -q "$BACKEND_SERVICE"; then
+  systemctl restart "$BACKEND_SERVICE"
+  STATUS=$?
+else
+  cd "$VPS_BACKEND_PATH" || exit 1
+  source venv/bin/activate
+  # Stop gunicorn if running
+  if pgrep -f "gunicorn.*main:app" > /dev/null; then
+    systemctl stop "$BACKEND_SERVICE" || true
+  fi
+  gunicorn -b 127.0.0.1:5000 main:app --daemon
+  STATUS=$?
+fi
+exit $STATUS
+ENDSSH
+if [ $? -ne 0 ]; then
+  print_error "Backend service restart failed!"
   exit 1
 fi
 

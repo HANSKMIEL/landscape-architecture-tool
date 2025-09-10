@@ -47,7 +47,8 @@ export default defineConfig(({ command, mode }) => {
     },
     build: {
       outDir: 'dist',
-      sourcemap: mode !== 'production',
+      // Disable source maps for production and demo modes for security
+      sourcemap: mode === 'development',
       rollupOptions: {
         output: {
           manualChunks: {

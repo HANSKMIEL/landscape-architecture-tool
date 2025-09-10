@@ -208,9 +208,7 @@ export const isStaticDemo = () => {
     window.location.hostname !== '127.0.0.1' && 
     !window.location.hostname.includes('manusvm.computer') &&
     // Allow production domains to use real API
-    !PRODUCTION_DOMAINS.includes(window.location.hostname) &&
-    // Allow specific VPS IP to use real API
-    window.location.hostname !== '72.60.176.200';
+    !PRODUCTION_DOMAINS.includes(window.location.hostname);
   
   console.log('Non-dev environment check:', isNonDevEnvironment);
   
