@@ -1,10 +1,11 @@
+import { useLanguage } from "../i18n/LanguageProvider";
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Building2, Plus, Upload, Edit, Trash2, Search, Eye } from 'lucide-react';
 import ApiService from '../services/api';
 
-const Clients = ({ language }) => {
+const Clients = () => {
   // State management
   const [clients, setClients] = useState([]);
   const [projects, setProjects] = useState([]);
@@ -104,7 +105,7 @@ const Clients = ({ language }) => {
     }
   };
 
-  const t = translations[language] || translations.en;
+  const t = t || translations.en;
 
   // Load clients from API
   useEffect(() => {

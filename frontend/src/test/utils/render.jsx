@@ -1,3 +1,4 @@
+import { useLanguage } from "../i18n/LanguageProvider";
 import React from 'react'
 import { render } from '@testing-library/react'
 import { BrowserRouter } from 'react-router-dom'
@@ -39,10 +40,10 @@ export const renderWithRouter = (ui, { route = '/', ...options } = {}) => {
 }
 
 // Render with language context
-export const renderWithLanguage = (ui, { language = 'en', ...options } = {}) => {
+export const renderWithLanguage = (ui, {  ...options } = {}) => {
   const LanguageWrapper = ({ children }) => (
     <MockProviders>
-      <div data-testid="language-context" data-language={language}>
+      <div data-testid="language-context" data->
         {React.cloneElement(children, { language })}
       </div>
     </MockProviders>

@@ -1,3 +1,4 @@
+import { useLanguage } from "../i18n/LanguageProvider";
 // Test framework agnostic - works with Jest and Vitest
 import { screen, waitFor } from '@testing-library/react'
 import { axe, toHaveNoViolations } from 'jest-axe'

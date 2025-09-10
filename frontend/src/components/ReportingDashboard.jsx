@@ -1,3 +1,4 @@
+import { useLanguage } from "../i18n/LanguageProvider";
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -98,7 +99,7 @@ const ReportingDashboard = ({ language = 'en' }) => {
     }
   };
 
-  const t = translations[language];
+  const t = t;
 
   // Color palette for charts
   const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff7300', '#00ff00', '#ff00ff'];

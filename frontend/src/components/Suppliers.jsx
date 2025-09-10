@@ -1,3 +1,4 @@
+import { useLanguage } from "../i18n/LanguageProvider";
 import { useState, useEffect, useCallback } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -15,7 +16,7 @@ import {
 import { toast } from 'sonner'
 import apiService from '../services/api'
 
-const Suppliers = ({ language }) => {
+const Suppliers = () => {
   const [suppliers, setSuppliers] = useState([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
@@ -66,7 +67,7 @@ const Suppliers = ({ language }) => {
     }
   }
 
-  const t = translations[language]
+  const t = t
 
   const loadSuppliers = useCallback(async () => {
     try {

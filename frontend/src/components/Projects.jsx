@@ -1,3 +1,4 @@
+import { useLanguage } from "../i18n/LanguageProvider";
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -6,7 +7,7 @@ import { FolderOpen, Plus, Users, MapPin, Calendar, Loader2 } from 'lucide-react
 import ProjectPlantManagement from './ProjectPlantManagement'
 import ApiService from '../services/api';
 
-const Projects = ({ language }) => {
+const Projects = () => {
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -45,7 +46,7 @@ const Projects = ({ language }) => {
     }
   }
 
-  const t = translations[language] || translations.en;
+  const { t } = useLanguage();
 
   // Fetch projects from API
   const fetchProjects = async () => {
@@ -109,7 +110,7 @@ const Projects = ({ language }) => {
 
         <ProjectPlantManagement 
           projectId={selectedProject.id} 
-          language={language} 
+           
         />
       </div>
     );

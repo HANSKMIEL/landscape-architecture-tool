@@ -1,3 +1,4 @@
+import { useLanguage } from "../i18n/LanguageProvider";
 import { screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 

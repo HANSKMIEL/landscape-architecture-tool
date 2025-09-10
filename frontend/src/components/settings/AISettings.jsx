@@ -1,3 +1,4 @@
+import { useLanguage } from "../../i18n/LanguageProvider";
 import React, { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { 
@@ -124,7 +125,7 @@ const AISettings = ({ language = 'nl' }) => {
     }
   }
 
-  const t = translations[language]
+  const t = t
 
   const [connectionStatus, setConnectionStatus] = useState('disconnected')
   const [testingConnection, setTestingConnection] = useState(false)

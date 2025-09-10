@@ -1,51 +1,97 @@
-/**
- * Multi-language internationalization system for Landscape Architecture Tool
- * Supports dynamic language switching with comprehensive translation management
- */
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
-// Import language files
-import nlTranslations from './locales/nl.json';
-import enTranslations from './locales/en.json';
+const translations = {
+  nl: {
+    common: {
+      loading: 'Laden...',
+      error: 'Fout',
+      save: 'Opslaan',
+      cancel: 'Annuleren',
+      delete: 'Verwijderen',
+      edit: 'Bewerken',
+      add: 'Toevoegen',
+      search: 'Zoeken'
+    },
+    auth: {
+      login: 'Inloggen',
+      logout: 'Uitloggen',
+      username: 'Gebruikersnaam',
+      password: 'Wachtwoord',
+      loginSuccess: 'Succesvol ingelogd',
+      loginFailed: 'Inloggen mislukt',
+      logoutSuccess: 'Succesvol uitgelogd'
+    },
+    navigation: {
+      dashboard: 'Dashboard',
+      suppliers: 'Leveranciers',
+      plants: 'Planten',
+      products: 'Producten',
+      clients: 'Klanten',
+      projects: 'Projecten'
+    }
+  },
+  en: {
+    common: {
+      loading: 'Loading...',
+      error: 'Error',
+      save: 'Save',
+      cancel: 'Cancel',
+      delete: 'Delete',
+      edit: 'Edit',
+      add: 'Add',
+      search: 'Search'
+    },
+    auth: {
+      login: 'Login',
+      logout: 'Logout',
+      username: 'Username',
+      password: 'Password',
+      loginSuccess: 'Login successful',
+      loginFailed: 'Login failed',
+      logoutSuccess: 'Logout successful'
+    },
+    navigation: {
+      dashboard: 'Dashboard',
+      suppliers: 'Suppliers',
+      plants: 'Plants',
+      products: 'Products',
+      clients: 'Clients',
+      projects: 'Projects'
+    }
+  }
+};
 
-// Available languages
 export const AVAILABLE_LANGUAGES = [
   { code: 'nl', name: 'Nederlands', flag: '🇳🇱' },
   { code: 'en', name: 'English', flag: '🇬🇧' }
 ];
 
-// Translation data
-const translations = {
-  nl: nlTranslations,
-  en: enTranslations
-};
-
-// Language context
 const LanguageContext = createContext();
 
-// Custom hook to use language context
 export const useLanguage = () => {
   const context = useContext(LanguageContext);
   if (!context) {
-    throw new Error('useLanguage must be used within a LanguageProvider');
+    return {
+      currentLanguage: 'nl',
+      changeLanguage: () => {},
+      t: (key, fallback = key) => fallback,
+      availableLanguages: AVAILABLE_LANGUAGES,
+      getCurrentLanguageInfo: () => AVAILABLE_LANGUAGES[0]
+    };
   }
   return context;
 };
 
-// Language provider component
 export const LanguageProvider = ({ children }) => {
-  const [currentLanguage, setCurrentLanguage] = useState('nl'); // Default to Dutch
+  const [currentLanguage, setCurrentLanguage] = useState('nl');
 
-  // Load language preference from localStorage on mount
   useEffect(() => {
     const savedLanguage = localStorage.getItem('preferredLanguage');
-    if (savedLanguage && translations[savedLanguage]) {
+    if (savedLanguage && (savedLanguage === 'nl' || savedLanguage === 'en')) {
       setCurrentLanguage(savedLanguage);
     }
   }, []);
 
-  // Save language preference to localStorage when changed
   const changeLanguage = (languageCode) => {
     if (translations[languageCode]) {
       setCurrentLanguage(languageCode);
@@ -53,32 +99,36 @@ export const LanguageProvider = ({ children }) => {
     }
   };
 
-  // Translation function with nested key support
   const t = (key, fallback = key) => {
-    const keys = key.split('.');
-    let value = translations[currentLanguage];
-    
-    for (const k of keys) {
-      if (value && typeof value === 'object' && k in value) {
-        value = value[k];
-      } else {
-        // Try English as fallback
-        let englishValue = translations.en;
-        for (const englishKey of keys) {
-          if (englishValue && typeof englishValue === 'object' && englishKey in englishValue) {
-            englishValue = englishValue[englishKey];
-          } else {
-            return fallback;
+    try {
+      if (!key || typeof key !== 'string') return fallback;
+      
+      const keys = key.split('.');
+      let value = translations[currentLanguage];
+      
+      for (const k of keys) {
+        if (value && typeof value === 'object' && k in value) {
+          value = value[k];
+        } else {
+          let englishValue = translations.en;
+          for (const englishKey of keys) {
+            if (englishValue && typeof englishValue === 'object' && englishKey in englishValue) {
+              englishValue = englishValue[englishKey];
+            } else {
+              return fallback;
+            }
           }
+          return typeof englishValue === 'string' ? englishValue : fallback;
         }
-        return englishValue;
       }
+      
+      return typeof value === 'string' ? value : fallback;
+    } catch (error) {
+      console.warn('Translation error:', key, error);
+      return fallback;
     }
-    
-    return typeof value === 'string' ? value : fallback;
   };
 
-  // Get current language info
   const getCurrentLanguageInfo = () => {
     return AVAILABLE_LANGUAGES.find(lang => lang.code === currentLanguage) || AVAILABLE_LANGUAGES[0];
   };
@@ -98,18 +148,11 @@ export const LanguageProvider = ({ children }) => {
   );
 };
 
-// HOC for class components
-export const withLanguage = (Component) => {
-  return function LanguageComponent(props) {
-    const languageProps = useLanguage();
-    return <Component {...props} {...languageProps} />;
-  };
-};
+export default LanguageProvider;
 
-// Language selector component
 export const LanguageSelector = ({ className = '' }) => {
   const { currentLanguage, changeLanguage, availableLanguages } = useLanguage();
-
+  
   return (
     <div className={`language-selector ${className}`}>
       <select
@@ -126,5 +169,3 @@ export const LanguageSelector = ({ className = '' }) => {
     </div>
   );
 };
-
-export default LanguageProvider;

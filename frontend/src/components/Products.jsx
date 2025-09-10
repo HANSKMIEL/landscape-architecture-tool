@@ -1,10 +1,11 @@
+import { useLanguage } from "../i18n/LanguageProvider";
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Package, Plus, Upload, Edit, Trash2, Search } from 'lucide-react';
 import ApiService from '../services/api';
 
-const Products = ({ language }) => {
+const Products = () => {
   // State management
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -79,7 +80,7 @@ const Products = ({ language }) => {
     }
   };
 
-  const t = translations[language] || translations.en;
+  const t = t || translations.en;
 
   // Load products from API
   useEffect(() => {

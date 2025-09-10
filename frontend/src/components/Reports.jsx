@@ -1,7 +1,8 @@
+import { useLanguage } from "../i18n/LanguageProvider";
 import ReportingDashboard from './ReportingDashboard'
 
-const Reports = ({ language }) => {
-  return <ReportingDashboard language={language} />
+const Reports = () => {
+  return <ReportingDashboard  />
 }
 
 export default Reports

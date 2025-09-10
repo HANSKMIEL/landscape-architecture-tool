@@ -1,3 +1,4 @@
+import { useLanguage } from "../i18n/LanguageProvider";
 import React, { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -173,7 +174,7 @@ const PlantRecommendations = ({ language = 'en' }) => {
     }
   }
 
-  const t = translations[language]
+  const t = t
 
   // Load criteria options on component mount
   useEffect(() => {
