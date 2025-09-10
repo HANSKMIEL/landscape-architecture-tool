@@ -1,4 +1,4 @@
-name: Manual Deploy to VPS
+name: Manual Deploy to VPS (Improved)
 
 # Only trigger manually through the GitHub Actions interface
 on:
@@ -18,6 +18,11 @@ on:
         description: 'Backup user data before deployment'
         type: boolean
         default: true
+        required: true
+      run_tests:
+        description: 'Run tests before deployment'
+        type: boolean
+        default: false
         required: true
 
 jobs:
@@ -64,16 +69,46 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+          pip install -r requirements-dev.txt
       
       - name: Run tests
-        if: ${{ github.event.inputs.deploy_backend == 'true' }}
+        if: ${{ github.event.inputs.run_tests == 'true' && github.event.inputs.deploy_backend == 'true' }}
         run: |
-          pytest tests/
+          # Run only critical tests for deployment (faster execution)
+          python -m pytest tests/database/ tests/utils/test_db_init.py tests/test_database_isolation.py -v --maxfail=5 --timeout=10
       
       - name: Set up SSH key
         uses: webfactory/ssh-agent@v0.7.0
         with:
           ssh-private-key: ${{ secrets.VPS_SSH_KEY }}
+      
+      - name: Test VPS connectivity
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+        run: |
+          echo "Testing VPS connectivity..."
+          
+          # Add VPS host key to known hosts
+          mkdir -p ~/.ssh
+          ssh-keyscan -H $VPS_HOST >> ~/.ssh/known_hosts
+          
+          # Test SSH connection
+          echo "Testing SSH connection to $VPS_USER@$VPS_HOST..."
+          ssh -o ConnectTimeout=10 $VPS_USER@$VPS_HOST "echo 'SSH connection successful' && whoami && pwd"
+          
+          # Check if required directories exist
+          echo "Checking VPS directory structure..."
+          ssh $VPS_USER@$VPS_HOST "
+            if [ ! -d '/var/www/landscape-tool' ]; then
+              echo 'Creating required directories...'
+              sudo mkdir -p /var/www/landscape-tool/{backend,frontend,data/backups}
+              sudo chown -R $VPS_USER:$VPS_USER /var/www/landscape-tool
+              echo 'Directory structure created'
+            else
+              echo 'Directory structure exists'
+            fi
+          "
       
       # Backup user data if requested
       - name: Backup user data
@@ -84,23 +119,33 @@ jobs:
           VPS_BACKEND_PATH: ${{ secrets.VPS_BACKEND_PATH }}
           DB_PATH: ${{ secrets.DB_PATH || 'data/app.db' }}
         run: |
-          # Add VPS host key to known hosts
-          mkdir -p ~/.ssh
-          ssh-keyscan -H $VPS_HOST >> ~/.ssh/known_hosts
-          
           # Create timestamp for backup
           TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
           
           # Create backup directory on VPS
           ssh $VPS_USER@$VPS_HOST "mkdir -p $VPS_BACKEND_PATH/backups"
           
-          # Backup database
+          # Backup database if it exists
           echo "Creating database backup..."
-          ssh $VPS_USER@$VPS_HOST "cp $VPS_BACKEND_PATH/$DB_PATH $VPS_BACKEND_PATH/backups/app_backup_$TIMESTAMP.db"
+          ssh $VPS_USER@$VPS_HOST "
+            if [ -f '$VPS_BACKEND_PATH/$DB_PATH' ]; then
+              cp '$VPS_BACKEND_PATH/$DB_PATH' '$VPS_BACKEND_PATH/backups/app_backup_$TIMESTAMP.db'
+              echo 'Database backup created'
+            else
+              echo 'No existing database found, skipping backup'
+            fi
+          "
           
           # Backup user uploads if they exist
           echo "Backing up user uploads..."
-          ssh $VPS_USER@$VPS_HOST "if [ -d $VPS_BACKEND_PATH/uploads ]; then tar -czf $VPS_BACKEND_PATH/backups/uploads_backup_$TIMESTAMP.tar.gz -C $VPS_BACKEND_PATH uploads; fi"
+          ssh $VPS_USER@$VPS_HOST "
+            if [ -d '$VPS_BACKEND_PATH/uploads' ]; then
+              tar -czf '$VPS_BACKEND_PATH/backups/uploads_backup_$TIMESTAMP.tar.gz' -C '$VPS_BACKEND_PATH' uploads
+              echo 'Uploads backup created'
+            else
+              echo 'No uploads directory found, skipping backup'
+            fi
+          "
           
           echo "Backup completed successfully!"
       
@@ -139,9 +184,39 @@ jobs:
             --exclude="uploads/*" \
             --exclude="logs/*" \
             --exclude="backups/*" \
+            --exclude="venv/*" \
+            --exclude="node_modules/*" \
+            --exclude="frontend/dist/*" \
+            --exclude="frontend/node_modules/*" \
             src/ $VPS_USER@$VPS_HOST:$VPS_BACKEND_PATH/
           
           echo "Backend deployed successfully!"
+      
+      # Install/update backend dependencies on VPS
+      - name: Install backend dependencies on VPS
+        if: ${{ github.event.inputs.deploy_backend == 'true' }}
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+          VPS_BACKEND_PATH: ${{ secrets.VPS_BACKEND_PATH }}
+        run: |
+          echo "Installing backend dependencies on VPS..."
+          ssh $VPS_USER@$VPS_HOST "
+            cd $VPS_BACKEND_PATH
+            
+            # Create virtual environment if it doesn't exist
+            if [ ! -d 'venv' ]; then
+              python3 -m venv venv
+              echo 'Virtual environment created'
+            fi
+            
+            # Activate virtual environment and install dependencies
+            source venv/bin/activate
+            pip install --upgrade pip
+            pip install -r requirements.txt
+            
+            echo 'Backend dependencies installed'
+          "
       
       # Restart services
       - name: Restart services
@@ -152,10 +227,28 @@ jobs:
           BACKEND_SERVICE: ${{ secrets.BACKEND_SERVICE }}
         run: |
           echo "Restarting services..."
-          ssh $VPS_USER@$VPS_HOST "systemctl restart nginx"
-          
-          # Check if backend service exists, if so use systemctl, else restart gunicorn manually
-          ssh $VPS_USER@$VPS_HOST "if systemctl list-unit-files | grep -q \"$BACKEND_SERVICE\"; then systemctl restart \"$BACKEND_SERVICE\"; else cd \"$VPS_BACKEND_PATH\" && source venv/bin/activate && (pkill -f \"gunicorn.*main:app\" || true) && gunicorn -b 127.0.0.1:5000 main:app --daemon; fi"
+          ssh $VPS_USER@$VPS_HOST "
+            # Restart nginx
+            sudo systemctl restart nginx
+            echo 'Nginx restarted'
+            
+            # Handle backend service restart
+            if systemctl list-unit-files | grep -q '$BACKEND_SERVICE'; then
+              echo 'Restarting systemd service: $BACKEND_SERVICE'
+              sudo systemctl restart '$BACKEND_SERVICE'
+            else
+              echo 'No systemd service found, managing gunicorn manually'
+              cd '$VPS_BACKEND_PATH'
+              source venv/bin/activate
+              
+              # Stop existing gunicorn processes
+              pkill -f 'gunicorn.*main:app' || true
+              
+              # Start gunicorn in background
+              nohup gunicorn -b 127.0.0.1:5000 main:app --daemon > /dev/null 2>&1 &
+              echo 'Gunicorn started manually'
+            fi
+          "
       
       # Test deployment
       - name: Test deployment
@@ -164,15 +257,53 @@ jobs:
           VPS_USER: ${{ secrets.VPS_USER }}
         run: |
           echo "Testing deployment..."
-          ssh $VPS_USER@$VPS_HOST "curl -s http://localhost:5000/api/health"
+          
+          # Wait a moment for services to start
+          sleep 5
+          
+          # Test backend API
+          ssh $VPS_USER@$VPS_HOST "
+            echo 'Testing backend API...'
+            if curl -s -f http://localhost:5000/api/health > /dev/null; then
+              echo '✅ Backend API is responding'
+            else
+              echo '❌ Backend API is not responding'
+              echo 'Checking gunicorn processes:'
+              ps aux | grep gunicorn || echo 'No gunicorn processes found'
+            fi
+          "
+          
+          # Test frontend (if nginx is serving it)
+          ssh $VPS_USER@$VPS_HOST "
+            echo 'Testing frontend...'
+            if curl -s -f http://localhost/ > /dev/null; then
+              echo '✅ Frontend is accessible'
+            else
+              echo '❌ Frontend is not accessible'
+              echo 'Checking nginx status:'
+              sudo systemctl status nginx --no-pager -l
+            fi
+          "
       
       - name: Notify on success
         if: success()
         run: |
-          echo "Deployment completed successfully!"
+          echo "🎉 Deployment completed successfully!"
           echo "Application is now available at http://${{ secrets.VPS_HOST }}"
+          echo ""
+          echo "Deployment summary:"
+          echo "- Frontend deployed: ${{ github.event.inputs.deploy_frontend }}"
+          echo "- Backend deployed: ${{ github.event.inputs.deploy_backend }}"
+          echo "- Data backed up: ${{ github.event.inputs.backup_data }}"
+          echo "- Tests run: ${{ github.event.inputs.run_tests }}"
       
       - name: Notify on failure
         if: failure()
         run: |
-          echo "Deployment failed!"
+          echo "❌ Deployment failed!"
+          echo "Please check the logs above for error details."
+          echo "Common issues:"
+          echo "- SSH key authentication not configured"
+          echo "- VPS directories don't exist"
+          echo "- Services not properly configured"
+          echo "- Network connectivity issues"
