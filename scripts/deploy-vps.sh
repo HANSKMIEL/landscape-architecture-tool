@@ -98,8 +98,23 @@ if [ $? -ne 0 ]; then
   exit 1
 fi
 
-# Check if backend service exists, if so use systemctl
-$SSH_CMD $VPS_USER@$VPS_HOST "if systemctl list-unit-files | grep -q $BACKEND_SERVICE; then systemctl restart $BACKEND_SERVICE; else cd $VPS_BACKEND_PATH && source venv/bin/activate && (pgrep -f 'gunicorn.*main:app' > /dev/null && systemctl stop $BACKEND_SERVICE || true) && gunicorn -b 127.0.0.1:5000 main:app --daemon; fi"
+# Check if backend service exists, if so use systemctl, else restart gunicorn manually
+$SSH_CMD $VPS_USER@$VPS_HOST 'bash -s' <<'ENDSSH'
+if systemctl list-unit-files | grep -q "$BACKEND_SERVICE"; then
+  systemctl restart "$BACKEND_SERVICE"
+  STATUS=$?
+else
+  cd "$VPS_BACKEND_PATH" || exit 1
+  source venv/bin/activate
+  # Stop gunicorn if running
+  if pgrep -f "gunicorn.*main:app" > /dev/null; then
+    systemctl stop "$BACKEND_SERVICE" || true
+  fi
+  gunicorn -b 127.0.0.1:5000 main:app --daemon
+  STATUS=$?
+fi
+exit $STATUS
+ENDSSH
 if [ $? -ne 0 ]; then
   print_error "Backend service restart failed!"
   exit 1
