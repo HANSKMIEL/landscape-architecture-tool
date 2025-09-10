@@ -1,12 +1,15 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+// Authentication service for landscape architecture application
+import { getApiBaseUrl } from '../lib/env.js';
 
 class AuthService {
   constructor() {
-    this.baseURL = API_BASE_URL;
+    // Use the same API base URL function as the main API service
+    this.baseURL = getApiBaseUrl();
   }
 
   async login(credentials) {
     try {
+      console.log(`Authenticating with API at: ${this.baseURL}/auth/login`);
       const response = await fetch(`${this.baseURL}/auth/login`, {
         method: 'POST',
         headers: {
@@ -15,12 +18,12 @@ class AuthService {
         credentials: 'include', // Important for sessions
         body: JSON.stringify(credentials),
       });
-
+      
       if (!response.ok) {
         const error = await response.json();
         throw new Error(error.error || 'Login failed');
       }
-
+      
       const data = await response.json();
       return data;
     } catch (error) {
@@ -35,11 +38,11 @@ class AuthService {
         method: 'POST',
         credentials: 'include',
       });
-
+      
       if (!response.ok) {
         console.warn('Logout request failed, but continuing...');
       }
-
+      
       return true;
     } catch (error) {
       console.error('Logout error:', error);
@@ -53,11 +56,11 @@ class AuthService {
       const response = await fetch(`${this.baseURL}/auth/status`, {
         credentials: 'include',
       });
-
+      
       if (!response.ok) {
         return { authenticated: false };
       }
-
+      
       const data = await response.json();
       return data;
     } catch (error) {
@@ -71,11 +74,11 @@ class AuthService {
       const response = await fetch(`${this.baseURL}/auth/me`, {
         credentials: 'include',
       });
-
+      
       if (!response.ok) {
         throw new Error('Failed to get current user');
       }
-
+      
       const data = await response.json();
       return data.user;
     } catch (error) {
@@ -97,12 +100,12 @@ class AuthService {
           new_password: newPassword,
         }),
       });
-
+      
       if (!response.ok) {
         const error = await response.json();
         throw new Error(error.error || 'Password change failed');
       }
-
+      
       const data = await response.json();
       return data;
     } catch (error) {
@@ -117,12 +120,12 @@ class AuthService {
       const response = await fetch(`${this.baseURL}/users`, {
         credentials: 'include',
       });
-
+      
       if (!response.ok) {
         const error = await response.json();
         throw new Error(error.error || 'Failed to fetch users');
       }
-
+      
       const data = await response.json();
       return data.users;
     } catch (error) {
@@ -141,12 +144,12 @@ class AuthService {
         credentials: 'include',
         body: JSON.stringify(userData),
       });
-
+      
       if (!response.ok) {
         const error = await response.json();
         throw new Error(error.error || 'Failed to create user');
       }
-
+      
       const data = await response.json();
       return data.user;
     } catch (error) {
@@ -165,12 +168,12 @@ class AuthService {
         credentials: 'include',
         body: JSON.stringify(userData),
       });
-
+      
       if (!response.ok) {
         const error = await response.json();
         throw new Error(error.error || 'Failed to update user');
       }
-
+      
       const data = await response.json();
       return data.user;
     } catch (error) {
@@ -185,12 +188,12 @@ class AuthService {
         method: 'DELETE',
         credentials: 'include',
       });
-
+      
       if (!response.ok) {
         const error = await response.json();
         throw new Error(error.error || 'Failed to delete user');
       }
-
+      
       return true;
     } catch (error) {
       console.error('Delete user error:', error);
