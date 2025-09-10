@@ -46,7 +46,7 @@ const Projects = () => {
     }
   }
 
-  const { t } = useLanguage();
+  const { t } = useLanguage() || { t: (key, fallback) => fallback || key };
 
   // Fetch projects from API
   const fetchProjects = async () => {

@@ -8,7 +8,7 @@ const Header = ({
   user, 
   onLogout 
 }) => {
-  const { t } = useLanguage();
+  const { t } = useLanguage() || { t: (key, fallback) => fallback || key };
   const [showUserMenu, setShowUserMenu] = useState(false);
   const userMenuRef = useRef(null);
 

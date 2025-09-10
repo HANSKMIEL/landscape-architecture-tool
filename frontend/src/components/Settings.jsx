@@ -88,7 +88,7 @@ const Settings = () => {
     }
   }
 
-  const { t } = useLanguage();
+  const { t } = useLanguage() || { t: (key, fallback) => fallback || key };
 
   const settingsTabs = [
     {
