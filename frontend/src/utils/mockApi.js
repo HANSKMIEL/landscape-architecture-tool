@@ -1,44 +1,35 @@
-// Mock API for GitHub Pages demo (when backend is not available)
-
+// Mock API implementation for static demos and development
+// Mock data for static demo
 const MOCK_DATA = {
   projects: [
     {
       id: 1,
-      name: "Villa Botanica Garden Design",
-      client: "Van der Berg Family",
+      name: "Amsterdam City Park Renovation",
+      client: "Amsterdam Municipality",
       status: "In Progress",
-      budget: 45000,
-      startDate: "2024-03-15",
-      description: "Complete garden redesign with sustainable plant selection"
+      budget: 125000,
+      startDate: "2025-03-15",
+      endDate: "2025-08-30"
     },
     {
       id: 2,
-      name: "Corporate Headquarters Landscape",
+      name: "Corporate Headquarters Landscaping",
       client: "TechCorp Netherlands",
       status: "Planning",
-      budget: 120000,
-      startDate: "2024-04-01",
-      description: "Modern landscape design for corporate campus"
-    },
-    {
-      id: 3,
-      name: "Historic Park Restoration",
-      client: "Municipality of Amsterdam",
-      status: "Completed",
-      budget: 85000,
-      startDate: "2024-01-10",
-      description: "Restoration of 19th century park with native species"
+      budget: 75000,
+      startDate: "2025-10-01",
+      endDate: "2025-12-15"
     }
   ],
   plants: [
     {
       id: 1,
-      name: "Acer palmatum",
-      commonName: "Japanese Maple",
+      name: "Quercus robur",
+      commonName: "English Oak",
       category: "Trees",
-      price: 125.00,
+      price: 85.50,
       supplier: "Dutch Garden Center",
-      description: "Beautiful ornamental tree with stunning fall colors"
+      description: "Majestic deciduous tree with broad, rounded crown"
     },
     {
       id: 2,
@@ -184,7 +175,7 @@ export const mockApi = {
       data: { success: true }
     });
   },
-
+  
   // Health check
   healthCheck: () => Promise.resolve({ 
     data: { 
@@ -195,28 +186,37 @@ export const mockApi = {
   })
 }
 
-// Check if we're running in a static environment (GitHub Pages)
+// Get production domains from environment or use default
+const PRODUCTION_DOMAINS = (import.meta.env.VITE_PRODUCTION_DOMAINS || '').split(',').filter(Boolean);
+
+// Check if we're running in a static environment (GitHub Pages) or need to use mock API
 export const isStaticDemo = () => {
-  // Always use mock API on GitHub Pages
-  if (window.location.hostname.includes('github.io')) {
-    console.log('GitHub Pages detected - using mock API');
-    return true;
-  }
+  // Check for GitHub Pages
+  const isGitHubPages = (
+    window.location.hostname.endsWith('.github.io') ||
+    window.location.hostname === 'github.io'
+  );
+  console.log('GitHub Pages check:', isGitHubPages);
   
-  // Also use mock API for file protocol or non-localhost environments
-  if (window.location.protocol === 'file:') {
-    console.log('File protocol detected - using mock API');
-    return true;
-  }
+  // Check for file protocol
+  const isFileProtocol = window.location.protocol === 'file:';
+  console.log('File protocol check:', isFileProtocol);
   
-  // For any non-development environment, use mock API
-  if (window.location.hostname !== 'localhost' && 
-      window.location.hostname !== '127.0.0.1' && 
-      !window.location.hostname.includes('manusvm.computer')) {
-    console.log('Non-development environment detected - using mock API');
-    return true;
-  }
+  // Check for non-development environment
+  const isNonDevEnvironment = 
+    window.location.hostname !== 'localhost' && 
+    window.location.hostname !== '127.0.0.1' && 
+    !window.location.hostname.includes('manusvm.computer') &&
+    // Allow production domains to use real API
+    !PRODUCTION_DOMAINS.includes(window.location.hostname) &&
+    // Allow specific VPS IP to use real API
+    window.location.hostname !== '72.60.176.200';
   
-  console.log('Development environment detected - using real API');
-  return false;
+  console.log('Non-dev environment check:', isNonDevEnvironment);
+  
+  // Use mock API if any condition is true
+  const shouldUseMockApi = isGitHubPages || isFileProtocol || isNonDevEnvironment;
+  console.log('Should use mock API:', shouldUseMockApi);
+  
+  return shouldUseMockApi;
 }
