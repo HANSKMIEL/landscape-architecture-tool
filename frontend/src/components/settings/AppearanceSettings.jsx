@@ -1,8 +1,9 @@
+import { useLanguage } from "../../i18n/LanguageProvider";
 import React, { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Palette, Type, Paintbrush, Monitor, Sun, Moon } from 'lucide-react'
 
-const AppearanceSettings = ({ language = 'nl' }) => {
+const AppearanceSettings = () => {
   const [theme, setTheme] = useState('light')
   const [colorScheme, setColorScheme] = useState('blue')
   const [fontSize, setFontSize] = useState('medium')
@@ -34,7 +35,7 @@ const AppearanceSettings = ({ language = 'nl' }) => {
     }
   }
 
-  const t = translations[language] || translations.nl
+  const { t } = useLanguage() || translations.nl
 
   return (
     <div className="space-y-6">

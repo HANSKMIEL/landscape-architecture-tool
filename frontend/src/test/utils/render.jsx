@@ -42,7 +42,7 @@ export const renderWithRouter = (ui, { route = '/', ...options } = {}) => {
 export const renderWithLanguage = (ui, { language = 'en', ...options } = {}) => {
   const LanguageWrapper = ({ children }) => (
     <MockProviders>
-      <div data-testid="language-context" data-language={language}>
+      <div data-testid="language-context" data->
         {React.cloneElement(children, { language })}
       </div>
     </MockProviders>

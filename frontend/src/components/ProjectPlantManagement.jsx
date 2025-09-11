@@ -1,3 +1,4 @@
+import { useLanguage } from "../i18n/LanguageProvider";
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -88,7 +89,7 @@ const ProjectPlantManagement = ({ projectId, language = 'en' }) => {
     }
   };
 
-  const t = translations[language] || translations.en;
+  const { t } = useLanguage();
 
   // Fetch project plants
   const fetchProjectPlants = async () => {

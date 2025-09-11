@@ -1,3 +1,4 @@
+import { useLanguage } from "../../i18n/LanguageProvider";
 import React, { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { 
@@ -107,7 +108,7 @@ async function encryptApiKeys(apiKeys, passphrase) {
 
 // Optionally, a decryptApiKeys function can be created similarly
 
-const APISettings = ({ language = 'nl' }) => {
+const APISettings = () => {
   const [apiKeys, setApiKeys] = useState({
     vectorworks: '',
     n8n: '',
@@ -225,7 +226,7 @@ const APISettings = ({ language = 'nl' }) => {
     }
   }
 
-  const t = translations[language]
+  const { t } = useLanguage()
 
   const testConnection = async (service) => {
     setConnectionStatus(prev => ({ ...prev, [service]: 'testing' }))

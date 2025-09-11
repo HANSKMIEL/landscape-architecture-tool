@@ -1,3 +1,4 @@
+import { useLanguage } from "../../i18n/LanguageProvider";
 import React, { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { 
@@ -12,7 +13,7 @@ import {
   Clock
 } from 'lucide-react'
 
-const ReportSettings = ({ language = 'nl' }) => {
+const ReportSettings = () => {
   const [reportSettings, setReportSettings] = useState({
     defaultFormat: 'pdf',
     includeImages: true,
@@ -145,7 +146,7 @@ const ReportSettings = ({ language = 'nl' }) => {
     }
   }
 
-  const t = translations[language]
+  const { t } = useLanguage()
 
   const saveSettings = () => {
     const settings = {

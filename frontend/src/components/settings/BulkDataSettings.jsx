@@ -1,3 +1,4 @@
+import { useLanguage } from "../../i18n/LanguageProvider";
 import React, { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { 
@@ -14,7 +15,7 @@ import {
 } from 'lucide-react'
 import ExcelImportManager from '../ExcelImportManager'
 
-const BulkDataSettings = ({ language = 'nl' }) => {
+const BulkDataSettings = () => {
   const [importSettings, setImportSettings] = useState({
     validateDuplicates: true,
     autoCorrectData: true,
@@ -103,7 +104,7 @@ const BulkDataSettings = ({ language = 'nl' }) => {
     }
   }
 
-  const t = translations[language]
+  const { t } = useLanguage()
 
   const saveSettings = () => {
     const settings = {

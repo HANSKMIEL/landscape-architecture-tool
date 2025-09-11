@@ -1,3 +1,4 @@
+import { useLanguage } from "../../i18n/LanguageProvider";
 import React, { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { 
@@ -12,7 +13,7 @@ import {
   Lightbulb
 } from 'lucide-react'
 
-const AISettings = ({ language = 'nl' }) => {
+const AISettings = () => {
   const [openaiKey, setOpenaiKey] = useState('')
   const [aiFeatures, setAiFeatures] = useState({
     plantRecommendations: true,
@@ -124,7 +125,7 @@ const AISettings = ({ language = 'nl' }) => {
     }
   }
 
-  const t = translations[language]
+  const { t } = useLanguage()
 
   const [connectionStatus, setConnectionStatus] = useState('disconnected')
   const [testingConnection, setTestingConnection] = useState(false)
