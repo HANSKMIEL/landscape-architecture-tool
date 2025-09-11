@@ -117,6 +117,37 @@ function AppContent() {
     return () => window.removeEventListener('popstate', handleRouteChange)
   }, [])
 
+  return (
+    <ErrorBoundary>
+      <Router>
+        <AuthenticatedApp 
+          user={user}
+          authLoading={authLoading}
+          loginError={loginError}
+          handleLogin={handleLogin}
+          handleLogout={handleLogout}
+          sidebarOpen={sidebarOpen}
+          toggleSidebar={toggleSidebar}
+          closeSidebar={closeSidebar}
+        />
+      </Router>
+    </ErrorBoundary>
+  )
+}
+
+// Component that handles authentication inside Router context
+function AuthenticatedApp({ 
+  user, 
+  authLoading, 
+  loginError, 
+  handleLogin, 
+  handleLogout, 
+  sidebarOpen, 
+  toggleSidebar, 
+  closeSidebar 
+}) {
+  const { t } = useLanguage()
+
   // Show loading spinner while checking authentication
   if (authLoading) {
     return (
@@ -137,8 +168,6 @@ function AppContent() {
   }
 
   return (
-    <ErrorBoundary>
-      <Router>
         <div className="min-h-screen bg-gray-50">
         {/* Responsive Sidebar */}
         <ResponsiveSidebar 
@@ -216,8 +245,6 @@ function AppContent() {
           }}
         />
       </div>
-    </Router>
-    </ErrorBoundary>
   )
 }
 
