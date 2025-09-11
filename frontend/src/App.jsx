@@ -130,18 +130,7 @@ function AppContent() {
     )
   }
 
-  // Show login screen if not authenticated
-  if (!user) {
-    return (
-      <Router>
-        <Routes>
-          <Route path="/login" element={<Login onLogin={handleLogin} error={loginError} />} />
-          <Route path="/reset-password" element={<PasswordReset />} />
-          <Route path="*" element={<Navigate to="/login" replace />} />
-        </Routes>
-      </Router>
-    )
-  }
+// Show login screen if not authenticated    return <Login onLogin={handleLogin} error={loginError} />  }
 
   return (
     <Router>
