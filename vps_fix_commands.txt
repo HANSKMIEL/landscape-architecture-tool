@@ -1,0 +1,20 @@
+# VPS Backend Fix Commands
+# SSH into your VPS (ssh root@72.60.176.200) and run these commands:
+cd /var/www/landscape-architecture-tool || cd /root/landscape-architecture-tool || cd /home/landscape-architecture-tool
+git pull origin main
+source venv/bin/activate
+pip install -r requirements.txt
+systemctl stop landscape-backend 2>/dev/null || true
+cp landscape-backend.service /etc/systemd/system/
+systemctl daemon-reload
+systemctl enable landscape-backend
+systemctl start landscape-backend
+systemctl restart nginx
+curl http://127.0.0.1:5000/api/health
+
+# Test the fix
+curl http://127.0.0.1:5000/api/health
+curl https://optura.nl/api/health
+
+# Check service status
+systemctl status landscape-backend --no-pager
