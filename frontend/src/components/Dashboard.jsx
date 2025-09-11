@@ -16,14 +16,14 @@ const Dashboard = () => {
       setError(null);
 
       // Fetch dashboard stats
-      const statsResponse = await fetch('http://127.0.0.1:5000/api/dashboard/stats');
+      const statsResponse = await fetch('/api/dashboard/stats');
       if (!statsResponse.ok) {
         throw new Error(`Stats API error: ${statsResponse.status} ${statsResponse.statusText}`);
       }
       const statsData = await statsResponse.json();
 
       // Fetch recent activity
-      const activityResponse = await fetch('http://127.0.0.1:5000/api/dashboard/recent-activity');
+      const activityResponse = await fetch('/api/dashboard/recent-activity');
       if (!activityResponse.ok) {
         throw new Error(`Activity API error: ${activityResponse.status} ${activityResponse.statusText}`);
       }

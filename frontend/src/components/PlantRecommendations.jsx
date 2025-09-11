@@ -1,3 +1,4 @@
+import { useLanguage } from "../i18n/LanguageProvider";
 import React, { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -24,7 +25,7 @@ import {
   Palette
 } from 'lucide-react'
 
-const PlantRecommendations = ({ language = 'en' }) => {
+const PlantRecommendations = () => {
   const [criteriaOptions, setCriteriaOptions] = useState(null)
   const [searchCriteria, setSearchCriteria] = useState({
     hardiness_zone: '',
@@ -173,7 +174,7 @@ const PlantRecommendations = ({ language = 'en' }) => {
     }
   }
 
-  const t = translations[language]
+  const { t } = useLanguage()
 
   // Load criteria options on component mount
   useEffect(() => {

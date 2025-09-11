@@ -1,3 +1,4 @@
+import { useLanguage } from "../i18n/LanguageProvider";
 import React, { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { 
@@ -23,7 +24,7 @@ import AISettings from './settings/AISettings'
 import BulkDataSettings from './settings/BulkDataSettings'
 import ReportSettings from './settings/ReportSettings'
 
-const Settings = ({ language = 'nl' }) => {
+const Settings = () => {
   const [activeTab, setActiveTab] = useState('appearance')
 
   const translations = {
@@ -87,7 +88,7 @@ const Settings = ({ language = 'nl' }) => {
     }
   }
 
-  const t = translations[language]
+  const { t } = useLanguage()
 
   const settingsTabs = [
     {
@@ -170,19 +171,19 @@ const Settings = ({ language = 'nl' }) => {
   const renderTabContent = () => {
     switch (activeTab) {
       case 'appearance':
-        return <AppearanceSettings language={language} />
+        return <AppearanceSettings  />
       
       case 'bulk-data':
-        return <BulkDataSettings language={language} />
+        return <BulkDataSettings  />
       
       case 'ai':
-        return <AISettings language={language} />
+        return <AISettings  />
       
       case 'apis':
-        return <APISettings language={language} />
+        return <APISettings  />
       
       case 'reports':
-        return <ReportSettings language={language} />
+        return <ReportSettings  />
       
       case 'security':
         return (

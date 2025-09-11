@@ -96,7 +96,7 @@ const ProjectPlantManagement = ({ projectId, language = 'en' }) => {
       setLoading(true);
       setError(null);
       
-      const response = await fetch(`http://127.0.0.1:5000/api/projects/${projectId}/plants`);
+      const response = await fetch(`/api/projects/${projectId}/plants`);
       if (!response.ok) {
         throw new Error(`API error: ${response.status}`);
       }
@@ -113,7 +113,7 @@ const ProjectPlantManagement = ({ projectId, language = 'en' }) => {
   // Fetch available plants for adding
   const fetchAvailablePlants = async () => {
     try {
-      const response = await fetch('http://127.0.0.1:5000/api/plants');
+      const response = await fetch('/api/plants');
       if (!response.ok) {
         throw new Error(`API error: ${response.status}`);
       }
@@ -128,7 +128,7 @@ const ProjectPlantManagement = ({ projectId, language = 'en' }) => {
   // Fetch cost analysis
   const fetchCostAnalysis = async () => {
     try {
-      const response = await fetch(`http://127.0.0.1:5000/api/projects/${projectId}/cost-analysis`);
+      const response = await fetch(`/api/projects/${projectId}/cost-analysis`);
       if (!response.ok) {
         throw new Error(`API error: ${response.status}`);
       }
@@ -147,7 +147,7 @@ const ProjectPlantManagement = ({ projectId, language = 'en' }) => {
     try {
       setLoading(true);
       
-      const response = await fetch(`http://127.0.0.1:5000/api/projects/${projectId}/plants`, {
+      const response = await fetch(`/api/projects/${projectId}/plants`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -189,7 +189,7 @@ const ProjectPlantManagement = ({ projectId, language = 'en' }) => {
     try {
       setLoading(true);
       
-      const response = await fetch(`http://127.0.0.1:5000/api/projects/${projectId}/plants/${plantId}`, {
+      const response = await fetch(`/api/projects/${projectId}/plants/${plantId}`, {
         method: 'DELETE',
       });
 
@@ -209,7 +209,7 @@ const ProjectPlantManagement = ({ projectId, language = 'en' }) => {
   // Update plant status
   const updatePlantStatus = async (plantId, newStatus) => {
     try {
-      const response = await fetch(`http://127.0.0.1:5000/api/projects/${projectId}/plants/${plantId}`, {
+      const response = await fetch(`/api/projects/${projectId}/plants/${plantId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -232,7 +232,7 @@ const ProjectPlantManagement = ({ projectId, language = 'en' }) => {
   // Generate order list
   const generateOrderList = async () => {
     try {
-      const response = await fetch(`http://127.0.0.1:5000/api/projects/${projectId}/plant-order-list`);
+      const response = await fetch(`/api/projects/${projectId}/plant-order-list`);
       if (!response.ok) {
         throw new Error(`API error: ${response.status}`);
       }
