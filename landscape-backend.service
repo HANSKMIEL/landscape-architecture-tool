@@ -1,0 +1,19 @@
+[Unit]
+Description=Landscape Architecture Tool Backend
+After=network.target
+
+[Service]
+Type=notify
+User=root
+Group=root
+WorkingDirectory=/var/www/landscape-architecture-tool
+Environment=PATH=/var/www/landscape-architecture-tool/venv/bin
+Environment=FLASK_ENV=production
+Environment=DATABASE_URL=sqlite:///landscape_architecture_prod.db
+ExecStart=/var/www/landscape-architecture-tool/venv/bin/gunicorn --bind 127.0.0.1:5000 --workers 3 wsgi:application
+ExecReload=/bin/kill -s HUP $MAINPID
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
