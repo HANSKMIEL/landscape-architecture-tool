@@ -1,0 +1,98 @@
+name: Deploy VPS Backend Fix
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+    paths:
+      - 'src/**'
+      - 'requirements.txt'
+      - 'wsgi.py'
+      - 'deploy_backend_fix.sh'
+      - 'landscape-backend.service'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Deploy to VPS
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: 72.60.176.200
+        username: root
+        password: Volisvol88.
+        script: |
+          echo "=== Starting VPS Backend Deployment ==="
+          
+          # Navigate to application directory
+          cd /var/www/landscape-architecture-tool || cd /root/landscape-architecture-tool || cd /home/landscape-architecture-tool || {
+            echo "Application directory not found, cloning repository..."
+            cd /var/www
+            git clone https://github.com/HANSKMIEL/landscape-architecture-tool.git
+            cd landscape-architecture-tool
+          }
+          
+          echo "Current directory: $(pwd)"
+          
+          # Pull latest changes
+          echo "Pulling latest changes from GitHub..."
+          git pull origin main || git fetch --all && git reset --hard origin/main
+          
+          # Stop existing services
+          echo "Stopping existing backend services..."
+          systemctl stop landscape-backend 2>/dev/null || true
+          pkill -f gunicorn 2>/dev/null || true
+          
+          # Set up virtual environment
+          echo "Setting up virtual environment..."
+          if [ ! -d "venv" ]; then
+            python3 -m venv venv
+          fi
+          
+          source venv/bin/activate
+          
+          # Install requirements
+          echo "Installing requirements..."
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          
+          # Set permissions
+          echo "Setting permissions..."
+          chown -R root:root .
+          chmod +x wsgi.py
+          chmod +x deploy_backend_fix.sh
+          
+          # Install systemd service
+          echo "Installing systemd service..."
+          cp landscape-backend.service /etc/systemd/system/
+          systemctl daemon-reload
+          systemctl enable landscape-backend
+          
+          # Start backend service
+          echo "Starting backend service..."
+          systemctl start landscape-backend
+          
+          # Wait and check service status
+          sleep 5
+          systemctl status landscape-backend --no-pager
+          
+          # Test API
+          echo "Testing API endpoints..."
+          curl -f http://127.0.0.1:5000/api/health || echo "API health check failed"
+          
+          # Restart nginx
+          echo "Restarting nginx..."
+          systemctl restart nginx
+          
+          echo "=== Deployment completed ==="
+          echo "Backend service status: $(systemctl is-active landscape-backend)"
+          echo "Nginx status: $(systemctl is-active nginx)"
+          
+          # Final API test
+          echo "Final API test..."
+          sleep 2
+          curl -f https://optura.nl/api/health || echo "External API test failed"
