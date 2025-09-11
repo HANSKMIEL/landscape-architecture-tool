@@ -22,7 +22,7 @@ import {
 
 const ResponsiveSidebar = ({ isOpen, onClose, user }) => {
   const location = useLocation()
-  const { t } = useLanguage()
+  const { t, currentLanguage } = useLanguage()
 
   const navigation = [
     { 
@@ -142,11 +142,7 @@ const ResponsiveSidebar = ({ isOpen, onClose, user }) => {
   }
 
   const getRoleDisplay = (role) => {
-    const roleNames = {
-      en: { admin: 'Administrator', employee: 'Employee', client: 'Client' },
-      nl: { admin: 'Beheerder', employee: 'Medewerker', client: 'Klant' }
-    }
-    return roleNames[language][role] || role
+    return t(`auth.roles.${role}`, role);
   }
 
   // Prevent body scroll when sidebar is open on mobile
@@ -270,7 +266,7 @@ const ResponsiveSidebar = ({ isOpen, onClose, user }) => {
         <div className="mt-auto p-4 border-t border-gray-200">
           <div className="text-center">
             <p className="text-xs text-gray-500">
-              © 2025 {language === 'nl' ? 'Landschapsarchitectuur' : 'Landscape Architecture'}
+              © 2025 {currentLanguage === 'nl' ? 'Landschapsarchitectuur' : 'Landscape Architecture'}
             </p>
             <p className="text-xs text-gray-400 mt-1">
               v1.0.0
