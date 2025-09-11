@@ -1,0 +1,21 @@
+[Unit]
+Description=Landscape Architecture Tool Backend API
+After=network.target
+
+[Service]
+Type=exec
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/landscape-architecture-tool
+Environment=PATH=/var/www/landscape-architecture-tool/venv/bin
+Environment=FLASK_ENV=production
+Environment=DATABASE_URL=sqlite:///landscape_architecture_prod.db
+Environment=FLASK_APP=wsgi:application
+ExecStart=/var/www/landscape-architecture-tool/venv/bin/gunicorn --bind 127.0.0.1:5000 --workers 3 --timeout 120 wsgi:application
+Restart=always
+RestartSec=3
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
