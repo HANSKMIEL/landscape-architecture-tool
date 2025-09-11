@@ -59,11 +59,18 @@ const Clients = () => {
       setError(null)
       const params = searchTerm ? { search: searchTerm } : {}
       const data = await ApiService.getClients(params)
-      setClients(data.clients || [])
-      setTotalClients(data.total || 0)
+      
+      // Defensive programming: ensure clients is always an array  
+      const clientsArray = Array.isArray(data?.clients) ? data.clients :
+                          Array.isArray(data) ? data : []
+      
+      setClients(clientsArray)
+      setTotalClients(data?.total || data?.pagination?.total || clientsArray.length)
     } catch (err) {
       console.error('Error loading clients:', err)
       setError(err.message)
+      // Set empty array on error to prevent filter() failures
+      setClients([])
     } finally {
       setLoading(false)
     }

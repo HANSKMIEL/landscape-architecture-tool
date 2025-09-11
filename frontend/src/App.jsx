@@ -4,6 +4,7 @@ import { Toaster } from 'react-hot-toast'
 import ResponsiveSidebar from './components/ResponsiveSidebar'
 import Header from './components/Header'
 import Login from './components/Login'
+import ErrorBoundary from './components/ErrorBoundary'
 import authService from './services/authService'
 import toast from 'react-hot-toast'
 import { LanguageProvider, useLanguage } from './i18n/LanguageProvider'
@@ -130,11 +131,15 @@ function AppContent() {
     )
   }
 
-// Show login screen if not authenticated    return <Login onLogin={handleLogin} error={loginError} />  }
+  // Show login screen if not authenticated
+  if (!user) {
+    return <Login onLogin={handleLogin} error={loginError} />
+  }
 
   return (
-    <Router>
-      <div className="min-h-screen bg-gray-50">
+    <ErrorBoundary>
+      <Router>
+        <div className="min-h-screen bg-gray-50">
         {/* Responsive Sidebar */}
         <ResponsiveSidebar 
           isOpen={sidebarOpen} 
@@ -212,6 +217,7 @@ function AppContent() {
         />
       </div>
     </Router>
+    </ErrorBoundary>
   )
 }
 

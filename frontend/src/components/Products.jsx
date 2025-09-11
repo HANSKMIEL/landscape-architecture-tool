@@ -75,11 +75,18 @@ const Products = () => {
       setError(null)
       const params = searchTerm ? { search: searchTerm } : {}
       const data = await ApiService.getProducts(params)
-      setProducts(data.products || [])
-      setTotalProducts(data.total || 0)
+      
+      // Defensive programming: ensure products is always an array
+      const productsArray = Array.isArray(data?.products) ? data.products : 
+                           Array.isArray(data) ? data : []
+      
+      setProducts(productsArray)
+      setTotalProducts(data?.total || data?.pagination?.total || productsArray.length)
     } catch (err) {
       console.error('Error loading products:', err)
       setError(err.message)
+      // Set empty array on error to prevent map() failures
+      setProducts([])
     } finally {
       setLoading(false)
     }
