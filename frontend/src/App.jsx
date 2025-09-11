@@ -22,6 +22,8 @@ const InvoiceQuoteManager = lazy(() => import('./components/InvoiceQuoteManager'
 const Photos = lazy(() => import('./components/Photos'))
 const ProjectTimeline = lazy(() => import('./components/ProjectTimeline'))
 const Settings = lazy(() => import('./components/Settings'))
+const UserManagement = lazy(() => import('./components/UserManagement'))
+const PasswordReset = lazy(() => import('./components/PasswordReset'))
 import './unified-professional-styles.css'
 import './enhanced_sidebar_styles.css'
 
@@ -130,7 +132,15 @@ function AppContent() {
 
   // Show login screen if not authenticated
   if (!user) {
-    return <Login onLogin={handleLogin} error={loginError} />
+    return (
+      <Router>
+        <Routes>
+          <Route path="/login" element={<Login onLogin={handleLogin} error={loginError} />} />
+          <Route path="/reset-password" element={<PasswordReset />} />
+          <Route path="*" element={<Navigate to="/login" replace />} />
+        </Routes>
+      </Router>
+    )
   }
 
   return (
@@ -180,6 +190,7 @@ function AppContent() {
                 <Route path="/photos" element={<Photos user={user} />} />
                 <Route path="/timeline" element={<ProjectTimeline user={user} />} />
                 <Route path="/settings" element={<Settings user={user} />} />
+                <Route path="/users" element={<UserManagement user={user} />} />
               </Routes>
             </Suspense>
           </main>

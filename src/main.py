@@ -172,8 +172,10 @@ def create_app():
 
     # Register user authentication blueprint
     from src.routes.user import data_access_required, login_required, user_bp
+    from src.routes.auth import auth_bp
 
     app.register_blueprint(user_bp, url_prefix="/api")
+    app.register_blueprint(auth_bp, url_prefix="/api")
 
     # Register performance monitoring blueprint
     app.register_blueprint(performance_bp)
