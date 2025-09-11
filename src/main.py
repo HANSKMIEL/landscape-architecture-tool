@@ -29,6 +29,7 @@ from src.config import get_config
 from src.models.landscape import Plant, Product, Supplier
 from src.models.user import db
 from src.routes import n8n_receivers, webhooks
+from src.routes.ai_assistant import ai_assistant_bp
 from src.routes.excel_import import excel_import_bp
 from src.routes.invoices import invoices_bp
 from src.routes.performance import performance_bp
@@ -161,6 +162,7 @@ def create_app():
     register_error_handlers(app)
 
     # Register route blueprints
+    app.register_blueprint(ai_assistant_bp)
     app.register_blueprint(plant_recommendations_bp)
     app.register_blueprint(project_plants_bp)
     app.register_blueprint(reports_bp)

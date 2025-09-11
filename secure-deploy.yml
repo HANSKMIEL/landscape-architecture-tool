@@ -1,0 +1,98 @@
+name: Secure Deploy to VPS
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: 'frontend/package-lock.json'
+      
+      - name: Install frontend dependencies
+        run: |
+          cd frontend
+          npm ci
+      
+      - name: Build frontend
+        run: |
+          cd frontend
+          npm run build
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+          cache-dependency-path: 'requirements.txt'
+      
+      - name: Install backend dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      
+      - name: Run tests
+        run: |
+          pytest tests/
+      
+      - name: Set up SSH key
+        uses: webfactory/ssh-agent@v0.7.0
+        with:
+          ssh-private-key: ${{ secrets.VPS_SSH_KEY }}
+      
+      - name: Deploy to VPS
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+          FRONTEND_DIST_PATH: frontend/dist
+          VPS_FRONTEND_PATH: ${{ secrets.VPS_FRONTEND_PATH }}
+          VPS_BACKEND_PATH: ${{ secrets.VPS_BACKEND_PATH }}
+          BACKEND_SERVICE: ${{ secrets.BACKEND_SERVICE }}
+        run: |
+          # Add VPS host key to known hosts
+          mkdir -p ~/.ssh
+          ssh-keyscan -H $VPS_HOST >> ~/.ssh/known_hosts
+          
+          # Deploy frontend
+          echo "Deploying frontend..."
+          ssh $VPS_USER@$VPS_HOST "mkdir -p $VPS_FRONTEND_PATH"
+          rsync -avz --delete $FRONTEND_DIST_PATH/ $VPS_USER@$VPS_HOST:$VPS_FRONTEND_PATH/
+          
+          # Deploy backend
+          echo "Deploying backend..."
+          ssh $VPS_USER@$VPS_HOST "mkdir -p $VPS_BACKEND_PATH"
+          rsync -avz --delete --exclude="*.pyc" --exclude="__pycache__" --exclude=".env" src/ $VPS_USER@$VPS_HOST:$VPS_BACKEND_PATH/
+          
+          # Restart services
+          echo "Restarting services..."
+          ssh $VPS_USER@$VPS_HOST "systemctl restart nginx"
+          
+          # Check if backend service exists, if so use systemctl, else restart gunicorn manually
+          ssh $VPS_USER@$VPS_HOST "if systemctl list-unit-files | grep -q \"$BACKEND_SERVICE\"; then systemctl restart \"$BACKEND_SERVICE\"; else cd \"$VPS_BACKEND_PATH\" && source venv/bin/activate && (pkill -f \"gunicorn.*main:app\" || true) && gunicorn -b 127.0.0.1:5000 main:app --daemon; fi"
+          
+          # Test deployment
+          echo "Testing deployment..."
+          ssh $VPS_USER@$VPS_HOST "curl -s http://localhost:5000/api/health"
+      
+      - name: Notify on success
+        if: success()
+        run: |
+          echo "Deployment completed successfully!"
+          echo "Application is now available at http://${{ secrets.VPS_HOST }}"
+      
+      - name: Notify on failure
+        if: failure()
+        run: |
+          echo "Deployment failed!"

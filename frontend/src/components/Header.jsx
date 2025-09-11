@@ -1,5 +1,5 @@
-import { Menu, LogOut, User, Settings, ChevronDown } from 'lucide-react';
-import { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
+import { Menu, ChevronDown, User, Settings, LogOut } from 'lucide-react';
 import { useLanguage, LanguageSelector } from '../i18n/LanguageProvider';
 
 const Header = ({ 

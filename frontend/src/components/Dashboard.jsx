@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { DashboardStatsChart } from './Charts/LandscapeCharts';
+import { useLanguage } from '../i18n/LanguageProvider';
 
 const Dashboard = () => {
+  const { t } = useLanguage();
   const [stats, setStats] = useState(null);
   const [recentActivity, setRecentActivity] = useState([]);
   const [loading, setLoading] = useState(true);

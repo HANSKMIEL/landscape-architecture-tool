@@ -1,0 +1,169 @@
+# Landscape Architecture Tool
+
+A professional tool for landscape architects to manage plants, suppliers, clients, and projects.
+
+## 🌟 Features
+
+- 🌱 **Plant Database**: Manage plant inventory with detailed information
+- 🏢 **Supplier Management**: Track suppliers and their specialties
+- 👥 **Client Management**: Maintain client information and preferences
+- 📋 **Project Planning**: Create and manage landscape projects
+- 📊 **Reporting**: Generate quotes and invoices for clients
+- 🔍 **Plant Recommendations**: Get intelligent plant suggestions based on criteria
+- 🌐 **Multi-language Support**: Dutch interface with internationalization support
+
+## 🚀 Deployment Options
+
+### Quick Demo
+
+- **GitHub Pages**: [https://hanskmiel.github.io/landscape-architecture-tool/](https://hanskmiel.github.io/landscape-architecture-tool/)
+  - Frontend-only demo with mock API
+  - No backend functionality
+
+### Development Environment
+
+- **GitHub Codespaces**: [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/HANSKMIEL/landscape-architecture-tool)
+  - Full-stack development environment
+  - Pre-configured with all dependencies
+
+### Production Deployment
+
+- **VPS Deployment**: See [VPS_DEPLOYMENT.md](./VPS_DEPLOYMENT.md) for detailed instructions
+  - Full-stack deployment with real backend
+  - Complete functionality
+
+## 🛠️ Technology Stack
+
+- **Frontend**:
+  - React 18
+  - Vite
+  - React Router
+  - Tailwind CSS
+  - Radix UI Components
+
+- **Backend**:
+  - Python 3.12
+  - Flask
+  - SQLAlchemy
+  - PostgreSQL
+
+## 🏗️ Project Structure
+
+```
+landscape-architecture-tool/
+├── frontend/                # React frontend application
+│   ├── public/              # Static assets
+│   ├── src/                 # Source code
+│   │   ├── components/      # React components
+│   │   ├── lib/             # Utility libraries
+│   │   ├── pages/           # Page components
+│   │   ├── services/        # API services
+│   │   └── utils/           # Utility functions
+│   ├── .env.development     # Development environment variables
+│   ├── .env.production      # Production environment variables
+│   └── .env.demo            # Demo environment variables
+├── src/                     # Flask backend application
+│   ├── models/              # Database models
+│   ├── routes/              # API routes
+│   ├── services/            # Business logic
+│   └── utils/               # Utility functions
+├── scripts/                 # Deployment and utility scripts
+└── tests/                   # Test suite
+```
+
+## 🚦 Getting Started
+
+### Prerequisites
+
+- Node.js 20.x
+- Python 3.12
+- PostgreSQL (for production)
+
+### Local Development
+
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/HANSKMIEL/landscape-architecture-tool.git
+   cd landscape-architecture-tool
+   ```
+
+2. **Set up the backend**:
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   pip install -r requirements.txt
+   python src/main.py
+   ```
+
+3. **Set up the frontend**:
+   ```bash
+   cd frontend
+   npm install
+   npm run dev
+   ```
+
+4. **Access the application**:
+   - Frontend: http://localhost:5174
+   - Backend API: http://localhost:5000/api
+
+## 🌍 Environment Configuration
+
+The application supports three deployment environments:
+
+1. **Development**: Local development with hot reloading
+   ```bash
+   # Frontend
+   npm run dev
+   
+   # Backend
+   python src/main.py
+   ```
+
+2. **Production**: Full-stack deployment on a VPS
+   ```bash
+   # Frontend
+   npm run build:production
+   
+   # Backend
+   gunicorn -b 127.0.0.1:5000 main:app
+   ```
+
+3. **Demo**: Static frontend-only deployment on GitHub Pages
+   ```bash
+   # Frontend
+   npm run build:demo
+   ```
+
+## 🧪 Testing
+
+```bash
+# Frontend tests
+cd frontend
+npm run test
+
+# Backend tests
+pytest tests/
+```
+
+## 📚 Documentation
+
+- [Deployment Guide](./DEPLOYMENT.md)
+- [VPS Deployment Guide](./VPS_DEPLOYMENT.md)
+- [API Documentation](./API_DOCUMENTATION.md)
+- [User Guide](./USER_GUIDE.md)
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature/my-feature`
+3. Commit your changes: `git commit -am 'Add my feature'`
+4. Push to the branch: `git push origin feature/my-feature`
+5. Submit a pull request
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 👥 Authors
+
+- **Hans Kmiel** - *Initial work* - [HANSKMIEL](https://github.com/HANSKMIEL)

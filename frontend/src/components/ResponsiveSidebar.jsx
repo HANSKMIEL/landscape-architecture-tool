@@ -16,7 +16,8 @@ import {
   Settings,
   X,
   Shield,
-  Eye
+  Eye,
+  Bot
 } from 'lucide-react'
 
 const ResponsiveSidebar = ({ isOpen, onClose, user }) => {
@@ -76,6 +77,12 @@ const ResponsiveSidebar = ({ isOpen, onClose, user }) => {
       name: t('navigation.reports', 'Reports'), 
       href: '/reports', 
       icon: FileText,
+      roles: ['admin', 'employee']
+    },
+    { 
+      name: t('aiAssistant.title', 'AI Assistant'), 
+      href: '/ai-assistant', 
+      icon: Bot,
       roles: ['admin', 'employee']
     },
     { 

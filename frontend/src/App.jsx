@@ -17,6 +17,7 @@ const Clients = lazy(() => import('./components/Clients'))
 const Projects = lazy(() => import('./components/Projects'))
 const PlantRecommendations = lazy(() => import('./components/PlantRecommendations'))
 const Reports = lazy(() => import('./components/Reports'))
+const AIAssistant = lazy(() => import('./components/AIAssistant'))
 const InvoiceQuoteManager = lazy(() => import('./components/InvoiceQuoteManager'))
 const Photos = lazy(() => import('./components/Photos'))
 const ProjectTimeline = lazy(() => import('./components/ProjectTimeline'))
@@ -174,6 +175,7 @@ function AppContent() {
                 <Route path="/projects" element={<Projects user={user} />} />
                 <Route path="/plant-recommendations" element={<PlantRecommendations user={user} />} />
                 <Route path="/reports" element={<Reports user={user} />} />
+                <Route path="/ai-assistant" element={<AIAssistant user={user} />} />
                 <Route path="/invoices" element={<InvoiceQuoteManager user={user} />} />
                 <Route path="/photos" element={<Photos user={user} />} />
                 <Route path="/timeline" element={<ProjectTimeline user={user} />} />
