@@ -114,11 +114,18 @@ const Plants = () => {
       }
       
       const data = await ApiService.getPlants(params)
-      setPlants(data.plants || [])
-      setTotalPlants(data.total || 0)
+      
+      // Defensive programming: ensure plants is always an array
+      const plantsArray = Array.isArray(data?.plants) ? data.plants : 
+                         Array.isArray(data) ? data : []
+      
+      setPlants(plantsArray)
+      setTotalPlants(data?.total || data?.pagination?.total || plantsArray.length)
     } catch (err) {
       console.error('Error fetching plants:', err.message)
       setError(err.message)
+      // Set empty array on error to prevent map() failures
+      setPlants([])
     } finally {
       setLoading(false)
     }

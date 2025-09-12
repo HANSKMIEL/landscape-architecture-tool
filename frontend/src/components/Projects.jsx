@@ -67,9 +67,16 @@ const Projects = () => {
       }
       
       const data = await ApiService.getProjects(params)
-      setProjects(data.projects || [])
+      
+      // Defensive programming: ensure projects is always an array
+      const projectsArray = Array.isArray(data?.projects) ? data.projects :
+                           Array.isArray(data) ? data : []
+      
+      setProjects(projectsArray)
     } catch (err) {
       console.error('Error fetching projects:', err)
+      // Set empty array on error to prevent map() failures
+      setProjects([])
       setError(err.message)
     } finally {
       setLoading(false)

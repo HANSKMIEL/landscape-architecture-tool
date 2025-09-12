@@ -49,7 +49,7 @@ class Photo(db.Model):
     project_id = Column(Integer, ForeignKey("projects.id"), nullable=True)
 
     # Metadata
-    uploaded_by_id = Column(Integer, ForeignKey("user.id"), nullable=False)
+    uploaded_by_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     uploaded_at = Column(DateTime, default=datetime.utcnow)
     is_primary = Column(Boolean, default=False)  # Primary photo for entity
     is_public = Column(Boolean, default=True)  # Visible to clients

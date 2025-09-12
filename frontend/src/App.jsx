@@ -4,6 +4,7 @@ import { Toaster } from 'react-hot-toast'
 import ResponsiveSidebar from './components/ResponsiveSidebar'
 import Header from './components/Header'
 import Login from './components/Login'
+import ErrorBoundary from './components/ErrorBoundary'
 import authService from './services/authService'
 import toast from 'react-hot-toast'
 import { LanguageProvider, useLanguage } from './i18n/LanguageProvider'
@@ -116,6 +117,37 @@ function AppContent() {
     return () => window.removeEventListener('popstate', handleRouteChange)
   }, [])
 
+  return (
+    <ErrorBoundary>
+      <Router>
+        <AuthenticatedApp 
+          user={user}
+          authLoading={authLoading}
+          loginError={loginError}
+          handleLogin={handleLogin}
+          handleLogout={handleLogout}
+          sidebarOpen={sidebarOpen}
+          toggleSidebar={toggleSidebar}
+          closeSidebar={closeSidebar}
+        />
+      </Router>
+    </ErrorBoundary>
+  )
+}
+
+// Component that handles authentication inside Router context
+function AuthenticatedApp({ 
+  user, 
+  authLoading, 
+  loginError, 
+  handleLogin, 
+  handleLogout, 
+  sidebarOpen, 
+  toggleSidebar, 
+  closeSidebar 
+}) {
+  const { t } = useLanguage()
+
   // Show loading spinner while checking authentication
   if (authLoading) {
     return (
@@ -130,11 +162,13 @@ function AppContent() {
     )
   }
 
-// Show login screen if not authenticated    return <Login onLogin={handleLogin} error={loginError} />  }
+  // Show login screen if not authenticated
+  if (!user) {
+    return <Login onLogin={handleLogin} error={loginError} />
+  }
 
   return (
-    <Router>
-      <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-gray-50">
         {/* Responsive Sidebar */}
         <ResponsiveSidebar 
           isOpen={sidebarOpen} 
@@ -211,7 +245,6 @@ function AppContent() {
           }}
         />
       </div>
-    </Router>
   )
 }
 
