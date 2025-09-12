@@ -48,6 +48,8 @@ jobs:
     steps:
       - name: Checkout Main
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
 
       - name: Setup Python 3.12
         uses: actions/setup-python@v5
@@ -81,6 +83,7 @@ jobs:
 
       - name: Security scan
         run: |
+          mkdir -p reports/security
           bandit -r src/ -f json -o reports/security/bandit-report.json || true
           safety check --json --output reports/security/safety-report.json || true
 
@@ -149,3 +152,4 @@ jobs:
             reports/security/safety-report.json
             frontend/coverage/
           retention-days: 7
+          if-no-files-found: ignore
