@@ -4,6 +4,7 @@ import { Toaster } from 'react-hot-toast'
 import ResponsiveSidebar from './components/ResponsiveSidebar'
 import Header from './components/Header'
 import Login from './components/Login'
+import Register from './components/Register'
 import ErrorBoundary from './components/ErrorBoundary'
 import authService from './services/authService'
 import toast from 'react-hot-toast'
@@ -162,13 +163,21 @@ function AuthenticatedApp({
     )
   }
 
-  // Show login screen if not authenticated
+  // Show login/register screen if not authenticated
   if (!user) {
-    return <Login onLogin={handleLogin} error={loginError} />
+    return (
+      <Router>
+        <Routes>
+          <Route path="/register" element={<Register />} />
+          <Route path="*" element={<Login onLogin={handleLogin} error={loginError} />} />
+        </Routes>
+      </Router>
+    )
   }
 
   return (
-        <div className="min-h-screen bg-gray-50">
+    <Router>
+      <div className="min-h-screen bg-gray-50">
         {/* Responsive Sidebar */}
         <ResponsiveSidebar 
           isOpen={sidebarOpen} 
@@ -245,6 +254,7 @@ function AuthenticatedApp({
           }}
         />
       </div>
+    </Router>
   )
 }
 
