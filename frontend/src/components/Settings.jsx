@@ -1,5 +1,5 @@
-import { useLanguage } from "../i18n/LanguageProvider";
 import React, { useState } from 'react'
+import { useLanguage } from '../i18n/LanguageProvider'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { 
   Settings as SettingsIcon, 
@@ -88,48 +88,49 @@ const Settings = () => {
     }
   }
 
-  const { t } = useLanguage()
+  const { t, currentLanguage } = useLanguage()
+  const currentTranslations = translations[currentLanguage] || translations.nl
 
   const settingsTabs = [
     {
       id: 'appearance',
-      label: t.appearance,
-      description: t.appearanceDesc,
+      label: currentTranslations.appearance,
+      description: currentTranslations.appearanceDesc,
       icon: Palette,
       enabled: true
     },
     {
       id: 'bulk-data',
-      label: t.bulkData,
-      description: t.bulkDataDesc,
+      label: currentTranslations.bulkData,
+      description: currentTranslations.bulkDataDesc,
       icon: Archive,
       enabled: true
     },
     {
       id: 'ai', 
-      label: t.ai,
-      description: t.aiDesc,
+      label: currentTranslations.ai,
+      description: currentTranslations.aiDesc,
       icon: Brain,
       enabled: true
     },
     {
       id: 'apis',
-      label: t.apis,
-      description: t.apisDesc,
+      label: currentTranslations.apis,
+      description: currentTranslations.apisDesc,
       icon: Link,
       enabled: true
     },
     {
       id: 'reports',
-      label: t.reports,
-      description: t.reportsDesc,
+      label: currentTranslations.reports,
+      description: currentTranslations.reportsDesc,
       icon: BarChart3,
       enabled: true
     },
     {
       id: 'security',
-      label: t.security,
-      description: t.securityDesc,
+      label: currentTranslations.security,
+      description: currentTranslations.securityDesc,
       icon: Shield,
       enabled: false
     }
@@ -137,32 +138,32 @@ const Settings = () => {
 
   const futureIntegrations = [
     {
-      name: t.vectorworks,
-      description: t.vectorworksDesc,
+      name: currentTranslations.vectorworks,
+      description: currentTranslations.vectorworksDesc,
       icon: '🏗️',
       category: 'CAD'
     },
     {
-      name: t.crm,
-      description: t.crmDesc,
+      name: currentTranslations.crm,
+      description: currentTranslations.crmDesc,
       icon: '👥',
       category: 'Business'
     },
     {
-      name: t.n8n,
-      description: t.n8nDesc,
+      name: currentTranslations.n8n,
+      description: currentTranslations.n8nDesc,
       icon: '⚡',
       category: 'Automation'
     },
     {
-      name: t.photogrammetry,
-      description: t.photogrammetryDesc,
+      name: currentTranslations.photogrammetry,
+      description: currentTranslations.photogrammetryDesc,
       icon: '📸',
       category: 'AI/ML'
     },
     {
-      name: t.unreal,
-      description: t.unrealDesc,
+      name: currentTranslations.unreal,
+      description: currentTranslations.unrealDesc,
       icon: '🎮',
       category: 'Visualization'
     }
@@ -191,14 +192,14 @@ const Settings = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Shield className="h-5 w-5 text-red-600" />
-                {t.security}
+                {currentTranslations.security}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-center py-8">
                 <Shield className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">{t.comingSoon}</h3>
-                <p className="text-gray-500 mb-4">{t.securityDesc}</p>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">{currentTranslations.comingSoon}</h3>
+                <p className="text-gray-500 mb-4">{currentTranslations.securityDesc}</p>
               </div>
             </CardContent>
           </Card>
@@ -210,7 +211,7 @@ const Settings = () => {
             <CardContent className="p-12">
               <div className="text-center">
                 <SettingsIcon className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">{t.comingSoon}</h3>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">{currentTranslations.comingSoon}</h3>
                 <p className="text-gray-500">Deze sectie wordt binnenkort beschikbaar.</p>
               </div>
             </CardContent>
@@ -222,8 +223,8 @@ const Settings = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">{t.title}</h1>
-        <p className="text-gray-600">{t.subtitle}</p>
+        <h1 className="text-2xl font-bold text-gray-900">{currentTranslations.title}</h1>
+        <p className="text-gray-600">{currentTranslations.subtitle}</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">

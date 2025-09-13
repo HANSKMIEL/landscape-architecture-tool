@@ -35,7 +35,7 @@ const UserManagement = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
-  const [roleFilter, setRoleFilter] = useState('');
+  const [roleFilter, setRoleFilter] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [showCreateUser, setShowCreateUser] = useState(false);
@@ -79,7 +79,7 @@ const UserManagement = () => {
         page: currentPage.toString(),
         per_page: '20',
         ...(searchTerm && { search: searchTerm }),
-        ...(roleFilter && { role: roleFilter })
+        ...(roleFilter && roleFilter !== 'all' && { role: roleFilter })
       });
 
       const response = await fetch(`/api/users?${params}`);
@@ -325,7 +325,7 @@ jane.admin,jane@example.com,,admin,Jane,Smith,,Admin Corp,Admin user with genera
                 <SelectValue placeholder="Filter by role" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Roles</SelectItem>
+                <SelectItem value="all">All Roles</SelectItem>
                 {roles.map(role => (
                   <SelectItem key={role.value} value={role.value}>
                     {role.label}
@@ -505,7 +505,7 @@ jane.admin,jane@example.com,,admin,Jane,Smith,,Admin Corp,Admin user with genera
                 <Label htmlFor="role">Role</Label>
                 <Select value={createUserForm.role} onValueChange={(value) => setCreateUserForm({...createUserForm, role: value})}>
                   <SelectTrigger>
-                    <SelectValue />
+                    <SelectValue placeholder="Select a role" />
                   </SelectTrigger>
                   <SelectContent>
                     {roles.map(role => (

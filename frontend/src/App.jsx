@@ -164,7 +164,14 @@ function AuthenticatedApp({
 
   // Show login screen if not authenticated
   if (!user) {
-    return <Login onLogin={handleLogin} error={loginError} />
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-blue-50">
+        <Routes>
+          <Route path="/login" element={<Login onLogin={handleLogin} error={loginError} />} />
+          <Route path="*" element={<Navigate to="/login" replace />} />
+        </Routes>
+      </div>
+    )
   }
 
   return (
@@ -200,6 +207,7 @@ function AuthenticatedApp({
             }>
               <Routes>
                 <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                <Route path="/login" element={<Login onLogin={handleLogin} error={loginError} />} />
                 <Route path="/dashboard" element={<Dashboard user={user} />} />
                 <Route path="/suppliers" element={<Suppliers user={user} />} />
                 <Route path="/plants" element={<Plants user={user} />} />

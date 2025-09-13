@@ -53,36 +53,23 @@ const Login = ({ onLogin }) => {
     setError('');
 
     try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setSuccess('Login successful');
-        onLogin(data.user);
-        
-        // Redirect to intended page or dashboard
-        const from = location.state?.from?.pathname || '/dashboard';
-        navigate(from, { replace: true });
-      } else {
-        // Handle specific error cases
-        if (response.status === 423) {
-          setError('Account is temporarily locked due to failed login attempts');
-        } else if (response.status === 401) {
-          setError('Invalid username or password');
-        } else {
-          setError(data.error || 'Login failed');
-        }
-      }
+      // Use the onLogin prop which is actually handleLogin from App.jsx
+      await onLogin(formData);
+      setSuccess('Login successful! Redirecting...');
+      // Navigation will be handled by App.jsx after successful login
+      setTimeout(() => {
+        navigate('/dashboard');
+      }, 500);
     } catch (err) {
       console.error('Login error:', err);
-      setError('Network error. Please try again.');
+      // Handle specific error cases
+      if (err.message.includes('locked')) {
+        setError('Account is temporarily locked due to failed login attempts');
+      } else if (err.message.includes('Invalid') || err.message.includes('credentials')) {
+        setError('Invalid username or password');
+      } else {
+        setError(err.message || 'Login failed. Please try again.');
+      }
     } finally {
       setIsLoading(false);
     }
