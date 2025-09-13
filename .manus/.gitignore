@@ -1,0 +1,12 @@
+# Manus-specific files
+# These files contain sensitive authentication data and should not be committed
+
+# Encrypted secrets (contains authentication tokens)
+secrets.enc
+
+# Any temporary files created during development
+*.tmp
+*.log
+
+# Note: CONTINUATION_INSTRUCTIONS.md and TASK_CONTINUATION.md should be committed
+# as they contain important development context without sensitive data

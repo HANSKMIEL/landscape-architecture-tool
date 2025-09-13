@@ -95,6 +95,59 @@ def login():
         return jsonify({"error": "Invalid input", "details": e.errors()}), 400
 
 
+@user_bp.route("/auth/register", methods=["POST"])
+def register():
+    """User registration endpoint"""
+    try:
+        data = request.get_json()
+        
+        # Validate required fields
+        if not data or not all(k in data for k in ('username', 'email', 'password')):
+            return jsonify({"error": "Missing required fields: username, email, password"}), 400
+        
+        # Validate input lengths
+        if len(data['username']) < 3:
+            return jsonify({"error": "Username must be at least 3 characters"}), 400
+        if len(data['password']) < 6:
+            return jsonify({"error": "Password must be at least 6 characters"}), 400
+        
+        # Check if user already exists
+        existing_user = User.query.filter(
+            (User.username == data['username']) | 
+            (User.email == data['email'])
+        ).first()
+        
+        if existing_user:
+            if existing_user.username == data['username']:
+                return jsonify({"error": "Username already exists"}), 409
+            else:
+                return jsonify({"error": "Email already exists"}), 409
+        
+        # Create new user
+        new_user = User(
+            username=data['username'],
+            email=data['email'],
+            password=data['password'],
+            role=data.get('role', 'user'),
+            first_name=data.get('first_name'),
+            last_name=data.get('last_name'),
+            phone=data.get('phone'),
+            company=data.get('company')
+        )
+        
+        db.session.add(new_user)
+        db.session.commit()
+        
+        return jsonify({
+            "message": "User registered successfully",
+            "user": new_user.to_dict()
+        }), 201
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": f"Registration failed: {str(e)}"}), 500
+
+
 @user_bp.route("/auth/logout", methods=["POST"])
 @login_required
 def logout():
