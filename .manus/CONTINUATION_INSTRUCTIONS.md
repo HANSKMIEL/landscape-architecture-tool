@@ -456,3 +456,51 @@ cd frontend && npm run dev
 **Priority**: 🔥 **High - User registration fix and React component integration**
 
 **Timeline**: 📅 **2 weeks for Phase 1 completion**
+
+## 🎯 **ISSUE-BASED COPILOT HANDOFF PROTOCOL**
+
+### 📋 **When User Requests Analysis/Fixes**
+
+**NEVER simulate Copilot work yourself. Always use real GitHub Copilot via issues.**
+
+#### **Step 1: Create Comprehensive GitHub Issue**
+```bash
+gh issue create --title "🤖 [COPILOT ASSIGNMENT] [Task Description]" \
+  --body "[Detailed requirements with .manus folder references]" \
+  --assignee "@copilot"
+```
+
+#### **Step 2: Reference .manus Context Files**
+**MANDATORY**: Include these references in every Copilot issue:
+- `.manus/handoff/copilot_context_[timestamp].md` - Complete project context
+- `.manus/handoff/copilot_assignment_[timestamp].md` - Detailed requirements
+- `.manus/CONTINUATION_INSTRUCTIONS.md` - Project guidelines
+- `.manus/TASK_CONTINUATION.md` - Current priorities
+
+#### **Step 3: Set Completion Trigger**
+**Always include this in issue body:**
+```
+### 🔔 **COMPLETION TRIGGER**
+When finished, comment on the PR:
+`@HANSKMIEL Copilot optimization complete - ready for Manus review`
+```
+
+#### **Step 4: Monitor for Completion**
+```bash
+# Check for Copilot completion
+./.manus/scripts/monitor_copilot_completion.sh
+```
+
+#### **Step 5: Review Only When Triggered**
+- **DO NOT** monitor progress continuously
+- **DO NOT** simulate Copilot work
+- **ONLY** review when completion trigger is detected
+
+### 🚨 **CRITICAL RULES**
+
+1. **NEVER SIMULATE COPILOT** - Always wait for real Copilot work
+2. **USE ISSUES FOR HANDOFF** - Not manual context sharing
+3. **REFERENCE .manus FILES** - Ensure Copilot has full context
+4. **WAIT FOR COMPLETION** - Don't monitor until triggered
+5. **CONSERVE CREDITS** - Avoid unnecessary work simulation
+
