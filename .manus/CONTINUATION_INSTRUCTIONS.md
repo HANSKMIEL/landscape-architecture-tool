@@ -338,12 +338,98 @@ git push origin V1.00D
 - ✅ Allows seamless handoffs to new Manus sessions
 - ✅ Maintains backup of all development work
 
+### **🤖 COPILOT HANDOFF PROTOCOL**
+
+**When user requests "analyze and fix" tasks, ALWAYS follow this protocol:**
+
+#### **Step 1: Generate Copilot Context**
+```bash
+# Generate comprehensive context for Copilot
+./.manus/handoff_to_copilot.sh
+```
+
+#### **Step 2: Create Copilot Assignment**
+```markdown
+**Assignment for GitHub Copilot (GPT-5):**
+
+📋 **Task**: [Specific analysis and fix request from user]
+
+🎯 **Objective**: 
+- Analyze the identified issue/component
+- Implement comprehensive fixes
+- Create PR within V1.00D branch
+- Follow all development patterns and guidelines
+
+📂 **Context**: [Paste generated context from handoff script]
+
+🔧 **Requirements**:
+- Work exclusively on V1.00D branch
+- Maintain devdeploy environment isolation
+- Follow API error handling patterns
+- Test all changes thoroughly
+- Create descriptive PR with detailed changelog
+
+📋 **Deliverables**:
+- Feature branch from V1.00D
+- Comprehensive implementation
+- PR ready for review
+- Testing verification
+
+🚨 **Critical Constraints**:
+- NEVER touch main branch or production
+- Maintain "devdeploy" title branding
+- Follow auto-push protocol
+- Use provided API patterns and testing commands
+```
+
+#### **Step 3: Monitor and Review**
+```bash
+# When Copilot completes work, review the PR:
+gh pr list --base V1.00D
+
+# Review specific PR:
+gh pr view [PR_NUMBER] --web
+
+# Test the changes:
+gh pr checkout [PR_NUMBER]
+npm run build
+curl http://72.60.176.200:8080/health
+```
+
+#### **Step 4: Deploy and Validate**
+```bash
+# If approved, merge and deploy:
+gh pr merge [PR_NUMBER] --squash
+git checkout V1.00D
+git pull origin V1.00D
+
+# Deploy to devdeploy environment:
+./.manus/scripts/deployment/deploy_v1d_to_devdeploy.sh
+
+# Validate deployment:
+curl http://72.60.176.200:8080/health
+curl http://72.60.176.200:8080 | grep "devdeploy"
+```
+
+#### **Step 5: Update Documentation**
+```bash
+# Update session report with results:
+echo "✅ Copilot Task: [TASK_NAME] - Completed and deployed" >> .manus/reports/current_session_report.md
+
+# Commit documentation updates:
+git add .manus/reports/
+git commit -m "📊 Update session report with Copilot task completion"
+git push origin V1.00D
+```
+
 ### **Standard Development Workflow**
-1. **Make Changes**: Implement features, fix bugs, update documentation
-2. **Test Thoroughly**: Verify all changes work in devdeploy environment  
-3. **Update Documentation**: Keep session reports and task lists current
-4. **Commit Progress**: Save work with descriptive commit messages
-5. **🚀 PUSH IMMEDIATELY**: `git push origin V1.00D` (MANDATORY)
+1. **Receive Request**: User asks to "analyze and fix" something
+2. **🤖 HANDOFF TO COPILOT**: Follow Copilot handoff protocol above
+3. **Review Copilot Work**: Analyze PR and test changes
+4. **Deploy Changes**: Use V1.00D deployment scripts
+5. **Validate Results**: Test in devdeploy environment
+6. **Update Documentation**: Record completion and results
+7. **🚀 PUSH IMMEDIATELY**: `git push origin V1.00D` (MANDATORY)
 
 ## 🎯 **Next Session Startup Commands**
 

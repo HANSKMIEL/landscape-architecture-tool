@@ -17,6 +17,53 @@ curl $DEV_URL/health
 cd frontend && npm run dev
 ```
 
+## 🚨 **CRITICAL PROTOCOL: When User Requests "Analyze and Fix"**
+
+**ALWAYS use the automated Copilot handoff protocol:**
+
+### **🤖 Automated Handoff Command**
+```bash
+# For any "analyze and fix" request, run:
+./.manus/scripts/copilot_handoff.sh "TASK_DESCRIPTION"
+
+# Example:
+./.manus/scripts/copilot_handoff.sh "Analyze and fix error handling in Login component"
+```
+
+### **What This Does Automatically**
+1. ✅ **Generates Context**: Creates comprehensive Copilot context
+2. ✅ **Creates Assignment**: Detailed task specification for Copilot
+3. ✅ **Provides Instructions**: Clear handoff process for both AIs
+4. ✅ **Updates Documentation**: Session reports and tracking
+5. ✅ **Commits Changes**: Preserves all handoff documentation
+
+### **Manus Review Process (After Copilot Completion)**
+```bash
+# When notified that Copilot completed work:
+
+# 1. Review the PR
+gh pr list --base V1.00D
+gh pr view [PR_NUMBER] --web
+
+# 2. Test the changes
+gh pr checkout [PR_NUMBER]
+cd frontend && npm run build
+curl http://72.60.176.200:8080/health
+
+# 3. Deploy if approved
+gh pr merge [PR_NUMBER] --squash
+git checkout V1.00D && git pull origin V1.00D
+./.manus/scripts/deployment/deploy_v1d_to_devdeploy.sh
+
+# 4. Validate deployment
+curl http://72.60.176.200:8080/health
+curl http://72.60.176.200:8080 | grep "devdeploy"
+
+# 5. Update documentation
+echo "✅ Copilot Task Completed and Deployed: [TASK_NAME]" >> .manus/reports/current_session_report.md
+git add .manus/reports/ && git commit -m "📊 Copilot task completion" && git push origin V1.00D
+```
+
 ## 🚨 **CRITICAL: Auto-Push Protocol**
 **MANDATORY**: After every commit, ALWAYS push to GitHub:
 ```bash
