@@ -1,5 +1,5 @@
-import { useLanguage } from "../i18n/LanguageProvider";
 import React, { useState } from 'react'
+import { useLanguage } from '../i18n/LanguageProvider'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { 
   Settings as SettingsIcon, 

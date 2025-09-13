@@ -505,7 +505,7 @@ jane.admin,jane@example.com,,admin,Jane,Smith,,Admin Corp,Admin user with genera
                 <Label htmlFor="role">Role</Label>
                 <Select value={createUserForm.role} onValueChange={(value) => setCreateUserForm({...createUserForm, role: value})}>
                   <SelectTrigger>
-                    <SelectValue />
+                    <SelectValue placeholder="Select a role" />
                   </SelectTrigger>
                   <SelectContent>
                     {roles.map(role => (
