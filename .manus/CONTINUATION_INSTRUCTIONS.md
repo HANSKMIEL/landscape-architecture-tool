@@ -504,3 +504,70 @@ When finished, comment on the PR:
 4. **WAIT FOR COMPLETION** - Don't monitor until triggered
 5. **CONSERVE CREDITS** - Avoid unnecessary work simulation
 
+
+## 🧪 **VERIFICATION CHECKLIST FOR AI-TO-AI HANDOFFS**
+
+### 📋 **Before Creating Copilot Issues**
+
+**Pre-handoff verification:**
+```bash
+# 1. Verify GitHub CLI is working
+gh auth status
+
+# 2. Check current branch and status
+git status
+git branch
+
+# 3. Ensure .manus context is current
+ls -la .manus/handoff/
+
+# 4. Test monitoring script
+./.manus/scripts/monitor_copilot_completion.sh
+```
+
+### 📋 **After Creating Copilot Issues**
+
+**Post-handoff verification:**
+```bash
+# 1. Verify issue was created and assigned
+gh issue view [ISSUE_NUMBER] --json assignees,state
+
+# 2. Check .manus files are referenced in issue
+gh issue view [ISSUE_NUMBER] --json body | grep ".manus"
+
+# 3. Confirm monitoring system is ready
+ls -la .manus/scripts/monitor_copilot_completion.sh
+```
+
+### 📋 **When Copilot Completes Work**
+
+**Review checklist:**
+```bash
+# 1. Check for completion trigger
+gh pr view [PR_NUMBER] --json comments | grep "Copilot optimization complete"
+
+# 2. Checkout and test the changes
+gh pr checkout [PR_NUMBER]
+cd frontend && npm run build
+
+# 3. Deploy to devdeploy for testing
+./.manus/scripts/deployment/deploy_v1d_to_devdeploy.sh
+
+# 4. Run comprehensive verification
+./.manus/scripts/verify_deployment.sh
+```
+
+### 🚨 **FAILURE RECOVERY**
+
+**If Copilot doesn't respond:**
+1. Check issue assignment: `gh issue view [ISSUE_NUMBER]`
+2. Verify .manus files are accessible
+3. Add clarifying comments to the issue
+4. Wait 24 hours before escalating
+
+**If monitoring fails:**
+1. Manually check PR comments
+2. Look for Copilot commits in the branch
+3. Test the monitoring script manually
+4. Update trigger detection if needed
+
