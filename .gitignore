@@ -81,6 +81,14 @@ frontend/dist/
 frontend/build/
 .vite/
 
+# Package directories - prevent repository bloat
+packages/*/frontend/node_modules/
+packages/*/frontend/dist/
+packages/*/frontend/build/
+packages/*/backend/__pycache__/
+packages/*/backend/*.pyc
+packages/*/backend/.pytest_cache/
+
 # Static Files (when copied from frontend build)
 src/static/index.html
 src/static/assets/

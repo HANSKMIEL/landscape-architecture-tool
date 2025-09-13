@@ -1,25 +1,79 @@
-# Landscape Architecture Management Tool
+# Landscape Architecture Management Tool - V1.00
 
-A comprehensive web application for managing landscape architecture projects, suppliers, plants, products, and clients.
+A comprehensive web application for managing landscape architecture projects, suppliers, plants, products, and clients. Now organized with a robust V1.00 release structure for sustainable development and production deployment.
+
+## 🏗️ V1.00 Repository Organization
+
+This repository follows a dual-version strategy for optimal development and production stability:
+
+### 📦 Version Packages
+- **V1.00 (Protected)** - Stable production release deployed to VPS
+- **V1.00D (Development)** - Active development branch for new features
+
+```
+landscape-architecture-tool/
+├── src/                 # 🎯 Main backend source (V1.00D)
+├── frontend/            # 🎯 Main frontend source (V1.00D)  
+├── packages/
+│   ├── v1.00/          # 🛡️ Protected production package
+│   └── v1.00D/         # 🚧 Development package
+├── archive/            # 📁 Legacy files (pre-V1.00)
+└── DEV_OPS_STEPS/      # 🔧 Complete development guides
+```
+
+## 🚀 Quick Start
+
+### For Developers
+```bash
+# Clone and setup development environment
+git clone <repository-url>
+cd landscape-architecture-tool
+git checkout v1.00D
+
+# Install dependencies and start developing
+make install
+make backend-test
+```
+
+### For Production Deployment
+```bash
+# Deploy the stable V1.00 package
+cd packages/v1.00/deploy
+./deploy.sh
+```
+
+### For Updates (Development → Production)
+```bash
+# Promote tested V1.00D changes to V1.00
+./scripts/update_v1_from_dev.sh
+```
 
 ## 🏢 Enterprise Features
 
-### 🔄 Automated DevOps
-- **Modern CI/CD Pipeline** - Comprehensive automated testing with PostgreSQL and Redis services
-- **Enhanced Error Handling** - Detailed failure reporting with artifact uploads for debugging
-- **Security-First Approach** - Trivy vulnerability scanning, Safety checks, npm audit integration
-- **Multi-Environment Testing** - SQLite and PostgreSQL testing with integration tests
-- **Code Quality Enforcement** - Python linting (flake8, black, isort), security scanning (bandit)
-- **Docker Integration** - Automated container builds with vulnerability scanning
-- **Monitoring & Reporting** - Real-time pipeline monitoring with comprehensive status reports
-- **DeepSource Integration** - Automated code quality analysis with coverage reporting
-- **Dependency Management** - Automated security and dependency updates via Dependabot
+### 🔄 V1.00 DevOps Strategy
+- **Protected Production** - V1.00 package isolated from development changes
+- **Automated Promotion** - Tested V1.00D changes promoted via automated script
+- **Rollback Protection** - Automatic backups before V1.00 updates
+- **CI/CD Pipeline** - Comprehensive testing before production promotion
+- **GitHub Pages** - Automated deployment for V1.00 frontend
+
+### 🛡️ Production Stability
+- **Branch Protection** - V1.00 protected from direct modifications
+- **Version Tagging** - Automatic versioning with promotion timestamps
+- **Backup Management** - Automated backup retention for recovery
+- **Deployment Validation** - Pre-deployment testing and validation
+
+### 🚧 Development Workflow
+- **V1.00D Development** - Work in main source directories (src/, frontend/, docs/)
+- **Continuous Testing** - Full CI/CD validation on development branch
+- **Package Synchronization** - V1.00D package auto-synced with main source
+- **Manual Promotion** - Controlled updates to V1.00 via promotion script
 
 ### 🌐 Cloud-First Development
 - **GitHub Codespaces** - Instant cloud development environment
 - **VS Code Remote** - Consistent development with devcontainers
-- **OneDrive Integration** - Cloud storage and collaboration features (includes msal, msgraph-core, azure-identity, azure-storage-file-datalake)
 - **Container Orchestration** - Production-ready Docker Compose setup
+- **OneDrive Integration** - Cloud storage and collaboration features
 
 ### 🔐 Security & Compliance
 - **Automated Security Scanning** - Trivy and Bandit integration
@@ -29,9 +83,9 @@ A comprehensive web application for managing landscape architecture projects, su
 
 ### 📊 Monitoring & Analytics
 - **Health Checks** - Comprehensive application monitoring
-- **Logging** - Structured logging with configurable levels
 - **Performance Metrics** - Built-in performance tracking
 - **Error Handling** - Centralized error management
+- **Package Integrity** - Automated package validation
 
 ## 🌱 Core Features
 - **Dashboard** - Overview with statistics and recent activity
