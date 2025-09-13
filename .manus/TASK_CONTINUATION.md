@@ -17,6 +17,13 @@ curl $DEV_URL/health
 cd frontend && npm run dev
 ```
 
+## 🚨 **CRITICAL: Auto-Push Protocol**
+**MANDATORY**: After every commit, ALWAYS push to GitHub:
+```bash
+git push origin V1.00D
+```
+**NO EXCEPTIONS** - This ensures zero work loss between sessions.
+
 ## 📋 **Immediate Tasks (Week 1)**
 
 ### **Task 1: React Component Integration Testing (Days 1-2)**

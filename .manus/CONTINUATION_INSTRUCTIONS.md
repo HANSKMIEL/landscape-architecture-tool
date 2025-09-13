@@ -322,6 +322,29 @@ sshpass -p '[ENCRYPTED]' ssh root@72.60.176.200 \
 
 ---
 
+## 🔄 **MANDATORY Development Workflow**
+
+### **🚀 CRITICAL: Auto-Push Protocol**
+**ALWAYS push changes immediately after committing - NO EXCEPTIONS**
+
+```bash
+# After every commit, ALWAYS run:
+git push origin V1.00D
+```
+
+**Why This Matters**:
+- ✅ Ensures all work is preserved on GitHub
+- ✅ Prevents loss of progress between sessions  
+- ✅ Allows seamless handoffs to new Manus sessions
+- ✅ Maintains backup of all development work
+
+### **Standard Development Workflow**
+1. **Make Changes**: Implement features, fix bugs, update documentation
+2. **Test Thoroughly**: Verify all changes work in devdeploy environment  
+3. **Update Documentation**: Keep session reports and task lists current
+4. **Commit Progress**: Save work with descriptive commit messages
+5. **🚀 PUSH IMMEDIATELY**: `git push origin V1.00D` (MANDATORY)
+
 ## 🎯 **Next Session Startup Commands**
 
 ```bash
