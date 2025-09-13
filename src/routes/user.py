@@ -66,7 +66,7 @@ def data_access_required(f):
             return jsonify({"error": "Authentication required"}), 401
 
         user = User.query.get(session["user_id"])
-        if not user or not user.can_manage_data():
+        if not user or not user.has_permission('user'):
             return jsonify({"error": "Data management access required"}), 403
         return f(*args, **kwargs)
 
