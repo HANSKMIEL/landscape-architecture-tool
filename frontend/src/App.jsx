@@ -166,17 +166,14 @@ function AuthenticatedApp({
   // Show login/register screen if not authenticated
   if (!user) {
     return (
-      <Router>
-        <Routes>
-          <Route path="/register" element={<Register />} />
-          <Route path="*" element={<Login onLogin={handleLogin} error={loginError} />} />
-        </Routes>
-      </Router>
+      <Routes>
+        <Route path="/register" element={<Register />} />
+        <Route path="*" element={<Login onLogin={handleLogin} error={loginError} />} />
+      </Routes>
     )
   }
 
   return (
-    <Router>
       <div className="min-h-screen bg-gray-50">
         {/* Responsive Sidebar */}
         <ResponsiveSidebar 
@@ -254,7 +251,6 @@ function AuthenticatedApp({
           }}
         />
       </div>
-    </Router>
   )
 }
 
