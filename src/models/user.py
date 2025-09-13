@@ -123,6 +123,14 @@ class User(db.Model):
         
         return user_level >= required_level
     
+    def can_access_admin(self):
+        """Check if user has admin access (admin level and above)"""
+        return self.has_permission('admin')
+    
+    def can_manage_data(self):
+        """Check if user can manage data (user level and above)"""
+        return self.has_permission('user')
+    
     @property
     def full_name(self):
         """Get full name"""
@@ -148,6 +156,7 @@ class User(db.Model):
             'company': self.company,
             'notes': self.notes,
             'is_active': self.is_active,
+            'is_locked': self.is_account_locked(),
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None,
             'last_login': self.last_login.isoformat() if self.last_login else None
@@ -156,7 +165,6 @@ class User(db.Model):
         if include_sensitive:
             data.update({
                 'failed_login_attempts': self.failed_login_attempts,
-                'is_locked': self.is_account_locked(),
                 'locked_until': self.locked_until.isoformat() if self.locked_until else None
             })
         
