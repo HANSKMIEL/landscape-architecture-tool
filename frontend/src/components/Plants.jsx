@@ -27,6 +27,10 @@ const Plants = () => {
   const [suppliers, setSuppliers] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [retryCount, setRetryCount] = useState(0)
+  const [isRetrying, setIsRetrying] = useState(false)
+  const [submitLoading, setSubmitLoading] = useState(false)
+  const [deleteLoading, setDeleteLoading] = useState(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [showAddModal, setShowAddModal] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
@@ -102,11 +106,37 @@ const Plants = () => {
     { value: 'high', label: t('plants.maintenance.high', 'High') }
   ]
 
-  // Fetch plants data
-  const fetchPlants = useCallback(async () => {
+  // Enhanced error handling with retry logic
+  const handleApiError = (error, context = '') => {
+    console.error(`Error in ${context}:`, error)
+    
+    let errorMessage = 'An unexpected error occurred'
+    
+    if (error.response?.data?.error) {
+      errorMessage = error.response.data.error
+    } else if (error.message) {
+      if (error.message.includes('Failed to fetch') || error.message.includes('Network Error')) {
+        errorMessage = 'Network connection failed. Please check your internet connection.'
+      } else if (error.message.includes('timeout')) {
+        errorMessage = 'Request timed out. Please try again.'
+      } else {
+        errorMessage = error.message
+      }
+    }
+    
+    return errorMessage
+  }
+
+  // Fetch plants data with enhanced error handling
+  const fetchPlants = useCallback(async (isRetry = false) => {
     try {
       setLoading(true)
-      setError(null)
+      if (!isRetry) {
+        setError(null)
+        setRetryCount(0)
+      } else {
+        setIsRetrying(true)
+      }
       
       const params = {}
       if (searchTerm) {
@@ -121,15 +151,23 @@ const Plants = () => {
       
       setPlants(plantsArray)
       setTotalPlants(data?.total || data?.pagination?.total || plantsArray.length)
+      setError(null)
+      setRetryCount(0)
     } catch (err) {
-      console.error('Error fetching plants:', err.message)
-      setError(err.message)
+      const errorMessage = handleApiError(err, 'fetching plants')
+      setError(errorMessage)
       // Set empty array on error to prevent map() failures
       setPlants([])
     } finally {
       setLoading(false)
+      setIsRetrying(false)
     }
   }, [searchTerm])
+
+  const handleRetry = () => {
+    setRetryCount(prev => prev + 1)
+    fetchPlants(true)
+  }
 
   // Fetch suppliers for dropdown
   const fetchSuppliers = async () => {

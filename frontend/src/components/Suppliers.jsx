@@ -29,6 +29,10 @@ const Suppliers = () => {
   const [showEditModal, setShowEditModal] = useState(false)
   const [editingSupplier, setEditingSupplier] = useState(null)
   const [error, setError] = useState(null)
+  const [retryCount, setRetryCount] = useState(0)
+  const [isRetrying, setIsRetrying] = useState(false)
+  const [submitLoading, setSubmitLoading] = useState(false)
+  const [deleteLoading, setDeleteLoading] = useState(null)
 
   // Form state
   const [formData, setFormData] = useState({
@@ -45,22 +49,60 @@ const Suppliers = () => {
     specialties: ''
   })
 
-  const loadSuppliers = useCallback(async () => {
+  // Enhanced error handling with retry logic
+  const handleApiError = (error, context = '') => {
+    console.error(`Error in ${context}:`, error)
+    
+    let errorMessage = 'An unexpected error occurred'
+    
+    if (error.response?.data?.error) {
+      errorMessage = error.response.data.error
+    } else if (error.message) {
+      if (error.message.includes('Failed to fetch') || error.message.includes('Network Error')) {
+        errorMessage = 'Network connection failed. Please check your internet connection.'
+      } else if (error.message.includes('timeout')) {
+        errorMessage = 'Request timed out. Please try again.'
+      } else {
+        errorMessage = error.message
+      }
+    }
+    
+    return errorMessage
+  }
+
+  const loadSuppliers = useCallback(async (isRetry = false) => {
     try {
       setLoading(true)
-      setError(null)
+      if (!isRetry) {
+        setError(null)
+        setRetryCount(0)
+      } else {
+        setIsRetrying(true)
+      }
+      
       const params = searchTerm ? { search: searchTerm } : {}
       const data = await apiService.getSuppliers(params)
       setSuppliers(data.suppliers || [])
       setTotalSuppliers(data.total || 0)
+      setError(null)
+      setRetryCount(0)
     } catch (error) {
-      console.error('Error loading suppliers:', error)
-      setError(error.message)
-      toast.error(`${t('suppliers.error', 'Error loading suppliers')}: ${error.message}`)
+      const errorMessage = handleApiError(error, 'loading suppliers')
+      setError(errorMessage)
+      
+      if (!isRetry) {
+        toast.error(`${t('suppliers.error', 'Error loading suppliers')}: ${errorMessage}`)
+      }
     } finally {
       setLoading(false)
+      setIsRetrying(false)
     }
   }, [searchTerm, t])
+
+  const handleRetry = () => {
+    setRetryCount(prev => prev + 1)
+    loadSuppliers(true)
+  }
 
   useEffect(() => {
     loadSuppliers()
@@ -92,9 +134,11 @@ const Suppliers = () => {
     })
   }
 
-  // Handle add supplier
+  // Handle add supplier with enhanced error handling
   const handleAddSupplier = async (e) => {
     e.preventDefault()
+    setSubmitLoading(true)
+    
     try {
       await apiService.createSupplier(formData)
       await loadSuppliers()
@@ -102,14 +146,18 @@ const Suppliers = () => {
       resetForm()
       toast.success(t('suppliers.addSuccess', 'Supplier successfully added!'))
     } catch (err) {
-      console.error('Error adding supplier:', err)
-      toast.error(t('suppliers.addError', 'Error adding supplier: ') + err.message)
+      const errorMessage = handleApiError(err, 'adding supplier')
+      toast.error(t('suppliers.addError', 'Error adding supplier: ') + errorMessage)
+    } finally {
+      setSubmitLoading(false)
     }
   }
 
-  // Handle edit supplier
+  // Handle edit supplier with enhanced error handling
   const handleEditSupplier = async (e) => {
     e.preventDefault()
+    setSubmitLoading(true)
+    
     try {
       await apiService.updateSupplier(editingSupplier.id, formData)
       await loadSuppliers()
@@ -118,24 +166,30 @@ const Suppliers = () => {
       resetForm()
       toast.success(t('suppliers.updateSuccess', 'Supplier successfully updated!'))
     } catch (err) {
-      console.error('Error updating supplier:', err)
-      toast.error(t('suppliers.updateError', 'Error updating supplier: ') + err.message)
+      const errorMessage = handleApiError(err, 'updating supplier')
+      toast.error(t('suppliers.updateError', 'Error updating supplier: ') + errorMessage)
+    } finally {
+      setSubmitLoading(false)
     }
   }
 
-  // Handle delete supplier
+  // Handle delete supplier with enhanced error handling and loading state
   const handleDeleteSupplier = async (supplierId, supplierName) => {
     if (!confirm(t('suppliers.deleteConfirm', 'Are you sure you want to delete "{name}"?').replace('{name}', supplierName))) {
       return
     }
 
+    setDeleteLoading(supplierId)
+    
     try {
       await apiService.deleteSupplier(supplierId)
       toast.success(t('suppliers.deleteSuccess', 'Supplier successfully deleted!'))
       loadSuppliers()
     } catch (error) {
-      console.error('Error deleting supplier:', error)
-      toast.error(t('suppliers.deleteError', 'Error deleting supplier: ') + error.message)
+      const errorMessage = handleApiError(error, 'deleting supplier')
+      toast.error(t('suppliers.deleteError', 'Error deleting supplier: ') + errorMessage)
+    } finally {
+      setDeleteLoading(null)
     }
   }
 
