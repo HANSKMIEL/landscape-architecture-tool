@@ -23,10 +23,31 @@ const Login = ({ onLogin }) => {
   const [forgotPasswordEmail, setForgotPasswordEmail] = useState('');
   const [forgotPasswordLoading, setForgotPasswordLoading] = useState(false);
   const [forgotPasswordSuccess, setForgotPasswordSuccess] = useState(false);
+  const [isRetrying, setIsRetrying] = useState(false);
+  const [focusedField, setFocusedField] = useState('');
   
   const navigate = useNavigate();
   const location = useLocation();
   const { t } = useLanguage();
+
+  // Error analytics logging
+  const logError = (errorType, errorMessage, context = {}) => {
+    const errorData = {
+      timestamp: new Date().toISOString(),
+      type: errorType,
+      message: errorMessage,
+      userAgent: navigator.userAgent,
+      url: window.location.href,
+      retryCount,
+      ...context
+    };
+    
+    // Log to console for development
+    console.error('Login Error Analytics:', errorData);
+    
+    // In production, this would send to analytics service
+    // analytics.track('login_error', errorData);
+  };
 
   // Check for success messages from URL params (e.g., after password reset)
   useEffect(() => {
@@ -49,58 +70,90 @@ const Login = ({ onLogin }) => {
     if (error) setError('');
   };
 
-  // Enhanced error handling function
+  // Enhanced error handling function with improved UX messages
   const handleApiError = (error, response) => {
+    let errorMessage = '';
+    let errorType = '';
+    
     if (!response) {
       // Network error
-      setErrorType('network');
-      return 'Network error. Please check your connection and try again.';
+      errorType = 'network';
+      errorMessage = '🌐 Connection issue detected. Please check your internet connection and try again.';
+      logError('network', 'Network connection failed', { error: error?.message });
+    } else {
+      const status = response.status;
+      const apiError = error?.error || 'Unknown error';
+
+      switch (status) {
+        case 400:
+          errorType = 'validation';
+          if (apiError === 'Invalid input') {
+            errorMessage = '📝 Please ensure all fields are filled out correctly and try again.';
+          } else {
+            errorMessage = '📝 The information provided appears to be invalid. Please double-check and try again.';
+          }
+          logError('validation', apiError, { status, formData: { username: formData.username } });
+          break;
+        
+        case 401:
+          errorType = 'auth';
+          if (apiError === 'Invalid credentials') {
+            errorMessage = '🔐 The username or password you entered is incorrect. Please check your credentials and try again.';
+          } else {
+            errorMessage = '🔐 Authentication failed. Please verify your login information.';
+          }
+          logError('authentication', apiError, { status, username: formData.username });
+          break;
+        
+        case 423:
+          errorType = 'auth';
+          errorMessage = '🔒 Your account has been temporarily locked for security reasons. Please try again in a few minutes or contact support.';
+          logError('account_locked', apiError, { status, username: formData.username });
+          break;
+        
+        case 429:
+          errorType = 'server';
+          errorMessage = '⏱️ Too many login attempts detected. Please wait a moment before trying again to ensure security.';
+          logError('rate_limited', apiError, { status, retryCount });
+          break;
+        
+        case 500:
+        case 502:
+        case 503:
+          errorType = 'server';
+          errorMessage = '🔧 Our servers are experiencing temporary issues. Please try again in a few moments.';
+          logError('server_error', apiError, { status });
+          break;
+        
+        default:
+          errorType = 'server';
+          errorMessage = '❗ An unexpected error occurred. Please try again or contact support if the problem persists.';
+          logError('unknown_error', apiError, { status });
+          break;
+      }
     }
 
-    const status = response.status;
-    const apiError = error?.error || 'Unknown error';
-
-    switch (status) {
-      case 400:
-        setErrorType('validation');
-        if (apiError === 'Invalid input') {
-          return 'Please fill in all required fields correctly.';
-        }
-        return 'Invalid input. Please check your information.';
-      
-      case 401:
-        setErrorType('auth');
-        if (apiError === 'Invalid credentials') {
-          return 'Username or password is incorrect. Please try again.';
-        }
-        return 'Authentication failed. Please check your credentials.';
-      
-      case 423:
-        setErrorType('auth');
-        return 'Account is temporarily locked due to failed login attempts. Please try again later.';
-      
-      case 429:
-        setErrorType('server');
-        return 'Too many login attempts. Please wait a moment before trying again.';
-      
-      case 500:
-      case 502:
-      case 503:
-        setErrorType('server');
-        return 'Server error. Please try again in a few moments.';
-      
-      default:
-        setErrorType('server');
-        return apiError || 'An unexpected error occurred. Please try again.';
-    }
+    setErrorType(errorType);
+    return errorMessage;
   };
 
-  // Retry mechanism
-  const handleRetry = () => {
+  // Enhanced retry mechanism with loading states
+  const handleRetry = async () => {
+    setIsRetrying(true);
     setRetryCount(prev => prev + 1);
     setError('');
     setErrorType('');
-    handleSubmit(new Event('submit'));
+    
+    // Small delay for better UX
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    const syntheticEvent = {
+      preventDefault: () => {},
+      target: { checkValidity: () => true }
+    };
+    
+    await handleSubmit(syntheticEvent);
+    setIsRetrying(false);
   };
 
   const handleSubmit = async (e) => {
@@ -310,14 +363,24 @@ const Login = ({ onLogin }) => {
         <div className="bg-white rounded-xl shadow-xl p-8">
           <form onSubmit={handleSubmit} className="space-y-6">
             {error && (
-              <Alert className={`border-red-200 bg-red-50 ${errorType === 'network' ? 'border-orange-200 bg-orange-50' : ''}`}>
-                <AlertCircle className={`h-4 w-4 ${errorType === 'network' ? 'text-orange-600' : 'text-red-600'}`} />
-                <div className="flex-1">
-                  <AlertDescription className={`${errorType === 'network' ? 'text-orange-800' : 'text-red-800'} mb-2`}>
+              <Alert 
+                id="login-error"
+                role="alert"
+                aria-live="polite"
+                aria-atomic="true"
+                className={`border-l-4 ${
+                  errorType === 'network' ? 'border-orange-400 bg-orange-50' : 'border-red-400 bg-red-50'
+                }`}
+              >
+                <AlertCircle className={`h-4 w-4 ${
+                  errorType === 'network' ? 'text-orange-600' : 'text-red-600'
+                }`} />
+                <div>
+                  <AlertDescription className={`${
+                    errorType === 'network' ? 'text-orange-800' : 'text-red-800'
+                  }`}>
                     {error}
-                  </AlertDescription>
-                  
-                  {/* Retry button for network errors or server errors */}
+                  </AlertDescription>for network errors or server errors */}
                   {(errorType === 'network' || errorType === 'server') && retryCount < 3 && (
                     <div className="flex items-center gap-2 mt-2">
                       <Button
@@ -392,9 +455,18 @@ const Login = ({ onLogin }) => {
                   required
                   value={formData.username}
                   onChange={handleInputChange}
-                  className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors"
+                  onFocus={() => setFocusedField('username')}
+                  onBlur={() => setFocusedField('')}
+                  className={`block w-full pl-10 pr-3 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:border-transparent transition-colors ${
+                    errorType === 'validation' || errorType === 'auth' 
+                      ? 'border-red-300 focus:ring-red-500' 
+                      : 'border-gray-300 focus:ring-green-500'
+                  }`}
                   placeholder="Voer uw gebruikersnaam of e-mail in"
-                  disabled={isLoading}
+                  disabled={isLoading || isRetrying}
+                  aria-describedby={error ? "login-error" : undefined}
+                  aria-invalid={errorType === 'validation' || errorType === 'auth'}
+                  aria-label="Username or email address"
                   autoComplete="username"
                 />
               </div>
@@ -416,16 +488,32 @@ const Login = ({ onLogin }) => {
                   required
                   value={formData.password}
                   onChange={handleInputChange}
-                  className="block w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors"
+                  onFocus={() => setFocusedField('password')}
+                  onBlur={() => setFocusedField('')}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && formData.username && formData.password) {
+                      handleSubmit(e);
+                    }
+                  }}
+                  className={`block w-full pl-10 pr-12 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:border-transparent transition-colors ${
+                    errorType === 'validation' || errorType === 'auth' 
+                      ? 'border-red-300 focus:ring-red-500' 
+                      : 'border-gray-300 focus:ring-green-500'
+                  }`}
                   placeholder="Voer uw wachtwoord in"
-                  disabled={isLoading}
+                  disabled={isLoading || isRetrying}
                   autoComplete="current-password"
+                  aria-describedby={error ? "login-error" : undefined}
+                  aria-invalid={errorType === 'validation' || errorType === 'auth'}
+                  aria-label="Password"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
-                  disabled={isLoading}
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-green-500 rounded"
+                  disabled={isLoading || isRetrying}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  tabIndex={0}
                 >
                   {showPassword ? (
                     <EyeOff className="h-5 w-5" />
@@ -439,13 +527,15 @@ const Login = ({ onLogin }) => {
             {/* Submit Button */}
             <button
               type="submit"
-              disabled={isLoading || !formData.username || !formData.password}
+              disabled={isLoading || isRetrying || !formData.username || !formData.password}
               className="w-full flex justify-center items-center px-4 py-3 border border-transparent text-sm font-medium rounded-lg text-white bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+              aria-describedby={error ? "login-error" : undefined}
+              aria-label={isLoading || isRetrying ? "Logging in, please wait" : "Log in to your account"}
             >
-              {isLoading ? (
+              {isLoading || isRetrying ? (
                 <div className="flex items-center">
                   <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                  Inloggen...
+                  {isRetrying ? 'Retrying...' : 'Inloggen...'}
                 </div>
               ) : (
                 <div className="flex items-center">
