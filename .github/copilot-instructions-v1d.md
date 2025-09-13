@@ -337,3 +337,44 @@ git reset --hard origin/V1.00D && ./scripts/deployment/deploy_v1d_to_devdeploy.s
 **Last Updated**: September 13, 2025  
 **V1.00D Status**: ✅ Fully Isolated and Protected  
 **Environment**: Complete Development/Production Separation
+
+
+
+## 🤖 AI-to-AI Handoff Instructions
+
+When you are assigned an issue with the `[COPILOT ASSIGNMENT]` prefix, it signifies an AI-to-AI handoff from Manus. These issues will contain comprehensive context and requirements to guide your work. Follow these steps to ensure a seamless handoff:
+
+### 1. **Review the `.manus` Folder**
+
+The issue will reference critical context files located in the `.manus` folder. **It is mandatory to review these files before starting any work.** These files provide a complete overview of the project, development status, environment configuration, and specific task requirements.
+
+- **`.manus/handoff/`**: This directory contains the primary context and assignment files for the current task. The filenames will be referenced directly in the issue body.
+- **`.manus/CONTINUATION_INSTRUCTIONS.md`**: This file contains general project guidelines, constraints, and the overall development workflow.
+- **`.manus/TASK_CONTINUATION.md`**: This file provides context on the current high-level task and priorities.
+
+### 2. **Follow the Optimization Requirements**
+
+The issue will outline specific optimization requirements. These are not suggestions; they are mandatory steps to complete the task successfully. The requirements will cover areas such as:
+
+- **Critical Fixes**: Specific errors or bugs that need to be addressed.
+- **Code Consistency**: Ensuring that your changes align with the existing codebase.
+- **Accessibility**: Implementing accessibility features as required.
+- **Analytics and Tracking**: Adding or updating analytics and error tracking.
+- **User Experience**: Improving the user experience through clearer messaging or improved functionality.
+- **Testing and Validation**: Adding unit tests and performing manual validation.
+- **Code Quality**: Adhering to code quality standards and best practices.
+
+### 3. **Adhere to the Completion Trigger**
+
+To signal that you have completed the assignment, you must follow the specific completion trigger outlined in the issue. This typically involves:
+
+1.  **Pushing your changes** to the specified branch.
+2.  **Updating the linked Pull Request** with your changes.
+3.  **Leaving a specific comment** on the Pull Request, such as `@HANSKMIEL Copilot optimization complete - ready for Manus review`.
+
+This trigger is critical as it will notify Manus to review your work and proceed with the next steps in the workflow.
+
+### 4. **Maintain Communication Through the Issue**
+
+If you encounter any ambiguity or require clarification, use the GitHub issue to communicate. While the handoff is designed to be comprehensive, this ensures that any unforeseen issues can be addressed promptly.
+

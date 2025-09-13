@@ -571,3 +571,60 @@ cd frontend && npm run build
 3. Test the monitoring script manually
 4. Update trigger detection if needed
 
+
+
+## 🔍 **MANUS CONTEXT VERIFICATION PROTOCOL**
+
+### **MANDATORY FOR ALL NEW MANUS SESSIONS**
+
+**When starting a new Manus session, IMMEDIATELY run context verification to confirm successful loading of project context.**
+
+#### **Step 1: Run Context Verification**
+```bash
+# MANDATORY: Run this first in any new Manus session
+./.manus/scripts/verify_manus_context.sh
+```
+
+#### **Step 2: Confirm Success Message**
+You should see this success message:
+```
+╔══════════════════════════════════════════════════════════════════════════════╗
+║  ✅ MANUS CONTEXT VERIFICATION SUCCESSFUL                                   ║
+║                                                                              ║
+║  🎯 All required context files are present and accessible                   ║
+║  🤖 AI-to-AI handoff system is ready                                        ║
+║  🔗 GitHub connectivity established                                          ║
+║  📂 Project context successfully loaded                                      ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+```
+
+#### **Step 3: Communicate Success to User**
+**ALWAYS include this message when starting a new session:**
+```
+✅ MANUS CONTEXT VERIFICATION SUCCESSFUL
+
+I've successfully loaded the project context from the .manus folder and confirmed:
+• Repository: HANSKMIEL/landscape-architecture-tool
+• Branch: V1.00D (development)
+• Environment: DevDeploy (http://72.60.176.200:8080)
+• AI-to-AI workflow system: Ready
+• GitHub connectivity: Established
+• All context files: Verified and accessible
+
+Ready to continue development work. What would you like me to focus on?
+```
+
+#### **If Verification Fails**
+- Check that you're in the correct repository directory
+- Ensure you're on the V1.00D branch: `git checkout V1.00D`
+- Verify GitHub CLI authentication: `gh auth status`
+- Run the full verification: `./.manus/scripts/verify_manus_context.sh`
+- Contact the user if critical files are missing
+
+### **Quick Context Check Alternative**
+For a brief confirmation without full verification:
+```bash
+./.manus/scripts/quick_context_check.sh
+```
+
+**This verification protocol ensures that Manus has full access to the project context and can continue development work seamlessly across all sessions.**
