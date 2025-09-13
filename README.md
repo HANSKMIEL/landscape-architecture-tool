@@ -1,6 +1,10 @@
-# Landscape Architecture Management Tool - V1.00
+# 🌿 Landscape Architecture Tool
 
-A comprehensive web application for managing landscape architecture projects, suppliers, plants, products, and clients. Now organized with a robust V1.00 release structure for sustainable development and production deployment.
+A comprehensive web application for managing landscape architecture projects, suppliers, plants, products, and clients. 
+
+**Current Status**: ✅ V1.00D Post-Reorganization Complete  
+**Production**: 🚀 Deployed at https://optura.nl  
+**Development**: 🔧 Active on V1.00D branch with workflow fixes applied
 
 ## 🏗️ V1.00 Repository Organization
 
