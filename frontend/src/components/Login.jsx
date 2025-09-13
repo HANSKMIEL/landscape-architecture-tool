@@ -7,6 +7,9 @@ import { Label } from './ui/label';
 import { Alert, AlertDescription } from './ui/alert';
 import { Loader2, Eye, EyeOff, Mail, Lock, User, AlertCircle, CheckCircle, LogIn } from 'lucide-react';
 import { useLanguage } from '../i18n/LanguageProvider';
+import { useError } from '../contexts/ErrorContext';
+import EnhancedErrorDisplay from './EnhancedErrorDisplay';
+import { handleApiError } from '../utils/errorHandling';
 
 const Login = ({ onLogin }) => {
   const [formData, setFormData] = useState({
@@ -21,10 +24,12 @@ const Login = ({ onLogin }) => {
   const [forgotPasswordEmail, setForgotPasswordEmail] = useState('');
   const [forgotPasswordLoading, setForgotPasswordLoading] = useState(false);
   const [forgotPasswordSuccess, setForgotPasswordSuccess] = useState(false);
+  const [formattedError, setFormattedError] = useState(null);
   
   const navigate = useNavigate();
   const location = useLocation();
   const { t } = useLanguage();
+  const { handleApiError: handleApiErrorWithContext, showSuccess } = useError();
 
   // Check for success messages from URL params (e.g., after password reset)
   useEffect(() => {
@@ -45,12 +50,14 @@ const Login = ({ onLogin }) => {
     }));
     // Clear errors when user starts typing
     if (error) setError('');
+    if (formattedError) setFormattedError(null);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     setError('');
+    setFormattedError(null);
 
     try {
       const response = await fetch('/api/auth/login', {
@@ -61,28 +68,53 @@ const Login = ({ onLogin }) => {
         body: JSON.stringify(formData),
       });
 
-      const data = await response.json();
-
       if (response.ok) {
-        setSuccess('Login successful');
+        const data = await response.json();
+        
+        // Show success message
+        showSuccess('Inloggen succesvol');
         onLogin(data.user);
         
         // Redirect to intended page or dashboard
         const from = location.state?.from?.pathname || '/dashboard';
         navigate(from, { replace: true });
       } else {
-        // Handle specific error cases
+        // Use enhanced error handling
+        const errorInfo = await handleApiErrorWithContext(response, {
+          component: 'Login',
+          action: 'authentication',
+          endpoint: '/api/auth/login'
+        });
+        
+        setFormattedError(errorInfo);
+        
+        // Keep backward compatibility for simple error display
         if (response.status === 423) {
-          setError('Account is temporarily locked due to failed login attempts');
+          setError('Account is tijdelijk vergrendeld vanwege mislukte inlogpogingen');
         } else if (response.status === 401) {
-          setError('Invalid username or password');
+          setError('Ongeldige gebruikersnaam of wachtwoord');
         } else {
-          setError(data.error || 'Login failed');
+          const data = await response.json().catch(() => ({}));
+          setError(data.error || 'Inloggen mislukt');
         }
       }
     } catch (err) {
       console.error('Login error:', err);
-      setError('Network error. Please try again.');
+      
+      // Use enhanced error handling for network errors
+      const errorInfo = await handleApiErrorWithContext({
+        ok: false,
+        status: 0,
+        statusText: 'Network Error',
+        json: () => Promise.resolve({ error: err.message })
+      }, {
+        component: 'Login',
+        action: 'authentication',
+        endpoint: '/api/auth/login'
+      });
+      
+      setFormattedError(errorInfo);
+      setError('Netwerkfout. Probeer het opnieuw.');
     } finally {
       setIsLoading(false);
     }
@@ -92,6 +124,7 @@ const Login = ({ onLogin }) => {
     e.preventDefault();
     setForgotPasswordLoading(true);
     setError('');
+    setFormattedError(null);
 
     try {
       const response = await fetch('/api/auth/forgot-password', {
@@ -102,17 +135,40 @@ const Login = ({ onLogin }) => {
         body: JSON.stringify({ email: forgotPasswordEmail }),
       });
 
-      const data = await response.json();
-
       if (response.ok) {
         setForgotPasswordSuccess(true);
         setForgotPasswordEmail('');
+        showSuccess('Reset link verzonden naar uw e-mailadres');
       } else {
-        setError(data.error || 'Failed to send reset email');
+        // Use enhanced error handling
+        const errorInfo = await handleApiErrorWithContext(response, {
+          component: 'Login',
+          action: 'password_reset',
+          endpoint: '/api/auth/forgot-password'
+        });
+        
+        setFormattedError(errorInfo);
+        
+        const data = await response.json().catch(() => ({}));
+        setError(data.error || 'Reset e-mail verzenden mislukt');
       }
     } catch (err) {
       console.error('Forgot password error:', err);
-      setError('Network error. Please try again.');
+      
+      // Use enhanced error handling for network errors
+      const errorInfo = await handleApiErrorWithContext({
+        ok: false,
+        status: 0,
+        statusText: 'Network Error',
+        json: () => Promise.resolve({ error: err.message })
+      }, {
+        component: 'Login',
+        action: 'password_reset',
+        endpoint: '/api/auth/forgot-password'
+      });
+      
+      setFormattedError(errorInfo);
+      setError('Netwerkfout. Probeer het opnieuw.');
     } finally {
       setForgotPasswordLoading(false);
     }
@@ -123,6 +179,7 @@ const Login = ({ onLogin }) => {
     setForgotPasswordEmail('');
     setForgotPasswordSuccess(false);
     setError('');
+    setFormattedError(null);
   };
 
   if (showForgotPassword) {
@@ -160,7 +217,23 @@ const Login = ({ onLogin }) => {
               </div>
             ) : (
               <form onSubmit={handleForgotPassword} className="space-y-4">
-                {error && (
+                {/* Enhanced error display */}
+                {formattedError && (
+                  <EnhancedErrorDisplay
+                    error={formattedError}
+                    onRetry={() => handleForgotPassword({ preventDefault: () => {} })}
+                    showSuggestions={true}
+                    showRetry={true}
+                    compact={false}
+                    analyticsContext={{
+                      component: 'Login',
+                      action: 'password_reset'
+                    }}
+                  />
+                )}
+                
+                {/* Fallback error display for backward compatibility */}
+                {error && !formattedError && (
                   <Alert className="border-red-200 bg-red-50">
                     <AlertCircle className="h-4 w-4 text-red-600" />
                     <AlertDescription className="text-red-800">
@@ -241,7 +314,23 @@ const Login = ({ onLogin }) => {
         {/* Login Form */}
         <div className="bg-white rounded-xl shadow-xl p-8">
           <form onSubmit={handleSubmit} className="space-y-6">
-            {error && (
+            {/* Enhanced error display */}
+            {formattedError && (
+              <EnhancedErrorDisplay
+                error={formattedError}
+                onRetry={() => handleSubmit({ preventDefault: () => {} })}
+                showSuggestions={true}
+                showRetry={true}
+                compact={false}
+                analyticsContext={{
+                  component: 'Login',
+                  action: 'authentication'
+                }}
+              />
+            )}
+            
+            {/* Fallback error display for backward compatibility */}
+            {error && !formattedError && (
               <Alert className="border-red-200 bg-red-50">
                 <AlertCircle className="h-4 w-4 text-red-600" />
                 <AlertDescription className="text-red-800">
@@ -309,6 +398,7 @@ const Login = ({ onLogin }) => {
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
                   disabled={isLoading}
+                  aria-label={showPassword ? "Wachtwoord verbergen" : "Wachtwoord tonen"}
                 >
                   {showPassword ? (
                     <EyeOff className="h-5 w-5" />
