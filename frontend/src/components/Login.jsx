@@ -178,31 +178,20 @@ const Login = ({ onLogin }) => {
     }
 
     try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setSuccess('Login successful! Redirecting...');
-        setRetryCount(0); // Reset retry count on success
-        onLogin(data.user);
-        
-        // Redirect to intended page or dashboard
-        const from = location.state?.from?.pathname || '/dashboard';
+      // Use the onLogin prop which is actually handleLogin from App.jsx
+      await onLogin(formData);
+      setSuccess('Login successful! Redirecting...');
+      setRetryCount(0); // Reset retry count on success
+      
+      // Redirect to intended page or dashboard
+      const from = location.state?.from?.pathname || '/dashboard';
+      setTimeout(() => {
         navigate(from, { replace: true });
-      } else {
-        const errorMessage = handleApiError(data, response);
-        setError(errorMessage);
-      }
+      }, 500);
     } catch (err) {
       console.error('Login error:', err);
-      const errorMessage = handleApiError(null, null);
+      // Enhanced error handling with better UX messages
+      const errorMessage = handleApiError(err, null);
       setError(errorMessage);
     } finally {
       setIsLoading(false);

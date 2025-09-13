@@ -226,7 +226,8 @@ const APISettings = () => {
     }
   }
 
-  const { t } = useLanguage()
+  const { t, currentLanguage } = useLanguage()
+  const currentTranslations = translations[currentLanguage] || translations.nl
 
   const testConnection = async (service) => {
     setConnectionStatus(prev => ({ ...prev, [service]: 'testing' }))
@@ -248,9 +249,9 @@ const APISettings = () => {
 
   const saveSettings = async () => {
     // Prompt user for passphrase for encrypting keys
-    let passphrase = window.prompt(language === 'nl' ? "Voer wachtwoord voor encryptie van API sleutels in:" : "Enter passphrase to encrypt API keys:");
+    let passphrase = window.prompt(currentLanguage === 'nl' ? "Voer wachtwoord voor encryptie van API sleutels in:" : "Enter passphrase to encrypt API keys:");
     if (!passphrase || passphrase.length < 5) {
-      alert(language === 'nl' ? "Wachtwoord te kort. Instellingen niet opgeslagen." : "Passphrase too short. Settings not saved.");
+      alert(currentLanguage === 'nl' ? "Wachtwoord te kort. Instellingen niet opgeslagen." : "Passphrase too short. Settings not saved.");
       return;
     }
     const encryptedApiKeys = await encryptApiKeys(apiKeys, passphrase);
@@ -261,7 +262,7 @@ const APISettings = () => {
       timestamp: new Date().toISOString()
     }
     localStorage.setItem('apiSettings', JSON.stringify(settings))
-    alert(language === 'nl' ? 'API instellingen opgeslagen!' : 'API settings saved!')
+    alert(currentLanguage === 'nl' ? 'API instellingen opgeslagen!' : 'API settings saved!')
   }
 
   const resetDefaults = () => {
@@ -316,52 +317,52 @@ const APISettings = () => {
   const getStatusText = (status) => {
     switch (status) {
       case 'connected':
-        return t.connected
+        return currentTranslations.connected
       case 'testing':
-        return t.testing
+        return currentTranslations.testing
       case 'error':
-        return t.error
+        return currentTranslations.error
       default:
-        return t.disconnected
+        return currentTranslations.disconnected
     }
   }
 
   const currentIntegrations = [
     {
-      name: t.vectorworks,
-      description: t.vectorworksDesc,
+      name: currentTranslations.vectorworks,
+      description: currentTranslations.vectorworksDesc,
       icon: '🏗️',
       status: connectionStatus.vectorworks,
       enabled: true,
       keyField: 'vectorworks'
     },
     {
-      name: t.n8n,
-      description: t.n8nDesc,
+      name: currentTranslations.n8n,
+      description: currentTranslations.n8nDesc,
       icon: '⚡',
       status: connectionStatus.n8n,
       enabled: true,
       keyField: 'n8n'
     },
     {
-      name: t.hubspot,
-      description: t.hubspotDesc,
+      name: currentTranslations.hubspot,
+      description: currentTranslations.hubspotDesc,
       icon: '👥',
       status: connectionStatus.hubspot,
       enabled: true,
       keyField: 'hubspot'
     },
     {
-      name: t.mailchimp,
-      description: t.mailchimpDesc,
+      name: currentTranslations.mailchimp,
+      description: currentTranslations.mailchimpDesc,
       icon: '📧',
       status: connectionStatus.mailchimp,
       enabled: true,
       keyField: 'mailchimp'
     },
     {
-      name: t.openweather,
-      description: t.openweatherDesc,
+      name: currentTranslations.openweather,
+      description: currentTranslations.openweatherDesc,
       icon: '🌤️',
       status: connectionStatus.openweather,
       enabled: true,
@@ -371,14 +372,14 @@ const APISettings = () => {
 
   const futureIntegrations = [
     {
-      name: t.photogrammetry,
-      description: t.photogrammetryDesc,
+      name: currentTranslations.photogrammetry,
+      description: currentTranslations.photogrammetryDesc,
       icon: <Camera className="h-5 w-5" />,
       category: 'AI/ML'
     },
     {
-      name: t.unreal,
-      description: t.unrealDesc,
+      name: currentTranslations.unreal,
+      description: currentTranslations.unrealDesc,
       icon: <Gamepad2 className="h-5 w-5" />,
       category: 'Visualization'
     }
@@ -389,8 +390,8 @@ const APISettings = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl font-semibold text-gray-900">{t.title}</h2>
-        <p className="text-gray-600">{t.subtitle}</p>
+        <h2 className="text-xl font-semibold text-gray-900">{currentTranslations.title}</h2>
+        <p className="text-gray-600">{currentTranslations.subtitle}</p>
       </div>
 
       {/* Integration Overview */}
@@ -398,18 +399,18 @@ const APISettings = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Globe className="h-5 w-5 text-blue-600" />
-            {t.status}
+            {currentTranslations.status}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="text-center">
               <div className="text-3xl font-bold text-green-600">{connectedCount}</div>
-              <div className="text-sm text-gray-600">{t.activeIntegrations}</div>
+              <div className="text-sm text-gray-600">{currentTranslations.activeIntegrations}</div>
             </div>
             <div className="text-center">
               <div className="text-3xl font-bold text-orange-600">{currentIntegrations.length - connectedCount}</div>
-              <div className="text-sm text-gray-600">{t.pendingSetup}</div>
+              <div className="text-sm text-gray-600">{currentTranslations.pendingSetup}</div>
             </div>
           </div>
         </CardContent>
@@ -440,7 +441,7 @@ const APISettings = () => {
               {/* API Key Input */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  {t.apiKey}
+                  {currentTranslations.apiKey}
                 </label>
                 <div className="flex gap-2">
                   <input
@@ -450,7 +451,7 @@ const APISettings = () => {
                       ...prev,
                       [integration.keyField]: e.target.value
                     }))}
-                    placeholder={t.apiKeyPlaceholder}
+                    placeholder={currentTranslations.apiKeyPlaceholder}
                     className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                   <button
@@ -458,7 +459,7 @@ const APISettings = () => {
                     disabled={connectionStatus[integration.keyField] === 'testing'}
                     className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   >
-                    {t.testConnection}
+                    {currentTranslations.testConnection}
                   </button>
                 </div>
               </div>
@@ -467,7 +468,7 @@ const APISettings = () => {
               {(integration.keyField === 'n8n' || integration.keyField === 'vectorworks') && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    {t.endpoint}
+                    {currentTranslations.endpoint}
                   </label>
                   <input
                     type="url"
@@ -476,7 +477,7 @@ const APISettings = () => {
                       ...prev,
                       [integration.keyField]: e.target.value
                     }))}
-                    placeholder={t.endpointPlaceholder}
+                    placeholder={currentTranslations.endpointPlaceholder}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
@@ -485,7 +486,7 @@ const APISettings = () => {
               {/* Documentation Link */}
               <div className="flex items-center gap-2 text-sm text-blue-600">
                 <ExternalLink className="h-4 w-4" />
-                <a href="#" className="hover:underline">{t.documentation}</a>
+                <a href="#" className="hover:underline">{currentTranslations.documentation}</a>
               </div>
             </CardContent>
           </Card>
@@ -497,9 +498,9 @@ const APISettings = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Zap className="h-5 w-5 text-orange-600" />
-            {t.futureSection}
+            {currentTranslations.futureSection}
           </CardTitle>
-          <p className="text-sm text-gray-600">{t.futureDesc}</p>
+          <p className="text-sm text-gray-600">{currentTranslations.futureDesc}</p>
         </CardHeader>
         <CardContent>
           <div className="grid gap-4">
@@ -517,7 +518,7 @@ const APISettings = () => {
                     {integration.category}
                   </div>
                   <div className="px-3 py-1 bg-orange-100 text-orange-600 text-sm font-medium rounded-full">
-                    {t.comingSoon}
+                    {currentTranslations.comingSoon}
                   </div>
                 </div>
               </div>
@@ -532,13 +533,13 @@ const APISettings = () => {
           onClick={saveSettings}
           className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors font-medium"
         >
-          {t.saveSettings}
+          {currentTranslations.saveSettings}
         </button>
         <button
           onClick={resetDefaults}
           className="px-6 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors font-medium"
         >
-          {t.resetDefaults}
+          {currentTranslations.resetDefaults}
         </button>
       </div>
     </div>
