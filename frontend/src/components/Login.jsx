@@ -66,10 +66,7 @@ const Login = ({ onLogin }) => {
       if (response.ok) {
         setSuccess('Login successful');
         onLogin(data.user);
-        
-        // Redirect to intended page or dashboard
-        const from = location.state?.from?.pathname || '/dashboard';
-        navigate(from, { replace: true });
+        // Note: Navigation handled automatically by App component when user state changes
       } else {
         // Handle specific error cases
         if (response.status === 423) {

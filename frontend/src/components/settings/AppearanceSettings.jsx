@@ -35,7 +35,8 @@ const AppearanceSettings = () => {
     }
   }
 
-  const { t } = useLanguage() || translations.nl
+  const { t, currentLanguage } = useLanguage()
+  const currentTranslations = translations[currentLanguage] || translations.nl
 
   return (
     <div className="space-y-6">
@@ -43,16 +44,16 @@ const AppearanceSettings = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Palette className="h-5 w-5" />
-            {t.title}
+            {currentTranslations.title}
           </CardTitle>
-          <p className="text-sm text-gray-600">{t.subtitle}</p>
+          <p className="text-sm text-gray-600">{currentTranslations.subtitle}</p>
         </CardHeader>
         <CardContent className="space-y-6">
           {/* Theme Selection */}
           <div>
             <h3 className="text-lg font-medium mb-3 flex items-center gap-2">
               <Monitor className="h-4 w-4" />
-              {t.themeSection}
+              {currentTranslations.themeSection}
             </h3>
             <div className="grid grid-cols-2 gap-3">
               <button
@@ -64,7 +65,7 @@ const AppearanceSettings = () => {
                 }`}
               >
                 <Sun className="h-5 w-5 mx-auto mb-2" />
-                <span className="text-sm font-medium">{t.light}</span>
+                <span className="text-sm font-medium">{currentTranslations.light}</span>
               </button>
               <button
                 onClick={() => setTheme('dark')}
@@ -75,7 +76,7 @@ const AppearanceSettings = () => {
                 }`}
               >
                 <Moon className="h-5 w-5 mx-auto mb-2" />
-                <span className="text-sm font-medium">{t.dark}</span>
+                <span className="text-sm font-medium">{currentTranslations.dark}</span>
               </button>
             </div>
           </div>
@@ -84,7 +85,7 @@ const AppearanceSettings = () => {
           <div>
             <h3 className="text-lg font-medium mb-3 flex items-center gap-2">
               <Paintbrush className="h-4 w-4" />
-              {t.colorSchemeSection}
+              {currentTranslations.colorSchemeSection}
             </h3>
             <div className="grid grid-cols-4 gap-3">
               {['blue', 'green', 'purple', 'orange'].map((color) => (
@@ -113,10 +114,10 @@ const AppearanceSettings = () => {
           <div>
             <h3 className="text-lg font-medium mb-3 flex items-center gap-2">
               <Type className="h-4 w-4" />
-              {t.fontSection}
+              {currentTranslations.fontSection}
             </h3>
             <div>
-              <label className="block text-sm font-medium mb-2">{t.fontSize}</label>
+              <label className="block text-sm font-medium mb-2">{currentTranslations.fontSize}</label>
               <select
                 value={fontSize}
                 onChange={(e) => setFontSize(e.target.value)}
@@ -132,10 +133,10 @@ const AppearanceSettings = () => {
           {/* Action Buttons */}
           <div className="flex gap-3 pt-4">
             <button className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors font-medium">
-              {t.saveSettings}
+              {currentTranslations.saveSettings}
             </button>
             <button className="px-6 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors font-medium">
-              {t.resetDefaults}
+              {currentTranslations.resetDefaults}
             </button>
           </div>
         </CardContent>
