@@ -56,10 +56,10 @@ jobs:
           python-version: '3.12'
           cache: 'pip'
 
-      - name: Setup Node.js 18
+      - name: Setup Node.js 20
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '20'
           cache: 'npm'
           cache-dependency-path: frontend/package-lock.json
 
@@ -82,8 +82,9 @@ jobs:
 
       - name: Security scan
         run: |
-          bandit -r src/ -f json -o bandit-report.json || true
-          safety check --json --output safety-report.json || true
+          mkdir -p reports/security
+          bandit -r src/ -f json -o reports/security/bandit-report.json || true
+          safety check --json --output reports/security/safety-report.json || true
 
       - name: Test Backend (V1.00D)
         run: |
@@ -95,7 +96,7 @@ jobs:
         run: |
           echo "🧪 Testing V1.00D frontend..."
           cd frontend
-          npm run test:vitest:run
+          npm run test:run
         timeout-minutes: 8
 
       - name: Build Frontend (V1.00D)
@@ -154,8 +155,8 @@ jobs:
           name: v1-development-test-results
           path: |
             test-report.md
-            bandit-report.json
-            safety-report.json
+            reports/security/bandit-report.json
+            reports/security/safety-report.json
             frontend/coverage/
           retention-days: 7
 
