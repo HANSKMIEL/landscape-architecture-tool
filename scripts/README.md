@@ -1,37 +1,67 @@
-# Deployment Scripts
+# 🛠️ Scripts Directory
 
-This directory contains scripts for deploying and configuring the Landscape Architecture Tool.
+This directory contains all automation scripts organized by category for easy maintenance and discovery.
 
-## Available Scripts
+## 📁 Directory Structure
 
-### `secure_vps_setup.sh`
+### 🚀 Deployment (`deployment/`)
+Scripts for deploying the application to various environments.
 
-A script for securely setting up environment variables and security configurations on the VPS.
+- `enhanced-deploy.sh` - Enhanced deployment with validation
+- `github-actions-deploy.sh` - GitHub Actions deployment script
+- `promote_v1d_to_v1.sh` - **Main promotion script** (V1.00D → V1.00)
+- `setup_github_pages.sh` - GitHub Pages deployment setup
 
-#### Usage
+### 🔧 Maintenance (`maintenance/`)
+Scripts for ongoing maintenance and updates.
 
+- `backup.sh` - Database and file backup utility
+- `clean-cache.sh` - Cache cleanup and optimization
+- `sync_packages.sh` - Package synchronization between versions
+- `update_application.sh` - Application update automation
+
+### 🧪 Testing (`testing/`)
+Scripts for automated testing and validation.
+
+- `automated_validation.py` - Comprehensive validation suite
+- `test_quality_assurance.py` - Quality assurance testing
+- `validate_after_merge.sh` - Post-merge validation
+- `validate_structure.sh` - Repository structure validation
+
+### 💻 Development (`development/`)
+Scripts for development workflow and tools.
+
+- `copilot_workflow.py` - GitHub Copilot integration
+- `manage_titles.sh` - **Title management** (dev/prod)
+- `update_dev_log.py` - Development log automation
+
+### 🔒 Security (`security/`)
+Scripts for security setup and management.
+
+- `secure_vps_setup.sh` - VPS security hardening
+- `setup-secrets.sh` - Secrets management
+- `setup-webhooks.sh` - Webhook configuration
+
+## 🎯 Quick Reference
+
+### Most Used Scripts
 ```bash
-# Run on the VPS as root
-sudo ./secure_vps_setup.sh
+# Promote development to production
+./scripts/deployment/promote_v1d_to_v1.sh
+
+# Switch between dev/prod titles
+./scripts/development/manage_titles.sh dev|prod
+
+# Run comprehensive validation
+./scripts/testing/automated_validation.py
+
+# Backup before changes
+./scripts/maintenance/backup.sh
 ```
 
-#### Features
+### Script Execution
+All scripts are executable and include help documentation. Run any script with `-h` or `--help` for usage information.
 
-- Sets up environment variables for the backend
-- Generates a secure random JWT secret
-- Configures proper file permissions
-- Sets up SSH key authentication (optional)
-- Creates a backup of sensitive information
-
-#### Requirements
-
-- Root access on the VPS
-- OpenSSL installed for generating secure secrets
-
-## Deployment Best Practices
-
-1. **Use SSH key authentication** instead of passwords
-2. **Set proper file permissions** for sensitive files
-3. **Keep environment variables secure** and separate from code
-4. **Regularly rotate secrets** and credentials
-5. **Implement proper backup procedures** for configuration files
+---
+**Last Updated**: September 13, 2025  
+**Organization**: V1.00D Repository Restructure

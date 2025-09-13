@@ -734,3 +734,33 @@ For support and questions:
 - Improved error handling and logging
 - Added Dutch localization and sample data
 
+
+## 🗂️ Repository Organization (V1.00D)
+
+This repository has been comprehensively restructured for optimal development workflow:
+
+### 📁 Key Directories
+- **`scripts/`** - Organized automation scripts by category (deployment, maintenance, testing, development, security)
+- **`docs/`** - Comprehensive documentation organized by topic
+- **`packages/`** - Version-specific packages (V1.00 production, V1.00D development)
+- **`archive/`** - Legacy files and backups
+- **`DEV_OPS_STEPS/`** - Detailed DevOps procedures
+
+### 🎯 Quick Access
+- **Development Guide**: [`docs/development/DEVELOPMENT_GUIDE.md`](docs/development/DEVELOPMENT_GUIDE.md)
+- **Deployment Guide**: [`docs/deployment/DEPLOYMENT_ISOLATION_GUIDE.md`](docs/deployment/DEPLOYMENT_ISOLATION_GUIDE.md)
+- **Scripts Index**: [`scripts/README.md`](scripts/README.md)
+- **Documentation Index**: [`docs/README.md`](docs/README.md)
+
+### 🚀 Common Tasks
+```bash
+# Promote V1.00D to V1.00
+./scripts/deployment/promote_v1d_to_v1.sh
+
+# Switch development/production titles
+./scripts/development/manage_titles.sh dev|prod
+
+# Run validation tests
+./scripts/testing/automated_validation.py
+```
+

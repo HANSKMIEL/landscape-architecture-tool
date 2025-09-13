@@ -1,40 +1,58 @@
-# Documentation
+# 📚 Documentation Directory
 
-This directory contains project documentation and development guidance.
+Comprehensive documentation for the Landscape Architecture Tool, organized by topic and audience.
 
-## 🎯 For HANSKMIEL: Development Guidance Documents
+## 📁 Directory Structure
 
-**Start here if you're wondering what to do next:**
+### 🚀 Deployment (`deployment/`)
+Documentation for deployment processes and infrastructure.
 
-### 1. [IMMEDIATE_ACTION_PLAN.md](./IMMEDIATE_ACTION_PLAN.md)
-**Read this first** - Simple, actionable steps to choose your path and get started immediately.
+- `DEPLOYMENT_ISOLATION_GUIDE.md` - **Complete isolation guide** for dev/prod environments
+- `GITHUB_PAGES_SETUP.md` - GitHub Pages deployment instructions
 
-### 2. [DEVELOPMENT_GUIDANCE.md](./DEVELOPMENT_GUIDANCE.md)  
-**The complete guide** - Comprehensive explanation of what to ask me, what I need from you, and the roadmap to market-ready software.
+### 💻 Development (`development/`)
+Documentation for developers and contributors.
 
-### 3. [TECHNICAL_ASSESSMENT.md](./TECHNICAL_ASSESSMENT.md)
-**Current state analysis** - Detailed breakdown of what's working, what's missing, and development time estimates.
+- `DEVELOPMENT_GUIDE.md` - **Main development guide** with workflow and procedures
+- `V1_00_IMPLEMENTATION_COMPLETE.md` - V1.00 implementation completion report
+
+### 📖 Guides (`guides/`)
+Step-by-step guides for specific tasks and procedures.
+
+*Ready for additional guides as needed*
+
+## 🎯 Quick Navigation
+
+### For Developers
+- **Start Here**: [`development/DEVELOPMENT_GUIDE.md`](development/DEVELOPMENT_GUIDE.md)
+- **Deployment**: [`deployment/DEPLOYMENT_ISOLATION_GUIDE.md`](deployment/DEPLOYMENT_ISOLATION_GUIDE.md)
+
+### For DevOps
+- **Deployment Setup**: [`deployment/GITHUB_PAGES_SETUP.md`](deployment/GITHUB_PAGES_SETUP.md)
+- **Environment Isolation**: [`deployment/DEPLOYMENT_ISOLATION_GUIDE.md`](deployment/DEPLOYMENT_ISOLATION_GUIDE.md)
+
+### For Project Management
+- **Implementation Status**: [`development/V1_00_IMPLEMENTATION_COMPLETE.md`](development/V1_00_IMPLEMENTATION_COMPLETE.md)
+
+## 📋 Documentation Standards
+
+All documentation follows these standards:
+- **Markdown format** with consistent styling
+- **Clear headings** and table of contents
+- **Code examples** with syntax highlighting
+- **Step-by-step instructions** where applicable
+- **Regular updates** with timestamps
+
+## 🔗 Related Documentation
+
+### Root Level
+- [`README.md`](../README.md) - Project overview and quick start
+- [`CONTRIBUTING.md`](../CONTRIBUTING.md) - Contribution guidelines
+- [`DEPLOYMENT.md`](../DEPLOYMENT.md) - Basic deployment instructions
+
+### DevOps Steps
+- [`DEV_OPS_STEPS/`](../DEV_OPS_STEPS/) - Detailed DevOps procedures and instructions
 
 ---
-
-## 🚀 Quick Start
-
-**If you're feeling overwhelmed, just read the IMMEDIATE_ACTION_PLAN.md and follow the instructions.**
-
-**Your software is already functional and well-built. The challenge is knowing what to prioritize next.**
-
----
-
-## 📚 Other Documentation
-
-### Technical Documentation
-- [SPACE_OVERVIEW.md](./SPACE_OVERVIEW.md) - Copilot development environment guide
-- [ARCHITECTURE.md](./ARCHITECTURE.md) - Technical architecture documentation
-
-### Development Resources  
-- [../documentation/](../documentation/) - Detailed issue tracking and development phases
-- [../.github/copilot-instructions.md](../.github/copilot-instructions.md) - Comprehensive development instructions
-
----
-
-**Remember: You've built something real and functional. Now we just need to be strategic about what to build next.**
+**Last Updated**: September 13, 2025  
+**Organization**: V1.00D Repository Restructure
