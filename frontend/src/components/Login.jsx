@@ -16,6 +16,8 @@ const Login = ({ onLogin }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [errorType, setErrorType] = useState(''); // 'network', 'auth', 'validation', 'server'
+  const [retryCount, setRetryCount] = useState(0);
   const [success, setSuccess] = useState('');
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [forgotPasswordEmail, setForgotPasswordEmail] = useState('');
@@ -47,10 +49,80 @@ const Login = ({ onLogin }) => {
     if (error) setError('');
   };
 
+  // Enhanced error handling function
+  const handleApiError = (error, response) => {
+    if (!response) {
+      // Network error
+      setErrorType('network');
+      return 'Network error. Please check your connection and try again.';
+    }
+
+    const status = response.status;
+    const apiError = error?.error || 'Unknown error';
+
+    switch (status) {
+      case 400:
+        setErrorType('validation');
+        if (apiError === 'Invalid input') {
+          return 'Please fill in all required fields correctly.';
+        }
+        return 'Invalid input. Please check your information.';
+      
+      case 401:
+        setErrorType('auth');
+        if (apiError === 'Invalid credentials') {
+          return 'Username or password is incorrect. Please try again.';
+        }
+        return 'Authentication failed. Please check your credentials.';
+      
+      case 423:
+        setErrorType('auth');
+        return 'Account is temporarily locked due to failed login attempts. Please try again later.';
+      
+      case 429:
+        setErrorType('server');
+        return 'Too many login attempts. Please wait a moment before trying again.';
+      
+      case 500:
+      case 502:
+      case 503:
+        setErrorType('server');
+        return 'Server error. Please try again in a few moments.';
+      
+      default:
+        setErrorType('server');
+        return apiError || 'An unexpected error occurred. Please try again.';
+    }
+  };
+
+  // Retry mechanism
+  const handleRetry = () => {
+    setRetryCount(prev => prev + 1);
+    setError('');
+    setErrorType('');
+    handleSubmit(new Event('submit'));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     setError('');
+    setErrorType('');
+
+    // Validation
+    if (!formData.username.trim()) {
+      setError('Username is required');
+      setErrorType('validation');
+      setIsLoading(false);
+      return;
+    }
+
+    if (!formData.password.trim()) {
+      setError('Password is required');
+      setErrorType('validation');
+      setIsLoading(false);
+      return;
+    }
 
     try {
       const response = await fetch('/api/auth/login', {
@@ -64,25 +136,21 @@ const Login = ({ onLogin }) => {
       const data = await response.json();
 
       if (response.ok) {
-        setSuccess('Login successful');
+        setSuccess('Login successful! Redirecting...');
+        setRetryCount(0); // Reset retry count on success
         onLogin(data.user);
         
         // Redirect to intended page or dashboard
         const from = location.state?.from?.pathname || '/dashboard';
         navigate(from, { replace: true });
       } else {
-        // Handle specific error cases
-        if (response.status === 423) {
-          setError('Account is temporarily locked due to failed login attempts');
-        } else if (response.status === 401) {
-          setError('Invalid username or password');
-        } else {
-          setError(data.error || 'Login failed');
-        }
+        const errorMessage = handleApiError(data, response);
+        setError(errorMessage);
       }
     } catch (err) {
       console.error('Login error:', err);
-      setError('Network error. Please try again.');
+      const errorMessage = handleApiError(null, null);
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -242,11 +310,60 @@ const Login = ({ onLogin }) => {
         <div className="bg-white rounded-xl shadow-xl p-8">
           <form onSubmit={handleSubmit} className="space-y-6">
             {error && (
-              <Alert className="border-red-200 bg-red-50">
-                <AlertCircle className="h-4 w-4 text-red-600" />
-                <AlertDescription className="text-red-800">
-                  {error}
-                </AlertDescription>
+              <Alert className={`border-red-200 bg-red-50 ${errorType === 'network' ? 'border-orange-200 bg-orange-50' : ''}`}>
+                <AlertCircle className={`h-4 w-4 ${errorType === 'network' ? 'text-orange-600' : 'text-red-600'}`} />
+                <div className="flex-1">
+                  <AlertDescription className={`${errorType === 'network' ? 'text-orange-800' : 'text-red-800'} mb-2`}>
+                    {error}
+                  </AlertDescription>
+                  
+                  {/* Retry button for network errors or server errors */}
+                  {(errorType === 'network' || errorType === 'server') && retryCount < 3 && (
+                    <div className="flex items-center gap-2 mt-2">
+                      <Button
+                        type="button"
+                        onClick={handleRetry}
+                        variant="outline"
+                        size="sm"
+                        className="text-xs"
+                        disabled={isLoading}
+                      >
+                        {isLoading ? (
+                          <>
+                            <Loader2 className="mr-1 h-3 w-3 animate-spin" />
+                            Retrying...
+                          </>
+                        ) : (
+                          'Try Again'
+                        )}
+                      </Button>
+                      {retryCount > 0 && (
+                        <span className="text-xs text-gray-500">
+                          Attempt {retryCount + 1}/3
+                        </span>
+                      )}
+                    </div>
+                  )}
+                  
+                  {/* Help text based on error type */}
+                  {errorType === 'auth' && (
+                    <div className="mt-2 text-xs text-gray-600">
+                      <button
+                        type="button"
+                        onClick={() => setShowForgotPassword(true)}
+                        className="text-blue-600 hover:text-blue-800 underline"
+                      >
+                        Forgot your password?
+                      </button>
+                    </div>
+                  )}
+                  
+                  {errorType === 'validation' && (
+                    <div className="mt-2 text-xs text-gray-600">
+                      Please check that all fields are filled correctly.
+                    </div>
+                  )}
+                </div>
               </Alert>
             )}
 
