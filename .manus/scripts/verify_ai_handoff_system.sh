@@ -49,7 +49,7 @@ fi
 
 # Test 5: Monitoring Script
 echo "📋 Test 5: Monitoring Script"
-if ./.manus/scripts/monitor_copilot_completion.sh > /dev/null 2>&1; then
+if ./.manus/scripts/monitor_copilot_completion.sh 2>&1 | grep -q "Copilot still working"; then
     echo "✅ Monitoring script runs (no completion detected - expected)"
 else
     echo "❌ Monitoring script failed"
