@@ -184,29 +184,14 @@ const Plants = () => {
     fetchSuppliers()
   }, [fetchPlants])
 
-  // Handle form input changes - Fixed double-fire React event issue
+  // Handle form input changes
   const handleInputChange = useCallback((e) => {
     const { name, value, type, checked } = e.target
     
-    // Prevent React synthetic event pooling
-    e.persist()
-    
-    // Use requestAnimationFrame to ensure we get the final value after all React updates
-    requestAnimationFrame(() => {
-      setFormData(prevData => {
-        // Only update if the value has actually changed to prevent unnecessary re-renders
-        if (prevData[name] !== (type === 'checkbox' ? checked : value)) {
-          const newData = {
-            ...prevData,
-            [name]: type === 'checkbox' ? checked : value
-          }
-          
-          console.log(`Input change - ${name}:`, value, 'Full form data:', newData)
-          return newData
-        }
-        return prevData
-      })
-    })
+    setFormData(prevData => ({
+      ...prevData,
+      [name]: type === 'checkbox' ? checked : value
+    }))
   }, [])
 
   // Reset form
