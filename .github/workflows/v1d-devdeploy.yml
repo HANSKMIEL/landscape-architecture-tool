@@ -131,13 +131,14 @@ jobs:
         env:
           VPS_HOST: ${{ secrets.VPS_HOST || '72.60.176.200' }}
           VPS_USER: ${{ secrets.VPS_USER || 'root' }}
-          VPS_PASSWORD: ${{ secrets.VPS_PASSWORD }}
+          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
         run: |
           echo "🚀 Deploying V1.00D to devdeploy environment..."
           
-          # Install sshpass for password authentication
-          sudo apt-get update -qq
-          sudo apt-get install -y sshpass
+          # Setup SSH key authentication
+          mkdir -p ~/.ssh
+          echo "$VPS_SSH_KEY" > ~/.ssh/vps_key
+          chmod 600 ~/.ssh/vps_key
           
           # Create deployment script
           cat > deploy_v1d_to_devdeploy.sh << 'EOF'
@@ -190,11 +191,11 @@ jobs:
           fi
           EOF
           
-          # Execute deployment on VPS
-          if [ -n "$VPS_PASSWORD" ]; then
-            sshpass -p "$VPS_PASSWORD" ssh -o ConnectTimeout=10 -o StrictHostKeyChecking=no $VPS_USER@$VPS_HOST "$(cat deploy_v1d_to_devdeploy.sh)"
+          # Execute deployment on VPS using SSH key
+          if [ -n "$VPS_SSH_KEY" ]; then
+            ssh -i ~/.ssh/vps_key -o ConnectTimeout=10 -o StrictHostKeyChecking=no $VPS_USER@$VPS_HOST "$(cat deploy_v1d_to_devdeploy.sh)"
           else
-            echo "❌ VPS_PASSWORD secret not configured"
+            echo "❌ VPS_SSH_KEY secret not configured"
             exit 1
           fi
 
