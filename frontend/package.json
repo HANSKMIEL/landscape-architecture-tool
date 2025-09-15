@@ -1,7 +1,7 @@
 {
   "name": "landscape-frontend-complete",
   "private": true,
-  "version": "1.0.1-fix",
+  "version": "1.0.2-force-rebuild",
   "type": "module",
   "engines": {
     "node": ">=20.0.0",
