@@ -184,22 +184,28 @@ const Plants = () => {
     fetchSuppliers()
   }, [fetchPlants])
 
-  // Handle form input changes - Fixed React controlled component issue
+  // Handle form input changes - Fixed double-fire React event issue
   const handleInputChange = useCallback((e) => {
     const { name, value, type, checked } = e.target
     
-    // Prevent default React synthetic event pooling issues
+    // Prevent React synthetic event pooling
     e.persist()
     
-    // Update state immediately without setTimeout to prevent React override
-    setFormData(prevData => {
-      const newData = {
-        ...prevData,
-        [name]: type === 'checkbox' ? checked : value
-      }
-      
-      console.log(`Input change - ${name}:`, value, 'Full form data:', newData)
-      return newData
+    // Use requestAnimationFrame to ensure we get the final value after all React updates
+    requestAnimationFrame(() => {
+      setFormData(prevData => {
+        // Only update if the value has actually changed to prevent unnecessary re-renders
+        if (prevData[name] !== (type === 'checkbox' ? checked : value)) {
+          const newData = {
+            ...prevData,
+            [name]: type === 'checkbox' ? checked : value
+          }
+          
+          console.log(`Input change - ${name}:`, value, 'Full form data:', newData)
+          return newData
+        }
+        return prevData
+      })
     })
   }, [])
 
