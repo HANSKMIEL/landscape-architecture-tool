@@ -123,6 +123,10 @@ class User(db.Model):
         
         return user_level >= required_level
     
+    def can_manage_data(self):
+        """Check if user can manage data (user level and above)"""
+        return self.has_permission('user')
+    
     @property
     def full_name(self):
         """Get full name"""

@@ -2,14 +2,17 @@ import React from 'react'
 import { render } from '@testing-library/react'
 import { BrowserRouter } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
+import { LanguageProvider } from '../../i18n/LanguageProvider'
 
 // Mock providers for testing
 const MockProviders = ({ children }) => {
   return (
-    <BrowserRouter>
-      {children}
-      <Toaster />
-    </BrowserRouter>
+    <LanguageProvider>
+      <BrowserRouter>
+        {children}
+        <Toaster />
+      </BrowserRouter>
+    </LanguageProvider>
   )
 }
 
@@ -41,11 +44,12 @@ export const renderWithRouter = (ui, { route = '/', ...options } = {}) => {
 // Render with language context
 export const renderWithLanguage = (ui, { language = 'en', ...options } = {}) => {
   const LanguageWrapper = ({ children }) => (
-    <MockProviders>
-      <div data-testid="language-context" data->
-        {React.cloneElement(children, { language })}
-      </div>
-    </MockProviders>
+    <LanguageProvider>
+      <BrowserRouter>
+        {children}
+        <Toaster />
+      </BrowserRouter>
+    </LanguageProvider>
   )
 
   return render(ui, {
