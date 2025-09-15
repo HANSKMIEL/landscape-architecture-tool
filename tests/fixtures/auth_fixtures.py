@@ -4,6 +4,7 @@ Addresses GitHub Copilot feedback about code duplication
 """
 
 import pytest
+
 from src.models.user import User
 
 

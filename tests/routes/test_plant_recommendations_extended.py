@@ -9,11 +9,11 @@ import json
 from unittest.mock import patch
 
 import pytest
-from tests.fixtures.auth_fixtures import authenticated_test_user, setup_test_authentication
 
 from src.main import create_app
 from src.models.user import db
 from tests.database.factories import create_test_plant
+from tests.fixtures.auth_fixtures import authenticated_test_user, setup_test_authentication
 
 
 @pytest.fixture
@@ -61,7 +61,7 @@ class TestPlantRecommendationHistoryRoute:
         """Create an authenticated test client"""
         with app.app_context():
             from src.models.user import User, db
-            
+
             # Create test user
             user = User(username="testuser", email="test@example.com", role="admin")
             user.set_password("testpass")
@@ -150,7 +150,7 @@ class TestPlantRecommendationExportRoute:
         """Create an authenticated test client"""
         with app.app_context():
             from src.models.user import User, db
-            
+
             # Create test user
             user = User(username="testuser", email="test@example.com", role="admin")
             user.set_password("testpass")
@@ -254,7 +254,7 @@ class TestPlantRecommendationImportRoute:
         """Create an authenticated test client"""
         with app.app_context():
             from src.models.user import User, db
-            
+
             # Create test user
             user = User(username="testuser", email="test@example.com", role="admin")
             user.set_password("testpass")
@@ -411,7 +411,7 @@ class TestPlantRecommendationErrorHandling:
         """Create an authenticated test client"""
         with app.app_context():
             from src.models.user import User, db
-            
+
             # Create test user
             user = User(username="testuser", email="test@example.com", role="admin")
             user.set_password("testpass")
@@ -517,7 +517,7 @@ class TestPlantRecommendationIntegration:
         """Create an authenticated test client"""
         with app.app_context():
             from src.models.user import User, db
-            
+
             # Create test user
             user = User(username="testuser", email="test@example.com", role="admin")
             user.set_password("testpass")

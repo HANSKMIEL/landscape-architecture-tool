@@ -12,13 +12,14 @@ from pathlib import Path
 from unittest.mock import patch
 
 import pytest
+
 from tests.fixtures.auth_fixtures import authenticated_test_user, setup_test_authentication
 
 # Add project root to Python path using relative paths
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
-from scripts.update_dev_log import DevLogManager  # noqa: E402
+from scripts.development.update_dev_log import DevLogManager  # noqa: E402
 
 
 class TestDevLogManager:

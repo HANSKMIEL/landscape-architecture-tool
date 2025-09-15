@@ -4,8 +4,8 @@
 from unittest.mock import patch
 
 import pytest
-from tests.fixtures.auth_fixtures import authenticated_test_user, setup_test_authentication
 
+from tests.fixtures.auth_fixtures import authenticated_test_user, setup_test_authentication
 from tests.fixtures.database import DatabaseTestMixin
 
 
@@ -17,7 +17,7 @@ class TestPerformanceRoutes(DatabaseTestMixin):
     def authenticated_client(self, client, app_context):
         """Create an authenticated test client"""
         from src.models.user import User, db
-        
+
         # Create test user
         user = User(username="testuser", email="test@example.com", role="admin")
         user.set_password("testpass")
@@ -397,7 +397,7 @@ class TestPerformanceRoutesIntegration(DatabaseTestMixin):
     def authenticated_client(self, client, app_context):
         """Create an authenticated test client"""
         from src.models.user import User, db
-        
+
         # Create test user
         user = User(username="testuser", email="test@example.com", role="admin")
         user.set_password("testpass")
@@ -461,7 +461,7 @@ class TestPerformanceRoutesEdgeCases(DatabaseTestMixin):
     def authenticated_client(self, client, app_context):
         """Create an authenticated test client"""
         from src.models.user import User, db
-        
+
         # Create test user
         user = User(username="testuser", email="test@example.com", role="admin")
         user.set_password("testpass")

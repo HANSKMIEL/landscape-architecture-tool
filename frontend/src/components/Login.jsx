@@ -369,7 +369,8 @@ const Login = ({ onLogin }) => {
                     errorType === 'network' ? 'text-orange-800' : 'text-red-800'
                   }`}>
                     {error}
-                  </AlertDescription>for network errors or server errors */}
+                  </AlertDescription>
+                  {/* Show retry button for network errors or server errors */}
                   {(errorType === 'network' || errorType === 'server') && retryCount < 3 && (
                     <div className="flex items-center gap-2 mt-2">
                       <Button

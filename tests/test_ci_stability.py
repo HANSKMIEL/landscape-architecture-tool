@@ -10,11 +10,11 @@ import time
 from unittest.mock import patch
 
 import pytest
-from tests.fixtures.auth_fixtures import authenticated_test_user, setup_test_authentication
 
 from src.main import create_app
 from src.models.landscape import Plant
 from src.models.user import db
+from tests.fixtures.auth_fixtures import authenticated_test_user, setup_test_authentication
 
 # Using transaction-based isolation, no explicit cleanup needed
 

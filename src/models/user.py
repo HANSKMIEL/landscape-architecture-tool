@@ -3,10 +3,11 @@ Enhanced User model with comprehensive user management features
 """
 import secrets
 from datetime import datetime, timedelta
-from werkzeug.security import generate_password_hash, check_password_hash
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, Text
-from sqlalchemy.ext.declarative import declarative_base
+
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import Boolean, Column, DateTime, Integer, String, Text
+from sqlalchemy.ext.declarative import declarative_base
+from werkzeug.security import check_password_hash, generate_password_hash
 
 db = SQLAlchemy()
 Base = declarative_base()

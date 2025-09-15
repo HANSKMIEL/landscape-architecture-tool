@@ -4,12 +4,12 @@ import tempfile
 from io import BytesIO
 
 import pytest
-from tests.fixtures.auth_fixtures import authenticated_test_user, setup_test_authentication
 from PIL import Image
 
 from src.main import create_app
 from src.models.photo import Photo, PhotoCategory
 from src.models.user import User, db
+from tests.fixtures.auth_fixtures import authenticated_test_user, setup_test_authentication
 
 
 @pytest.fixture

@@ -225,7 +225,7 @@ class TestCoverageBoost:
 
     def test_plant_recommendation_request_to_dict(self):
         """Test PlantRecommendationRequest to_dict method for coverage"""
-    # Authentication handled by authenticated_test_user fixture
+        # Authentication handled by authenticated_test_user fixture
         from src.models.landscape import PlantRecommendationRequest
 
         # Create a PlantRecommendationRequest with minimal required fields
