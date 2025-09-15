@@ -121,7 +121,7 @@ def sample_project(app_context, sample_client):
 class TestPlantRecommendationsAPI:
     """Test plant recommendations API endpoints"""
 
-    def test_criteria_options_endpoint(self, client, app_context):
+    def test_criteria_options_endpoint(self, client, app_context, authenticated_test_user):
         """Test plant recommendation criteria options endpoint"""
         response = client.get("/api/plant-recommendations/criteria-options")
 
@@ -141,9 +141,9 @@ class TestPlantRecommendationsAPI:
             assert key in data
             assert isinstance(data[key], list)
 
-    def test_plant_recommendations_endpoint(self, client, app_context):
+    def test_plant_recommendations_endpoint(self, client, app_context, authenticated_test_user):
         """Test basic plant recommendations functionality"""
-    # Authentication handled by authenticated_test_user fixture
+        # Authentication handled by authenticated_test_user fixture
         request_data = {"hardiness_zone": "5-9", "sun_exposure": "Full Sun", "max_results": 3, "min_score": 0.3}
 
         response = client.post(
@@ -169,7 +169,7 @@ class TestPlantRecommendationsAPI:
             assert "match_reasons" in rec
             assert "warnings" in rec
 
-    def test_plant_recommendations_error_handling(self, client, app_context):
+    def test_plant_recommendations_error_handling(self, client, app_context, authenticated_test_user):
         """Test error handling for plant recommendations"""
     # Authentication handled by authenticated_test_user fixture
 # Test empty request body
@@ -216,7 +216,7 @@ class TestPlantRecommendationsAPI:
 class TestProjectPlantsAPI:
     """Test project plants API endpoints"""
 
-    def test_add_plant_to_project(self, client, app_context, sample_project, sample_plant):
+    def test_add_plant_to_project(self, client, app_context, sample_project, sample_plant, authenticated_test_user):
         """Test adding a plant to a project"""
     # Authentication handled by authenticated_test_user fixture
         request_data = {"plant_id": sample_plant.id, "quantity": 5, "unit_cost": 25.50, "notes": "Test plant addition"}
@@ -253,7 +253,7 @@ class TestProjectPlantsAPI:
         data = response.get_json()
         assert isinstance(data, list)
 
-    def test_update_project_plant(self, client, app_context, sample_project, sample_plant):
+    def test_update_project_plant(self, client, app_context, sample_project, sample_plant, authenticated_test_user):
         """Test updating project plant details"""
     # Authentication handled by authenticated_test_user fixture
 # First add a plant
@@ -319,7 +319,7 @@ class TestProjectPlantsAPI:
         assert "total_added" in data
         assert "total_errors" in data
 
-    def test_project_plants_error_handling(self, client, app_context):
+    def test_project_plants_error_handling(self, client, app_context, authenticated_test_user):
         """Test error handling for invalid project/plant IDs"""
     # Authentication handled by authenticated_test_user fixture
 # Test invalid project ID
@@ -335,7 +335,7 @@ class TestProjectPlantsAPI:
 class TestReportsAPI:
     """Test reports API endpoints"""
 
-    def test_business_summary_json(self, client, app_context):
+    def test_business_summary_json(self, client, app_context, authenticated_test_user):
         """Test business summary report in JSON format"""
     # Authentication handled by authenticated_test_user fixture
         response = client.get("/api/reports/business-summary")
@@ -357,7 +357,7 @@ class TestReportsAPI:
             assert key in summary
             assert isinstance(summary[key], int)
 
-    def test_business_summary_with_date_filter(self, client, app_context):
+    def test_business_summary_with_date_filter(self, client, app_context, authenticated_test_user):
         """Test business summary with date filtering"""
     # Authentication handled by authenticated_test_user fixture
         response = client.get(
@@ -434,7 +434,7 @@ class TestReportsAPI:
         assert isinstance(data["suppliers"], list)
         assert isinstance(data["total_suppliers"], int)
 
-    def test_reports_error_handling(self, client, app_context):
+    def test_reports_error_handling(self, client, app_context, authenticated_test_user):
         """Test error handling for reports"""
     # Authentication handled by authenticated_test_user fixture
 # Test invalid date format
@@ -446,7 +446,7 @@ class TestReportsAPI:
 class TestAPIIntegrationScenarios:
     """Integration tests combining multiple API endpoints"""
 
-    def test_full_recommendation_workflow(self, client, app_context):
+    def test_full_recommendation_workflow(self, client, app_context, authenticated_test_user):
         """Test complete plant recommendation workflow"""
         # 1. Get criteria options
         response = client.get("/api/plant-recommendations/criteria-options")
@@ -467,7 +467,7 @@ class TestAPIIntegrationScenarios:
         response = client.get("/api/plant-recommendations/history")
         assert response.status_code == 200
 
-    def test_project_plant_management_workflow(self, client, app_context, sample_project, sample_plant):
+    def test_project_plant_management_workflow(self, client, app_context, sample_project, sample_plant, authenticated_test_user):
         """Test complete project plant management workflow"""
     # Authentication handled by authenticated_test_user fixture
 # 1. Add plant to project
