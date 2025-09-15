@@ -107,14 +107,25 @@ const Products = () => {
     loadSuppliers()
   }, [loadProducts])
 
-  // Handle form input changes
-  const handleInputChange = (e) => {
+  // Handle form input changes - Fixed to prevent input truncation
+  const handleInputChange = useCallback((e) => {
     const { name, value } = e.target
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }))
-  }
+    
+    // Prevent event from being reused by React
+    e.persist()
+    
+    setFormData(prev => {
+      const newData = {
+        ...prev,
+        [name]: value
+      }
+      
+      // Debug logging to track input changes
+      console.log(`Products input change - ${name}:`, value, 'Full form data:', newData)
+      
+      return newData
+    })
+  }, [])
 
   // Reset form
   const resetForm = () => {

@@ -184,14 +184,25 @@ const Plants = () => {
     fetchSuppliers()
   }, [fetchPlants])
 
-  // Handle form input changes
-  const handleInputChange = (e) => {
+  // Handle form input changes - Fixed to prevent input truncation
+  const handleInputChange = useCallback((e) => {
     const { name, value, type, checked } = e.target
-    setFormData(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value
-    }))
-  }
+    
+    // Prevent event from being reused by React
+    e.persist()
+    
+    setFormData(prev => {
+      const newData = {
+        ...prev,
+        [name]: type === 'checkbox' ? checked : value
+      }
+      
+      // Debug logging to track input changes
+      console.log(`Input change - ${name}:`, value, 'Full form data:', newData)
+      
+      return newData
+    })
+  }, [])
 
   // Reset form
   const resetForm = () => {
