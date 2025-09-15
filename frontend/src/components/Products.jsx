@@ -115,7 +115,6 @@ const Products = () => {
       ...prev,
       [name]: value
     }))
-    })
   }, [])
 
   // Reset form
