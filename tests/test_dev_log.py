@@ -18,7 +18,7 @@ from tests.fixtures.auth_fixtures import authenticated_test_user, setup_test_aut
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
-from scripts.update_dev_log import DevLogManager  # noqa: E402
+from scripts.development.update_dev_log import DevLogManager  # noqa: E402
 
 
 class TestDevLogManager:
