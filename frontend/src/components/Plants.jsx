@@ -184,26 +184,23 @@ const Plants = () => {
     fetchSuppliers()
   }, [fetchPlants])
 
-  // Handle form input changes - Completely rewritten to fix input truncation
+  // Handle form input changes - Fixed React controlled component issue
   const handleInputChange = useCallback((e) => {
-    // Immediately extract values to prevent React synthetic event issues
-    const targetName = e.target.name
-    const targetValue = e.target.value
-    const targetType = e.target.type
-    const targetChecked = e.target.checked
+    const { name, value, type, checked } = e.target
     
-    // Use setTimeout to ensure state update happens after current render cycle
-    setTimeout(() => {
-      setFormData(prevData => {
-        const newData = {
-          ...prevData,
-          [targetName]: targetType === 'checkbox' ? targetChecked : targetValue
-        }
-        
-        console.log(`Input change - ${targetName}:`, targetValue, 'Full form data:', newData)
-        return newData
-      })
-    }, 0)
+    // Prevent default React synthetic event pooling issues
+    e.persist()
+    
+    // Update state immediately without setTimeout to prevent React override
+    setFormData(prevData => {
+      const newData = {
+        ...prevData,
+        [name]: type === 'checkbox' ? checked : value
+      }
+      
+      console.log(`Input change - ${name}:`, value, 'Full form data:', newData)
+      return newData
+    })
   }, [])
 
   // Reset form
