@@ -3,10 +3,10 @@ Feature Flags System for Safe Feature Isolation
 Enables safe development and gradual rollout of new features
 """
 
-import os
 import json
-from typing import Dict, Any, Optional
+import os
 from enum import Enum
+from typing import Any, Dict, Optional
 
 
 class Environment(Enum):

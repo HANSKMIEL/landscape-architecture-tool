@@ -33,8 +33,11 @@ RUN pip install --no-cache-dir --upgrade pip --trusted-host pypi.org --trusted-h
 COPY src/utils/dependency_validator.py /tmp/dependency_validator.py
 
 # Validate critical dependencies were installed successfully
-# Validate critical dependencies were installed successfully
-RUN python -c "import sys; sys.path.insert(0, '/tmp'); from dependency_validator import DependencyValidator; validator = DependencyValidator(); critical_ok, missing = validator.validate_critical_dependencies(); exit(0 if critical_ok else 1)"
+RUN python -c "import sys; sys.path.insert(0, '/tmp'); \
+    from dependency_validator import DependencyValidator; \
+    validator = DependencyValidator(); \
+    critical_ok, missing = validator.validate_critical_dependencies(); \
+    exit(0 if critical_ok else 1)"
 
 # Stage 2: Production stage
 FROM python:3.11-slim as production

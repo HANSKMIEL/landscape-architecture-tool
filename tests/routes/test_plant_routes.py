@@ -7,9 +7,9 @@ Comprehensive tests for plant API endpoints.
 import json
 
 import pytest
-from tests.fixtures.auth_fixtures import authenticated_test_user, setup_test_authentication
 
 from src.models.landscape import Plant
+from tests.fixtures.auth_fixtures import authenticated_test_user, setup_test_authentication
 from tests.fixtures.database import DatabaseTestMixin
 
 
@@ -21,7 +21,7 @@ class TestPlantRoutes(DatabaseTestMixin):
     def authenticated_client(self, client, app_context):
         """Create an authenticated test client"""
         from src.models.user import User, db
-        
+
         # Create test user
         user = User(username="testuser", email="test@example.com", role="admin")
         user.set_password("testpass")

@@ -1,14 +1,15 @@
 """
 Email service for password reset and user notifications
 """
-import smtplib
 import logging
-from email.mime.text import MimeText
-from email.mime.multipart import MimeMultipart
-from email.mime.base import MimeBase
-from email import encoders
-from typing import List, Optional
 import os
+import smtplib
+from email import encoders
+from email.mime.base import MimeBase
+from email.mime.multipart import MimeMultipart
+from email.mime.text import MimeText
+from typing import List, Optional
+
 from flask import current_app, render_template_string
 
 logger = logging.getLogger(__name__)

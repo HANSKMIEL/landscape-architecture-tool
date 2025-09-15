@@ -5,13 +5,13 @@ Tests for base service functionality
 from unittest.mock import Mock, patch
 
 import pytest
-from tests.fixtures.auth_fixtures import authenticated_test_user, setup_test_authentication
 
 from src.main import create_app
 from src.models.landscape import Plant
 from src.models.user import db
 from src.services import BaseService
 from tests.database.factories import create_test_plant
+from tests.fixtures.auth_fixtures import authenticated_test_user, setup_test_authentication
 
 
 @pytest.fixture

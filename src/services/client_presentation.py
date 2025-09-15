@@ -3,14 +3,14 @@ Enhanced Client Presentation System
 Provides dynamic, editable presentations for landscape architecture projects.
 """
 
-import json
-import logging
-from typing import Dict, List, Optional, Any
-from dataclasses import dataclass, asdict
-from datetime import datetime
 import base64
 import io
+import json
+import logging
+from dataclasses import asdict, dataclass
+from datetime import datetime
 from pathlib import Path
+from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 

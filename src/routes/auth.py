@@ -5,10 +5,12 @@ import csv
 import io
 import logging
 from datetime import datetime
-from flask import Blueprint, request, jsonify, session, current_app
-from pydantic import BaseModel, ValidationError, EmailStr
 from typing import List, Optional
+
+from flask import Blueprint, current_app, jsonify, request, session
+from pydantic import BaseModel, EmailStr, ValidationError
 from werkzeug.utils import secure_filename
+
 from src.models.user import User, UserSession, db
 
 logger = logging.getLogger(__name__)

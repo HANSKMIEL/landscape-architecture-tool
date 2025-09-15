@@ -8,6 +8,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 import pytest
+
 from tests.fixtures.auth_fixtures import authenticated_test_user, setup_test_authentication
 
 # Add project root to Python path using relative paths

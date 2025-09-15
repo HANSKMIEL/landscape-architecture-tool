@@ -7,6 +7,7 @@ import json
 from typing import Any
 
 import pytest
+
 from tests.fixtures.auth_fixtures import authenticated_test_user, setup_test_authentication
 
 

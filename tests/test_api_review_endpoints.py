@@ -9,11 +9,11 @@ Tests the functionality of the three API route files modified in commit 9cd9a802
 import json
 
 import pytest
-from tests.fixtures.auth_fixtures import authenticated_test_user, setup_test_authentication
 
 from src.main import create_app
 from src.models.landscape import Client, Plant, Project, Supplier
 from src.models.user import db
+from tests.fixtures.auth_fixtures import authenticated_test_user, setup_test_authentication
 
 
 @pytest.fixture

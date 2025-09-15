@@ -1,4 +1,6 @@
 // Environment configuration for API base URL
+// Provides a consistent API base URL across dev/prod builds.
+// Vite will inline import.meta.env.* at build time.
 export function getApiBaseUrl() {
   // Force mock API for GitHub Pages (kept as-is for demo hosting scenarios)
   if (typeof window !== 'undefined' && window.location.hostname.includes('github.io')) {
