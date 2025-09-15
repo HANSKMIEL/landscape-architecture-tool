@@ -187,7 +187,7 @@ export const mockApi = {
 }
 
 // Get production domains from environment or use default
-const PRODUCTION_DOMAINS = (import.meta.env.VITE_PRODUCTION_DOMAINS || '').split(',').filter(Boolean);
+const PRODUCTION_DOMAINS = (import.meta.env.VITE_PRODUCTION_DOMAINS || '72.60.176.200').split(',').filter(Boolean);
 
 // Check if we're running in a static environment (GitHub Pages) or need to use mock API
 export const isStaticDemo = () => {
