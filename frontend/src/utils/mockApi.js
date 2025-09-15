@@ -215,3 +215,4 @@ export const isStaticDemo = () => {
   
   return shouldUseMockApi;
 }
+
