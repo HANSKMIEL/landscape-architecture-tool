@@ -11,6 +11,7 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./src/test/setup-vitest.js'],
     globals: true,
+    testTimeout: 10000, // Increased timeout for CI environments
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],

@@ -524,8 +524,9 @@ class TestAPIIntegrationScenarios:
 class TestAPIAuthenticationAndAuthorization:
     """Test authentication and authorization for API endpoints"""
 
-    def test_endpoints_accessible_without_auth(self, client, app_context):
-        """Test that API endpoints are accessible (no auth implemented yet)"""
+    def test_endpoints_accessible_without_auth(self, client, authenticated_test_user):
+        """Test that API endpoints are accessible with authentication"""
+        # Authentication handled by authenticated_test_user fixture
         # Test key endpoints are accessible
         endpoints = [
             "/api/plant-recommendations/criteria-options",
@@ -538,10 +539,10 @@ class TestAPIAuthenticationAndAuthorization:
             response = client.get(endpoint)
             assert response.status_code == 200, f"Endpoint {endpoint} should be accessible"
 
-    def test_post_endpoints_validation(self, client, app_context):
+    def test_post_endpoints_validation(self, client, authenticated_test_user):
         """Test POST endpoints have proper validation"""
-    # Authentication handled by authenticated_test_user fixture
-# Test plant recommendations requires valid JSON
+        # Authentication handled by authenticated_test_user fixture
+        # Test plant recommendations requires valid JSON
         response = client.post("/api/plant-recommendations")
         assert response.status_code == 400
 
