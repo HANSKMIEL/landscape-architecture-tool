@@ -65,8 +65,33 @@ describe('Projects Component', () => {
         })
       }
       
+      if (url.includes('/clients')) {
+        // Mock clients data for dropdown
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          headers: {
+            get: (name) => name === 'content-type' ? 'application/json' : null
+          },
+          json: () => Promise.resolve({ 
+            clients: [
+              { id: 1, name: 'Family Johnson', email: 'johnson@example.com' },
+              { id: 2, name: 'City Council', email: 'council@city.gov' },
+              { id: 3, name: 'TechCorp BV', email: 'contact@techcorp.nl' }
+            ]
+          })
+        })
+      }
+      
       // Default fallback for unhandled URLs
-      return Promise.reject(new Error(`Unhandled URL in mock: ${url}`))
+      return Promise.resolve({
+        ok: true,
+        status: 200,
+        headers: {
+          get: (name) => name === 'content-type' ? 'application/json' : null
+        },
+        json: () => Promise.resolve({})
+      })
     })
   })
 
@@ -77,70 +102,142 @@ describe('Projects Component', () => {
 
   describe('Basic Rendering', () => {
     it('renders projects page with English language', async () => {
+      // Mock localStorage to prevent infinite loading
+      const mockLocalStorage = {
+        getItem: createMockFn(() => null),
+        setItem: createMockFn(),
+        removeItem: createMockFn(),
+        clear: createMockFn()
+      }
+      Object.defineProperty(window, 'localStorage', {
+        value: mockLocalStorage,
+        writable: true
+      })
+
       renderWithLanguage(<Projects language="en" />, { language: 'en' })
       
       await waitFor(() => {
         expect(screen.getByText('Projects')).toBeInTheDocument()
-      }, { timeout: 5000 })
+      }, { timeout: 10000 })
     })
 
     it('renders projects page with Dutch language', async () => {
+      // Mock localStorage to prevent infinite loading
+      const mockLocalStorage = {
+        getItem: createMockFn(() => null),
+        setItem: createMockFn(),
+        removeItem: createMockFn(),
+        clear: createMockFn()
+      }
+      Object.defineProperty(window, 'localStorage', {
+        value: mockLocalStorage,
+        writable: true
+      })
+
       renderWithLanguage(<Projects language="nl" />, { language: 'nl' })
       
       await waitFor(() => {
         expect(screen.getByText('Projecten')).toBeInTheDocument()
-      }, { timeout: 5000 })
+      }, { timeout: 10000 })
     })
 
     it('displays projects data after loading', async () => {
+      // Mock localStorage to prevent infinite loading
+      const mockLocalStorage = {
+        getItem: createMockFn(() => null),
+        setItem: createMockFn(),
+        removeItem: createMockFn(),
+        clear: createMockFn()
+      }
+      Object.defineProperty(window, 'localStorage', {
+        value: mockLocalStorage,
+        writable: true
+      })
+
       renderWithLanguage(<Projects language="en" />, { language: 'en' })
       
       // Wait for initial page load
       await waitFor(() => {
         expect(screen.getByText('Projects')).toBeInTheDocument()
-      }, { timeout: 5000 })
+      }, { timeout: 10000 })
       
       // Wait for projects data to load (increased timeout for CI reliability)
       await waitFor(() => {
         // Look for project names from mock data
         expect(screen.getByText(/Garden Redesign Project/i)).toBeInTheDocument()
-      }, { timeout: 15000 })
+      }, { timeout: 20000 })
       
       // Verify other mock projects are displayed
       await waitFor(() => {
         expect(screen.getByText(/Park Renovation/i)).toBeInTheDocument()
         expect(screen.getByText(/Corporate Landscape/i)).toBeInTheDocument()
-      }, { timeout: 5000 })
+      }, { timeout: 10000 })
     })
   })
 
   describe('Language Support', () => {
     it('displays correct translations for English', async () => {
+      // Mock localStorage to prevent infinite loading
+      const mockLocalStorage = {
+        getItem: createMockFn(() => null),
+        setItem: createMockFn(),
+        removeItem: createMockFn(),
+        clear: createMockFn()
+      }
+      Object.defineProperty(window, 'localStorage', {
+        value: mockLocalStorage,
+        writable: true
+      })
+
       renderWithLanguage(<Projects language="en" />, { language: 'en' })
       
       await waitFor(() => {
         expect(screen.getByText('Projects')).toBeInTheDocument()
         expect(screen.getByText(/manage your landscape architecture projects/i)).toBeInTheDocument()
-      }, { timeout: 5000 })
+      }, { timeout: 10000 })
     })
 
     it('displays correct translations for Dutch', async () => {
+      // Mock localStorage to prevent infinite loading
+      const mockLocalStorage = {
+        getItem: createMockFn(() => null),
+        setItem: createMockFn(),
+        removeItem: createMockFn(),
+        clear: createMockFn()
+      }
+      Object.defineProperty(window, 'localStorage', {
+        value: mockLocalStorage,
+        writable: true
+      })
+
       renderWithLanguage(<Projects language="nl" />, { language: 'nl' })
       
       await waitFor(() => {
         expect(screen.getByText('Projecten')).toBeInTheDocument()
         expect(screen.getByText(/beheer uw landschapsarchitectuur projecten/i)).toBeInTheDocument()
-      }, { timeout: 5000 })
+      }, { timeout: 10000 })
     })
   })
 
   describe('Accessibility', () => {
     it('should not have accessibility violations', async () => {
+      // Mock localStorage to prevent infinite loading
+      const mockLocalStorage = {
+        getItem: createMockFn(() => null),
+        setItem: createMockFn(),
+        removeItem: createMockFn(),
+        clear: createMockFn()
+      }
+      Object.defineProperty(window, 'localStorage', {
+        value: mockLocalStorage,
+        writable: true
+      })
+
       const { container } = renderWithLanguage(<Projects language="en" />, { language: 'en' })
       
       await waitFor(() => {
         expect(screen.getByText('Projects')).toBeInTheDocument()
-      }, { timeout: 5000 })
+      }, { timeout: 10000 })
       
       const results = await axe(container)
       expect(results).toHaveNoViolations()

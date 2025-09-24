@@ -9,6 +9,7 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 from src.main import create_app
+from tests.fixtures.auth_fixtures import authenticated_test_user
 
 # Add project root to Python path using relative paths
 project_root = Path(__file__).parent.parent
@@ -57,107 +58,102 @@ class TestCoverageBoost:
                 assert "status" in data
                 assert "timestamp" in data
 
-    def test_api_endpoints_basic_coverage(self, app_context):
+    def test_api_endpoints_basic_coverage(self, client, authenticated_test_user):
         """Test basic API endpoints for coverage"""
-        app = app_context
-        with app.test_client() as client:
-            # Test dashboard stats
-            response = client.get("/api/dashboard/stats")
-            assert response.status_code == 200
+        # Authentication handled by authenticated_test_user fixture
+        # Test dashboard stats
+        response = client.get("/api/dashboard/stats")
+        assert response.status_code == 200
 
-            # Test suppliers endpoint
-            response = client.get("/api/suppliers")
-            assert response.status_code == 200
+        # Test suppliers endpoint
+        response = client.get("/api/suppliers")
+        assert response.status_code == 200
 
-            # Test plants endpoint
-            response = client.get("/api/plants")
-            assert response.status_code == 200
+        # Test plants endpoint
+        response = client.get("/api/plants")
+        assert response.status_code == 200
 
-            # Test products endpoint
-            response = client.get("/api/products")
-            assert response.status_code == 200
+        # Test products endpoint
+        response = client.get("/api/products")
+        assert response.status_code == 200
 
-            # Test clients endpoint
-            response = client.get("/api/clients")
-            assert response.status_code == 200
+        # Test clients endpoint
+        response = client.get("/api/clients")
+        assert response.status_code == 200
 
-            # Test projects endpoint
-            response = client.get("/api/projects")
-            assert response.status_code == 200
+        # Test projects endpoint
+        response = client.get("/api/projects")
+        assert response.status_code == 200
 
-    def test_post_endpoints_coverage(self, app_context):
+    def test_post_endpoints_coverage(self, client, authenticated_test_user):
         """Test POST endpoints for coverage"""
-    # Authentication handled by authenticated_test_user fixture
-        app = app_context
-        with app.test_client() as client:
-            # Test supplier creation
-            supplier_data = {
-                "name": "Test Supplier",
-                "contact_person": "John Doe",
-                "email": "john@test.com",
-                "phone": "123-456-7890",
-                "address": "123 Test St",
-            }
-            response = client.post("/api/suppliers", json=supplier_data)
-            assert response.status_code in [200, 201]
+        # Authentication handled by authenticated_test_user fixture
+        # Test supplier creation
+        supplier_data = {
+            "name": "Test Supplier",
+            "contact_person": "John Doe",
+            "email": "john@test.com",
+            "phone": "123-456-7890",
+            "address": "123 Test St",
+        }
+        response = client.post("/api/suppliers", json=supplier_data)
+        assert response.status_code in [200, 201]
 
-            # Test plant creation
-            plant_data = {
-                "name": "Test Plant",
-                "scientific_name": "Testus plantus",
-                "plant_type": "shrub",
-                "sun_requirements": "full_sun",
-                "water_requirements": "moderate",
-                "soil_type": "well_drained",
-                "hardiness_zone": "5-9",
-                "height_min": 50,
-                "height_max": 150,
-                "spread_min": 40,
-                "spread_max": 120,
-            }
-            response = client.post("/api/plants", json=plant_data)
-            assert response.status_code in [200, 201]
+        # Test plant creation
+        plant_data = {
+            "name": "Test Plant",
+            "scientific_name": "Testus plantus",
+            "plant_type": "shrub",
+            "sun_requirements": "full_sun",
+            "water_requirements": "moderate",
+            "soil_type": "well_drained",
+            "hardiness_zone": "5-9",
+            "height_min": 50,
+            "height_max": 150,
+            "spread_min": 40,
+            "spread_max": 120,
+        }
+        response = client.post("/api/plants", json=plant_data)
+        assert response.status_code in [200, 201]
 
-    def test_error_scenarios_coverage(self, app_context):
+    def test_error_scenarios_coverage(self, client, authenticated_test_user):
         """Test error scenarios for coverage"""
-        app = app_context
-        with app.test_client() as client:
-            # Test invalid JSON - use proper handling
-            try:
-                response = client.post(
-                    "/api/suppliers",
-                    data="invalid json",
-                    content_type="application/json",
-                )
-                # Accept either 400, 422, or 500 as all are error scenarios
-                # we want to cover
-                assert response.status_code in [400, 422, 500]
-            except Exception:
-                pass
+        # Authentication handled by authenticated_test_user fixture
+        # Test invalid JSON - use proper handling
+        try:
+            response = client.post(
+                "/api/suppliers",
+                data="invalid json",
+                content_type="application/json",
+            )
+            # Accept either 400, 422, or 500 as all are error scenarios
+            # we want to cover
+            assert response.status_code in [400, 422, 500]
+        except Exception:
+            pass
 
-            # Test missing required fields
-            response = client.post("/api/suppliers", json={})
-            assert response.status_code in [
-                400,
-                422,
-                500,
-            ]  # Either is acceptable for coverage
+        # Test missing required fields
+        response = client.post("/api/suppliers", json={})
+        assert response.status_code in [
+            400,
+            422,
+            500,
+        ]  # Either is acceptable for coverage
 
-    def test_search_endpoints_coverage(self, app_context):
+    def test_search_endpoints_coverage(self, client, authenticated_test_user):
         """Test search functionality for coverage"""
-        app = app_context
-        with app.test_client() as client:
-            # Test supplier search
-            response = client.get("/api/suppliers?search=test")
-            assert response.status_code == 200
+        # Authentication handled by authenticated_test_user fixture
+        # Test supplier search
+        response = client.get("/api/suppliers?search=test")
+        assert response.status_code == 200
 
-            # Test plant search
-            response = client.get("/api/plants?search=test")
-            assert response.status_code == 200
+        # Test plant search
+        response = client.get("/api/plants?search=test")
+        assert response.status_code == 200
 
-            # Test pagination
-            response = client.get("/api/suppliers?page=1&per_page=10")
-            assert response.status_code == 200
+        # Test pagination
+        response = client.get("/api/suppliers?page=1&per_page=10")
+        assert response.status_code == 200
 
     def test_additional_coverage_paths(self, app_context):
         """Test additional code paths for coverage"""
