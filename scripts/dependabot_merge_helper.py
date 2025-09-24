@@ -5,9 +5,11 @@ Provides detailed analysis and safety validation for dependency updates.
 """
 
 import json
-import requests
 import sys
 from typing import Dict, List, Tuple
+
+import requests
+
 
 class DependabotMergeHelper:
     def __init__(self):
@@ -37,14 +39,14 @@ class DependabotMergeHelper:
             408,  # jest-environment major
         ]
 
-    def categorize_prs(self) -> Dict[str, List[int]]:
+    def categorize_prs(self) -> dict[str, list[int]]:
         return {
             "safe_auto_merge": self.safe_patches,
             "careful_review": self.careful_review, 
             "major_updates": self.major_updates
         }
 
-    def get_merge_priority(self) -> List[Tuple[int, str, str]]:
+    def get_merge_priority(self) -> list[tuple[int, str, str]]:
         """Return PRs in recommended merge order with reasoning."""
         priorities = []
         
@@ -62,7 +64,7 @@ class DependabotMergeHelper:
             
         return priorities
 
-    def generate_merge_commands(self) -> List[str]:
+    def generate_merge_commands(self) -> list[str]:
         """Generate commands for safe merging."""
         commands = []
         
@@ -87,9 +89,8 @@ class DependabotMergeHelper:
             if result.returncode == 0:
                 print("✅ Repository health check passed")
                 return True
-            else:
-                print(f"❌ Repository health check failed: {result.stderr}")
-                return False
+            print(f"❌ Repository health check failed: {result.stderr}")
+            return False
                 
         except Exception as e:
             print(f"❌ Health check error: {e}")
@@ -107,20 +108,20 @@ def main():
     
     # Show categorization
     categories = helper.categorize_prs()
-    print(f"\n📊 PR Categorization:")
+    print("\n📊 PR Categorization:")
     print(f"🟢 Safe Auto-merge: {len(categories['safe_auto_merge'])} PRs")
     print(f"🟡 Careful Review: {len(categories['careful_review'])} PRs") 
     print(f"🔴 Major Updates: {len(categories['major_updates'])} PRs")
     
     # Show merge priorities
-    print(f"\n📋 Recommended Merge Order:")
+    print("\n📋 Recommended Merge Order:")
     priorities = helper.get_merge_priority()
     for pr_num, action, reason in priorities:
         status_icon = {"auto-merge": "🟢", "manual-review": "🟡", "extensive-testing": "🔴"}[action]
         print(f"{status_icon} PR #{pr_num}: {action} - {reason}")
     
     # Generate commands for safe merges
-    print(f"\n🔧 Safe Merge Commands:")
+    print("\n🔧 Safe Merge Commands:")
     commands = helper.generate_merge_commands()
     for cmd in commands[:10]:  # Show first 10 commands
         print(cmd)

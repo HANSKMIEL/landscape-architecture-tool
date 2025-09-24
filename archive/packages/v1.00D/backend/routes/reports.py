@@ -820,57 +820,57 @@ def generate_comprehensive_pdf():
     """Generate comprehensive PDF report based on request data"""
     try:
         data = request.get_json()
-        report_type = data.get('type', 'overview')
-        date_range = data.get('dateRange', {})
-        filters = data.get('filters', {})
-        report_data = data.get('data', {})
-        language = data.get('language', 'en')
+        report_type = data.get("type", "overview")
+        date_range = data.get("dateRange", {})
+        filters = data.get("filters", {})
+        report_data = data.get("data", {})
+        language = data.get("language", "en")
         
         # Translations for Dutch reports
         translations = {
-            'en': {
-                'title': 'Landscape Architecture Report',
-                'generated_on': 'Generated on',
-                'date_range': 'Date Range',
-                'overview': 'Business Overview',
-                'clients': 'Client Analysis',
-                'projects': 'Project Performance',
-                'plants': 'Plant Analytics',
-                'financial': 'Financial Summary',
-                'total_projects': 'Total Projects',
-                'total_clients': 'Total Clients',
-                'total_plants': 'Total Plants',
-                'total_budget': 'Total Budget',
-                'average_budget': 'Average Budget',
-                'project_status': 'Project Status Distribution',
-                'top_clients': 'Top Clients',
-                'plant_categories': 'Plant Category Distribution',
-                'monthly_revenue': 'Monthly Revenue',
-                'page': 'Page'
+            "en": {
+                "title": "Landscape Architecture Report",
+                "generated_on": "Generated on",
+                "date_range": "Date Range",
+                "overview": "Business Overview",
+                "clients": "Client Analysis",
+                "projects": "Project Performance",
+                "plants": "Plant Analytics",
+                "financial": "Financial Summary",
+                "total_projects": "Total Projects",
+                "total_clients": "Total Clients",
+                "total_plants": "Total Plants",
+                "total_budget": "Total Budget",
+                "average_budget": "Average Budget",
+                "project_status": "Project Status Distribution",
+                "top_clients": "Top Clients",
+                "plant_categories": "Plant Category Distribution",
+                "monthly_revenue": "Monthly Revenue",
+                "page": "Page"
             },
-            'nl': {
-                'title': 'Landschapsarchitectuur Rapport',
-                'generated_on': 'Gegenereerd op',
-                'date_range': 'Datumbereik',
-                'overview': 'Bedrijfsoverzicht',
-                'clients': 'Klantanalyse',
-                'projects': 'Projectprestaties',
-                'plants': 'Plant Analytics',
-                'financial': 'Financieel Overzicht',
-                'total_projects': 'Totaal Projecten',
-                'total_clients': 'Totaal Klanten',
-                'total_plants': 'Totaal Planten',
-                'total_budget': 'Totaal Budget',
-                'average_budget': 'Gemiddeld Budget',
-                'project_status': 'Project Status Verdeling',
-                'top_clients': 'Top Klanten',
-                'plant_categories': 'Plant Categorie Verdeling',
-                'monthly_revenue': 'Maandelijkse Omzet',
-                'page': 'Pagina'
+            "nl": {
+                "title": "Landschapsarchitectuur Rapport",
+                "generated_on": "Gegenereerd op",
+                "date_range": "Datumbereik",
+                "overview": "Bedrijfsoverzicht",
+                "clients": "Klantanalyse",
+                "projects": "Projectprestaties",
+                "plants": "Plant Analytics",
+                "financial": "Financieel Overzicht",
+                "total_projects": "Totaal Projecten",
+                "total_clients": "Totaal Klanten",
+                "total_plants": "Totaal Planten",
+                "total_budget": "Totaal Budget",
+                "average_budget": "Gemiddeld Budget",
+                "project_status": "Project Status Verdeling",
+                "top_clients": "Top Klanten",
+                "plant_categories": "Plant Categorie Verdeling",
+                "monthly_revenue": "Maandelijkse Omzet",
+                "page": "Pagina"
             }
         }
         
-        t = translations.get(language, translations['en'])
+        t = translations.get(language, translations["en"])
         
         # Create PDF buffer
         buffer = io.BytesIO()
@@ -886,20 +886,20 @@ def generate_comprehensive_pdf():
         # Get styles
         styles = getSampleStyleSheet()
         title_style = ParagraphStyle(
-            'CustomTitle',
-            parent=styles['Heading1'],
+            "CustomTitle",
+            parent=styles["Heading1"],
             fontSize=24,
             spaceAfter=30,
-            textColor=colors.HexColor('#10b981'),
+            textColor=colors.HexColor("#10b981"),
             alignment=1  # Center alignment
         )
         
         heading_style = ParagraphStyle(
-            'CustomHeading',
-            parent=styles['Heading2'],
+            "CustomHeading",
+            parent=styles["Heading2"],
             fontSize=16,
             spaceAfter=12,
-            textColor=colors.HexColor('#374151')
+            textColor=colors.HexColor("#374151")
         )
         
         # Build PDF content
@@ -907,11 +907,11 @@ def generate_comprehensive_pdf():
         
         # Title
         report_titles = {
-            'overview': t['overview'],
-            'clients': t['clients'],
-            'projects': t['projects'],
-            'plants': t['plants'],
-            'financial': t['financial']
+            "overview": t["overview"],
+            "clients": t["clients"],
+            "projects": t["projects"],
+            "plants": t["plants"],
+            "financial": t["financial"]
         }
         
         title = f"{t['title']} - {report_titles.get(report_type, t['overview'])}"
@@ -920,22 +920,22 @@ def generate_comprehensive_pdf():
         
         # Generation info
         generation_info = f"{t['generated_on']}: {datetime.now().strftime('%d-%m-%Y %H:%M')}"
-        if date_range.get('start') and date_range.get('end'):
+        if date_range.get("start") and date_range.get("end"):
             generation_info += f"<br/>{t['date_range']}: {date_range['start']} - {date_range['end']}"
         
-        story.append(Paragraph(generation_info, styles['Normal']))
+        story.append(Paragraph(generation_info, styles["Normal"]))
         story.append(Spacer(1, 30))
         
         # Report-specific content
-        if report_type == 'overview':
+        if report_type == "overview":
             story.extend(generate_overview_pdf_content(report_data, t, styles))
-        elif report_type == 'clients':
+        elif report_type == "clients":
             story.extend(generate_clients_pdf_content(report_data, t, styles))
-        elif report_type == 'projects':
+        elif report_type == "projects":
             story.extend(generate_projects_pdf_content(report_data, t, styles))
-        elif report_type == 'plants':
+        elif report_type == "plants":
             story.extend(generate_plants_pdf_content(report_data, t, styles))
-        elif report_type == 'financial':
+        elif report_type == "financial":
             story.extend(generate_financial_pdf_content(report_data, t, styles))
         
         # Build PDF
@@ -943,18 +943,18 @@ def generate_comprehensive_pdf():
         buffer.seek(0)
         
         # Generate filename
-        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         filename = f"landscape_report_{report_type}_{timestamp}.pdf"
         
         return send_file(
             buffer,
             as_attachment=True,
             download_name=filename,
-            mimetype='application/pdf'
+            mimetype="application/pdf"
         )
         
     except Exception as e:
-        logging.error(f"Error generating PDF report: {str(e)}")
+        logging.error(f"Error generating PDF report: {e!s}")
         return jsonify({"error": str(e)}), 500
 
 
@@ -963,55 +963,55 @@ def generate_overview_pdf_content(data, t, styles):
     content = []
     
     # Statistics summary
-    if 'stats' in data:
-        stats = data['stats']
-        content.append(Paragraph("Statistieken Overzicht", styles['Heading2']))
+    if "stats" in data:
+        stats = data["stats"]
+        content.append(Paragraph("Statistieken Overzicht", styles["Heading2"]))
         
         stats_data = [
-            [t['total_projects'], str(stats.get('projects', 0))],
-            [t['total_clients'], str(stats.get('clients', 0))],
-            [t['total_plants'], str(stats.get('plants', 0))],
-            ['Totaal Producten', str(stats.get('products', 0))],
-            ['Totaal Leveranciers', str(stats.get('suppliers', 0))]
+            [t["total_projects"], str(stats.get("projects", 0))],
+            [t["total_clients"], str(stats.get("clients", 0))],
+            [t["total_plants"], str(stats.get("plants", 0))],
+            ["Totaal Producten", str(stats.get("products", 0))],
+            ["Totaal Leveranciers", str(stats.get("suppliers", 0))]
         ]
         
         stats_table = Table(stats_data, colWidths=[3*inch, 2*inch])
         stats_table.setStyle(TableStyle([
-            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#f3f4f6')),
-            ('TEXTCOLOR', (0, 0), (-1, 0), colors.black),
-            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-            ('FONTSIZE', (0, 0), (-1, 0), 12),
-            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-            ('BACKGROUND', (0, 1), (-1, -1), colors.white),
-            ('GRID', (0, 0), (-1, -1), 1, colors.black)
+            ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#f3f4f6")),
+            ("TEXTCOLOR", (0, 0), (-1, 0), colors.black),
+            ("ALIGN", (0, 0), (-1, -1), "LEFT"),
+            ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+            ("FONTSIZE", (0, 0), (-1, 0), 12),
+            ("BOTTOMPADDING", (0, 0), (-1, 0), 12),
+            ("BACKGROUND", (0, 1), (-1, -1), colors.white),
+            ("GRID", (0, 0), (-1, -1), 1, colors.black)
         ]))
         
         content.append(stats_table)
         content.append(Spacer(1, 20))
     
     # Top clients
-    if 'topClients' in data and data['topClients']:
-        content.append(Paragraph("Top Klanten", styles['Heading2']))
+    if data.get("topClients"):
+        content.append(Paragraph("Top Klanten", styles["Heading2"]))
         
-        client_data = [['Naam', 'E-mail', 'Stad']]
-        for client in data['topClients'][:5]:
+        client_data = [["Naam", "E-mail", "Stad"]]
+        for client in data["topClients"][:5]:
             client_data.append([
-                client.get('name', ''),
-                client.get('email', ''),
-                client.get('city', '')
+                client.get("name", ""),
+                client.get("email", ""),
+                client.get("city", "")
             ])
         
         client_table = Table(client_data, colWidths=[2*inch, 2.5*inch, 1.5*inch])
         client_table.setStyle(TableStyle([
-            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#10b981')),
-            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-            ('FONTSIZE', (0, 0), (-1, 0), 10),
-            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-            ('BACKGROUND', (0, 1), (-1, -1), colors.white),
-            ('GRID', (0, 0), (-1, -1), 1, colors.black)
+            ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#10b981")),
+            ("TEXTCOLOR", (0, 0), (-1, 0), colors.whitesmoke),
+            ("ALIGN", (0, 0), (-1, -1), "LEFT"),
+            ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+            ("FONTSIZE", (0, 0), (-1, 0), 10),
+            ("BOTTOMPADDING", (0, 0), (-1, 0), 12),
+            ("BACKGROUND", (0, 1), (-1, -1), colors.white),
+            ("GRID", (0, 0), (-1, -1), 1, colors.black)
         ]))
         
         content.append(client_table)
@@ -1024,29 +1024,29 @@ def generate_clients_pdf_content(data, t, styles):
     """Generate clients report PDF content"""
     content = []
     
-    if 'topClientsByProjects' in data and data['topClientsByProjects']:
-        content.append(Paragraph("Top Klanten op Projecten", styles['Heading2']))
+    if data.get("topClientsByProjects"):
+        content.append(Paragraph("Top Klanten op Projecten", styles["Heading2"]))
         
-        client_data = [['Naam', 'E-mail', 'Projecten', 'Totaal Budget']]
-        for client in data['topClientsByProjects'][:10]:
+        client_data = [["Naam", "E-mail", "Projecten", "Totaal Budget"]]
+        for client in data["topClientsByProjects"][:10]:
             client_data.append([
-                client.get('name', ''),
-                client.get('email', ''),
-                str(client.get('projectCount', 0)),
+                client.get("name", ""),
+                client.get("email", ""),
+                str(client.get("projectCount", 0)),
                 f"€{client.get('totalBudget', 0):,.2f}"
             ])
         
         client_table = Table(client_data, colWidths=[2*inch, 2*inch, 1*inch, 1.5*inch])
         client_table.setStyle(TableStyle([
-            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#10b981')),
-            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-            ('ALIGN', (2, 0), (-1, -1), 'RIGHT'),
-            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-            ('FONTSIZE', (0, 0), (-1, 0), 10),
-            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-            ('BACKGROUND', (0, 1), (-1, -1), colors.white),
-            ('GRID', (0, 0), (-1, -1), 1, colors.black)
+            ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#10b981")),
+            ("TEXTCOLOR", (0, 0), (-1, 0), colors.whitesmoke),
+            ("ALIGN", (0, 0), (-1, -1), "LEFT"),
+            ("ALIGN", (2, 0), (-1, -1), "RIGHT"),
+            ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+            ("FONTSIZE", (0, 0), (-1, 0), 10),
+            ("BOTTOMPADDING", (0, 0), (-1, 0), 12),
+            ("BACKGROUND", (0, 1), (-1, -1), colors.white),
+            ("GRID", (0, 0), (-1, -1), 1, colors.black)
         ]))
         
         content.append(client_table)
@@ -1060,52 +1060,52 @@ def generate_projects_pdf_content(data, t, styles):
     content = []
     
     # Project statistics
-    content.append(Paragraph("Project Statistieken", styles['Heading2']))
+    content.append(Paragraph("Project Statistieken", styles["Heading2"]))
     
     project_stats = [
-        [t['total_projects'], str(data.get('totalProjects', 0))],
-        [t['total_budget'], f"€{data.get('totalBudget', 0):,.2f}"],
-        [t['average_budget'], f"€{data.get('averageBudget', 0):,.2f}"]
+        [t["total_projects"], str(data.get("totalProjects", 0))],
+        [t["total_budget"], f"€{data.get('totalBudget', 0):,.2f}"],
+        [t["average_budget"], f"€{data.get('averageBudget', 0):,.2f}"]
     ]
     
     stats_table = Table(project_stats, colWidths=[3*inch, 2*inch])
     stats_table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#f3f4f6')),
-        ('TEXTCOLOR', (0, 0), (-1, 0), colors.black),
-        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-        ('ALIGN', (1, 0), (-1, -1), 'RIGHT'),
-        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-        ('FONTSIZE', (0, 0), (-1, 0), 12),
-        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-        ('BACKGROUND', (0, 1), (-1, -1), colors.white),
-        ('GRID', (0, 0), (-1, -1), 1, colors.black)
+        ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#f3f4f6")),
+        ("TEXTCOLOR", (0, 0), (-1, 0), colors.black),
+        ("ALIGN", (0, 0), (-1, -1), "LEFT"),
+        ("ALIGN", (1, 0), (-1, -1), "RIGHT"),
+        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+        ("FONTSIZE", (0, 0), (-1, 0), 12),
+        ("BOTTOMPADDING", (0, 0), (-1, 0), 12),
+        ("BACKGROUND", (0, 1), (-1, -1), colors.white),
+        ("GRID", (0, 0), (-1, -1), 1, colors.black)
     ]))
     
     content.append(stats_table)
     content.append(Spacer(1, 20))
     
     # Status distribution
-    if 'statusDistribution' in data and data['statusDistribution']:
-        content.append(Paragraph("Status Verdeling", styles['Heading2']))
+    if data.get("statusDistribution"):
+        content.append(Paragraph("Status Verdeling", styles["Heading2"]))
         
-        status_data = [['Status', 'Aantal']]
-        for status in data['statusDistribution']:
+        status_data = [["Status", "Aantal"]]
+        for status in data["statusDistribution"]:
             status_data.append([
-                status.get('name', ''),
-                str(status.get('value', 0))
+                status.get("name", ""),
+                str(status.get("value", 0))
             ])
         
         status_table = Table(status_data, colWidths=[3*inch, 2*inch])
         status_table.setStyle(TableStyle([
-            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#10b981')),
-            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-            ('ALIGN', (1, 0), (-1, -1), 'RIGHT'),
-            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-            ('FONTSIZE', (0, 0), (-1, 0), 10),
-            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-            ('BACKGROUND', (0, 1), (-1, -1), colors.white),
-            ('GRID', (0, 0), (-1, -1), 1, colors.black)
+            ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#10b981")),
+            ("TEXTCOLOR", (0, 0), (-1, 0), colors.whitesmoke),
+            ("ALIGN", (0, 0), (-1, -1), "LEFT"),
+            ("ALIGN", (1, 0), (-1, -1), "RIGHT"),
+            ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+            ("FONTSIZE", (0, 0), (-1, 0), 10),
+            ("BOTTOMPADDING", (0, 0), (-1, 0), 12),
+            ("BACKGROUND", (0, 1), (-1, -1), colors.white),
+            ("GRID", (0, 0), (-1, -1), 1, colors.black)
         ]))
         
         content.append(status_table)
@@ -1119,52 +1119,52 @@ def generate_plants_pdf_content(data, t, styles):
     content = []
     
     # Plant statistics
-    content.append(Paragraph("Plant Statistieken", styles['Heading2']))
+    content.append(Paragraph("Plant Statistieken", styles["Heading2"]))
     
     plant_stats = [
-        [t['total_plants'], str(data.get('totalPlants', 0))],
-        ['Inheemse Planten', str(data.get('nativePlants', 0))],
-        ['Inheems Percentage', f"{data.get('nativePercentage', 0):.1f}%"]
+        [t["total_plants"], str(data.get("totalPlants", 0))],
+        ["Inheemse Planten", str(data.get("nativePlants", 0))],
+        ["Inheems Percentage", f"{data.get('nativePercentage', 0):.1f}%"]
     ]
     
     stats_table = Table(plant_stats, colWidths=[3*inch, 2*inch])
     stats_table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#f3f4f6')),
-        ('TEXTCOLOR', (0, 0), (-1, 0), colors.black),
-        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-        ('ALIGN', (1, 0), (-1, -1), 'RIGHT'),
-        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-        ('FONTSIZE', (0, 0), (-1, 0), 12),
-        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-        ('BACKGROUND', (0, 1), (-1, -1), colors.white),
-        ('GRID', (0, 0), (-1, -1), 1, colors.black)
+        ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#f3f4f6")),
+        ("TEXTCOLOR", (0, 0), (-1, 0), colors.black),
+        ("ALIGN", (0, 0), (-1, -1), "LEFT"),
+        ("ALIGN", (1, 0), (-1, -1), "RIGHT"),
+        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+        ("FONTSIZE", (0, 0), (-1, 0), 12),
+        ("BOTTOMPADDING", (0, 0), (-1, 0), 12),
+        ("BACKGROUND", (0, 1), (-1, -1), colors.white),
+        ("GRID", (0, 0), (-1, -1), 1, colors.black)
     ]))
     
     content.append(stats_table)
     content.append(Spacer(1, 20))
     
     # Category distribution
-    if 'categoryDistribution' in data and data['categoryDistribution']:
-        content.append(Paragraph("Categorie Verdeling", styles['Heading2']))
+    if data.get("categoryDistribution"):
+        content.append(Paragraph("Categorie Verdeling", styles["Heading2"]))
         
-        category_data = [['Categorie', 'Aantal']]
-        for category in data['categoryDistribution']:
+        category_data = [["Categorie", "Aantal"]]
+        for category in data["categoryDistribution"]:
             category_data.append([
-                category.get('name', ''),
-                str(category.get('value', 0))
+                category.get("name", ""),
+                str(category.get("value", 0))
             ])
         
         category_table = Table(category_data, colWidths=[3*inch, 2*inch])
         category_table.setStyle(TableStyle([
-            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#10b981')),
-            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-            ('ALIGN', (1, 0), (-1, -1), 'RIGHT'),
-            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-            ('FONTSIZE', (0, 0), (-1, 0), 10),
-            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-            ('BACKGROUND', (0, 1), (-1, -1), colors.white),
-            ('GRID', (0, 0), (-1, -1), 1, colors.black)
+            ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#10b981")),
+            ("TEXTCOLOR", (0, 0), (-1, 0), colors.whitesmoke),
+            ("ALIGN", (0, 0), (-1, -1), "LEFT"),
+            ("ALIGN", (1, 0), (-1, -1), "RIGHT"),
+            ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+            ("FONTSIZE", (0, 0), (-1, 0), 10),
+            ("BOTTOMPADDING", (0, 0), (-1, 0), 12),
+            ("BACKGROUND", (0, 1), (-1, -1), colors.white),
+            ("GRID", (0, 0), (-1, -1), 1, colors.black)
         ]))
         
         content.append(category_table)
@@ -1178,52 +1178,52 @@ def generate_financial_pdf_content(data, t, styles):
     content = []
     
     # Financial statistics
-    content.append(Paragraph("Financiële Statistieken", styles['Heading2']))
+    content.append(Paragraph("Financiële Statistieken", styles["Heading2"]))
     
     financial_stats = [
-        ['Totale Omzet', f"€{data.get('totalRevenue', 0):,.2f}"],
-        ['Voltooide Projecten', str(data.get('completedProjects', 0))],
-        ['Gemiddelde Project Waarde', f"€{data.get('averageProjectValue', 0):,.2f}"]
+        ["Totale Omzet", f"€{data.get('totalRevenue', 0):,.2f}"],
+        ["Voltooide Projecten", str(data.get("completedProjects", 0))],
+        ["Gemiddelde Project Waarde", f"€{data.get('averageProjectValue', 0):,.2f}"]
     ]
     
     stats_table = Table(financial_stats, colWidths=[3*inch, 2*inch])
     stats_table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#f3f4f6')),
-        ('TEXTCOLOR', (0, 0), (-1, 0), colors.black),
-        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-        ('ALIGN', (1, 0), (-1, -1), 'RIGHT'),
-        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-        ('FONTSIZE', (0, 0), (-1, 0), 12),
-        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-        ('BACKGROUND', (0, 1), (-1, -1), colors.white),
-        ('GRID', (0, 0), (-1, -1), 1, colors.black)
+        ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#f3f4f6")),
+        ("TEXTCOLOR", (0, 0), (-1, 0), colors.black),
+        ("ALIGN", (0, 0), (-1, -1), "LEFT"),
+        ("ALIGN", (1, 0), (-1, -1), "RIGHT"),
+        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+        ("FONTSIZE", (0, 0), (-1, 0), 12),
+        ("BOTTOMPADDING", (0, 0), (-1, 0), 12),
+        ("BACKGROUND", (0, 1), (-1, -1), colors.white),
+        ("GRID", (0, 0), (-1, -1), 1, colors.black)
     ]))
     
     content.append(stats_table)
     content.append(Spacer(1, 20))
     
     # Monthly revenue
-    if 'monthlyRevenue' in data and data['monthlyRevenue']:
-        content.append(Paragraph("Maandelijkse Omzet", styles['Heading2']))
+    if data.get("monthlyRevenue"):
+        content.append(Paragraph("Maandelijkse Omzet", styles["Heading2"]))
         
-        revenue_data = [['Maand', 'Omzet']]
-        for month_data in data['monthlyRevenue']:
+        revenue_data = [["Maand", "Omzet"]]
+        for month_data in data["monthlyRevenue"]:
             revenue_data.append([
-                month_data.get('month', ''),
+                month_data.get("month", ""),
                 f"€{month_data.get('revenue', 0):,.2f}"
             ])
         
         revenue_table = Table(revenue_data, colWidths=[3*inch, 2*inch])
         revenue_table.setStyle(TableStyle([
-            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#10b981')),
-            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-            ('ALIGN', (1, 0), (-1, -1), 'RIGHT'),
-            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-            ('FONTSIZE', (0, 0), (-1, 0), 10),
-            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-            ('BACKGROUND', (0, 1), (-1, -1), colors.white),
-            ('GRID', (0, 0), (-1, -1), 1, colors.black)
+            ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#10b981")),
+            ("TEXTCOLOR", (0, 0), (-1, 0), colors.whitesmoke),
+            ("ALIGN", (0, 0), (-1, -1), "LEFT"),
+            ("ALIGN", (1, 0), (-1, -1), "RIGHT"),
+            ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+            ("FONTSIZE", (0, 0), (-1, 0), 10),
+            ("BOTTOMPADDING", (0, 0), (-1, 0), 12),
+            ("BACKGROUND", (0, 1), (-1, -1), colors.white),
+            ("GRID", (0, 0), (-1, -1), 1, colors.black)
         ]))
         
         content.append(revenue_table)
