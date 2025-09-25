@@ -76,7 +76,7 @@ def data_access_required(f):
             return jsonify({"error": "Authentication required"}), 401
 
         user = User.query.get(session["user_id"])
-        if not user or not user.has_permission('user'):
+        if not user or not user.has_permission("user"):
             return jsonify({"error": "Data management access required"}), 403
         return f(*args, **kwargs)
 
@@ -112,37 +112,37 @@ def register():
         data = request.get_json()
         
         # Validate required fields
-        if not data or not all(k in data for k in ('username', 'email', 'password')):
+        if not data or not all(k in data for k in ("username", "email", "password")):
             return jsonify({"error": "Missing required fields: username, email, password"}), 400
         
         # Validate input lengths
-        if len(data['username']) < 3:
+        if len(data["username"]) < 3:
             return jsonify({"error": "Username must be at least 3 characters"}), 400
-        if len(data['password']) < 6:
+        if len(data["password"]) < 6:
             return jsonify({"error": "Password must be at least 6 characters"}), 400
         
         # Check if user already exists
         existing_user = User.query.filter(
-            (User.username == data['username']) | 
-            (User.email == data['email'])
+            (User.username == data["username"]) | 
+            (User.email == data["email"])
         ).first()
         
         if existing_user:
-            if existing_user.username == data['username']:
+            if existing_user.username == data["username"]:
                 return jsonify({"error": "Username already exists"}), 409
-            else:
+            elif existing_user.email == data["email"]:
                 return jsonify({"error": "Email already exists"}), 409
         
         # Create new user
         new_user = User(
-            username=data['username'],
-            email=data['email'],
-            password=data['password'],
-            role=data.get('role', 'user'),
-            first_name=data.get('first_name'),
-            last_name=data.get('last_name'),
-            phone=data.get('phone'),
-            company=data.get('company')
+            username=data["username"],
+            email=data["email"],
+            password=data["password"],
+            role=data.get("role", "user"),
+            first_name=data.get("first_name"),
+            last_name=data.get("last_name"),
+            phone=data.get("phone"),
+            company=data.get("company")
         )
         
         db.session.add(new_user)
@@ -155,7 +155,7 @@ def register():
         
     except Exception as e:
         db.session.rollback()
-        return jsonify({"error": f"Registration failed: {str(e)}"}), 500
+        return jsonify({"error": f"Registration failed: {e!s}"}), 500
 
 
 @user_bp.route("/auth/logout", methods=["POST"])
@@ -194,10 +194,10 @@ def auth_status():
 def get_users():
     """Get all users with pagination and filtering (admin only)"""
     # Get query parameters
-    page = request.args.get('page', 1, type=int)
-    per_page = min(request.args.get('per_page', 20, type=int), 100)  # Max 100 per page
-    search = request.args.get('search', '').strip()
-    role_filter = request.args.get('role', '').strip()
+    page = request.args.get("page", 1, type=int)
+    per_page = min(request.args.get("per_page", 20, type=int), 100)  # Max 100 per page
+    search = request.args.get("search", "").strip()
+    role_filter = request.args.get("role", "").strip()
     
     # Start with base query
     query = User.query
@@ -216,7 +216,7 @@ def get_users():
         )
     
     # Apply role filter
-    if role_filter and role_filter != 'all':
+    if role_filter and role_filter != "all":
         query = query.filter(User.role == role_filter)
     
     # Order by creation date (newest first)
@@ -256,17 +256,17 @@ def create_user():
 
         # Create user with all fields
         user_data = {
-            'username': schema.username,
-            'email': schema.email,
-            'role': schema.role,
-            'first_name': schema.first_name or None,
-            'last_name': schema.last_name or None,
-            'phone': schema.phone or None,
-            'company': schema.company or None,
-            'notes': schema.notes or None
+            "username": schema.username,
+            "email": schema.email,
+            "role": schema.role,
+            "first_name": schema.first_name or None,
+            "last_name": schema.last_name or None,
+            "phone": schema.phone or None,
+            "company": schema.company or None,
+            "notes": schema.notes or None
         }
         
-        user = User(username=schema.username, email=schema.email, **{k: v for k, v in user_data.items() if k not in ['username', 'email']})
+        user = User(username=schema.username, email=schema.email, **{k: v for k, v in user_data.items() if k not in ["username", "email"]})
         
         # Set password (generate temp if not provided)
         if schema.password:
@@ -391,11 +391,11 @@ def unlock_user_account(user_id):
 def bulk_import_users():
     """Bulk import users from CSV (admin only)"""
     try:
-        if 'file' not in request.files:
+        if "file" not in request.files:
             return jsonify({"error": "No file provided"}), 400
         
-        file = request.files['file']
-        if file.filename == '' or not file.filename.endswith('.csv'):
+        file = request.files["file"]
+        if file.filename == "" or not file.filename.endswith(".csv"):
             return jsonify({"error": "Please upload a CSV file"}), 400
         
         # Read CSV content
@@ -411,10 +411,10 @@ def bulk_import_users():
         for row_num, row in enumerate(csv_reader, start=1):
             try:
                 # Extract user data
-                username = row.get('username', '').strip()
-                email = row.get('email', '').strip()
-                password = row.get('password', '').strip()
-                role = row.get('role', 'user').strip()
+                username = row.get("username", "").strip()
+                email = row.get("email", "").strip()
+                password = row.get("password", "").strip()
+                role = row.get("role", "user").strip()
                 
                 if not username or not email:
                     errors.append(f"Row {row_num}: Username and email are required")
@@ -431,17 +431,17 @@ def bulk_import_users():
                 
                 # Create user
                 user_data = {
-                    'username': username,
-                    'email': email,
-                    'role': role,
-                    'first_name': row.get('first_name', '').strip() or None,
-                    'last_name': row.get('last_name', '').strip() or None,
-                    'phone': row.get('phone', '').strip() or None,
-                    'company': row.get('company', '').strip() or None,
-                    'notes': row.get('notes', '').strip() or None
+                    "username": username,
+                    "email": email,
+                    "role": role,
+                    "first_name": row.get("first_name", "").strip() or None,
+                    "last_name": row.get("last_name", "").strip() or None,
+                    "phone": row.get("phone", "").strip() or None,
+                    "company": row.get("company", "").strip() or None,
+                    "notes": row.get("notes", "").strip() or None
                 }
                 
-                user = User(username=username, email=email, **{k: v for k, v in user_data.items() if k not in ['username', 'email']})
+                user = User(username=username, email=email, **{k: v for k, v in user_data.items() if k not in ["username", "email"]})
                 
                 if password:
                     user.set_password(password)
@@ -450,7 +450,7 @@ def bulk_import_users():
                 created_users.append(user_data)
                 
             except Exception as e:
-                errors.append(f"Row {row_num}: {str(e)}")
+                errors.append(f"Row {row_num}: {e!s}")
         
         # Commit all changes
         if created_users:
@@ -465,7 +465,7 @@ def bulk_import_users():
         
     except Exception as e:
         db.session.rollback()
-        return jsonify({"error": f"Import failed: {str(e)}"}), 500
+        return jsonify({"error": f"Import failed: {e!s}"}), 500
 
 
 @user_bp.route("/auth/change-password", methods=["POST"])

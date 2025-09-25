@@ -24,94 +24,94 @@ class FeatureFlags:
     Production environment requires explicit feature enablement.
     """
     
-    def __init__(self, environment: Optional[str] = None):
+    def __init__(self, environment: str | None = None):
         self.environment = self._detect_environment(environment)
         self.flags = self._load_feature_flags()
         self._log_initialization()
     
-    def _detect_environment(self, environment: Optional[str] = None) -> Environment:
+    def _detect_environment(self, environment: str | None = None) -> Environment:
         """Detect current environment from various sources"""
         if environment:
             return Environment(environment.lower())
         
         # Check environment variables
-        env_var = os.getenv('FLASK_ENV', '').lower()
-        if env_var in ['development', 'dev']:
+        env_var = os.getenv("FLASK_ENV", "").lower()
+        if env_var in ["development", "dev"]:
             return Environment.DEVELOPMENT
-        elif env_var in ['production', 'prod']:
+        elif env_var in ["production", "prod"]:
             return Environment.PRODUCTION
-        elif env_var in ['staging', 'stage']:
+        elif env_var in ["staging", "stage"]:
             return Environment.STAGING
         
         # Check for devdeploy indicators
-        if os.getenv('DEVDEPLOY_MODE') == 'true':
+        if os.getenv("DEVDEPLOY_MODE") == "true":
             return Environment.DEVELOPMENT
         
         # Check port (development uses 5001, production uses 5000)
-        port = os.getenv('PORT', '5000')
-        if port == '5001':
+        port = os.getenv("PORT", "5000")
+        if port == "5001":
             return Environment.DEVELOPMENT
         
         # Default to production for safety
         return Environment.PRODUCTION
     
-    def _load_feature_flags(self) -> Dict[str, Any]:
+    def _load_feature_flags(self) -> dict[str, Any]:
         """Load feature flags from configuration"""
         # Default feature flags
         default_flags = {
             # UI/UX Features
-            'new_dashboard_layout': self.environment == Environment.DEVELOPMENT,
-            'advanced_plant_filters': self.environment != Environment.PRODUCTION,
-            'experimental_ui_components': self.environment == Environment.DEVELOPMENT,
-            'dark_mode_support': False,
+            "new_dashboard_layout": self.environment == Environment.DEVELOPMENT,
+            "advanced_plant_filters": self.environment != Environment.PRODUCTION,
+            "experimental_ui_components": self.environment == Environment.DEVELOPMENT,
+            "dark_mode_support": False,
             
             # API Features
-            'ai_plant_recommendations': self.environment == Environment.DEVELOPMENT,
-            'advanced_project_analytics': False,
-            'bulk_data_operations': self.environment != Environment.PRODUCTION,
-            'api_rate_limiting': self.environment == Environment.PRODUCTION,
+            "ai_plant_recommendations": self.environment == Environment.DEVELOPMENT,
+            "advanced_project_analytics": False,
+            "bulk_data_operations": self.environment != Environment.PRODUCTION,
+            "api_rate_limiting": self.environment == Environment.PRODUCTION,
             
             # Integration Features
-            'external_weather_api': False,
-            'crm_integration': False,
-            'email_notifications': self.environment != Environment.DEVELOPMENT,
-            'sms_notifications': False,
+            "external_weather_api": False,
+            "crm_integration": False,
+            "email_notifications": self.environment != Environment.DEVELOPMENT,
+            "sms_notifications": False,
             
             # Performance Features
-            'database_query_caching': True,
-            'image_optimization': True,
-            'lazy_loading': True,
-            'compression_middleware': self.environment == Environment.PRODUCTION,
+            "database_query_caching": True,
+            "image_optimization": True,
+            "lazy_loading": True,
+            "compression_middleware": self.environment == Environment.PRODUCTION,
             
             # Security Features
-            'enhanced_authentication': self.environment == Environment.PRODUCTION,
-            'audit_logging': True,
-            'request_validation': True,
-            'csrf_protection': self.environment == Environment.PRODUCTION,
+            "enhanced_authentication": self.environment == Environment.PRODUCTION,
+            "audit_logging": True,
+            "request_validation": True,
+            "csrf_protection": self.environment == Environment.PRODUCTION,
             
             # Development Features
-            'debug_toolbar': self.environment == Environment.DEVELOPMENT,
-            'sql_query_logging': self.environment == Environment.DEVELOPMENT,
-            'performance_profiling': self.environment != Environment.PRODUCTION,
-            'test_data_generation': self.environment == Environment.DEVELOPMENT,
+            "debug_toolbar": self.environment == Environment.DEVELOPMENT,
+            "sql_query_logging": self.environment == Environment.DEVELOPMENT,
+            "performance_profiling": self.environment != Environment.PRODUCTION,
+            "test_data_generation": self.environment == Environment.DEVELOPMENT,
         }
         
         # Try to load from configuration file
-        config_file = os.path.join(os.path.dirname(__file__), '..', '..', 'config', 'feature_flags.json')
+        config_file = os.path.join(os.path.dirname(__file__), "..", "..", "config", "feature_flags.json")
         if os.path.exists(config_file):
             try:
-                with open(config_file, 'r') as f:
+                with open(config_file) as f:
                     file_flags = json.load(f)
                     default_flags.update(file_flags.get(self.environment.value, {}))
             except (json.JSONDecodeError, KeyError):
                 pass  # Use defaults if config file is invalid
         
         # Override with environment variables
-        for flag_name in default_flags.keys():
+        for flag_name in default_flags:
             env_var = f"FEATURE_{flag_name.upper()}"
             env_value = os.getenv(env_var)
             if env_value is not None:
-                default_flags[flag_name] = env_value.lower() in ['true', '1', 'yes', 'on']
+                default_flags[flag_name] = env_value.lower() in ["true", "1", "yes", "on"]
         
         return default_flags
     
@@ -137,17 +137,17 @@ class FeatureFlags:
         """
         self.flags[feature_name] = enabled
     
-    def get_enabled_features(self) -> Dict[str, bool]:
+    def get_enabled_features(self) -> dict[str, bool]:
         """Get all enabled features"""
         return {name: enabled for name, enabled in self.flags.items() if enabled}
     
-    def get_all_features(self) -> Dict[str, bool]:
+    def get_all_features(self) -> dict[str, bool]:
         """Get all features with their status"""
         return self.flags.copy()
     
     def _log_initialization(self):
         """Log feature flags initialization for debugging"""
-        if self.is_enabled('debug_toolbar'):
+        if self.is_enabled("debug_toolbar"):
             enabled_count = sum(1 for enabled in self.flags.values() if enabled)
             total_count = len(self.flags)
             print(f"FeatureFlags initialized for {self.environment.value}: "
@@ -173,9 +173,9 @@ def require_feature(feature_name: str):
             if not feature_flags.is_enabled(feature_name):
                 from flask import jsonify
                 return jsonify({
-                    'error': 'Feature not available',
-                    'feature': feature_name,
-                    'environment': feature_flags.environment.value
+                    "error": "Feature not available",
+                    "feature": feature_name,
+                    "environment": feature_flags.environment.value
                 }), 404
             return func(*args, **kwargs)
         wrapper.__name__ = func.__name__
