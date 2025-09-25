@@ -211,8 +211,8 @@ const Settings = () => {
             <CardContent className="p-12">
               <div className="text-center">
                 <SettingsIcon className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">{currentTranslations.comingSoon}</h3>
-                <p className="text-gray-500">Deze sectie wordt binnenkort beschikbaar.</p>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">{t('common.comingSoon', 'Coming Soon')}</h3>
+                <p className="text-gray-500">{t('settings.sectionAvailableSoon', 'This section will be available soon.')}</p>
               </div>
             </CardContent>
           </Card>
@@ -258,7 +258,7 @@ const Settings = () => {
                         </div>
                       </div>
                       {!tab.enabled && (
-                        <div className="text-xs text-gray-400 mt-1 ml-8">Binnenkort</div>
+                        <div className="text-xs text-gray-400 mt-1 ml-8">{t('common.comingSoon', 'Coming Soon')}</div>
                       )}
                     </button>
                   )

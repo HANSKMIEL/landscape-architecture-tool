@@ -184,18 +184,19 @@ const Plants = () => {
     fetchSuppliers()
   }, [fetchPlants])
 
-  // Handle form input changes
+  // Handle form input changes - Optimized to prevent focus loss
   const handleInputChange = useCallback((e) => {
     const { name, value, type, checked } = e.target
     
+    // Use functional update to prevent stale closures and DOM re-rendering
     setFormData(prevData => ({
       ...prevData,
       [name]: type === 'checkbox' ? checked : value
     }))
-  }, [])
+  }, []) // Intentionally empty dependency array: this callback only uses functional updates, so it does not depend on any external state or props. Do NOT add dependencies here; doing so may break the optimization and cause unnecessary re-renders.
 
-  // Reset form
-  const resetForm = () => {
+  // Reset form - Memoized to prevent re-creation
+  const resetForm = useCallback(() => {
     setFormData({
       name: '',
       common_name: '',
@@ -219,11 +220,12 @@ const Plants = () => {
       maintenance: '',
       notes: ''
     })
-  }
+  }, [])
 
-  // Handle add plant
-  const handleAddPlant = async (e) => {
+  // Handle add plant - Memoized to prevent re-creation
+  const handleAddPlant = useCallback(async (e) => {
     e.preventDefault()
+    setSubmitLoading(true)
     try {
       await ApiService.createPlant(formData)
       await fetchPlants()
@@ -233,12 +235,15 @@ const Plants = () => {
     } catch (err) {
       console.error('Error adding plant:', err)
       alert(t('plants.addError', 'Error adding plant: ') + err.message)
+    } finally {
+      setSubmitLoading(false)
     }
-  }
+  }, [formData, fetchPlants, resetForm, t])
 
-  // Handle edit plant
-  const handleEditPlant = async (e) => {
+  // Handle edit plant - Memoized to prevent re-creation
+  const handleEditPlant = useCallback(async (e) => {
     e.preventDefault()
+    setSubmitLoading(true)
     try {
       await ApiService.updatePlant(editingPlant.id, formData)
       await fetchPlants()
@@ -249,8 +254,10 @@ const Plants = () => {
     } catch (err) {
       console.error('Error updating plant:', err)
       alert(t('plants.updateError', 'Error updating plant: ') + err.message)
+    } finally {
+      setSubmitLoading(false)
     }
-  }
+  }, [editingPlant, formData, fetchPlants, resetForm, t])
 
   // Handle delete plant
   const handleDeletePlant = async (plantId, plantName) => {
@@ -340,8 +347,8 @@ const Plants = () => {
     return ''
   }
 
-  // Plant Form Component
-  const PlantForm = ({ isEdit = false, onSubmit, onCancel }) => (
+  // Plant Form Component - Memoized to prevent unnecessary re-renders
+  const PlantForm = React.memo(({ isEdit = false, onSubmit, onCancel }) => (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
         <div className="flex justify-between items-center mb-4">
@@ -715,14 +722,21 @@ const Plants = () => {
             <Button type="button" variant="outline" onClick={onCancel}>
               {t('common.cancel', 'Cancel')}
             </Button>
-            <Button type="submit">
-              {t('common.save', 'Save')}
+            <Button type="submit" disabled={submitLoading}>
+              {submitLoading ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  {t('common.saving', 'Saving...')}
+                </>
+              ) : (
+                t('common.save', 'Save')
+              )}
             </Button>
           </div>
         </form>
       </div>
     </div>
-  )
+  ))
 
   // Loading component
   const LoadingSpinner = () => (

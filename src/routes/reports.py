@@ -27,6 +27,61 @@ from src.routes.user import login_required
 reports_bp = Blueprint("reports", __name__)
 
 
+@reports_bp.route("/api/reports/available", methods=["GET"])
+def get_available_reports():
+    """Get list of available report types"""
+    try:
+        available_reports = [
+            {
+                "id": "business-summary",
+                "name": "Business Summary Report",
+                "description": "Overview of all business metrics and statistics",
+                "type": "summary",
+                "format": ["pdf", "json"],
+                "parameters": []
+            },
+            {
+                "id": "project-report",
+                "name": "Project Report",
+                "description": "Detailed report for a specific project",
+                "type": "project",
+                "format": ["pdf"],
+                "parameters": [
+                    {
+                        "name": "project_id",
+                        "type": "integer",
+                        "required": True,
+                        "description": "Project ID to generate report for"
+                    }
+                ]
+            },
+            {
+                "id": "plant-usage",
+                "name": "Plant Usage Report",
+                "description": "Analysis of plant usage across all projects",
+                "type": "analytics",
+                "format": ["pdf", "json"],
+                "parameters": []
+            },
+            {
+                "id": "supplier-performance",
+                "name": "Supplier Performance Report",
+                "description": "Performance metrics for all suppliers",
+                "type": "analytics",
+                "format": ["pdf", "json"],
+                "parameters": []
+            }
+        ]
+        
+        return jsonify({
+            "reports": available_reports,
+            "total": len(available_reports)
+        }), 200
+        
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
 @reports_bp.route("/api/reports/business-summary", methods=["GET"])
 @login_required
 def generate_business_summary():

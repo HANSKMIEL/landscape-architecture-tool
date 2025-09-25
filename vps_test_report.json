@@ -1,0 +1,113 @@
+{
+  "vps_url": "http://72.60.176.200:8080",
+  "timestamp": "2025-09-25 09:26:33",
+  "summary": {
+    "total": 20,
+    "passed": 20,
+    "failed": 0,
+    "warnings": 0,
+    "success_rate": 100.0
+  },
+  "detailed_results": [
+    {
+      "test": "HTML Language",
+      "status": "PASS",
+      "details": "Language set to: en"
+    },
+    {
+      "test": "Page Title",
+      "status": "PASS",
+      "details": "Title: devdeploy - Landscape Architecture Tool (Development)"
+    },
+    {
+      "test": "Viewport Meta",
+      "status": "PASS",
+      "details": "Content: width=device-width, initial-scale=1.0"
+    },
+    {
+      "test": "Character Encoding",
+      "status": "PASS",
+      "details": "UTF-8"
+    },
+    {
+      "test": "Favicon",
+      "status": "PASS",
+      "details": "Type: image/x-icon"
+    },
+    {
+      "test": "API Health",
+      "status": "PASS",
+      "details": "Version: 2.0.0"
+    },
+    {
+      "test": "Database Connection",
+      "status": "PASS",
+      "details": "Database connected"
+    },
+    {
+      "test": "Authentication Login",
+      "status": "PASS",
+      "details": "User: admin"
+    },
+    {
+      "test": "Authenticated API Access",
+      "status": "PASS",
+      "details": "Dashboard stats accessible"
+    },
+    {
+      "test": "Suppliers GET",
+      "status": "PASS",
+      "details": "Retrieved 3 items"
+    },
+    {
+      "test": "Plants GET",
+      "status": "PASS",
+      "details": "Retrieved 3 items"
+    },
+    {
+      "test": "Products GET",
+      "status": "PASS",
+      "details": "Retrieved 4 items"
+    },
+    {
+      "test": "Clients GET",
+      "status": "PASS",
+      "details": "Retrieved 3 items"
+    },
+    {
+      "test": "Projects GET",
+      "status": "PASS",
+      "details": "Retrieved 3 items"
+    },
+    {
+      "test": "Excel Import Status",
+      "status": "PASS",
+      "details": "Formats: xls, xlsx, csv"
+    },
+    {
+      "test": "Dutch Localization",
+      "status": "PASS",
+      "details": "Statuses: ['Afgerond', 'In uitvoering', 'Planning']"
+    },
+    {
+      "test": "Input Validation",
+      "status": "PASS",
+      "details": "Invalid credentials properly rejected"
+    },
+    {
+      "test": "Performance /health",
+      "status": "PASS",
+      "details": "162ms"
+    },
+    {
+      "test": "Performance /api/dashboard/stats",
+      "status": "PASS",
+      "details": "162ms"
+    },
+    {
+      "test": "Performance /api/suppliers",
+      "status": "PASS",
+      "details": "163ms"
+    }
+  ]
+}
