@@ -224,8 +224,10 @@ jobs:
               echo "⚠️ Could not set www-data ownership (may require root)"
               echo "chown error output:"
               cat chown_error.log
+              rm -f chown_error.log
+          else
+              rm -f chown_error.log
           fi
-          rm -f chown_error.log
           # Find and restart services - try multiple possible service names
           echo "🔄 Restarting services..."
           for service in "landscape-backend-dev" "landscape-backend" "landscape-tool"; do
@@ -245,6 +247,9 @@ jobs:
               echo "⚠️ Could not reload nginx"
               echo "Error details:"
               cat reload_err.log
+              rm -f reload_err.log
+          else
+              rm -f reload_err.log
           fi
           
           echo "✅ V1.00D devdeploy deployment complete"
@@ -281,10 +286,13 @@ jobs:
           # Execute deployment on VPS using SSH key with enhanced error handling
           if [ -n "$VPS_SSH_KEY" ]; then
             echo "🔑 Connecting to VPS via SSH..."
-            ssh -i ~/.ssh/vps_key -o ConnectTimeout=30 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null $VPS_USER@$VPS_HOST "$(cat deploy_v1d_to_devdeploy.sh)" || {
+            # Define common SSH connection parameters
+            SSH_OPTS="-i ~/.ssh/vps_key -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
+            
+            ssh $SSH_OPTS -o ConnectTimeout=30 $VPS_USER@$VPS_HOST "$(cat deploy_v1d_to_devdeploy.sh)" || {
               echo "❌ SSH deployment failed with exit code $?"
               echo "🔍 Attempting basic connectivity test..."
-              ssh -i ~/.ssh/vps_key -o ConnectTimeout=10 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null $VPS_USER@$VPS_HOST "echo 'SSH connection successful'" || echo "❌ SSH connection failed"
+              ssh $SSH_OPTS -o ConnectTimeout=10 $VPS_USER@$VPS_HOST "echo 'SSH connection successful'" || echo "❌ SSH connection failed"
               exit 1
             }
           else
