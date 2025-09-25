@@ -130,7 +130,7 @@ def register():
         if existing_user:
             if existing_user.username == data["username"]:
                 return jsonify({"error": "Username already exists"}), 409
-            if existing_user.email == data["email"]:
+            elif existing_user.email == data["email"]:
                 return jsonify({"error": "Email already exists"}), 409
         
         # Create new user
