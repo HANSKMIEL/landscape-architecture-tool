@@ -8,11 +8,11 @@ import logging
 import os
 import subprocess
 import tempfile
-from typing import Dict, List, Optional, Tuple, Any
-from dataclasses import dataclass, asdict
-from pathlib import Path
 import xml.etree.ElementTree as ET
+from dataclasses import asdict, dataclass
 from datetime import datetime
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple
 
 logger = logging.getLogger(__name__)
 
@@ -105,7 +105,7 @@ class VectorworksDataExtractor:
             script_content = self._generate_extraction_script(vwx_file_path)
             script_path = os.path.join(self.sdk.temp_dir, "extract_data.vss")
             
-            with open(script_path, 'w', encoding='utf-8') as f:
+            with open(script_path, "w", encoding="utf-8") as f:
                 f.write(script_content)
             
             # Execute script via Vectorworks
@@ -233,7 +233,7 @@ class VectorworksDataExtractor:
             if result.returncode == 0:
                 output_file = os.path.join(self.sdk.temp_dir, self.OUTPUT_FILENAME)
                 if os.path.exists(output_file):
-                    with open(output_file, 'r') as f:
+                    with open(output_file, "r") as f:
                         return json.load(f)
             else:
                 logger.error(f"Vectorscript execution failed: {result.stderr}")
@@ -314,11 +314,11 @@ class VectorworksDataExporter:
             script_content = self._generate_plant_placement_script(plants)
             script_path = os.path.join(self.sdk.temp_dir, "place_plants.vss")
             
-            with open(script_path, 'w', encoding='utf-8') as f:
+            with open(script_path, "w", encoding="utf-8") as f:
                 f.write(script_content)
             
             # Also create CSV for manual import
-            csv_path = output_path.replace('.vwx', '_plants.csv')
+            csv_path = output_path.replace(".vwx", "_plants.csv")
             self._export_plants_csv(plants, csv_path)
             
             logger.info(f"Plant list exported to {csv_path}")
@@ -341,9 +341,9 @@ class VectorworksDataExporter:
         ]
         
         for i, plant in enumerate(plants):
-            x = plant.get('x_coordinate', 0)
-            y = plant.get('y_coordinate', 0)
-            symbol_name = plant.get('symbol_name', plant.get('name', 'Plant'))
+            x = plant.get("x_coordinate", 0)
+            y = plant.get("y_coordinate", 0)
+            symbol_name = plant.get("symbol_name", plant.get("name", "Plant"))
             
             script_lines.extend([
                 f"    {{ Place {plant.get('name', 'Plant')} }}",
@@ -370,29 +370,29 @@ class VectorworksDataExporter:
         """Export plants to CSV format for manual import"""
         import csv
         
-        with open(csv_path, 'w', newline='', encoding='utf-8') as csvfile:
+        with open(csv_path, "w", newline="", encoding="utf-8") as csvfile:
             fieldnames = [
-                'Name', 'Scientific_Name', 'Quantity', 'Size', 'Unit_Price',
-                'Total_Price', 'Supplier', 'X_Coordinate', 'Y_Coordinate',
-                'Layer', 'Class', 'Notes'
+                "Name", "Scientific_Name", "Quantity", "Size", "Unit_Price",
+                "Total_Price", "Supplier", "X_Coordinate", "Y_Coordinate",
+                "Layer", "Class", "Notes"
             ]
             writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
             
             writer.writeheader()
             for plant in plants:
                 writer.writerow({
-                    'Name': plant.get('name', ''),
-                    'Scientific_Name': plant.get('scientific_name', ''),
-                    'Quantity': plant.get('quantity', 1),
-                    'Size': plant.get('size', ''),
-                    'Unit_Price': plant.get('unit_price', 0),
-                    'Total_Price': plant.get('total_price', 0),
-                    'Supplier': plant.get('supplier', ''),
-                    'X_Coordinate': plant.get('x_coordinate', 0),
-                    'Y_Coordinate': plant.get('y_coordinate', 0),
-                    'Layer': plant.get('layer', 'Planting Plan'),
-                    'Class': plant.get('class_name', 'Plants'),
-                    'Notes': plant.get('notes', '')
+                    "Name": plant.get("name", ""),
+                    "Scientific_Name": plant.get("scientific_name", ""),
+                    "Quantity": plant.get("quantity", 1),
+                    "Size": plant.get("size", ""),
+                    "Unit_Price": plant.get("unit_price", 0),
+                    "Total_Price": plant.get("total_price", 0),
+                    "Supplier": plant.get("supplier", ""),
+                    "X_Coordinate": plant.get("x_coordinate", 0),
+                    "Y_Coordinate": plant.get("y_coordinate", 0),
+                    "Layer": plant.get("layer", "Planting Plan"),
+                    "Class": plant.get("class_name", "Plants"),
+                    "Notes": plant.get("notes", "")
                 })
 
 class VectorworksReportGenerator:
@@ -405,11 +405,11 @@ class VectorworksReportGenerator:
                               output_path: str, language: str = "nl") -> bool:
         """Generate professional plant schedule report"""
         try:
-            from reportlab.lib.pagesizes import A4
-            from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
-            from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
             from reportlab.lib import colors
+            from reportlab.lib.pagesizes import A4
+            from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
             from reportlab.lib.units import cm
+            from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
             
             doc = SimpleDocTemplate(output_path, pagesize=A4)
             story = []
@@ -417,8 +417,8 @@ class VectorworksReportGenerator:
             
             # Title
             title_style = ParagraphStyle(
-                'CustomTitle',
-                parent=styles['Heading1'],
+                "CustomTitle",
+                parent=styles["Heading1"],
                 fontSize=18,
                 spaceAfter=30,
                 alignment=1  # Center alignment
@@ -437,10 +437,10 @@ class VectorworksReportGenerator:
             
             project_table = Table(project_info, colWidths=[4*cm, 10*cm])
             project_table.setStyle(TableStyle([
-                ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-                ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
-                ('FONTSIZE', (0, 0), (-1, -1), 10),
-                ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+                ("ALIGN", (0, 0), (-1, -1), "LEFT"),
+                ("FONTNAME", (0, 0), (0, -1), "Helvetica-Bold"),
+                ("FONTSIZE", (0, 0), (-1, -1), 10),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
             ]))
             
             story.append(project_table)
@@ -456,39 +456,39 @@ class VectorworksReportGenerator:
             total_cost = 0
             
             for plant_obj in project.plant_objects:
-                plant_data = plant_obj.get('data', {})
-                quantity = int(plant_data.get('quantity', 1))
-                unit_price = float(plant_data.get('unit_price', 0))
+                plant_data = plant_obj.get("data", {})
+                quantity = int(plant_data.get("quantity", 1))
+                unit_price = float(plant_data.get("unit_price", 0))
                 total_price = quantity * unit_price
                 total_cost += total_price
                 
                 row = [
-                    plant_obj.get('name', ''),
-                    plant_data.get('scientific_name', ''),
+                    plant_obj.get("name", ""),
+                    plant_data.get("scientific_name", ""),
                     str(quantity),
-                    plant_data.get('size', ''),
+                    plant_data.get("size", ""),
                     f"€{unit_price:.2f}",
                     f"€{total_price:.2f}",
-                    plant_data.get('supplier', '')
+                    plant_data.get("supplier", "")
                 ]
                 data.append(row)
             
             # Add total row
             total_label = "Totaal:" if language == "nl" else "Total:"
-            data.append(['', '', '', '', '', f"€{total_cost:.2f}", total_label])
+            data.append(["", "", "", "", "", f"€{total_cost:.2f}", total_label])
             
             table = Table(data, colWidths=[3*cm, 4*cm, 1.5*cm, 2*cm, 2*cm, 2*cm, 3*cm])
             table.setStyle(TableStyle([
-                ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
-                ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-                ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-                ('FONTSIZE', (0, 0), (-1, 0), 10),
-                ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-                ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
-                ('GRID', (0, 0), (-1, -1), 1, colors.black),
-                ('FONTNAME', (0, -1), (-1, -1), 'Helvetica-Bold'),
-                ('BACKGROUND', (0, -1), (-1, -1), colors.lightgrey),
+                ("BACKGROUND", (0, 0), (-1, 0), colors.grey),
+                ("TEXTCOLOR", (0, 0), (-1, 0), colors.whitesmoke),
+                ("ALIGN", (0, 0), (-1, -1), "CENTER"),
+                ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+                ("FONTSIZE", (0, 0), (-1, 0), 10),
+                ("BOTTOMPADDING", (0, 0), (-1, 0), 12),
+                ("BACKGROUND", (0, 1), (-1, -1), colors.beige),
+                ("GRID", (0, 0), (-1, -1), 1, colors.black),
+                ("FONTNAME", (0, -1), (-1, -1), "Helvetica-Bold"),
+                ("BACKGROUND", (0, -1), (-1, -1), colors.lightgrey),
             ]))
             
             story.append(table)

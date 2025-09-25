@@ -7,11 +7,11 @@ Comprehensive tests for dashboard service layer business logic.
 from datetime import datetime, timedelta
 
 import pytest
-from tests.fixtures.auth_fixtures import authenticated_test_user, setup_test_authentication
 
 from src.models.landscape import Client, Plant, Project, ProjectPlant, Supplier
 from src.models.user import db
 from src.services.dashboard_service import DashboardService
+from tests.fixtures.auth_fixtures import authenticated_test_user, setup_test_authentication
 from tests.fixtures.database import DatabaseTestMixin
 
 

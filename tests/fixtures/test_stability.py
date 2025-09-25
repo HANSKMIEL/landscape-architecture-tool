@@ -12,8 +12,9 @@ from contextlib import contextmanager
 from typing import Any
 
 import pytest
-from tests.fixtures.auth_fixtures import authenticated_test_user, setup_test_authentication
 from sqlalchemy.exc import SQLAlchemyError
+
+from tests.fixtures.auth_fixtures import authenticated_test_user, setup_test_authentication
 
 logger = logging.getLogger(__name__)
 

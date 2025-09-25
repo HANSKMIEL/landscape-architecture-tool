@@ -3,14 +3,14 @@ Enhanced Client Presentation System
 Provides dynamic, editable presentations for landscape architecture projects.
 """
 
-import json
-import logging
-from typing import Dict, List, Optional, Any
-from dataclasses import dataclass, asdict
-from datetime import datetime
 import base64
 import io
+import json
+import logging
+from dataclasses import asdict, dataclass
+from datetime import datetime
 from pathlib import Path
+from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -81,9 +81,9 @@ class ClientPresentationGenerator:
         """Get contact information from configuration or environment variables"""
         import os
         return {
-            "phone": os.getenv('COMPANY_PHONE', "+31 (0)20 123 4567"),
-            "email": os.getenv('COMPANY_EMAIL', "info@landscapearchitect.nl"),
-            "website": os.getenv('COMPANY_WEBSITE', "www.landscapearchitect.nl")
+            "phone": os.getenv("COMPANY_PHONE", "+31 (0)20 123 4567"),
+            "email": os.getenv("COMPANY_EMAIL", "info@landscapearchitect.nl"),
+            "website": os.getenv("COMPANY_WEBSITE", "www.landscapearchitect.nl")
         }
     
     def _load_presentation_templates(self) -> Dict[str, Dict]:
@@ -770,9 +770,9 @@ class ClientPresentationGenerator:
                 ],
                 "contact_info": {
                     "company": config.company_name,
-                    "phone": getattr(config, 'contact_phone', self.DEFAULT_CONTACT_INFO["phone"]),
-                    "email": getattr(config, 'contact_email', self.DEFAULT_CONTACT_INFO["email"]),
-                    "website": getattr(config, 'contact_website', self.DEFAULT_CONTACT_INFO["website"])
+                    "phone": getattr(config, "contact_phone", self.DEFAULT_CONTACT_INFO["phone"]),
+                    "email": getattr(config, "contact_email", self.DEFAULT_CONTACT_INFO["email"]),
+                    "website": getattr(config, "contact_website", self.DEFAULT_CONTACT_INFO["website"])
                 },
                 "call_to_action": "Laten we uw droomtuin realiseren!" if config.language == "nl" 
                                 else "Let's create your dream garden!"

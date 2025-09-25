@@ -8,12 +8,12 @@ CRUD operations, cost calculations, and business logic validation.
 import json
 
 import pytest
-from tests.fixtures.auth_fixtures import authenticated_test_user, setup_test_authentication
 
 from src.main import create_app
 from src.models.landscape import Client, Plant, Project, Supplier
 from src.models.user import db
 from src.services.project_plant import ProjectPlantService
+from tests.fixtures.auth_fixtures import authenticated_test_user, setup_test_authentication
 
 
 @pytest.fixture

@@ -3,17 +3,18 @@ Enhanced User model with comprehensive user management features
 """
 import secrets
 from datetime import datetime, timedelta
-from werkzeug.security import generate_password_hash, check_password_hash
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, Text
-from sqlalchemy.ext.declarative import declarative_base
+
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import Boolean, Column, DateTime, Integer, String, Text
+from sqlalchemy.ext.declarative import declarative_base
+from werkzeug.security import check_password_hash, generate_password_hash
 
 db = SQLAlchemy()
 Base = declarative_base()
 
 class User(db.Model):
     """Enhanced User model with role-based access control and password reset"""
-    __tablename__ = 'users'
+    __tablename__ = "users"
     
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False, index=True)
@@ -21,7 +22,7 @@ class User(db.Model):
     password_hash = db.Column(db.String(255), nullable=False)
     
     # Role-based access control
-    role = db.Column(db.String(20), nullable=False, default='user')  # client, user, admin, sysadmin, developer
+    role = db.Column(db.String(20), nullable=False, default="user")  # client, user, admin, sysadmin, developer
     
     # Profile information
     first_name = db.Column(db.String(50))
@@ -111,11 +112,11 @@ class User(db.Model):
     def has_permission(self, required_role):
         """Check if user has required permission level"""
         role_hierarchy = {
-            'client': 1,
-            'user': 2,
-            'admin': 3,
-            'sysadmin': 4,
-            'developer': 5
+            "client": 1,
+            "user": 2,
+            "admin": 3,
+            "sysadmin": 4,
+            "developer": 5
         }
         
         user_level = role_hierarchy.get(self.role, 0)
@@ -125,7 +126,7 @@ class User(db.Model):
     
     def can_manage_data(self):
         """Check if user can manage data (user level and above)"""
-        return self.has_permission('user')
+        return self.has_permission("user")
     
     @property
     def full_name(self):
@@ -141,41 +142,41 @@ class User(db.Model):
     def to_dict(self, include_sensitive=False):
         """Convert user to dictionary"""
         data = {
-            'id': self.id,
-            'username': self.username,
-            'email': self.email,
-            'role': self.role,
-            'first_name': self.first_name,
-            'last_name': self.last_name,
-            'full_name': self.full_name,
-            'phone': self.phone,
-            'company': self.company,
-            'notes': self.notes,
-            'is_active': self.is_active,
-            'created_at': self.created_at.isoformat() if self.created_at else None,
-            'updated_at': self.updated_at.isoformat() if self.updated_at else None,
-            'last_login': self.last_login.isoformat() if self.last_login else None
+            "id": self.id,
+            "username": self.username,
+            "email": self.email,
+            "role": self.role,
+            "first_name": self.first_name,
+            "last_name": self.last_name,
+            "full_name": self.full_name,
+            "phone": self.phone,
+            "company": self.company,
+            "notes": self.notes,
+            "is_active": self.is_active,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
+            "last_login": self.last_login.isoformat() if self.last_login else None
         }
         
         if include_sensitive:
             data.update({
-                'failed_login_attempts': self.failed_login_attempts,
-                'is_locked': self.is_account_locked(),
-                'locked_until': self.locked_until.isoformat() if self.locked_until else None
+                "failed_login_attempts": self.failed_login_attempts,
+                "is_locked": self.is_account_locked(),
+                "locked_until": self.locked_until.isoformat() if self.locked_until else None
             })
         
         return data
     
     def __repr__(self):
-        return f'<User {self.username}>'
+        return f"<User {self.username}>"
 
 
 class UserSession(db.Model):
     """User session tracking"""
-    __tablename__ = 'user_sessions'
+    __tablename__ = "user_sessions"
     
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
     session_token = db.Column(db.String(100), unique=True, nullable=False)
     ip_address = db.Column(db.String(45))
     user_agent = db.Column(db.Text)
@@ -184,7 +185,7 @@ class UserSession(db.Model):
     is_active = db.Column(db.Boolean, default=True)
     
     # Relationship
-    user = db.relationship('User', backref=db.backref('sessions', lazy=True))
+    user = db.relationship("User", backref=db.backref("sessions", lazy=True))
     
     def __init__(self, user_id, ip_address=None, user_agent=None):
         self.user_id = user_id
@@ -204,13 +205,13 @@ class UserSession(db.Model):
     def to_dict(self):
         """Convert session to dictionary"""
         return {
-            'id': self.id,
-            'user_id': self.user_id,
-            'session_token': self.session_token,
-            'ip_address': self.ip_address,
-            'user_agent': self.user_agent,
-            'created_at': self.created_at.isoformat() if self.created_at else None,
-            'expires_at': self.expires_at.isoformat() if self.expires_at else None,
-            'is_active': self.is_active,
-            'is_expired': self.is_expired()
+            "id": self.id,
+            "user_id": self.user_id,
+            "session_token": self.session_token,
+            "ip_address": self.ip_address,
+            "user_agent": self.user_agent,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "expires_at": self.expires_at.isoformat() if self.expires_at else None,
+            "is_active": self.is_active,
+            "is_expired": self.is_expired()
         }

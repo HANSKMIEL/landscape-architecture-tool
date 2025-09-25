@@ -4,11 +4,11 @@ Factory patterns for creating test data
 
 import factory
 import pytest
-from tests.fixtures.auth_fixtures import authenticated_test_user, setup_test_authentication
 from faker import Faker
 
 from src.models.landscape import Client, Plant, Product, Project, ProjectPlant, Supplier
 from src.models.user import User, db
+from tests.fixtures.auth_fixtures import authenticated_test_user, setup_test_authentication
 
 fake = Faker()
 
