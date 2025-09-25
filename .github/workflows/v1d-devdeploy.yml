@@ -224,10 +224,8 @@ jobs:
               echo "⚠️ Could not set www-data ownership (may require root)"
               echo "chown error output:"
               cat chown_error.log
-              rm -f chown_error.log
-          else
-              rm -f chown_error.log
           fi
+          rm -f chown_error.log
           # Find and restart services - try multiple possible service names
           echo "🔄 Restarting services..."
           for service in "landscape-backend-dev" "landscape-backend" "landscape-tool"; do
