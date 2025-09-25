@@ -238,6 +238,7 @@
   },
   "settings": {
     "title": "Instellingen",
+    "sectionAvailableSoon": "Deze sectie wordt binnenkort beschikbaar.",
     "tabs": {
       "general": "Algemeen",
       "dataManagement": "Gegevensbeheer",
@@ -394,6 +395,7 @@
     "edit": "Bewerken",
     "add": "Toevoegen",
     "unknown": "Onbekend",
+    "comingSoon": "Binnenkort Beschikbaar",
     "tryAgain": "Probeer Opnieuw",
     "refresh": "Vernieuwen",
     "total": "totaal",

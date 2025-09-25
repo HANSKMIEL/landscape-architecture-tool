@@ -28,7 +28,7 @@
     },
     {
       "category": "API Connection",
-      "issue": "Error testing Photo Management: HTTPSConnectionPool(host='dev.optura.nl', port=443): Max retries exceeded with url: /api/photos/ (Caused by NameResolutionError(\"<urllib3.connection.HTTPSConnection object at 0x7fc0424c4860>: Failed to resolve 'dev.optura.nl' ([Errno -5] No address associated with hostname)\"))",
+      "issue": "Error testing Photo Management: HTTPSConnectionPool(host='dev.optura.nl', port=443): Max retries exceeded with url: /api/photos/ (Caused by NameResolutionError(\"<urllib3.connection.HTTPSConnection object at 0x7fb2ec601f70>: Failed to resolve 'dev.optura.nl' ([Errno -2] Name or service not known)\"))",
       "severity": "HIGH",
       "url": "http://72.60.176.200:8080"
     },

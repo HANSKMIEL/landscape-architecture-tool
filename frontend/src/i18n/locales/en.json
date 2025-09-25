@@ -238,6 +238,7 @@
   },
   "settings": {
     "title": "Settings",
+    "sectionAvailableSoon": "This section will be available soon.",
     "tabs": {
       "general": "General",
       "dataManagement": "Data Management",
@@ -406,6 +407,7 @@
     "close": "Close",
     "profile": "Profile",
     "unknown": "Unknown",
+    "comingSoon": "Coming Soon",
     "tryAgain": "Try Again",
     "refresh": "Refresh",
     "total": "total",
