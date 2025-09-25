@@ -5,11 +5,11 @@ Comprehensive tests for plant service layer business logic.
 """
 
 import pytest
-from tests.fixtures.auth_fixtures import authenticated_test_user, setup_test_authentication
 
 from src.models.landscape import Plant
 from src.models.user import db
 from src.services.plant_service import PlantService
+from tests.fixtures.auth_fixtures import authenticated_test_user, setup_test_authentication
 from tests.fixtures.database import DatabaseTestMixin
 
 

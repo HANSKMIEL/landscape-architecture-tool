@@ -7,7 +7,6 @@ Comprehensive tests for analytics service layer business logic.
 from datetime import UTC, datetime, timedelta
 
 import pytest
-from tests.fixtures.auth_fixtures import authenticated_test_user, setup_test_authentication
 
 from src.models.landscape import (
     PlantRecommendationRequest,
@@ -15,6 +14,7 @@ from src.models.landscape import (
 )
 from src.models.user import db
 from src.services.analytics import AnalyticsService
+from tests.fixtures.auth_fixtures import authenticated_test_user, setup_test_authentication
 from tests.fixtures.database import DatabaseTestMixin
 
 

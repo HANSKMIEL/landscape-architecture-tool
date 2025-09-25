@@ -1,14 +1,15 @@
 """
 Email service for password reset and user notifications
 """
-import smtplib
 import logging
-from email.mime.text import MimeText
-from email.mime.multipart import MimeMultipart
-from email.mime.base import MimeBase
-from email import encoders
-from typing import List, Optional
 import os
+import smtplib
+from email import encoders
+from email.mime.base import MimeBase
+from email.mime.multipart import MimeMultipart
+from email.mime.text import MimeText
+from typing import List, Optional
+
 from flask import current_app, render_template_string
 
 logger = logging.getLogger(__name__)
@@ -17,29 +18,29 @@ class EmailService:
     """Email service for sending notifications"""
     
     def __init__(self):
-        self.smtp_server = os.getenv('SMTP_SERVER', 'localhost')
-        self.smtp_port = int(os.getenv('SMTP_PORT', '587'))
-        self.smtp_username = os.getenv('SMTP_USERNAME', '')
-        self.smtp_password = os.getenv('SMTP_PASSWORD', '')
-        self.smtp_use_tls = os.getenv('SMTP_USE_TLS', 'true').lower() == 'true'
-        self.from_email = os.getenv('FROM_EMAIL', 'noreply@optura.nl')
-        self.from_name = os.getenv('FROM_NAME', 'Landscape Architecture Tool')
+        self.smtp_server = os.getenv("SMTP_SERVER", "localhost")
+        self.smtp_port = int(os.getenv("SMTP_PORT", "587"))
+        self.smtp_username = os.getenv("SMTP_USERNAME", "")
+        self.smtp_password = os.getenv("SMTP_PASSWORD", "")
+        self.smtp_use_tls = os.getenv("SMTP_USE_TLS", "true").lower() == "true"
+        self.from_email = os.getenv("FROM_EMAIL", "noreply@optura.nl")
+        self.from_name = os.getenv("FROM_NAME", "Landscape Architecture Tool")
     
-    def send_email(self, to_email: str, subject: str, html_body: str, text_body: str = None, attachments: List = None):
+    def send_email(self, to_email: str, subject: str, html_body: str, text_body: Optional[str] = None, attachments: Optional[list] = None):
         """Send email with HTML and optional text body"""
         try:
-            msg = MimeMultipart('alternative')
-            msg['Subject'] = subject
-            msg['From'] = f"{self.from_name} <{self.from_email}>"
-            msg['To'] = to_email
+            msg = MimeMultipart("alternative")
+            msg["Subject"] = subject
+            msg["From"] = f"{self.from_name} <{self.from_email}>"
+            msg["To"] = to_email
             
             # Add text part if provided
             if text_body:
-                text_part = MimeText(text_body, 'plain')
+                text_part = MimeText(text_body, "plain")
                 msg.attach(text_part)
             
             # Add HTML part
-            html_part = MimeText(html_body, 'html')
+            html_part = MimeText(html_body, "html")
             msg.attach(html_part)
             
             # Add attachments if provided
@@ -73,13 +74,13 @@ class EmailService:
         """Add attachment to email"""
         try:
             with open(attachment_path, "rb") as attachment:
-                part = MimeBase('application', 'octet-stream')
+                part = MimeBase("application", "octet-stream")
                 part.set_payload(attachment.read())
             
             encoders.encode_base64(part)
             part.add_header(
-                'Content-Disposition',
-                f'attachment; filename= {os.path.basename(attachment_path)}'
+                "Content-Disposition",
+                f"attachment; filename= {os.path.basename(attachment_path)}"
             )
             msg.attach(part)
             
@@ -167,7 +168,7 @@ class EmailService:
         
         return self.send_email(user_email, subject, html_body, text_body)
     
-    def send_welcome_email(self, user_email: str, user_name: str, username: str, temporary_password: str = None):
+    def send_welcome_email(self, user_email: str, user_name: str, username: str, temporary_password: Optional[str] = None):
         """Send welcome email to new user"""
         login_url = f"{current_app.config.get('FRONTEND_URL', 'https://optura.nl')}/login"
         
@@ -267,7 +268,7 @@ class EmailService:
         
         return self.send_email(user_email, subject, html_body, text_body)
     
-    def send_bulk_import_report(self, admin_email: str, admin_name: str, created_users: List[str], errors: List[str]):
+    def send_bulk_import_report(self, admin_email: str, admin_name: str, created_users: list[str], errors: list[str]):
         """Send bulk import report to admin"""
         subject = f"Bulk User Import Report - {len(created_users)} users created"
         

@@ -5,9 +5,9 @@ Tests for database initialization utilities
 from unittest.mock import Mock, patch
 
 import pytest
-from tests.fixtures.auth_fixtures import authenticated_test_user, setup_test_authentication
 
 from src.utils.db_init import initialize_database, populate_sample_data
+from tests.fixtures.auth_fixtures import authenticated_test_user, setup_test_authentication
 
 
 class TestInitializeDatabase:

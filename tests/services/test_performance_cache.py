@@ -6,6 +6,7 @@ Ensures that 'from src.services.performance import cache' works correctly.
 import importlib
 
 import pytest
+
 from tests.fixtures.auth_fixtures import authenticated_test_user, setup_test_authentication
 
 

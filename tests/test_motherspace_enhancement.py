@@ -6,8 +6,9 @@ import os
 from pathlib import Path
 
 import pytest
-from tests.fixtures.auth_fixtures import authenticated_test_user, setup_test_authentication
 import yaml
+
+from tests.fixtures.auth_fixtures import authenticated_test_user, setup_test_authentication
 
 
 def test_motherspace_workflow_syntax():
