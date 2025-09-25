@@ -38,9 +38,9 @@ class FeatureFlags:
         env_var = os.getenv("FLASK_ENV", "").lower()
         if env_var in ["development", "dev"]:
             return Environment.DEVELOPMENT
-        elif env_var in ["production", "prod"]:
+        if env_var in ["production", "prod"]:
             return Environment.PRODUCTION
-        elif env_var in ["staging", "stage"]:
+        if env_var in ["staging", "stage"]:
             return Environment.STAGING
         
         # Check for devdeploy indicators
