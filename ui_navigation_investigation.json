@@ -1,0 +1,39 @@
+{
+  "timestamp": "2025-09-25T11:18:06.457851",
+  "investigation_type": "UI Navigation Analysis",
+  "url_tested": "http://localhost:5174",
+  "findings": {
+    "login_page": "Found login form",
+    "demo_credentials": "Found 2 demo credential element(s)",
+    "username_field": "Successfully entered admin username",
+    "password_field": "Successfully entered password",
+    "login_attempt": "Login attempt completed",
+    "dashboard_access": "Dashboard detected via: //h1[contains(text(), 'Dashboard')]",
+    "plants_navigation": "Found Plants navigation: //*[@href='/plants' or @href='#/plants']",
+    "page_structure": {
+      "forms": 0,
+      "buttons": 7,
+      "inputs": 0,
+      "navigation_links": 14,
+      "modals": 0
+    }
+  },
+  "navigation_issues": [
+    "Plants navigation failed: Message: element not interactable\n  (Session info: chrome=140.0.7339.185); For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#elementnotinteractableexception\nStacktrace:\n#0 0x563a7b2e2cba <unknown>\n#1 0x563a7ad57733 <unknown>\n#2 0x563a7adaa78e <unknown>\n#3 0x563a7ad9d7cb <unknown>\n#4 0x563a7adcf072 <unknown>\n#5 0x563a7ad9d147 <unknown>\n#6 0x563a7adcf23e <unknown>\n#7 0x563a7adf4c63 <unknown>\n#8 0x563a7adcee43 <unknown>\n#9 0x563a7ad9b9a8 <unknown>\n#10 0x563a7ad9c621 <unknown>\n#11 0x563a7b2a68b8 <unknown>\n#12 0x563a7b2aa5e2 <unknown>\n#13 0x563a7b28d683 <unknown>\n#14 0x563a7b2ab135 <unknown>\n#15 0x563a7b27280f <unknown>\n#16 0x563a7b2cf4c8 <unknown>\n#17 0x563a7b2cf6a2 <unknown>\n#18 0x563a7b2e1dc3 <unknown>\n#19 0x7fcd9189caa4 <unknown>\n#20 0x7fcd91929c6c <unknown>\n",
+    "Add Plant button not found with any selector",
+    "Input field testing failed: Message: invalid selector: Unable to locate an element with the xpath expression //input[@placeholder*='Scientific'] because of the following error:\nSyntaxError: Failed to execute 'evaluate' on 'Document': The string '//input[@placeholder*='Scientific']' is not a valid XPath expression.\n  (Session info: chrome=140.0.7339.185); For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#invalidselectorexception\nStacktrace:\n#0 0x563a7b2e2cba <unknown>\n#1 0x563a7ad578e0 <unknown>\n#2 0x563a7ad5e518 <unknown>\n#3 0x563a7ad60db8 <unknown>\n#4 0x563a7ad60e43 <unknown>\n#5 0x563a7ada8fb5 <unknown>\n#6 0x563a7ada9771 <unknown>\n#7 0x563a7adf7864 <unknown>\n#8 0x563a7adcf09d <unknown>\n#9 0x563a7adf4c63 <unknown>\n#10 0x563a7adcee43 <unknown>\n#11 0x563a7ad9b9a8 <unknown>\n#12 0x563a7ad9c621 <unknown>\n#13 0x563a7b2a68b8 <unknown>\n#14 0x563a7b2aa5e2 <unknown>\n#15 0x563a7b28d683 <unknown>\n#16 0x563a7b2ab135 <unknown>\n#17 0x563a7b27280f <unknown>\n#18 0x563a7b2cf4c8 <unknown>\n#19 0x563a7b2cf6a2 <unknown>\n#20 0x563a7b2e1dc3 <unknown>\n#21 0x7fcd9189caa4 <unknown>\n#22 0x7fcd91929c6c <unknown>\n"
+  ],
+  "solutions": [
+    "Implement keyboard navigation shortcuts for accessibility",
+    "Add data-testid attributes for reliable element selection",
+    "Ensure modal focus management follows ARIA guidelines",
+    "Add loading states during navigation transitions",
+    "Implement proper focus trap for modal dialogs",
+    "Add visual indicators for interactive elements",
+    "Use semantic HTML elements for better navigation",
+    "Implement proper error boundaries for failed navigation",
+    "Add retry mechanisms for failed UI interactions",
+    "Create fallback navigation methods"
+  ],
+  "test_results": {}
+}
