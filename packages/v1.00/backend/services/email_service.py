@@ -26,7 +26,7 @@ class EmailService:
         self.from_email = os.getenv("FROM_EMAIL", "noreply@optura.nl")
         self.from_name = os.getenv("FROM_NAME", "Landscape Architecture Tool")
     
-    def send_email(self, to_email: str, subject: str, html_body: str, text_body: str = None, attachments: List = None):
+    def send_email(self, to_email: str, subject: str, html_body: str, text_body: Optional[str] = None, attachments: Optional[list] = None):
         """Send email with HTML and optional text body"""
         try:
             msg = MimeMultipart("alternative")
@@ -168,7 +168,7 @@ class EmailService:
         
         return self.send_email(user_email, subject, html_body, text_body)
     
-    def send_welcome_email(self, user_email: str, user_name: str, username: str, temporary_password: str = None):
+    def send_welcome_email(self, user_email: str, user_name: str, username: str, temporary_password: Optional[str] = None):
         """Send welcome email to new user"""
         login_url = f"{current_app.config.get('FRONTEND_URL', 'https://optura.nl')}/login"
         
@@ -268,7 +268,7 @@ class EmailService:
         
         return self.send_email(user_email, subject, html_body, text_body)
     
-    def send_bulk_import_report(self, admin_email: str, admin_name: str, created_users: List[str], errors: List[str]):
+    def send_bulk_import_report(self, admin_email: str, admin_name: str, created_users: list[str], errors: list[str]):
         """Send bulk import report to admin"""
         subject = f"Bulk User Import Report - {len(created_users)} users created"
         

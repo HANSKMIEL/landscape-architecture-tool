@@ -24,7 +24,6 @@ def ai_chat():
         data = request.get_json()
         user_message = data.get("message", "")
         language = data.get("language", "en")
-        context = data.get("context", "landscape_architecture")
         
         if not user_message.strip():
             return jsonify({"error": "Message is required"}), 400

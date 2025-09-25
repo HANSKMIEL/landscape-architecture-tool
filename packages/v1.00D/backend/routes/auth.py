@@ -52,7 +52,7 @@ class UserUpdateSchema(BaseModel):
     is_active: Optional[bool] = None
 
 class BulkUserSchema(BaseModel):
-    users: List[UserCreateSchema]
+    users: list[UserCreateSchema]
 
 class ChangePasswordSchema(BaseModel):
     current_password: str
@@ -240,10 +240,9 @@ def forgot_password():
                     "message": "Password reset token generated",
                     "reset_token": reset_token  # Only for testing
                 }), 200
-            else:
-                return jsonify({
-                    "message": "If the email exists, a password reset link has been sent"
-                }), 200
+            return jsonify({
+                "message": "If the email exists, a password reset link has been sent"
+            }), 200
         
         # Always return success to prevent email enumeration
         return jsonify({

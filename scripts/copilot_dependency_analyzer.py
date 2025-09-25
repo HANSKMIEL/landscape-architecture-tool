@@ -37,7 +37,7 @@ class CopilotDependencyAnalyzer:
         self.analysis_results = {}
         self.test_results = {}
         
-    def analyze_dependency_update(self, pr_number: int) -> Dict:
+    def analyze_dependency_update(self, pr_number: int) -> dict:
         """
         Comprehensive analysis of a dependency update PR
         """
@@ -74,7 +74,7 @@ class CopilotDependencyAnalyzer:
         
         return analysis
     
-    def _extract_dependency_info(self, pr_number: int) -> Dict:
+    def _extract_dependency_info(self, pr_number: int) -> dict:
         """Extract dependency information from PR"""
         logger.info("Extracting dependency information")
         
@@ -117,7 +117,7 @@ class CopilotDependencyAnalyzer:
             logger.error(f"Error extracting dependency info: {e}")
             return {'error': str(e)}
     
-    def _assess_impact(self, dependency_info: Dict) -> Dict:
+    def _assess_impact(self, dependency_info: dict) -> dict:
         """Assess the impact of the dependency update"""
         logger.info("Assessing dependency impact")
         
@@ -155,7 +155,7 @@ class CopilotDependencyAnalyzer:
             'potential_affected_areas': self._identify_affected_areas(package_name)
         }
     
-    def _analyze_breaking_changes(self, dependency_info: Dict) -> Dict:
+    def _analyze_breaking_changes(self, dependency_info: dict) -> dict:
         """Analyze potential breaking changes"""
         logger.info("Analyzing breaking changes")
         
@@ -185,7 +185,7 @@ class CopilotDependencyAnalyzer:
             'risk_level': 'high' if potential_breaks else 'medium' if dependency_info.get('update_type') == 'major' else 'low'
         }
     
-    def _assess_security_implications(self, dependency_info: Dict) -> Dict:
+    def _assess_security_implications(self, dependency_info: dict) -> dict:
         """Assess security implications of the update"""
         logger.info("Assessing security implications")
         
@@ -201,7 +201,7 @@ class CopilotDependencyAnalyzer:
             'security_impact': 'positive' if security_check.get('fixes_vulnerabilities') else 'neutral'
         }
     
-    def _develop_testing_strategy(self, dependency_info: Dict) -> Dict:
+    def _develop_testing_strategy(self, dependency_info: dict) -> dict:
         """Develop comprehensive testing strategy"""
         logger.info("Developing testing strategy")
         
@@ -228,7 +228,7 @@ class CopilotDependencyAnalyzer:
             'rollback_plan': self._create_rollback_plan()
         }
     
-    def run_comprehensive_tests(self) -> Dict:
+    def run_comprehensive_tests(self) -> dict:
         """Run comprehensive test suite"""
         logger.info("Running comprehensive test suite")
         
@@ -304,7 +304,7 @@ class CopilotDependencyAnalyzer:
         
         return results
     
-    def create_implementation_plan(self, analysis: Dict) -> Dict:
+    def create_implementation_plan(self, analysis: dict) -> dict:
         """Create detailed implementation plan"""
         logger.info("Creating implementation plan")
         
@@ -437,17 +437,17 @@ class CopilotDependencyAnalyzer:
         except subprocess.TimeoutExpired:
             raise subprocess.CalledProcessError(1, command, "", f"Command timed out after {timeout} seconds")
     
-    def _determine_ecosystem(self, files: List[Dict]) -> str:
+    def _determine_ecosystem(self, files: list[dict]) -> str:
         """Determine package ecosystem from changed files"""
         for file_info in files:
             path = file_info.get('path', '')
             if 'requirements' in path or path.endswith('.txt'):
                 return 'python'
-            elif 'package.json' in path or path.endswith('.json'):
+            if 'package.json' in path or path.endswith('.json'):
                 return 'javascript'
-            elif 'Dockerfile' in path:
+            if 'Dockerfile' in path:
                 return 'docker'
-            elif '.github/workflows' in path:
+            if '.github/workflows' in path:
                 return 'github-actions'
         return 'unknown'
     
@@ -459,14 +459,13 @@ class CopilotDependencyAnalyzer:
             
             if from_parts[0] != to_parts[0]:
                 return 'major'
-            elif from_parts[1] != to_parts[1]:
+            if from_parts[1] != to_parts[1]:
                 return 'minor'
-            else:
-                return 'patch'
+            return 'patch'
         except (ValueError, IndexError):
             return 'unknown'
     
-    def _analyze_package_usage(self, package_name: str) -> Dict:
+    def _analyze_package_usage(self, package_name: str) -> dict:
         """Analyze how the package is used in the codebase"""
         usage_count = 0
         files_using = []
@@ -498,7 +497,7 @@ class CopilotDependencyAnalyzer:
             'files_using_package': files_using[:10]  # Limit to first 10
         }
     
-    def _save_analysis_report(self, analysis: Dict):
+    def _save_analysis_report(self, analysis: dict):
         """Save analysis report to file"""
         report_dir = self.repo_path / 'reports' / 'dependency_analysis'
         report_dir.mkdir(parents=True, exist_ok=True)
@@ -511,7 +510,7 @@ class CopilotDependencyAnalyzer:
         
         logger.info(f"Analysis report saved to {report_file}")
     
-    def _generate_next_steps(self, analysis: Dict, tests: Dict) -> str:
+    def _generate_next_steps(self, analysis: dict, tests: dict) -> str:
         """Generate next steps based on current status"""
         if not analysis:
             return "- Complete dependency analysis\n- Run comprehensive tests\n- Create implementation plan"
@@ -525,17 +524,16 @@ class CopilotDependencyAnalyzer:
         
         return "- Review successful test results\n- Proceed with PR approval\n- Monitor post-merge health"
     
-    def _generate_risk_summary(self, analysis: Dict) -> str:
+    def _generate_risk_summary(self, analysis: dict) -> str:
         """Generate risk summary"""
         impact = analysis.get('impact_assessment', {}).get('impact_level', 'unknown')
         breaking = analysis.get('breaking_changes', {}).get('risk_level', 'unknown')
         
         if impact == 'critical' or breaking == 'high':
             return "- HIGH RISK: Extensive testing and validation required\n- Consider staging deployment first\n- Have rollback plan ready"
-        elif impact == 'high' or breaking == 'medium':
+        if impact == 'high' or breaking == 'medium':
             return "- MEDIUM RISK: Standard testing protocols apply\n- Monitor application health after merge"
-        else:
-            return "- LOW RISK: Standard dependency update\n- Routine testing sufficient"
+        return "- LOW RISK: Standard dependency update\n- Routine testing sufficient"
     
     # Additional placeholder methods for full functionality
     def _extract_package_name(self, title: str) -> str:
@@ -547,7 +545,7 @@ class CopilotDependencyAnalyzer:
                 return words[i + 1]
         return 'unknown'
     
-    def _identify_affected_areas(self, package_name: str) -> List[str]:
+    def _identify_affected_areas(self, package_name: str) -> list[str]:
         """Identify areas of code potentially affected by the update"""
         return ["To be implemented"]
     
@@ -555,11 +553,11 @@ class CopilotDependencyAnalyzer:
         """Fetch changelog for the package update"""
         return None  # To be implemented
     
-    def _check_security_advisories(self, package_name: str) -> Dict:
+    def _check_security_advisories(self, package_name: str) -> dict:
         """Check for security advisories"""
         return {"fixes_vulnerabilities": False}  # To be implemented
     
-    def _check_vulnerabilities(self) -> Dict:
+    def _check_vulnerabilities(self) -> dict:
         """Check for known vulnerabilities"""
         return {"vulnerabilities_found": False}  # To be implemented
     
@@ -573,18 +571,18 @@ class CopilotDependencyAnalyzer:
         }
         return times.get(impact_level, '1 hour')
     
-    def _create_rollback_plan(self) -> Dict:
+    def _create_rollback_plan(self) -> dict:
         """Create rollback plan"""
         return {
             "steps": ["git checkout previous_version", "redeploy", "verify_functionality"],
             "estimated_time": "15 minutes"
         }
     
-    def _calculate_total_time(self, phases: List[Dict]) -> str:
+    def _calculate_total_time(self, phases: list[dict]) -> str:
         """Calculate total estimated time"""
         return "2-6 hours depending on complexity"
     
-    def _define_success_criteria(self, analysis: Dict) -> List[str]:
+    def _define_success_criteria(self, analysis: dict) -> list[str]:
         """Define success criteria"""
         return [
             "All tests pass",

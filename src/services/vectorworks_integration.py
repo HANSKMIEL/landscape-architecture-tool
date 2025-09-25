@@ -22,10 +22,10 @@ class VectorworksProject:
     file_path: str
     project_name: str
     last_modified: datetime
-    layers: List[str]
-    classes: List[str]
-    plant_objects: List[Dict]
-    material_objects: List[Dict]
+    layers: list[str]
+    classes: list[str]
+    plant_objects: list[dict]
+    material_objects: list[dict]
 
 @dataclass
 class PlantObject:
@@ -39,7 +39,7 @@ class PlantObject:
     layer: str
     class_name: str
     symbol_name: str
-    custom_data: Dict[str, Any]
+    custom_data: dict[str, Any]
 
 @dataclass
 class MaterialSpecification:
@@ -51,12 +51,12 @@ class MaterialSpecification:
     quantity: float
     unit_price: float
     supplier: str
-    specifications: Dict[str, str]
+    specifications: dict[str, str]
 
 class VectorworksSDKInterface:
     """Interface for Vectorworks SDK operations"""
     
-    def __init__(self, vectorworks_path: str = None):
+    def __init__(self, vectorworks_path: Optional[str] = None):
         self.vectorworks_path = vectorworks_path or self._find_vectorworks_installation()
         self.sdk_path = self._find_sdk_path()
         self.temp_dir = tempfile.mkdtemp(prefix="vw_integration_")
@@ -213,7 +213,7 @@ class VectorworksDataExtractor:
         
         return script_template.format(output_path=output_path)
     
-    def _execute_vectorscript(self, script_path: str, vwx_file_path: str) -> Optional[Dict]:
+    def _execute_vectorscript(self, script_path: str, vwx_file_path: str) -> Optional[dict]:
         """Execute Vectorscript and return results"""
         if not self.sdk.is_available():
             logger.warning("Vectorworks SDK not available, using mock data")
@@ -245,7 +245,7 @@ class VectorworksDataExtractor:
         
         return None
     
-    def _generate_mock_data(self) -> Dict:
+    def _generate_mock_data(self) -> dict:
         """Generate mock data for testing when Vectorworks is not available"""
         return {
             "layers": ["Site Plan", "Planting Plan", "Hardscape", "Utilities"],
@@ -280,7 +280,7 @@ class VectorworksDataExtractor:
             ]
         }
     
-    def _parse_extraction_result(self, result: Dict) -> VectorworksProject:
+    def _parse_extraction_result(self, result: dict) -> VectorworksProject:
         """Parse extraction result into VectorworksProject"""
         plant_objects = []
         material_objects = []
@@ -307,7 +307,7 @@ class VectorworksDataExporter:
     def __init__(self, sdk_interface: VectorworksSDKInterface):
         self.sdk = sdk_interface
     
-    def export_plant_list(self, plants: List[Dict], output_path: str) -> bool:
+    def export_plant_list(self, plants: list[dict], output_path: str) -> bool:
         """Export plant list to Vectorworks-compatible format"""
         try:
             # Generate Vectorscript for plant placement
@@ -328,7 +328,7 @@ class VectorworksDataExporter:
             logger.error(f"Error exporting plant list: {e}")
             return False
     
-    def _generate_plant_placement_script(self, plants: List[Dict]) -> str:
+    def _generate_plant_placement_script(self, plants: list[dict]) -> str:
         """Generate Vectorscript for automated plant placement"""
         script_lines = [
             "{ Automated Plant Placement Script }",
@@ -340,7 +340,7 @@ class VectorworksDataExporter:
             "BEGIN"
         ]
         
-        for i, plant in enumerate(plants):
+        for plant in plants:
             x = plant.get("x_coordinate", 0)
             y = plant.get("y_coordinate", 0)
             symbol_name = plant.get("symbol_name", plant.get("name", "Plant"))
@@ -366,7 +366,7 @@ class VectorworksDataExporter:
         
         return "\n".join(script_lines)
     
-    def _export_plants_csv(self, plants: List[Dict], csv_path: str) -> None:
+    def _export_plants_csv(self, plants: list[dict], csv_path: str) -> None:
         """Export plants to CSV format for manual import"""
         import csv
         
@@ -505,7 +505,7 @@ class VectorworksReportGenerator:
 class VectorworksIntegrationService:
     """Main service for Vectorworks integration"""
     
-    def __init__(self, vectorworks_path: str = None):
+    def __init__(self, vectorworks_path: Optional[str] = None):
         self.sdk = VectorworksSDKInterface(vectorworks_path)
         self.extractor = VectorworksDataExtractor(self.sdk)
         self.exporter = VectorworksDataExporter(self.sdk)
@@ -515,12 +515,12 @@ class VectorworksIntegrationService:
         """Import data from Vectorworks project file"""
         return self.extractor.extract_project_info(vwx_file_path)
     
-    def export_plant_data(self, plants: List[Dict], output_path: str) -> bool:
+    def export_plant_data(self, plants: list[dict], output_path: str) -> bool:
         """Export plant data to Vectorworks format"""
         return self.exporter.export_plant_list(plants, output_path)
     
     def generate_reports(self, project: VectorworksProject, 
-                        output_dir: str, language: str = "nl") -> List[str]:
+                        output_dir: str, language: str = "nl") -> list[str]:
         """Generate all project reports"""
         generated_files = []
         
@@ -531,7 +531,7 @@ class VectorworksIntegrationService:
         
         return generated_files
     
-    def sync_project_data(self, project_id: int, vwx_file_path: str) -> Dict:
+    def sync_project_data(self, project_id: int, vwx_file_path: str) -> dict:
         """Synchronize project data between database and Vectorworks"""
         try:
             # Import current Vectorworks data
@@ -556,6 +556,6 @@ class VectorworksIntegrationService:
             return {"success": False, "error": str(e)}
 
 # Factory function
-def create_vectorworks_service(vectorworks_path: str = None) -> VectorworksIntegrationService:
+def create_vectorworks_service(vectorworks_path: Optional[str] = None) -> VectorworksIntegrationService:
     """Create Vectorworks integration service"""
     return VectorworksIntegrationService(vectorworks_path)

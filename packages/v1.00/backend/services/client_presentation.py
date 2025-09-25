@@ -37,7 +37,7 @@ class PlantPresentationData:
     scientific_name: str
     description: str
     image_url: Optional[str]
-    characteristics: Dict[str, str]
+    characteristics: dict[str, str]
     care_instructions: str
     price: float
     quantity: int
@@ -55,7 +55,7 @@ class ProjectPresentationData:
     budget: float
     timeline: str
     design_style: str
-    special_requirements: List[str]
+    special_requirements: list[str]
 
 @dataclass
 class PresentationSlide:
@@ -63,8 +63,8 @@ class PresentationSlide:
     id: str
     title: str
     content_type: str  # text, image, plant_grid, timeline, budget
-    content: Dict[str, Any]
-    editable_fields: List[str]
+    content: dict[str, Any]
+    editable_fields: list[str]
     order: int
 
 class ClientPresentationGenerator:
@@ -77,7 +77,7 @@ class ClientPresentationGenerator:
         # Define contact information constants (configurable)
         self.DEFAULT_CONTACT_INFO = self._get_contact_info_config()
     
-    def _get_contact_info_config(self) -> Dict[str, str]:
+    def _get_contact_info_config(self) -> dict[str, str]:
         """Get contact information from configuration or environment variables"""
         import os
         return {
@@ -86,7 +86,7 @@ class ClientPresentationGenerator:
             "website": os.getenv("COMPANY_WEBSITE", "www.landscapearchitect.nl")
         }
     
-    def _load_presentation_templates(self) -> Dict[str, Dict]:
+    def _load_presentation_templates(self) -> dict[str, dict]:
         """Load presentation templates"""
         return {
             "modern": {
@@ -136,7 +136,7 @@ class ClientPresentationGenerator:
             }
         }
     
-    def _is_plant_type(self, plant: PlantPresentationData, keywords: List[str]) -> bool:
+    def _is_plant_type(self, plant: PlantPresentationData, keywords: list[str]) -> bool:
         """Helper method to classify plants by type using keywords"""
         plant_name_lower = plant.name.lower()
         plant_type_lower = plant.characteristics.get("type", "").lower()
@@ -144,7 +144,7 @@ class ClientPresentationGenerator:
         return any(keyword in plant_name_lower or keyword in plant_type_lower for keyword in keywords)
     
     def create_presentation(self, project_id: int, template: str = "modern", 
-                          config: Optional[PresentationConfig] = None) -> Dict:
+                          config: Optional[PresentationConfig] = None) -> dict:
         """Create a new client presentation"""
         try:
             # Get project data
@@ -212,7 +212,7 @@ class ClientPresentationGenerator:
             logger.error(f"Error getting project data: {e}")
         return None
     
-    def _get_project_plants(self, project_id: int) -> List[PlantPresentationData]:
+    def _get_project_plants(self, project_id: int) -> list[PlantPresentationData]:
         """Get plant data for project"""
         try:
             cursor = self.db.cursor()
@@ -244,8 +244,8 @@ class ClientPresentationGenerator:
             return []
     
     def _generate_slides(self, project: ProjectPresentationData, 
-                        plants: List[PlantPresentationData],
-                        template: str, config: PresentationConfig) -> List[PresentationSlide]:
+                        plants: list[PlantPresentationData],
+                        template: str, config: PresentationConfig) -> list[PresentationSlide]:
         """Generate presentation slides"""
         template_config = self.templates.get(template, self.templates["modern"])
         slides = []
@@ -282,7 +282,7 @@ class ClientPresentationGenerator:
         return slides
     
     def _generate_welcome_slide(self, project: ProjectPresentationData, 
-                               plants: List[PlantPresentationData],
+                               plants: list[PlantPresentationData],
                                config: PresentationConfig, order: int) -> PresentationSlide:
         """Generate welcome slide"""
         return PresentationSlide(
@@ -303,7 +303,7 @@ class ClientPresentationGenerator:
         )
     
     def _generate_project_overview_slide(self, project: ProjectPresentationData,
-                                       plants: List[PlantPresentationData],
+                                       plants: list[PlantPresentationData],
                                        config: PresentationConfig, order: int) -> PresentationSlide:
         """Generate project overview slide"""
         return PresentationSlide(
@@ -328,7 +328,7 @@ class ClientPresentationGenerator:
         )
     
     def _generate_site_analysis_slide(self, project: ProjectPresentationData,
-                                    plants: List[PlantPresentationData],
+                                    plants: list[PlantPresentationData],
                                     config: PresentationConfig, order: int) -> PresentationSlide:
         """Generate site analysis slide"""
         return PresentationSlide(
@@ -358,7 +358,7 @@ class ClientPresentationGenerator:
         )
     
     def _generate_design_concept_slide(self, project: ProjectPresentationData,
-                                     plants: List[PlantPresentationData],
+                                     plants: list[PlantPresentationData],
                                      config: PresentationConfig, order: int) -> PresentationSlide:
         """Generate design concept slide"""
         return PresentationSlide(
@@ -383,7 +383,7 @@ class ClientPresentationGenerator:
         )
     
     def _generate_design_philosophy_slide(self, project: ProjectPresentationData,
-                                        plants: List[PlantPresentationData],
+                                        plants: list[PlantPresentationData],
                                         config: PresentationConfig, order: int) -> PresentationSlide:
         """Generate design philosophy slide"""
         return PresentationSlide(
@@ -409,7 +409,7 @@ class ClientPresentationGenerator:
         )
     
     def _generate_design_principles_slide(self, project: ProjectPresentationData,
-                                        plants: List[PlantPresentationData],
+                                        plants: list[PlantPresentationData],
                                         config: PresentationConfig, order: int) -> PresentationSlide:
         """Generate design principles slide"""
         return PresentationSlide(
@@ -440,7 +440,7 @@ class ClientPresentationGenerator:
         )
     
     def _generate_plant_selection_slide(self, project: ProjectPresentationData,
-                                      plants: List[PlantPresentationData],
+                                      plants: list[PlantPresentationData],
                                       config: PresentationConfig, order: int) -> PresentationSlide:
         """Generate plant selection slide"""
         return PresentationSlide(
@@ -462,7 +462,7 @@ class ClientPresentationGenerator:
         )
     
     def _generate_plant_communities_slide(self, project: ProjectPresentationData,
-                                        plants: List[PlantPresentationData],
+                                        plants: list[PlantPresentationData],
                                         config: PresentationConfig, order: int) -> PresentationSlide:
         """Generate plant communities slide"""
         # Use global constants directly for plant classification
@@ -500,7 +500,7 @@ class ClientPresentationGenerator:
         )
     
     def _generate_formal_plantings_slide(self, project: ProjectPresentationData,
-                                       plants: List[PlantPresentationData],
+                                       plants: list[PlantPresentationData],
                                        config: PresentationConfig, order: int) -> PresentationSlide:
         """Generate formal plantings slide"""
         return PresentationSlide(
@@ -521,7 +521,7 @@ class ClientPresentationGenerator:
         )
     
     def _generate_hardscape_slide(self, project: ProjectPresentationData,
-                                plants: List[PlantPresentationData],
+                                plants: list[PlantPresentationData],
                                 config: PresentationConfig, order: int) -> PresentationSlide:
         """Generate hardscape elements slide"""
         return PresentationSlide(
@@ -550,7 +550,7 @@ class ClientPresentationGenerator:
         )
     
     def _generate_seasonal_slide(self, project: ProjectPresentationData,
-                               plants: List[PlantPresentationData],
+                               plants: list[PlantPresentationData],
                                config: PresentationConfig, order: int) -> PresentationSlide:
         """Generate seasonal interest slide"""
         return PresentationSlide(
@@ -584,7 +584,7 @@ class ClientPresentationGenerator:
                         "plants": [p.name for p in plants if "herfst" in p.characteristics.get("blooming_season", "").lower()][:3]
                     },
                     {
-                        "name": "Winter" if config.language == "nl" else "Winter",
+                        "name": "Winter",
                         "highlights": [
                             "Structuur" if config.language == "nl" else "Structure",
                             "Wintergroen" if config.language == "nl" else "Evergreen foliage"
@@ -598,7 +598,7 @@ class ClientPresentationGenerator:
         )
     
     def _generate_timeline_slide(self, project: ProjectPresentationData,
-                               plants: List[PlantPresentationData],
+                               plants: list[PlantPresentationData],
                                config: PresentationConfig, order: int) -> PresentationSlide:
         """Generate timeline slide"""
         return PresentationSlide(
@@ -617,7 +617,7 @@ class ClientPresentationGenerator:
                     },
                     {
                         "name": "Fase 2: Beplanting" if config.language == "nl" else "Phase 2: Planting",
-                        "duration": "1 week" if config.language == "nl" else "1 week",
+                        "duration": "1 week",
                         "tasks": [
                             "Bomen planten" if config.language == "nl" else "Plant trees",
                             "Struiken en vaste planten" if config.language == "nl" else "Shrubs and perennials"
@@ -625,7 +625,7 @@ class ClientPresentationGenerator:
                     },
                     {
                         "name": "Fase 3: Afwerking" if config.language == "nl" else "Phase 3: Finishing",
-                        "duration": "1 week" if config.language == "nl" else "1 week",
+                        "duration": "1 week",
                         "tasks": [
                             "Mulchen" if config.language == "nl" else "Mulching",
                             "Irrigatie installeren" if config.language == "nl" else "Install irrigation"
@@ -641,7 +641,7 @@ class ClientPresentationGenerator:
         )
     
     def _generate_budget_slide(self, project: ProjectPresentationData,
-                             plants: List[PlantPresentationData],
+                             plants: list[PlantPresentationData],
                              config: PresentationConfig, order: int) -> PresentationSlide:
         """Generate budget slide"""
         plant_cost = sum(p.price * p.quantity for p in plants)
@@ -689,7 +689,7 @@ class ClientPresentationGenerator:
         )
     
     def _generate_maintenance_slide(self, project: ProjectPresentationData,
-                                  plants: List[PlantPresentationData],
+                                  plants: list[PlantPresentationData],
                                   config: PresentationConfig, order: int) -> PresentationSlide:
         """Generate maintenance slide"""
         return PresentationSlide(
@@ -724,7 +724,7 @@ class ClientPresentationGenerator:
                         ]
                     },
                     {
-                        "season": "Winter" if config.language == "nl" else "Winter",
+                        "season": "Winter",
                         "tasks": [
                             "Plannen voor volgend jaar" if config.language == "nl" else "Plan for next year",
                             "Gereedschap onderhouden" if config.language == "nl" else "Tool maintenance"
@@ -740,7 +740,7 @@ class ClientPresentationGenerator:
         )
     
     def _generate_next_steps_slide(self, project: ProjectPresentationData,
-                                 plants: List[PlantPresentationData],
+                                 plants: list[PlantPresentationData],
                                  config: PresentationConfig, order: int) -> PresentationSlide:
         """Generate next steps slide"""
         return PresentationSlide(
@@ -753,13 +753,13 @@ class ClientPresentationGenerator:
                         "title": "Ontwerp Goedkeuring" if config.language == "nl" else "Design Approval",
                         "description": "Bevestiging van het definitieve ontwerp" if config.language == "nl" 
                                      else "Confirmation of final design",
-                        "timeline": "1 week" if config.language == "nl" else "1 week"
+                        "timeline": "1 week"
                     },
                     {
                         "title": "Contract Ondertekening" if config.language == "nl" else "Contract Signing",
                         "description": "Formalisering van de opdracht" if config.language == "nl" 
                                      else "Formalization of the commission",
-                        "timeline": "1 week" if config.language == "nl" else "1 week"
+                        "timeline": "1 week"
                     },
                     {
                         "title": "Uitvoering" if config.language == "nl" else "Implementation",
@@ -781,7 +781,7 @@ class ClientPresentationGenerator:
             order=order
         )
     
-    def _save_presentation(self, presentation: Dict) -> None:
+    def _save_presentation(self, presentation: dict) -> None:
         """Save presentation to database"""
         try:
             cursor = self.db.cursor()

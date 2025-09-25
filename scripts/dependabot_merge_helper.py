@@ -37,14 +37,14 @@ class DependabotMergeHelper:
             408,  # jest-environment major
         ]
 
-    def categorize_prs(self) -> Dict[str, List[int]]:
+    def categorize_prs(self) -> dict[str, list[int]]:
         return {
             "safe_auto_merge": self.safe_patches,
             "careful_review": self.careful_review, 
             "major_updates": self.major_updates
         }
 
-    def get_merge_priority(self) -> List[Tuple[int, str, str]]:
+    def get_merge_priority(self) -> list[tuple[int, str, str]]:
         """Return PRs in recommended merge order with reasoning."""
         priorities = []
         
@@ -62,7 +62,7 @@ class DependabotMergeHelper:
             
         return priorities
 
-    def generate_merge_commands(self) -> List[str]:
+    def generate_merge_commands(self) -> list[str]:
         """Generate commands for safe merging."""
         commands = []
         
@@ -87,9 +87,8 @@ class DependabotMergeHelper:
             if result.returncode == 0:
                 print("✅ Repository health check passed")
                 return True
-            else:
-                print(f"❌ Repository health check failed: {result.stderr}")
-                return False
+            print(f"❌ Repository health check failed: {result.stderr}")
+            return False
                 
         except Exception as e:
             print(f"❌ Health check error: {e}")
