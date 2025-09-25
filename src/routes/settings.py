@@ -171,7 +171,7 @@ def get_settings():
                             # Remove sensitive keys
                             for key in ['api_key', 'credentials', 'secret', 'token']:
                                 if key in service_config:
-                                    service_config[key] = '***' if service_config[key] else ''
+                                    service_config[key] = '***'
         
         return jsonify({
             "settings": client_settings,
