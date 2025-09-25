@@ -241,7 +241,11 @@ jobs:
           done
           
           # Reload nginx
-          systemctl reload nginx 2>/dev/null || echo "⚠️ Could not reload nginx"
+          if ! systemctl reload nginx 2>reload_err.log; then
+              echo "⚠️ Could not reload nginx"
+              echo "Error details:"
+              cat reload_err.log
+          fi
           
           echo "✅ V1.00D devdeploy deployment complete"
           
