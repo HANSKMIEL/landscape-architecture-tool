@@ -193,7 +193,7 @@ const Plants = () => {
       ...prevData,
       [name]: type === 'checkbox' ? checked : value
     }))
-  }, []) // Empty dependency array - safe because we use functional updates
+  }, []) // Intentionally empty dependency array: this callback only uses functional updates, so it does not depend on any external state or props. Do NOT add dependencies here; doing so may break the optimization and cause unnecessary re-renders.
 
   // Reset form - Memoized to prevent re-creation
   const resetForm = useCallback(() => {
