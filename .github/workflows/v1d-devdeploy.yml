@@ -220,8 +220,12 @@ jobs:
           
           # Set proper ownership
           cd "$DEPLOY_DIR"
-          chown -R www-data:www-data . 2>/dev/null || echo "⚠️ Could not set www-data ownership (may require root)"
-          
+          if ! chown -R www-data:www-data . 2>chown_error.log; then
+              echo "⚠️ Could not set www-data ownership (may require root)"
+              echo "chown error output:"
+              cat chown_error.log
+          fi
+          rm -f chown_error.log
           # Find and restart services - try multiple possible service names
           echo "🔄 Restarting services..."
           for service in "landscape-backend-dev" "landscape-backend" "landscape-tool"; do
