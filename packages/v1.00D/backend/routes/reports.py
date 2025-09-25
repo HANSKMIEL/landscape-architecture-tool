@@ -822,7 +822,6 @@ def generate_comprehensive_pdf():
         data = request.get_json()
         report_type = data.get('type', 'overview')
         date_range = data.get('dateRange', {})
-        filters = data.get('filters', {})
         report_data = data.get('data', {})
         language = data.get('language', 'en')
         
@@ -892,14 +891,6 @@ def generate_comprehensive_pdf():
             spaceAfter=30,
             textColor=colors.HexColor('#10b981'),
             alignment=1  # Center alignment
-        )
-        
-        heading_style = ParagraphStyle(
-            'CustomHeading',
-            parent=styles['Heading2'],
-            fontSize=16,
-            spaceAfter=12,
-            textColor=colors.HexColor('#374151')
         )
         
         # Build PDF content
