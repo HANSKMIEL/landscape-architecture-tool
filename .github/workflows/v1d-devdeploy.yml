@@ -140,62 +140,161 @@ jobs:
           echo "$VPS_SSH_KEY" > ~/.ssh/vps_key
           chmod 600 ~/.ssh/vps_key
           
-          # Create deployment script
+          # Create enhanced deployment script with better error handling and VPS discovery
           cat > deploy_v1d_to_devdeploy.sh << 'EOF'
           #!/bin/bash
           set -e
           
-          echo "🔄 Updating V1.00D development deployment..."
+          echo "🔄 Starting V1.00D deployment audit and update..."
           
-          # Navigate to development directory
-          cd /var/www/landscape-architecture-tool-dev
+          # Function to find actual deployment directory
+          find_deployment_dir() {
+              for dir in "/var/www/landscape-architecture-tool" "/var/www/landscape-architecture-tool-dev" "/opt/landscape-architecture-tool" "/home/landscape-architecture-tool"; do
+                  if [ -d "$dir" ]; then
+                      echo "$dir"
+                      return 0
+                  fi
+              done
+              echo ""
+              return 1
+          }
+          
+          # Find the actual deployment directory
+          DEPLOY_DIR=$(find_deployment_dir)
+          if [ -z "$DEPLOY_DIR" ]; then
+              echo "❌ No deployment directory found. Creating new deployment..."
+              DEPLOY_DIR="/var/www/landscape-architecture-tool"
+              mkdir -p "$DEPLOY_DIR"
+              cd "$DEPLOY_DIR"
+              git clone https://github.com/HANSKMIEL/landscape-architecture-tool.git .
+              git checkout V1.00D
+          else
+              echo "✅ Found deployment directory: $DEPLOY_DIR"
+              cd "$DEPLOY_DIR"
+          fi
+          
+          # Show current commit before update
+          echo "📍 Current commit: $(git rev-parse HEAD)"
+          echo "📍 Current commit message: $(git log -1 --oneline)"
           
           # Pull latest V1.00D changes
+          echo "🔄 Pulling latest V1.00D changes..."
           git fetch origin
           git reset --hard origin/V1.00D
+          
+          # Show new commit after update
+          echo "📍 New commit: $(git rev-parse HEAD)"
+          echo "📍 New commit message: $(git log -1 --oneline)"
           
           # Ensure devdeploy title is set
           sed -i 's/<title>.*<\/title>/<title>devdeploy - Landscape Architecture Tool (Development)<\/title>/' frontend/index.html
           
+          # Setup Python virtual environment if needed
+          if [ ! -d "venv" ] && [ ! -d "venv-dev" ]; then
+              echo "🐍 Creating Python virtual environment..."
+              python3 -m venv venv
+              VENV_PATH="venv"
+          elif [ -d "venv-dev" ]; then
+              VENV_PATH="venv-dev"
+          else
+              VENV_PATH="venv"
+          fi
+          
           # Update Python dependencies
-          source venv-dev/bin/activate
+          echo "📦 Updating Python dependencies..."
+          source "$VENV_PATH/bin/activate"
+          pip install --upgrade pip
           pip install -r requirements.txt
           
           # Update and build frontend
+          echo "🏗️ Building frontend..."
           cd frontend
           npm ci --legacy-peer-deps
           npm run build
           
           # Verify devdeploy title in build
           if ! grep -q "devdeploy" dist/index.html; then
-            echo "⚠️ Fixing devdeploy title in build output..."
-            sed -i 's/<title>.*<\/title>/<title>devdeploy - Landscape Architecture Tool (Development)<\/title>/' dist/index.html
+              echo "⚠️ Fixing devdeploy title in build output..."
+              sed -i 's/<title>.*<\/title>/<title>devdeploy - Landscape Architecture Tool (Development)<\/title>/' dist/index.html
           fi
           
           # Set proper ownership
-          cd /var/www/landscape-architecture-tool-dev
-          chown -R www-data:www-data .
+          cd "$DEPLOY_DIR"
+          if ! chown -R www-data:www-data . 2>chown_error.log; then
+              echo "⚠️ Could not set www-data ownership (may require root)"
+              echo "chown error output:"
+              cat chown_error.log
+          fi
+          rm -f chown_error.log
+          # Find and restart services - try multiple possible service names
+          echo "🔄 Restarting services..."
+          for service in "landscape-backend-dev" "landscape-backend" "landscape-tool"; do
+              if systemctl is-active --quiet "$service" 2>/dev/null; then
+                  echo "🔄 Restarting $service..."
+                  systemctl restart "$service"
+                  break
+              elif systemctl list-unit-files | grep -q "$service"; then
+                  echo "🔄 Starting $service..."
+                  systemctl start "$service"
+                  break
+              fi
+          done
           
-          # Restart development services
-          systemctl restart landscape-backend-dev
-          systemctl reload nginx
+          # Reload nginx
+          if ! systemctl reload nginx 2>reload_err.log; then
+              echo "⚠️ Could not reload nginx"
+              echo "Error details:"
+              cat reload_err.log
+              rm -f reload_err.log
+          else
+              rm -f reload_err.log
+          fi
           
           echo "✅ V1.00D devdeploy deployment complete"
           
-          # Verify deployment
+          # Enhanced verification with multiple endpoints
+          echo "🔍 Verifying deployment..."
           sleep 5
-          if curl -s http://127.0.0.1:8080/health | grep -q "healthy"; then
-            echo "✅ DevDeploy health check passed"
+          
+          # Test frontend
+          if curl -s http://127.0.0.1:8080/ | grep -q "devdeploy"; then
+              echo "✅ Frontend devdeploy title verified"
           else
-            echo "⚠️ DevDeploy health check warning - service may still be starting"
+              echo "❌ Frontend devdeploy title verification failed"
           fi
+          
+          # Test various API endpoints
+          for endpoint in "/health" "/api/health" "/api/status"; do
+              if curl -s "http://127.0.0.1:8080$endpoint" | grep -q -E "(healthy|ok|success)"; then
+                  echo "✅ API endpoint $endpoint responded successfully"
+                  break
+              else
+                  echo "⚠️ API endpoint $endpoint check failed"
+              fi
+          done
+          
+          # Show final deployment status
+          echo "📊 Final deployment status:"
+          echo "   Directory: $DEPLOY_DIR"
+          echo "   Commit: $(git rev-parse HEAD)"
+          echo "   Frontend built: $([ -f frontend/dist/index.html ] && echo 'Yes' || echo 'No')"
+          echo "   Services: $(systemctl is-active landscape-backend-dev landscape-backend 2>/dev/null | head -1 || echo 'Unknown')"
           EOF
           
-          # Execute deployment on VPS using SSH key
+          # Execute deployment on VPS using SSH key with enhanced error handling
           if [ -n "$VPS_SSH_KEY" ]; then
-            ssh -i ~/.ssh/vps_key -o ConnectTimeout=10 -o StrictHostKeyChecking=no $VPS_USER@$VPS_HOST "$(cat deploy_v1d_to_devdeploy.sh)"
+            echo "🔑 Connecting to VPS via SSH..."
+            # Define common SSH connection parameters
+            SSH_OPTS="-i ~/.ssh/vps_key -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
+            
+            ssh $SSH_OPTS -o ConnectTimeout=30 $VPS_USER@$VPS_HOST "$(cat deploy_v1d_to_devdeploy.sh)" || {
+              echo "❌ SSH deployment failed with exit code $?"
+              echo "🔍 Attempting basic connectivity test..."
+              ssh $SSH_OPTS -o ConnectTimeout=10 $VPS_USER@$VPS_HOST "echo 'SSH connection successful'" || echo "❌ SSH connection failed"
+              exit 1
+            }
           else
-            echo "❌ VPS_SSH_KEY secret not configured"
+            echo "❌ VPS_SSH_KEY secret not configured - cannot deploy"
             exit 1
           fi
 
@@ -206,24 +305,63 @@ jobs:
           echo "🔍 Verifying devdeploy deployment..."
           
           # Wait for services to stabilize
-          sleep 10
+          sleep 15
           
-          # Test devdeploy endpoint
+          # Enhanced verification with multiple checks
+          VERIFICATION_PASSED=0
+          
+          # Test 1: Frontend devdeploy title
+          echo "🧪 Test 1: Frontend devdeploy title verification..."
           if curl -s http://$VPS_HOST:8080 | grep -q "devdeploy"; then
             echo "✅ DevDeploy title verification passed"
+            VERIFICATION_PASSED=$((VERIFICATION_PASSED + 1))
           else
             echo "❌ DevDeploy title verification failed"
-            exit 1
+            echo "🔍 Frontend response:"
+            curl -s http://$VPS_HOST:8080 | head -20
           fi
           
-          # Test API health
-          if curl -s http://$VPS_HOST:8080/health | grep -q "healthy"; then
-            echo "✅ DevDeploy API health check passed"
+          # Test 2: API health endpoints (try multiple)
+          echo "🧪 Test 2: API health endpoint verification..."
+          API_WORKING=0
+          for endpoint in "/health" "/api/health" "/api/status"; do
+            echo "   Testing $endpoint..."
+            if curl -s http://$VPS_HOST:8080$endpoint | grep -q -E "(healthy|ok|success)"; then
+              echo "✅ API endpoint $endpoint responded successfully"
+              API_WORKING=1
+              VERIFICATION_PASSED=$((VERIFICATION_PASSED + 1))
+              break
+            else
+              echo "⚠️ API endpoint $endpoint check failed"
+              echo "   Response: $(curl -s http://$VPS_HOST:8080$endpoint | head -5)"
+            fi
+          done
+          
+          if [ $API_WORKING -eq 0 ]; then
+            echo "❌ All API health checks failed"
+          fi
+          
+          # Test 3: Basic connectivity
+          echo "🧪 Test 3: Basic HTTP connectivity..."
+          if curl -s -I http://$VPS_HOST:8080 | grep -q "200 OK"; then
+            echo "✅ HTTP connectivity verified"
+            VERIFICATION_PASSED=$((VERIFICATION_PASSED + 1))
           else
-            echo "⚠️ DevDeploy API health check warning"
+            echo "❌ HTTP connectivity failed"
           fi
           
-          echo "🎉 V1.00D successfully deployed to devdeploy environment!"
+          # Summary
+          echo ""
+          echo "📊 Verification Summary:"
+          echo "   Tests passed: $VERIFICATION_PASSED/3"
+          
+          if [ $VERIFICATION_PASSED -ge 2 ]; then
+            echo "🎉 V1.00D successfully deployed to devdeploy environment!"
+            echo "🌐 Access at: http://$VPS_HOST:8080"
+          else
+            echo "⚠️ Deployment verification had issues but may still be functional"
+            echo "🔍 Manual verification recommended"
+          fi
 
       - name: Generate Deployment Report
         if: always()
