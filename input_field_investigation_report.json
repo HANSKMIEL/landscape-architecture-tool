@@ -1,0 +1,36 @@
+{
+  "vps_url": "http://72.60.176.200:8080",
+  "timestamp": "2025-09-25 10:30:26",
+  "summary": {
+    "total_tests": 2,
+    "passed": 2,
+    "failed": 0,
+    "issues_found": 1
+  },
+  "issue_patterns": {
+    "focus_issues": 0,
+    "truncation_issues": 0,
+    "value_issues": 0
+  },
+  "detailed_results": [
+    {
+      "test": "VPS Login",
+      "status": "PASS",
+      "details": "Successfully logged in",
+      "timestamp": "2025-09-25 10:29:54"
+    },
+    {
+      "test": "Navigation via Direct URL",
+      "status": "PASS",
+      "details": "Successfully reached Plants section",
+      "timestamp": "2025-09-25 10:29:56"
+    }
+  ],
+  "issues_found": [
+    {
+      "category": "Add Plant Form",
+      "issue": "Add Plant button not found",
+      "timestamp": "2025-09-25 10:30:26"
+    }
+  ]
+}
