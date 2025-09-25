@@ -722,8 +722,15 @@ const Plants = () => {
             <Button type="button" variant="outline" onClick={onCancel}>
               {t('common.cancel', 'Cancel')}
             </Button>
-            <Button type="submit">
-              {t('common.save', 'Save')}
+            <Button type="submit" disabled={submitLoading}>
+              {submitLoading ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  {t('common.saving', 'Saving...')}
+                </>
+              ) : (
+                t('common.save', 'Save')
+              )}
             </Button>
           </div>
         </form>
