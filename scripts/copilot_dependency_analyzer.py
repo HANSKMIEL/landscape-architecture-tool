@@ -7,21 +7,21 @@ and implement critical dependency updates safely and efficiently.
 """
 
 import json
+import logging
+import os
+import re
 import subprocess
 import sys
-import os
+from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
-import re
-import logging
-from datetime import datetime
 
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s',
+    format="%(asctime)s - %(levelname)s - %(message)s",
     handlers=[
-        logging.FileHandler('copilot_analysis.log'),
+        logging.FileHandler("copilot_analysis.log"),
         logging.StreamHandler()
     ]
 )
@@ -59,14 +59,14 @@ class CopilotDependencyAnalyzer:
         testing_strategy = self._develop_testing_strategy(dependency_info)
         
         analysis = {
-            'pr_number': pr_number,
-            'dependency_info': dependency_info,
-            'impact_assessment': impact_assessment,
-            'breaking_changes': breaking_changes,
-            'security_assessment': security_assessment,
-            'testing_strategy': testing_strategy,
-            'timestamp': datetime.now().isoformat(),
-            'status': 'analysis_complete'
+            "pr_number": pr_number,
+            "dependency_info": dependency_info,
+            "impact_assessment": impact_assessment,
+            "breaking_changes": breaking_changes,
+            "security_assessment": security_assessment,
+            "testing_strategy": testing_strategy,
+            "timestamp": datetime.now().isoformat(),
+            "status": "analysis_complete"
         }
         
         self.analysis_results[pr_number] = analysis
@@ -83,10 +83,10 @@ class CopilotDependencyAnalyzer:
             pr_info = self._run_command(f"gh pr view {pr_number} --json title,body,files")
             pr_data = json.loads(pr_info)
             
-            title = pr_data.get('title', '')
+            title = pr_data.get("title", "")
             
             # Parse dependency from title (Dependabot format)
-            dep_match = re.search(r'bump (.+?) from ([\d.]+) to ([\d.]+)', title)
+            dep_match = re.search(r"bump (.+?) from ([\d.]+) to ([\d.]+)", title)
             if dep_match:
                 package_name = dep_match.group(1)
                 from_version = dep_match.group(2)
@@ -98,38 +98,38 @@ class CopilotDependencyAnalyzer:
                 to_version = "unknown"
             
             # Determine ecosystem
-            ecosystem = self._determine_ecosystem(pr_data.get('files', []))
+            ecosystem = self._determine_ecosystem(pr_data.get("files", []))
             
             # Determine update type
             update_type = self._determine_update_type(from_version, to_version)
             
             return {
-                'package_name': package_name,
-                'from_version': from_version,
-                'to_version': to_version,
-                'ecosystem': ecosystem,
-                'update_type': update_type,
-                'pr_title': title,
-                'files_changed': [f['path'] for f in pr_data.get('files', [])]
+                "package_name": package_name,
+                "from_version": from_version,
+                "to_version": to_version,
+                "ecosystem": ecosystem,
+                "update_type": update_type,
+                "pr_title": title,
+                "files_changed": [f["path"] for f in pr_data.get("files", [])]
             }
             
         except Exception as e:
             logger.error(f"Error extracting dependency info: {e}")
-            return {'error': str(e)}
+            return {"error": str(e)}
     
     def _assess_impact(self, dependency_info: dict) -> dict:
         """Assess the impact of the dependency update"""
         logger.info("Assessing dependency impact")
         
-        package_name = dependency_info.get('package_name', '')
-        ecosystem = dependency_info.get('ecosystem', '')
+        package_name = dependency_info.get("package_name", "")
+        ecosystem = dependency_info.get("ecosystem", "")
         
         # Critical dependencies list
         critical_dependencies = {
-            'python': ['flask', 'django', 'sqlalchemy', 'requests', 'pytest'],
-            'javascript': ['react', 'express', 'webpack', 'babel', 'typescript', 'vite'],
-            'docker': ['node', 'python', 'nginx'],
-            'github-actions': ['actions/checkout', 'actions/setup-node', 'actions/setup-python']
+            "python": ["flask", "django", "sqlalchemy", "requests", "pytest"],
+            "javascript": ["react", "express", "webpack", "babel", "typescript", "vite"],
+            "docker": ["node", "python", "nginx"],
+            "github-actions": ["actions/checkout", "actions/setup-node", "actions/setup-python"]
         }
         
         is_critical = any(
@@ -140,36 +140,36 @@ class CopilotDependencyAnalyzer:
         # Assess usage in codebase
         usage_analysis = self._analyze_package_usage(package_name)
         
-        impact_level = 'low'
+        impact_level = "low"
         if is_critical:
-            impact_level = 'critical'
-        elif dependency_info.get('update_type') == 'major':
-            impact_level = 'high'
-        elif usage_analysis.get('usage_count', 0) > 10:
-            impact_level = 'medium'
+            impact_level = "critical"
+        elif dependency_info.get("update_type") == "major":
+            impact_level = "high"
+        elif usage_analysis.get("usage_count", 0) > 10:
+            impact_level = "medium"
         
         return {
-            'impact_level': impact_level,
-            'is_critical_dependency': is_critical,
-            'usage_analysis': usage_analysis,
-            'potential_affected_areas': self._identify_affected_areas(package_name)
+            "impact_level": impact_level,
+            "is_critical_dependency": is_critical,
+            "usage_analysis": usage_analysis,
+            "potential_affected_areas": self._identify_affected_areas(package_name)
         }
     
     def _analyze_breaking_changes(self, dependency_info: dict) -> dict:
         """Analyze potential breaking changes"""
         logger.info("Analyzing breaking changes")
         
-        package_name = dependency_info.get('package_name', '')
-        from_version = dependency_info.get('from_version', '')
-        to_version = dependency_info.get('to_version', '')
+        package_name = dependency_info.get("package_name", "")
+        from_version = dependency_info.get("from_version", "")
+        to_version = dependency_info.get("to_version", "")
         
         # Try to fetch changelog/release notes
         changelog = self._fetch_changelog(package_name, from_version, to_version)
         
         # Analyze for breaking change indicators
         breaking_indicators = [
-            'breaking change', 'breaking', 'removes', 'deprecated',
-            'no longer supported', 'major version', 'incompatible'
+            "breaking change", "breaking", "removes", "deprecated",
+            "no longer supported", "major version", "incompatible"
         ]
         
         potential_breaks = []
@@ -179,10 +179,10 @@ class CopilotDependencyAnalyzer:
                     potential_breaks.append(indicator)
         
         return {
-            'potential_breaking_changes': potential_breaks,
-            'changelog_available': bool(changelog),
-            'changelog_excerpt': changelog[:500] if changelog else None,
-            'risk_level': 'high' if potential_breaks else 'medium' if dependency_info.get('update_type') == 'major' else 'low'
+            "potential_breaking_changes": potential_breaks,
+            "changelog_available": bool(changelog),
+            "changelog_excerpt": changelog[:500] if changelog else None,
+            "risk_level": "high" if potential_breaks else "medium" if dependency_info.get("update_type") == "major" else "low"
         }
     
     def _assess_security_implications(self, dependency_info: dict) -> dict:
@@ -190,42 +190,42 @@ class CopilotDependencyAnalyzer:
         logger.info("Assessing security implications")
         
         # Check for security advisories
-        security_check = self._check_security_advisories(dependency_info.get('package_name', ''))
+        security_check = self._check_security_advisories(dependency_info.get("package_name", ""))
         
         # Check for known vulnerabilities in current version
         vuln_check = self._check_vulnerabilities()
         
         return {
-            'security_advisories': security_check,
-            'vulnerability_scan': vuln_check,
-            'security_impact': 'positive' if security_check.get('fixes_vulnerabilities') else 'neutral'
+            "security_advisories": security_check,
+            "vulnerability_scan": vuln_check,
+            "security_impact": "positive" if security_check.get("fixes_vulnerabilities") else "neutral"
         }
     
     def _develop_testing_strategy(self, dependency_info: dict) -> dict:
         """Develop comprehensive testing strategy"""
         logger.info("Developing testing strategy")
         
-        impact_level = self.analysis_results.get('impact_assessment', {}).get('impact_level', 'medium')
+        impact_level = self.analysis_results.get("impact_assessment", {}).get("impact_level", "medium")
         
         base_tests = [
-            'run_existing_test_suite',
-            'check_application_startup',
-            'validate_core_functionality'
+            "run_existing_test_suite",
+            "check_application_startup",
+            "validate_core_functionality"
         ]
         
-        if impact_level in ['critical', 'high']:
+        if impact_level in ["critical", "high"]:
             base_tests.extend([
-                'integration_testing',
-                'performance_testing',
-                'security_testing',
-                'compatibility_testing'
+                "integration_testing",
+                "performance_testing",
+                "security_testing",
+                "compatibility_testing"
             ])
         
         return {
-            'test_phases': base_tests,
-            'estimated_time': self._estimate_testing_time(impact_level),
-            'test_environments': ['development', 'staging'],
-            'rollback_plan': self._create_rollback_plan()
+            "test_phases": base_tests,
+            "estimated_time": self._estimate_testing_time(impact_level),
+            "test_environments": ["development", "staging"],
+            "rollback_plan": self._create_rollback_plan()
         }
     
     def run_comprehensive_tests(self) -> dict:
@@ -238,66 +238,66 @@ class CopilotDependencyAnalyzer:
         logger.info("Running backend tests")
         try:
             backend_result = self._run_command("make backend-test", timeout=300)
-            results['backend_tests'] = {
-                'status': 'passed',
-                'output': backend_result[-1000:]  # Last 1000 chars
+            results["backend_tests"] = {
+                "status": "passed",
+                "output": backend_result[-1000:]  # Last 1000 chars
             }
         except subprocess.CalledProcessError as e:
-            results['backend_tests'] = {
-                'status': 'failed',
-                'error': str(e),
-                'output': e.output[-1000:] if hasattr(e, 'output') else ''
+            results["backend_tests"] = {
+                "status": "failed",
+                "error": str(e),
+                "output": e.output[-1000:] if hasattr(e, "output") else ""
             }
         
         # Frontend tests
         logger.info("Running frontend tests")
         try:
             frontend_result = self._run_command("cd frontend && npm run test:vitest:run", timeout=120)
-            results['frontend_tests'] = {
-                'status': 'passed',
-                'output': frontend_result[-1000:]
+            results["frontend_tests"] = {
+                "status": "passed",
+                "output": frontend_result[-1000:]
             }
         except subprocess.CalledProcessError as e:
-            results['frontend_tests'] = {
-                'status': 'failed',
-                'error': str(e),
-                'output': e.output[-1000:] if hasattr(e, 'output') else ''
+            results["frontend_tests"] = {
+                "status": "failed",
+                "error": str(e),
+                "output": e.output[-1000:] if hasattr(e, "output") else ""
             }
         
         # Build tests
         logger.info("Running build tests")
         try:
             build_result = self._run_command("make build", timeout=180)
-            results['build_tests'] = {
-                'status': 'passed',
-                'output': build_result[-500:]
+            results["build_tests"] = {
+                "status": "passed",
+                "output": build_result[-500:]
             }
         except subprocess.CalledProcessError as e:
-            results['build_tests'] = {
-                'status': 'failed',
-                'error': str(e),
-                'output': e.output[-500:] if hasattr(e, 'output') else ''
+            results["build_tests"] = {
+                "status": "failed",
+                "error": str(e),
+                "output": e.output[-500:] if hasattr(e, "output") else ""
             }
         
         # Linting
         logger.info("Running linting")
         try:
             lint_result = self._run_command("make lint", timeout=60)
-            results['linting'] = {
-                'status': 'passed',
-                'output': lint_result[-500:]
+            results["linting"] = {
+                "status": "passed",
+                "output": lint_result[-500:]
             }
         except subprocess.CalledProcessError as e:
-            results['linting'] = {
-                'status': 'failed',
-                'error': str(e),
-                'output': e.output[-500:] if hasattr(e, 'output') else ''
+            results["linting"] = {
+                "status": "failed",
+                "error": str(e),
+                "output": e.output[-500:] if hasattr(e, "output") else ""
             }
         
         # Calculate overall status
-        failed_tests = [k for k, v in results.items() if v.get('status') == 'failed']
-        results['overall_status'] = 'failed' if failed_tests else 'passed'
-        results['failed_categories'] = failed_tests
+        failed_tests = [k for k, v in results.items() if v.get("status") == "failed"]
+        results["overall_status"] = "failed" if failed_tests else "passed"
+        results["failed_categories"] = failed_tests
         
         self.test_results = results
         logger.info(f"Test suite complete. Overall status: {results['overall_status']}")
@@ -308,68 +308,68 @@ class CopilotDependencyAnalyzer:
         """Create detailed implementation plan"""
         logger.info("Creating implementation plan")
         
-        impact_level = analysis.get('impact_assessment', {}).get('impact_level', 'medium')
-        breaking_changes = analysis.get('breaking_changes', {})
+        impact_level = analysis.get("impact_assessment", {}).get("impact_level", "medium")
+        breaking_changes = analysis.get("breaking_changes", {})
         
         phases = []
         
         # Phase 1: Preparation
         phases.append({
-            'phase': 'preparation',
-            'tasks': [
-                'backup_current_state',
-                'document_current_functionality',
-                'prepare_rollback_plan',
-                'set_up_test_environment'
+            "phase": "preparation",
+            "tasks": [
+                "backup_current_state",
+                "document_current_functionality",
+                "prepare_rollback_plan",
+                "set_up_test_environment"
             ],
-            'estimated_time': '30 minutes'
+            "estimated_time": "30 minutes"
         })
         
         # Phase 2: Implementation
-        impl_tasks = ['apply_dependency_update']
+        impl_tasks = ["apply_dependency_update"]
         
-        if breaking_changes.get('risk_level') == 'high':
+        if breaking_changes.get("risk_level") == "high":
             impl_tasks.extend([
-                'update_deprecated_apis',
-                'fix_breaking_changes',
-                'update_configuration'
+                "update_deprecated_apis",
+                "fix_breaking_changes",
+                "update_configuration"
             ])
         
         phases.append({
-            'phase': 'implementation',
-            'tasks': impl_tasks,
-            'estimated_time': '1-3 hours' if impact_level in ['critical', 'high'] else '30-60 minutes'
+            "phase": "implementation",
+            "tasks": impl_tasks,
+            "estimated_time": "1-3 hours" if impact_level in ["critical", "high"] else "30-60 minutes"
         })
         
         # Phase 3: Testing
         phases.append({
-            'phase': 'testing',
-            'tasks': [
-                'run_unit_tests',
-                'run_integration_tests',
-                'manual_functionality_testing',
-                'performance_validation'
+            "phase": "testing",
+            "tasks": [
+                "run_unit_tests",
+                "run_integration_tests",
+                "manual_functionality_testing",
+                "performance_validation"
             ],
-            'estimated_time': '1-2 hours' if impact_level in ['critical', 'high'] else '30 minutes'
+            "estimated_time": "1-2 hours" if impact_level in ["critical", "high"] else "30 minutes"
         })
         
         # Phase 4: Validation
         phases.append({
-            'phase': 'validation',
-            'tasks': [
-                'security_validation',
-                'documentation_update',
-                'deployment_preparation',
-                'final_approval'
+            "phase": "validation",
+            "tasks": [
+                "security_validation",
+                "documentation_update",
+                "deployment_preparation",
+                "final_approval"
             ],
-            'estimated_time': '30 minutes'
+            "estimated_time": "30 minutes"
         })
         
         return {
-            'phases': phases,
-            'total_estimated_time': self._calculate_total_time(phases),
-            'risk_level': impact_level,
-            'success_criteria': self._define_success_criteria(analysis)
+            "phases": phases,
+            "total_estimated_time": self._calculate_total_time(phases),
+            "risk_level": impact_level,
+            "success_criteria": self._define_success_criteria(analysis)
         }
     
     def generate_progress_report(self, issue_number: int) -> str:
@@ -396,8 +396,8 @@ class CopilotDependencyAnalyzer:
         
         if tests:
             for test_type, result in tests.items():
-                if test_type != 'overall_status' and test_type != 'failed_categories':
-                    status_emoji = "✅" if result.get('status') == 'passed' else "❌"
+                if test_type != "overall_status" and test_type != "failed_categories":
+                    status_emoji = "✅" if result.get("status") == "passed" else "❌"
                     report += f"- {status_emoji} **{test_type.replace('_', ' ').title()}:** {result.get('status', 'unknown')}\n"
             
             report += f"\n**Overall Test Status:** {'✅ PASSED' if tests.get('overall_status') == 'passed' else '❌ FAILED'}\n"
@@ -440,30 +440,30 @@ class CopilotDependencyAnalyzer:
     def _determine_ecosystem(self, files: list[dict]) -> str:
         """Determine package ecosystem from changed files"""
         for file_info in files:
-            path = file_info.get('path', '')
-            if 'requirements' in path or path.endswith('.txt'):
-                return 'python'
-            if 'package.json' in path or path.endswith('.json'):
-                return 'javascript'
-            if 'Dockerfile' in path:
-                return 'docker'
-            if '.github/workflows' in path:
-                return 'github-actions'
-        return 'unknown'
+            path = file_info.get("path", "")
+            if "requirements" in path or path.endswith(".txt"):
+                return "python"
+            if "package.json" in path or path.endswith(".json"):
+                return "javascript"
+            if "Dockerfile" in path:
+                return "docker"
+            if ".github/workflows" in path:
+                return "github-actions"
+        return "unknown"
     
     def _determine_update_type(self, from_version: str, to_version: str) -> str:
         """Determine semantic version update type"""
         try:
-            from_parts = [int(x) for x in from_version.split('.')]
-            to_parts = [int(x) for x in to_version.split('.')]
+            from_parts = [int(x) for x in from_version.split(".")]
+            to_parts = [int(x) for x in to_version.split(".")]
             
             if from_parts[0] != to_parts[0]:
-                return 'major'
+                return "major"
             if from_parts[1] != to_parts[1]:
-                return 'minor'
-            return 'patch'
+                return "minor"
+            return "patch"
         except (ValueError, IndexError):
-            return 'unknown'
+            return "unknown"
     
     def _analyze_package_usage(self, package_name: str) -> dict:
         """Analyze how the package is used in the codebase"""
@@ -493,19 +493,19 @@ class CopilotDependencyAnalyzer:
             logger.warning(f"Error analyzing package usage: {e}")
         
         return {
-            'usage_count': usage_count,
-            'files_using_package': files_using[:10]  # Limit to first 10
+            "usage_count": usage_count,
+            "files_using_package": files_using[:10]  # Limit to first 10
         }
     
     def _save_analysis_report(self, analysis: dict):
         """Save analysis report to file"""
-        report_dir = self.repo_path / 'reports' / 'dependency_analysis'
+        report_dir = self.repo_path / "reports" / "dependency_analysis"
         report_dir.mkdir(parents=True, exist_ok=True)
         
-        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         report_file = report_dir / f"analysis_{analysis['pr_number']}_{timestamp}.json"
         
-        with open(report_file, 'w') as f:
+        with open(report_file, "w") as f:
             json.dump(analysis, f, indent=2)
         
         logger.info(f"Analysis report saved to {report_file}")
@@ -518,20 +518,20 @@ class CopilotDependencyAnalyzer:
         if not tests:
             return "- Run comprehensive test suite\n- Analyze test results\n- Proceed with implementation if tests pass"
         
-        if tests.get('overall_status') == 'failed':
-            failed = tests.get('failed_categories', [])
+        if tests.get("overall_status") == "failed":
+            failed = tests.get("failed_categories", [])
             return f"- Fix failing tests: {', '.join(failed)}\n- Re-run test suite\n- Investigate test failures"
         
         return "- Review successful test results\n- Proceed with PR approval\n- Monitor post-merge health"
     
     def _generate_risk_summary(self, analysis: dict) -> str:
         """Generate risk summary"""
-        impact = analysis.get('impact_assessment', {}).get('impact_level', 'unknown')
-        breaking = analysis.get('breaking_changes', {}).get('risk_level', 'unknown')
+        impact = analysis.get("impact_assessment", {}).get("impact_level", "unknown")
+        breaking = analysis.get("breaking_changes", {}).get("risk_level", "unknown")
         
-        if impact == 'critical' or breaking == 'high':
+        if impact == "critical" or breaking == "high":
             return "- HIGH RISK: Extensive testing and validation required\n- Consider staging deployment first\n- Have rollback plan ready"
-        if impact == 'high' or breaking == 'medium':
+        if impact == "high" or breaking == "medium":
             return "- MEDIUM RISK: Standard testing protocols apply\n- Monitor application health after merge"
         return "- LOW RISK: Standard dependency update\n- Routine testing sufficient"
     
@@ -541,9 +541,9 @@ class CopilotDependencyAnalyzer:
         # Simple extraction - can be enhanced
         words = title.split()
         for i, word in enumerate(words):
-            if word.lower() == 'bump' and i + 1 < len(words):
+            if word.lower() == "bump" and i + 1 < len(words):
                 return words[i + 1]
-        return 'unknown'
+        return "unknown"
     
     def _identify_affected_areas(self, package_name: str) -> list[str]:
         """Identify areas of code potentially affected by the update"""
@@ -564,12 +564,12 @@ class CopilotDependencyAnalyzer:
     def _estimate_testing_time(self, impact_level: str) -> str:
         """Estimate testing time"""
         times = {
-            'low': '30 minutes',
-            'medium': '1 hour',
-            'high': '2 hours',
-            'critical': '3-4 hours'
+            "low": "30 minutes",
+            "medium": "1 hour",
+            "high": "2 hours",
+            "critical": "3-4 hours"
         }
-        return times.get(impact_level, '1 hour')
+        return times.get(impact_level, "1 hour")
     
     def _create_rollback_plan(self) -> dict:
         """Create rollback plan"""
@@ -596,12 +596,12 @@ def main():
     """Main CLI interface for Copilot dependency analyzer"""
     import argparse
     
-    parser = argparse.ArgumentParser(description='Copilot Dependency Analysis Helper')
-    parser.add_argument('command', choices=['analyze', 'test', 'plan', 'report'], 
-                       help='Command to execute')
-    parser.add_argument('--pr', type=int, help='PR number to analyze')
-    parser.add_argument('--issue', type=int, help='Issue number for reporting')
-    parser.add_argument('--verbose', '-v', action='store_true', help='Verbose output')
+    parser = argparse.ArgumentParser(description="Copilot Dependency Analysis Helper")
+    parser.add_argument("command", choices=["analyze", "test", "plan", "report"], 
+                       help="Command to execute")
+    parser.add_argument("--pr", type=int, help="PR number to analyze")
+    parser.add_argument("--issue", type=int, help="Issue number for reporting")
+    parser.add_argument("--verbose", "-v", action="store_true", help="Verbose output")
     
     args = parser.parse_args()
     
@@ -611,7 +611,7 @@ def main():
     analyzer = CopilotDependencyAnalyzer()
     
     try:
-        if args.command == 'analyze':
+        if args.command == "analyze":
             if not args.pr:
                 print("Error: --pr required for analyze command")
                 sys.exit(1)
@@ -619,11 +619,11 @@ def main():
             result = analyzer.analyze_dependency_update(args.pr)
             print(json.dumps(result, indent=2))
             
-        elif args.command == 'test':
+        elif args.command == "test":
             result = analyzer.run_comprehensive_tests()
             print(json.dumps(result, indent=2))
             
-        elif args.command == 'plan':
+        elif args.command == "plan":
             if not args.pr:
                 print("Error: --pr required for plan command")
                 sys.exit(1)
@@ -632,7 +632,7 @@ def main():
             plan = analyzer.create_implementation_plan(analysis)
             print(json.dumps(plan, indent=2))
             
-        elif args.command == 'report':
+        elif args.command == "report":
             if not args.issue:
                 print("Error: --issue required for report command")
                 sys.exit(1)
@@ -645,5 +645,5 @@ def main():
         sys.exit(1)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

@@ -5,9 +5,11 @@ Provides detailed analysis and safety validation for dependency updates.
 """
 
 import json
-import requests
 import sys
 from typing import Dict, List, Tuple
+
+import requests
+
 
 class DependabotMergeHelper:
     def __init__(self):
