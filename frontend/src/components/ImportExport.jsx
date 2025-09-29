@@ -38,7 +38,7 @@ const ImportExport = () => {
   const [validationResults, setValidationResults] = useState(null)
   const [exportProgress, setExportProgress] = useState(0)
   const [exportStatus, setExportStatus] = useState('idle')
-  const [_bulkOperations, _setBulkOperations] = useState({
+  const [bulkOperations, setBulkOperations] = useState({
     selectedItems: [],
     operation: '',
     inProgress: false
