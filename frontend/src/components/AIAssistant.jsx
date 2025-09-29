@@ -61,7 +61,7 @@ const AIAssistant = () => {
   }, [language])
 
   // Load initial data for insights
-  const loadInitialData, [loadInitialData] = async () => {
+  const loadInitialData = async () => {
     try {
       // Generate initial insights
       await generateInsights()
