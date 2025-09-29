@@ -15,7 +15,7 @@ const PasswordReset = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [_error, setError] = useState('');
+  const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [token, setToken] = useState('');
   const [tokenValid, setTokenValid] = useState(null);
@@ -25,15 +25,15 @@ const PasswordReset = () => {
 
   useEffect(() => {
     const resetToken = searchParams.get('token');
-    if (_resetToken) {
-      setToken(_resetToken);
-      validateToken(_resetToken);
+    if (resetToken) {
+      setToken(resetToken);
+      validateToken(resetToken);
     } else {
       setError('Invalid reset link. Please request a new password reset.');
     }
   }, [searchParams]);
 
-  const validateToken = async (_resetToken) => {
+  const validateToken = async (resetToken) => {
     try {
       // We'll validate the token when the user submits the form
       // For now, just assume it's valid if it exists

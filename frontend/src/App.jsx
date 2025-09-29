@@ -24,7 +24,7 @@ const Photos = lazy(() => import('./components/Photos'))
 const ProjectTimeline = lazy(() => import('./components/ProjectTimeline'))
 const Settings = lazy(() => import('./components/Settings'))
 const UserManagement = lazy(() => import('./components/UserManagement'))
-const _PasswordReset = lazy(() => import('./components/PasswordReset')) // Keep for future use
+const PasswordReset = lazy(() => import('./components/PasswordReset'))
 import './unified-professional-styles.css'
 import './enhanced_sidebar_styles.css'
 
@@ -214,6 +214,7 @@ function AuthenticatedApp({
                 <Route path="/timeline" element={<ProjectTimeline user={user} />} />
                 <Route path="/settings" element={<Settings user={user} />} />
                 <Route path="/users" element={<UserManagement user={user} />} />
+                <Route path="/password-reset" element={<PasswordReset />} />
               </Routes>
             </Suspense>
           </main>

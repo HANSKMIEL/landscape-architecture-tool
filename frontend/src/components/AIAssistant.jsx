@@ -32,7 +32,7 @@ const AIAssistant = () => {
   const [messages, setMessages] = useState([])
   const [inputMessage, setInputMessage] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-  const [_suggestions, _setSuggestions] = useState([])
+  const [suggestions, setSuggestions] = useState([])
   const [insights, setInsights] = useState([])
   const [plantRecommendations, setPlantRecommendations] = useState([])
   const messagesEndRef = useRef(null)
