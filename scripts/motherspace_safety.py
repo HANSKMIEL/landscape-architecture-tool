@@ -259,7 +259,6 @@ class MotherSpaceSafetyManager:
         fingerprint_data = f"{content_hash}|{labels_str}|{salt}"
         return hashlib.sha256(fingerprint_data.encode()).hexdigest()[:16]
 
-
     def get_issue_fingerprint(self, issue_data: dict[str, Any]) -> str:
         """Generate fingerprint for issue using the fingerprinting system."""
         # Use embedded fingerprinter to avoid pytest dependency
