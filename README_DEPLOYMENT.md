@@ -11,10 +11,10 @@
 # SSH to VPS
 ssh root@72.60.176.200
 
-# Quick deployment command
+# Quick deployment command (V1.00D branch)
 cd /var/www/landscape-architecture-tool && \
 git fetch --all && \
-git reset --hard origin/main && \
+git reset --hard origin/V1.00D && \
 systemctl stop landscape-backend && \
 pkill -f gunicorn && \
 source venv/bin/activate && \
@@ -43,7 +43,7 @@ For ongoing deployments, copy this script to VPS and run it:
 cat > /root/quick_deploy.sh << 'EOF'
 #!/bin/bash
 cd /var/www/landscape-architecture-tool
-git fetch --all && git reset --hard origin/main
+git fetch --all && git reset --hard origin/V1.00D
 systemctl stop landscape-backend
 pkill -f gunicorn
 source venv/bin/activate

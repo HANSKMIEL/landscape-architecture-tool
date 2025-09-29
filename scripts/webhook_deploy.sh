@@ -18,10 +18,10 @@ log "🚀 Starting webhook deployment..."
 # Navigate to app directory
 cd "$APP_DIR" || exit 1
 
-# Pull latest changes
-log "📥 Pulling latest changes from GitHub..."
+# Pull latest changes from V1.00D branch
+log "📥 Pulling latest changes from V1.00D branch..."
 git fetch --all
-git reset --hard origin/main
+git reset --hard origin/V1.00D
 
 # Stop existing services
 log "🛑 Stopping existing services..."

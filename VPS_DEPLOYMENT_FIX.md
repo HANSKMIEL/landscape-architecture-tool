@@ -41,9 +41,9 @@ Run these commands on the VPS (ssh root@72.60.176.200):
 ```bash
 cd /var/www/landscape-architecture-tool
 
-# Pull latest changes
+# Pull latest changes from V1.00D development branch
 git fetch --all
-git reset --hard origin/main
+git reset --hard origin/V1.00D
 
 # Stop services
 systemctl stop landscape-backend 2>/dev/null || true
