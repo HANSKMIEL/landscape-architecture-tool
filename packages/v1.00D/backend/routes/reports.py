@@ -945,7 +945,7 @@ def generate_comprehensive_pdf():
         )
         
     except Exception as e:
-        logging.error(f"Error generating PDF report: {str(e)}")
+        logging.error(f"Error generating PDF report: {e!s}")
         return jsonify({"error": str(e)}), 500
 
 
@@ -982,7 +982,7 @@ def generate_overview_pdf_content(data, t, styles):
         content.append(Spacer(1, 20))
     
     # Top clients
-    if "topClients" in data and data["topClients"]:
+    if data.get("topClients"):
         content.append(Paragraph("Top Klanten", styles["Heading2"]))
         
         client_data = [["Naam", "E-mail", "Stad"]]
@@ -1015,7 +1015,7 @@ def generate_clients_pdf_content(data, t, styles):
     """Generate clients report PDF content"""
     content = []
     
-    if "topClientsByProjects" in data and data["topClientsByProjects"]:
+    if data.get("topClientsByProjects"):
         content.append(Paragraph("Top Klanten op Projecten", styles["Heading2"]))
         
         client_data = [["Naam", "E-mail", "Projecten", "Totaal Budget"]]
@@ -1076,7 +1076,7 @@ def generate_projects_pdf_content(data, t, styles):
     content.append(Spacer(1, 20))
     
     # Status distribution
-    if "statusDistribution" in data and data["statusDistribution"]:
+    if data.get("statusDistribution"):
         content.append(Paragraph("Status Verdeling", styles["Heading2"]))
         
         status_data = [["Status", "Aantal"]]
@@ -1135,7 +1135,7 @@ def generate_plants_pdf_content(data, t, styles):
     content.append(Spacer(1, 20))
     
     # Category distribution
-    if "categoryDistribution" in data and data["categoryDistribution"]:
+    if data.get("categoryDistribution"):
         content.append(Paragraph("Categorie Verdeling", styles["Heading2"]))
         
         category_data = [["Categorie", "Aantal"]]
@@ -1194,7 +1194,7 @@ def generate_financial_pdf_content(data, t, styles):
     content.append(Spacer(1, 20))
     
     # Monthly revenue
-    if "monthlyRevenue" in data and data["monthlyRevenue"]:
+    if data.get("monthlyRevenue"):
         content.append(Paragraph("Maandelijkse Omzet", styles["Heading2"]))
         
         revenue_data = [["Maand", "Omzet"]]

@@ -25,7 +25,7 @@ class PresentationConfig:
     primary_color: str = "#2563eb"
     secondary_color: str = "#10b981"
     font_family: str = "Inter"
-    logo_url: Optional[str] = None
+    logo_url: str | None = None
     company_name: str = ""
     language: str = "nl"
 
@@ -36,7 +36,7 @@ class PlantPresentationData:
     name: str
     scientific_name: str
     description: str
-    image_url: Optional[str]
+    image_url: str | None
     characteristics: dict[str, str]
     care_instructions: str
     price: float
@@ -144,7 +144,7 @@ class ClientPresentationGenerator:
         return any(keyword in plant_name_lower or keyword in plant_type_lower for keyword in keywords)
     
     def create_presentation(self, project_id: int, template: str = "modern", 
-                          config: Optional[PresentationConfig] = None) -> dict:
+                          config: PresentationConfig | None = None) -> dict:
         """Create a new client presentation"""
         try:
             # Get project data
@@ -183,7 +183,7 @@ class ClientPresentationGenerator:
             logger.error(f"Error creating presentation: {e}")
             raise
     
-    def _get_project_data(self, project_id: int) -> Optional[ProjectPresentationData]:
+    def _get_project_data(self, project_id: int) -> ProjectPresentationData | None:
         """Get project data from database"""
         try:
             cursor = self.db.cursor()

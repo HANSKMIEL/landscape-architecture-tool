@@ -77,7 +77,7 @@ def ai_chat():
             ai_response = response.choices[0].message.content.strip()
             
         except Exception as openai_error:
-            logging.error(f"OpenAI API error: {str(openai_error)}")
+            logging.error(f"OpenAI API error: {openai_error!s}")
             
             # Fallback responses
             fallback_responses = {
@@ -89,8 +89,8 @@ def ai_chat():
                 },
                 "en": {
                     "plant_recommendation": "For plant recommendations, I suggest choosing native species suitable for your climate and soil type. Also consider maintenance requirements and seasonal aspects.",
-                    "project_management": "For effective project management, it\'s important to set clear goals, communicate regularly with clients, and create detailed planning.",
-                    "design_tips": "In garden design, it\'s important to consider the existing environment, client preferences, and sustainable practices.",
+                    "project_management": "For effective project management, it's important to set clear goals, communicate regularly with clients, and create detailed planning.",
+                    "design_tips": "In garden design, it's important to consider the existing environment, client preferences, and sustainable practices.",
                     "default": "I can help you with plant recommendations, project management, and garden design. Feel free to ask specific questions!"
                 }
             }
@@ -115,7 +115,7 @@ def ai_chat():
         })
         
     except Exception as e:
-        logging.error(f"AI chat error: {str(e)}")
+        logging.error(f"AI chat error: {e!s}")
         return jsonify({"error": "AI service temporarily unavailable"}), 500
 
 
@@ -173,7 +173,7 @@ def ai_plant_recommendations():
         })
         
     except Exception as e:
-        logging.error(f"Plant recommendations error: {str(e)}")
+        logging.error(f"Plant recommendations error: {e!s}")
         return jsonify({"error": "Failed to generate plant recommendations"}), 500
 
 
@@ -227,7 +227,7 @@ def ai_project_insights():
                 {
                     "type": "performance",
                     "title": "Project Performance",
-                    "content": f"You have completed {completed_projects} out of {total_projects} projects. This is a completion rate of {(completed_projects/total_projects*100):.1f}%." if total_projects > 0 else "You haven\'t completed any projects yet.",
+                    "content": f"You have completed {completed_projects} out of {total_projects} projects. This is a completion rate of {(completed_projects/total_projects*100):.1f}%." if total_projects > 0 else "You haven't completed any projects yet.",
                     "recommendation": "Focus on completing active projects to improve your completion rate." if active_projects > completed_projects else "Excellent completion ratio! Consider taking on more projects."
                 },
                 {
@@ -257,7 +257,7 @@ def ai_project_insights():
         })
         
     except Exception as e:
-        logging.error(f"Project insights error: {str(e)}")
+        logging.error(f"Project insights error: {e!s}")
         return jsonify({"error": "Failed to generate project insights"}), 500
 
 
@@ -272,7 +272,7 @@ def get_landscape_stats():
             "suppliers": Supplier.query.count()
         }
     except Exception as e:
-        logging.error(f"Error getting landscape stats: {str(e)}")
+        logging.error(f"Error getting landscape stats: {e!s}")
         return {
             "projects": 0,
             "clients": 0,

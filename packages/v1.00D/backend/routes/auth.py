@@ -32,24 +32,24 @@ class PasswordResetSchema(BaseModel):
 class UserCreateSchema(BaseModel):
     username: str
     email: EmailStr
-    password: Optional[str] = None
+    password: str | None = None
     role: str = "user"
-    first_name: Optional[str] = None
-    last_name: Optional[str] = None
-    phone: Optional[str] = None
-    company: Optional[str] = None
-    notes: Optional[str] = None
+    first_name: str | None = None
+    last_name: str | None = None
+    phone: str | None = None
+    company: str | None = None
+    notes: str | None = None
 
 class UserUpdateSchema(BaseModel):
-    username: Optional[str] = None
-    email: Optional[EmailStr] = None
-    role: Optional[str] = None
-    first_name: Optional[str] = None
-    last_name: Optional[str] = None
-    phone: Optional[str] = None
-    company: Optional[str] = None
-    notes: Optional[str] = None
-    is_active: Optional[bool] = None
+    username: str | None = None
+    email: EmailStr | None = None
+    role: str | None = None
+    first_name: str | None = None
+    last_name: str | None = None
+    phone: str | None = None
+    company: str | None = None
+    notes: str | None = None
+    is_active: bool | None = None
 
 class BulkUserSchema(BaseModel):
     users: list[UserCreateSchema]
@@ -157,7 +157,7 @@ def login():
     except ValidationError as e:
         return jsonify({"error": "Invalid input", "details": e.errors()}), 400
     except Exception as e:
-        logger.error(f"Login error: {str(e)}")
+        logger.error(f"Login error: {e!s}")
         return jsonify({"error": "Internal server error"}), 500
 
 @auth_bp.route("/auth/logout", methods=["POST"])
@@ -176,7 +176,7 @@ def logout():
         return jsonify({"message": "Logout successful"}), 200
         
     except Exception as e:
-        logger.error(f"Logout error: {str(e)}")
+        logger.error(f"Logout error: {e!s}")
         return jsonify({"error": "Internal server error"}), 500
 
 @auth_bp.route("/auth/me", methods=["GET"])
@@ -188,7 +188,7 @@ def get_current_user():
         return jsonify({"user": user.to_dict()}), 200
         
     except Exception as e:
-        logger.error(f"Get current user error: {str(e)}")
+        logger.error(f"Get current user error: {e!s}")
         return jsonify({"error": "Internal server error"}), 500
 
 @auth_bp.route("/auth/change-password", methods=["POST"])
@@ -214,7 +214,7 @@ def change_password():
     except ValidationError as e:
         return jsonify({"error": "Invalid input", "details": e.errors()}), 400
     except Exception as e:
-        logger.error(f"Change password error: {str(e)}")
+        logger.error(f"Change password error: {e!s}")
         return jsonify({"error": "Internal server error"}), 500
 
 @auth_bp.route("/auth/forgot-password", methods=["POST"])
@@ -252,7 +252,7 @@ def forgot_password():
     except ValidationError as e:
         return jsonify({"error": "Invalid input", "details": e.errors()}), 400
     except Exception as e:
-        logger.error(f"Forgot password error: {str(e)}")
+        logger.error(f"Forgot password error: {e!s}")
         return jsonify({"error": "Internal server error"}), 500
 
 @auth_bp.route("/auth/reset-password", methods=["POST"])
@@ -278,7 +278,7 @@ def reset_password():
     except ValidationError as e:
         return jsonify({"error": "Invalid input", "details": e.errors()}), 400
     except Exception as e:
-        logger.error(f"Reset password error: {str(e)}")
+        logger.error(f"Reset password error: {e!s}")
         return jsonify({"error": "Internal server error"}), 500
 
 # User Management Routes (Admin only)
@@ -319,7 +319,7 @@ def list_users():
         }), 200
         
     except Exception as e:
-        logger.error(f"List users error: {str(e)}")
+        logger.error(f"List users error: {e!s}")
         return jsonify({"error": "Internal server error"}), 500
 
 @auth_bp.route("/users", methods=["POST"])
@@ -364,7 +364,7 @@ def create_user():
     except ValidationError as e:
         return jsonify({"error": "Invalid input", "details": e.errors()}), 400
     except Exception as e:
-        logger.error(f"Create user error: {str(e)}")
+        logger.error(f"Create user error: {e!s}")
         return jsonify({"error": "Internal server error"}), 500
 
 @auth_bp.route("/users/<int:user_id>", methods=["PUT"])
@@ -393,7 +393,7 @@ def update_user(user_id):
     except ValidationError as e:
         return jsonify({"error": "Invalid input", "details": e.errors()}), 400
     except Exception as e:
-        logger.error(f"Update user error: {str(e)}")
+        logger.error(f"Update user error: {e!s}")
         return jsonify({"error": "Internal server error"}), 500
 
 @auth_bp.route("/users/<int:user_id>", methods=["DELETE"])
@@ -416,7 +416,7 @@ def delete_user(user_id):
         return jsonify({"message": "User deleted successfully"}), 200
         
     except Exception as e:
-        logger.error(f"Delete user error: {str(e)}")
+        logger.error(f"Delete user error: {e!s}")
         return jsonify({"error": "Internal server error"}), 500
 
 @auth_bp.route("/users/bulk-import", methods=["POST"])
@@ -474,7 +474,7 @@ def bulk_import_users():
                 created_users.append(user.username)
                 
             except Exception as e:
-                errors.append(f"Row {row_num}: {str(e)}")
+                errors.append(f"Row {row_num}: {e!s}")
         
         if created_users:
             db.session.commit()
@@ -482,7 +482,7 @@ def bulk_import_users():
         logger.info(f"Bulk import completed: {len(created_users)} users created by {session.get('username')}")
         
         return jsonify({
-            "message": f"Bulk import completed",
+            "message": "Bulk import completed",
             "created_users": created_users,
             "errors": errors,
             "total_created": len(created_users),
@@ -490,7 +490,7 @@ def bulk_import_users():
         }), 200
         
     except Exception as e:
-        logger.error(f"Bulk import error: {str(e)}")
+        logger.error(f"Bulk import error: {e!s}")
         return jsonify({"error": "Internal server error"}), 500
 
 @auth_bp.route("/users/<int:user_id>/reset-password", methods=["POST"])
@@ -513,7 +513,7 @@ def admin_reset_user_password(user_id):
         }), 200
         
     except Exception as e:
-        logger.error(f"Admin reset password error: {str(e)}")
+        logger.error(f"Admin reset password error: {e!s}")
         return jsonify({"error": "Internal server error"}), 500
 
 @auth_bp.route("/users/<int:user_id>/unlock", methods=["POST"])
@@ -532,5 +532,5 @@ def unlock_user_account(user_id):
         return jsonify({"message": "Account unlocked successfully"}), 200
         
     except Exception as e:
-        logger.error(f"Unlock account error: {str(e)}")
+        logger.error(f"Unlock account error: {e!s}")
         return jsonify({"error": "Internal server error"}), 500

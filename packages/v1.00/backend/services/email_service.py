@@ -26,7 +26,7 @@ class EmailService:
         self.from_email = os.getenv("FROM_EMAIL", "noreply@optura.nl")
         self.from_name = os.getenv("FROM_NAME", "Landscape Architecture Tool")
     
-    def send_email(self, to_email: str, subject: str, html_body: str, text_body: Optional[str] = None, attachments: Optional[list] = None):
+    def send_email(self, to_email: str, subject: str, html_body: str, text_body: str | None = None, attachments: list | None = None):
         """Send email with HTML and optional text body"""
         try:
             msg = MimeMultipart("alternative")
@@ -67,7 +67,7 @@ class EmailService:
             return True
             
         except Exception as e:
-            logger.error(f"Failed to send email to {to_email}: {str(e)}")
+            logger.error(f"Failed to send email to {to_email}: {e!s}")
             return False
     
     def _add_attachment(self, msg, attachment_path: str):
@@ -85,7 +85,7 @@ class EmailService:
             msg.attach(part)
             
         except Exception as e:
-            logger.error(f"Failed to add attachment {attachment_path}: {str(e)}")
+            logger.error(f"Failed to add attachment {attachment_path}: {e!s}")
     
     def send_password_reset_email(self, user_email: str, user_name: str, reset_token: str):
         """Send password reset email"""
@@ -168,7 +168,7 @@ class EmailService:
         
         return self.send_email(user_email, subject, html_body, text_body)
     
-    def send_welcome_email(self, user_email: str, user_name: str, username: str, temporary_password: Optional[str] = None):
+    def send_welcome_email(self, user_email: str, user_name: str, username: str, temporary_password: str | None = None):
         """Send welcome email to new user"""
         login_url = f"{current_app.config.get('FRONTEND_URL', 'https://optura.nl')}/login"
         

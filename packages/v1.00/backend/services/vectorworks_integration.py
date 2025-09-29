@@ -56,7 +56,7 @@ class MaterialSpecification:
 class VectorworksSDKInterface:
     """Interface for Vectorworks SDK operations"""
     
-    def __init__(self, vectorworks_path: Optional[str] = None):
+    def __init__(self, vectorworks_path: str | None = None):
         self.vectorworks_path = vectorworks_path or self._find_vectorworks_installation()
         self.sdk_path = self._find_sdk_path()
         self.temp_dir = tempfile.mkdtemp(prefix="vw_integration_")
@@ -132,7 +132,7 @@ class VectorworksDataExtractor:
         # Use class constant for output filename
         output_path = f"{self.sdk.temp_dir}/{self.OUTPUT_FILENAME}"
         
-        script_template = '''
+        script_template = """
         {{ Vectorscript for extracting landscape architecture data }}
         PROCEDURE ExtractLandscapeData;
         VAR
@@ -209,11 +209,11 @@ class VectorworksDataExtractor:
         END;
         
         RUN(ExtractLandscapeData);
-        '''
+        """
         
         return script_template.format(output_path=output_path)
     
-    def _execute_vectorscript(self, script_path: str, vwx_file_path: str) -> Optional[dict]:
+    def _execute_vectorscript(self, script_path: str, vwx_file_path: str) -> dict | None:
         """Execute Vectorscript and return results"""
         if not self.sdk.is_available():
             logger.warning("Vectorworks SDK not available, using mock data")
@@ -233,7 +233,7 @@ class VectorworksDataExtractor:
             if result.returncode == 0:
                 output_file = os.path.join(self.sdk.temp_dir, self.OUTPUT_FILENAME)
                 if os.path.exists(output_file):
-                    with open(output_file, "r") as f:
+                    with open(output_file) as f:
                         return json.load(f)
             else:
                 logger.error(f"Vectorscript execution failed: {result.stderr}")
@@ -350,11 +350,11 @@ class VectorworksDataExporter:
                 f"    symbolName := '{symbol_name}';",
                 f"    x := {x};",
                 f"    y := {y};",
-                f"    h := CreateSymbol(symbolName, x, y, 0);",
-                f"    IF h <> NIL THEN BEGIN",
+                "    h := CreateSymbol(symbolName, x, y, 0);",
+                "    IF h <> NIL THEN BEGIN",
                 f"        SetClass(h, '{plant.get('class_name', 'Plants')}');",
                 f"        SetLayer(h, '{plant.get('layer', 'Planting Plan')}');",
-                f"    END;",
+                "    END;",
                 ""
             ])
         
@@ -505,7 +505,7 @@ class VectorworksReportGenerator:
 class VectorworksIntegrationService:
     """Main service for Vectorworks integration"""
     
-    def __init__(self, vectorworks_path: Optional[str] = None):
+    def __init__(self, vectorworks_path: str | None = None):
         self.sdk = VectorworksSDKInterface(vectorworks_path)
         self.extractor = VectorworksDataExtractor(self.sdk)
         self.exporter = VectorworksDataExporter(self.sdk)
@@ -556,6 +556,6 @@ class VectorworksIntegrationService:
             return {"success": False, "error": str(e)}
 
 # Factory function
-def create_vectorworks_service(vectorworks_path: Optional[str] = None) -> VectorworksIntegrationService:
+def create_vectorworks_service(vectorworks_path: str | None = None) -> VectorworksIntegrationService:
     """Create Vectorworks integration service"""
     return VectorworksIntegrationService(vectorworks_path)

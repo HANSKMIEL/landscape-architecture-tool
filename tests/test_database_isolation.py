@@ -21,7 +21,7 @@ class TestDatabaseIsolation:
 
     def test_create_plant_isolated_1(self, app):
         """First test creating a plant - should not affect other tests"""
-    # Authentication handled by authenticated_test_user fixture
+        # Authentication handled by authenticated_test_user fixture
         with app.app_context():
             # Create a plant
             plant = Plant(
@@ -38,7 +38,7 @@ class TestDatabaseIsolation:
 
     def test_create_plant_isolated_2(self, app):
         """Second test creating a plant - should start with clean database"""
-    # Authentication handled by authenticated_test_user fixture
+        # Authentication handled by authenticated_test_user fixture
         with app.app_context():
             # Database should start clean
             initial_count = db.session.query(Plant).count()

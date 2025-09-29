@@ -24,6 +24,7 @@ from pathlib import Path
 try:
     sys.path.insert(0, str(Path(__file__).parent.parent))
     from src.utils.pr_analyzer import PRAnalyzer
+
     DYNAMIC_PR_ANALYSIS_AVAILABLE = True
 except ImportError:
     DYNAMIC_PR_ANALYSIS_AVAILABLE = False
@@ -423,22 +424,22 @@ print('Database initialized')
             self.results["overall_status"] = "error"
         else:
             self.results["overall_status"] = "warning"
-    
+
     def add_dynamic_pr_analysis(self):
         """Add dynamic PR analysis to replace hardcoded values"""
         if not DYNAMIC_PR_ANALYSIS_AVAILABLE:
             self.results["pr_analysis"] = {
                 "note": "Dynamic PR analysis not available - install requirements",
-                "dynamic_analysis": False
+                "dynamic_analysis": False,
             }
             return
-        
+
         print("📊 Adding dynamic PR analysis...")
-        
+
         try:
             analyzer = PRAnalyzer()
             pr_counts = analyzer.generate_pr_counts()
-            
+
             self.results["pr_analysis"] = {
                 "dynamic_analysis": True,
                 "timestamp": pr_counts["timestamp"],
@@ -447,12 +448,12 @@ print('Database initialized')
                     "total_dependabot_prs": pr_counts["dependabot_prs"]["total"],
                     "safe_auto_merge_count": pr_counts["dependabot_prs"]["safe_auto_merge"],
                     "manual_review_count": pr_counts["dependabot_prs"]["manual_review_required"],
-                    "major_updates_count": pr_counts["dependabot_prs"]["major_updates_requiring_testing"]
+                    "major_updates_count": pr_counts["dependabot_prs"]["major_updates_requiring_testing"],
                 },
                 "pr_numbers": pr_counts["pr_numbers"],
-                "recommendation": "These counts are calculated dynamically from live GitHub data"
+                "recommendation": "These counts are calculated dynamically from live GitHub data",
             }
-            
+
             # Add specific recommendations based on PR analysis
             dependabot_data = pr_counts["dependabot_prs"]
             if dependabot_data["safe_auto_merge"] > 0:
@@ -467,12 +468,12 @@ print('Database initialized')
                 self.results["recommendations"].append(
                     f"🔬 {dependabot_data['major_updates_requiring_testing']} major updates need extensive testing"
                 )
-            
+
         except Exception as e:
             self.results["pr_analysis"] = {
                 "dynamic_analysis": False,
                 "error": f"Failed to fetch dynamic PR data: {e!s}",
-                "fallback": "Would normally show real-time PR counts instead of hardcoded values"
+                "fallback": "Would normally show real-time PR counts instead of hardcoded values",
             }
 
     def generate_summary(self):
@@ -595,7 +596,7 @@ print('Database initialized')
         # Generate final results
         duration = time.time() - start_time
         print(f"\n⏱️ Validation completed in {duration:.1f} seconds")
-        
+
         report_file = self.finalize_validation()
 
         # Return status for programmatic use
@@ -625,7 +626,7 @@ def main():
         else:
             print("Usage: python automated_validation.py [--quick|--tests-only]")
             return
-        
+
         # For partial runs, still generate results with PR analysis
         validator.finalize_validation()
     else:
@@ -634,7 +635,6 @@ def main():
 
         # Exit with appropriate code
         sys.exit(0 if result["success"] else 1)
-
 
 
 if __name__ == "__main__":
