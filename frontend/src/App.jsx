@@ -24,7 +24,7 @@ const Photos = lazy(() => import('./components/Photos'))
 const ProjectTimeline = lazy(() => import('./components/ProjectTimeline'))
 const Settings = lazy(() => import('./components/Settings'))
 const UserManagement = lazy(() => import('./components/UserManagement'))
-const PasswordReset = lazy(() => import('./components/PasswordReset'))
+const _PasswordReset = lazy(() => import('./components/PasswordReset')) // Keep for future use
 import './unified-professional-styles.css'
 import './enhanced_sidebar_styles.css'
 

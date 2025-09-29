@@ -3,7 +3,7 @@ import { DashboardStatsChart } from './Charts/LandscapeCharts';
 import { useLanguage } from '../i18n/LanguageProvider';
 
 const Dashboard = () => {
-  const { t } = useLanguage();
+  const { t: _t } = useLanguage();
   const [stats, setStats] = useState(null);
   const [recentActivity, setRecentActivity] = useState([]);
   const [loading, setLoading] = useState(true);

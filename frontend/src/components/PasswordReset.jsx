@@ -15,7 +15,7 @@ const PasswordReset = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [_error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [token, setToken] = useState('');
   const [tokenValid, setTokenValid] = useState(null);
@@ -25,20 +25,20 @@ const PasswordReset = () => {
 
   useEffect(() => {
     const resetToken = searchParams.get('token');
-    if (resetToken) {
-      setToken(resetToken);
-      validateToken(resetToken);
+    if (_resetToken) {
+      setToken(_resetToken);
+      validateToken(_resetToken);
     } else {
       setError('Invalid reset link. Please request a new password reset.');
     }
   }, [searchParams]);
 
-  const validateToken = async (resetToken) => {
+  const validateToken = async (_resetToken) => {
     try {
       // We'll validate the token when the user submits the form
       // For now, just assume it's valid if it exists
       setTokenValid(true);
-    } catch (err) {
+    } catch (_err) {
       setError('Invalid or expired reset token.');
       setTokenValid(false);
     }
@@ -51,7 +51,7 @@ const PasswordReset = () => {
       [name]: value
     }));
     // Clear errors when user starts typing
-    if (error) setError('');
+    if (_error) setError('');
   };
 
   const validatePassword = (password) => {
@@ -116,8 +116,8 @@ const PasswordReset = () => {
           setError(data.error || 'Failed to reset password');
         }
       }
-    } catch (err) {
-      console.error('Password reset error:', err);
+    } catch (_err) {
+      console.error('Password reset error:', _err);
       setError('Network error. Please try again.');
     } finally {
       setIsLoading(false);
