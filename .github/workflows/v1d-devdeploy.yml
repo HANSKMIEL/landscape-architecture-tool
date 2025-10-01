@@ -148,8 +148,9 @@ jobs:
           echo "🔄 Starting V1.00D deployment audit and update..."
           
           # Function to find actual deployment directory
+          # CRITICAL: Check dev directory FIRST to avoid deploying to production!
           find_deployment_dir() {
-              for dir in "/var/www/landscape-architecture-tool" "/var/www/landscape-architecture-tool-dev" "/opt/landscape-architecture-tool" "/home/landscape-architecture-tool"; do
+              for dir in "/var/www/landscape-architecture-tool-dev" "/var/www/landscape-architecture-tool" "/opt/landscape-architecture-tool" "/home/landscape-architecture-tool"; do
                   if [ -d "$dir" ]; then
                       echo "$dir"
                       return 0
@@ -163,7 +164,7 @@ jobs:
           DEPLOY_DIR=$(find_deployment_dir)
           if [ -z "$DEPLOY_DIR" ]; then
               echo "❌ No deployment directory found. Creating new deployment..."
-              DEPLOY_DIR="/var/www/landscape-architecture-tool"
+              DEPLOY_DIR="/var/www/landscape-architecture-tool-dev"
               mkdir -p "$DEPLOY_DIR"
               cd "$DEPLOY_DIR"
               git clone https://github.com/HANSKMIEL/landscape-architecture-tool.git .
@@ -171,6 +172,15 @@ jobs:
           else
               echo "✅ Found deployment directory: $DEPLOY_DIR"
               cd "$DEPLOY_DIR"
+          fi
+          
+          # CRITICAL SAFETY CHECK: Prevent accidental production deployment
+          if [[ "$DEPLOY_DIR" == "/var/www/landscape-architecture-tool" ]] && [[ ! "$DEPLOY_DIR" =~ -dev ]]; then
+              echo "🚨 CRITICAL ERROR: Attempting to deploy V1.00D to PRODUCTION directory!"
+              echo "❌ Deployment directory: $DEPLOY_DIR"
+              echo "❌ This V1.00D workflow should ONLY deploy to development environment"
+              echo "🛡️ BLOCKING deployment to protect production (optura.nl)"
+              exit 1
           fi
           
           # Show current commit before update
