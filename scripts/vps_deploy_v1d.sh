@@ -166,17 +166,27 @@ fi
 log "Rebuilding frontend with devdeploy branding..."
 cd frontend
 
-# Clear npm cache and build artifacts
+# Clear npm cache and build artifacts with force
 log "Clearing npm and build caches..."
-npm cache clean --force
-rm -rf node_modules/.cache 2>/dev/null || true
-rm -rf .next 2>/dev/null || true
-rm -rf dist 2>/dev/null || true
-rm -rf build 2>/dev/null || true
+npm cache clean --force 2>/dev/null || true
 
-# Install dependencies
+# Force remove node_modules completely to avoid ENOTEMPTY errors
+if [ -d "node_modules" ]; then
+    log "Removing existing node_modules..."
+    rm -rf node_modules 2>/dev/null || true
+    # If normal rm fails, try with sudo and force
+    if [ -d "node_modules" ]; then
+        chmod -R 755 node_modules 2>/dev/null || true
+        rm -rf node_modules 2>/dev/null || true
+    fi
+fi
+
+# Clear other build artifacts
+rm -rf node_modules/.cache .next dist build 2>/dev/null || true
+
+# Install dependencies fresh
 log "Installing frontend dependencies..."
-npm ci --legacy-peer-deps
+npm install --legacy-peer-deps
 
 # Set devdeploy environment
 log "Configuring devdeploy environment..."
