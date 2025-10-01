@@ -4,15 +4,17 @@ import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import PhotoUpload from './PhotoUpload';
 import PhotoGallery from './PhotoGallery';
+import { useLanguage } from '../i18n/LanguageProvider';
 
 const PhotoManager = ({ 
   category = null, 
   entityId = null,
   entityName = null,
-  title = "Foto Beheer",
+  title = null,
   allowedCategories = ['plant', 'material', 'property', 'project', 'example', 'inspiration', 'reference'],
   showTabs = true
 }) => {
+  const { t } = useLanguage();
   const [refreshKey, setRefreshKey] = useState(0);
 
   const handleUploadSuccess = () => {
@@ -26,10 +28,11 @@ const PhotoManager = ({
   };
 
   const getTitle = () => {
+    const defaultTitle = title || t('photos.title', 'Photo Management');
     if (entityName) {
-      return `${title} - ${entityName}`;
+      return `${defaultTitle} - ${entityName}`;
     }
-    return title;
+    return defaultTitle;
   };
 
   if (!showTabs) {
@@ -55,7 +58,7 @@ const PhotoManager = ({
               <PhotoGallery
                 category={category}
                 entityId={entityId}
-                title="Geüploade Foto's"
+                title={t('photos.uploaded', 'Uploaded Photos')}
                 onPhotoUpdate={handlePhotoUpdate}
               />
             </div>
@@ -79,11 +82,11 @@ const PhotoManager = ({
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="gallery" className="flex items-center gap-2">
               <Images className="w-4 h-4" />
-              Galerij
+              {t('photos.gallery', 'Gallery')}
             </TabsTrigger>
             <TabsTrigger value="upload" className="flex items-center gap-2">
               <Upload className="w-4 h-4" />
-              Upload
+              {t('photos.upload', 'Upload')}
             </TabsTrigger>
           </TabsList>
           
@@ -92,7 +95,7 @@ const PhotoManager = ({
               <PhotoGallery
                 category={category}
                 entityId={entityId}
-                title="Foto Galerij"
+                title={t('photos.photoGallery', 'Photo Gallery')}
                 onPhotoUpdate={handlePhotoUpdate}
               />
             </div>

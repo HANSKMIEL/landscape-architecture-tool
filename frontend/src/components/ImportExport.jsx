@@ -173,22 +173,26 @@ const ImportExport = () => {
       let filename = `${selectedDataType}_export_${new Date().toISOString().split('T')[0]}.${format}`
 
       switch (selectedDataType) {
-        case 'clients':
+        case 'clients': {
           const clientsResponse = await ApiService.getClients()
           data = clientsResponse.clients || []
           break
-        case 'plants':
+        }
+        case 'plants': {
           const plantsResponse = await ApiService.getPlants()
           data = plantsResponse.plants || []
           break
-        case 'products':
+        }
+        case 'products': {
           const productsResponse = await ApiService.getProducts()
           data = productsResponse.products || []
           break
-        case 'suppliers':
+        }
+        case 'suppliers': {
           const suppliersResponse = await ApiService.getSuppliers()
           data = suppliersResponse.suppliers || []
           break
+        }
         default:
           throw new Error('Invalid data type')
       }

@@ -99,7 +99,16 @@ def validate_file_structure(df: pd.DataFrame, import_type: str) -> dict[str, Any
             "supplier_id",
         ],
         "products": ["name", "category", "description", "price", "unit", "supplier_id"],
-        "clients": ["name", "email", "phone", "address", "city", "postal_code", "country", "client_type"],
+        "clients": [
+            "name",
+            "email",
+            "phone",
+            "address",
+            "city",
+            "postal_code",
+            "country",
+            "client_type",
+        ],
     }
 
     optional_columns = {
@@ -260,7 +269,10 @@ def process_import():
         # Validate again before processing
         validation_result = validate_file_structure(df, import_type)
         if not validation_result["valid"]:
-            return jsonify({"error": "Bestand validatie gefaald", "validation_result": validation_result}), 400
+            return (
+                jsonify({"error": "Bestand validatie gefaald", "validation_result": validation_result}),
+                400,
+            )
 
         # Process the import
         import_result = process_import_data(df, import_type, update_existing)
@@ -421,7 +433,8 @@ def import_product_row(row_dict: dict[str, Any], update_existing: bool) -> dict[
     try:
         # Check if product already exists
         existing_product = Product.query.filter_by(
-            name=row_dict["name"], supplier_id=int(row_dict["supplier_id"]) if row_dict.get("supplier_id") else None
+            name=row_dict["name"],
+            supplier_id=int(row_dict["supplier_id"]) if row_dict.get("supplier_id") else None,
         ).first()
 
         if existing_product and not update_existing:
@@ -443,7 +456,7 @@ def import_product_row(row_dict: dict[str, Any], update_existing: bool) -> dict[
             "price": float(row_dict["price"]) if row_dict.get("price") else None,
             "unit": row_dict["unit"],
             "supplier_id": supplier_id,
-            "stock_quantity": int(row_dict["stock_quantity"]) if row_dict.get("stock_quantity") else None,
+            "stock_quantity": (int(row_dict["stock_quantity"]) if row_dict.get("stock_quantity") else None),
             "notes": row_dict.get("notes", ""),
         }
 

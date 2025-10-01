@@ -1,6 +1,7 @@
 """
 Enhanced authentication routes with comprehensive user management
 """
+
 import csv
 import io
 import logging
@@ -16,18 +17,25 @@ from src.models.user import User, UserSession, db
 logger = logging.getLogger(__name__)
 
 auth_bp = Blueprint("auth", __name__)
+<<<<<<< HEAD:archive/packages/v1.00D/backend/routes/auth.py
+=======
+
+>>>>>>> origin/main:packages/v1.00D/backend/routes/auth.py
 
 # Pydantic schemas for validation
 class LoginSchema(BaseModel):
     username: str
     password: str
 
+
 class PasswordResetRequestSchema(BaseModel):
     email: EmailStr
+
 
 class PasswordResetSchema(BaseModel):
     token: str
     new_password: str
+
 
 class UserCreateSchema(BaseModel):
     username: str
@@ -39,6 +47,10 @@ class UserCreateSchema(BaseModel):
     phone: str | None = None
     company: str | None = None
     notes: str | None = None
+<<<<<<< HEAD:archive/packages/v1.00D/backend/routes/auth.py
+=======
+
+>>>>>>> origin/main:packages/v1.00D/backend/routes/auth.py
 
 class UserUpdateSchema(BaseModel):
     username: str | None = None
@@ -50,51 +62,90 @@ class UserUpdateSchema(BaseModel):
     company: str | None = None
     notes: str | None = None
     is_active: bool | None = None
+<<<<<<< HEAD:archive/packages/v1.00D/backend/routes/auth.py
 
 class BulkUserSchema(BaseModel):
     users: list[UserCreateSchema]
+=======
+
+
+class BulkUserSchema(BaseModel):
+    users: list[UserCreateSchema]
+
+>>>>>>> origin/main:packages/v1.00D/backend/routes/auth.py
 
 class ChangePasswordSchema(BaseModel):
     current_password: str
     new_password: str
 
+
 def require_auth(f):
     """Decorator to require authentication"""
     from functools import wraps
+
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if "user_id" not in session:
             return jsonify({"error": "Authentication required"}), 401
+<<<<<<< HEAD:archive/packages/v1.00D/backend/routes/auth.py
         
+=======
+
+>>>>>>> origin/main:packages/v1.00D/backend/routes/auth.py
         user = User.query.get(session["user_id"])
         if not user or not user.is_active:
             session.clear()
             return jsonify({"error": "Invalid session"}), 401
+<<<<<<< HEAD:archive/packages/v1.00D/backend/routes/auth.py
         
+=======
+
+>>>>>>> origin/main:packages/v1.00D/backend/routes/auth.py
         return f(*args, **kwargs)
+
     return decorated_function
+
 
 def require_role(required_role):
     """Decorator to require specific role"""
+
     def decorator(f):
         from functools import wraps
+
         @wraps(f)
         def decorated_function(*args, **kwargs):
             if "user_id" not in session:
                 return jsonify({"error": "Authentication required"}), 401
+<<<<<<< HEAD:archive/packages/v1.00D/backend/routes/auth.py
             
+=======
+
+>>>>>>> origin/main:packages/v1.00D/backend/routes/auth.py
             user = User.query.get(session["user_id"])
             if not user or not user.is_active:
                 session.clear()
                 return jsonify({"error": "Invalid session"}), 401
+<<<<<<< HEAD:archive/packages/v1.00D/backend/routes/auth.py
             
             if not user.has_permission(required_role):
                 return jsonify({"error": "Insufficient permissions"}), 403
             
+=======
+
+            if not user.has_permission(required_role):
+                return jsonify({"error": "Insufficient permissions"}), 403
+
+>>>>>>> origin/main:packages/v1.00D/backend/routes/auth.py
             return f(*args, **kwargs)
+
         return decorated_function
+
     return decorator
 
+<<<<<<< HEAD:archive/packages/v1.00D/backend/routes/auth.py
+=======
+
+>>>>>>> origin/main:packages/v1.00D/backend/routes/auth.py
 @auth_bp.route("/auth/login", methods=["POST"])
 def login():
     """Enhanced user login with account locking"""
@@ -102,17 +153,20 @@ def login():
         data = request.get_json()
         if not data:
             return jsonify({"error": "No data provided"}), 400
+<<<<<<< HEAD:archive/packages/v1.00D/backend/routes/auth.py
         
+=======
+
+>>>>>>> origin/main:packages/v1.00D/backend/routes/auth.py
         schema = LoginSchema(**data)
-        
+
         # Find user by username or email
-        user = User.query.filter(
-            (User.username == schema.username) | (User.email == schema.username)
-        ).first()
-        
+        user = User.query.filter((User.username == schema.username) | (User.email == schema.username)).first()
+
         if not user:
             logger.warning(f"Login attempt with non-existent user: {schema.username}")
             return jsonify({"error": "Invalid credentials"}), 401
+<<<<<<< HEAD:archive/packages/v1.00D/backend/routes/auth.py
         
         if not user.is_active:
             logger.warning(f"Login attempt with inactive user: {user.username}")
@@ -122,23 +176,39 @@ def login():
             logger.warning(f"Login attempt with locked account: {user.username}")
             return jsonify({"error": "Account is temporarily locked due to failed login attempts"}), 423
         
+=======
+
+        if not user.is_active:
+            logger.warning(f"Login attempt with inactive user: {user.username}")
+            return jsonify({"error": "Account is deactivated"}), 401
+
+        if user.is_account_locked():
+            logger.warning(f"Login attempt with locked account: {user.username}")
+            return jsonify({"error": "Account is temporarily locked due to failed login attempts"}), 423
+
+>>>>>>> origin/main:packages/v1.00D/backend/routes/auth.py
         if not user.check_password(schema.password):
             user.record_failed_login()
             db.session.commit()
             logger.warning(f"Failed login attempt for user: {user.username}")
             return jsonify({"error": "Invalid credentials"}), 401
+<<<<<<< HEAD:archive/packages/v1.00D/backend/routes/auth.py
         
+=======
+
+>>>>>>> origin/main:packages/v1.00D/backend/routes/auth.py
         # Successful login
         user.record_successful_login()
-        
+
         # Create session
         session["user_id"] = user.id
         session["username"] = user.username
         session["role"] = user.role
         session.permanent = True
-        
+
         # Create session tracking record
         user_session = UserSession(
+<<<<<<< HEAD:archive/packages/v1.00D/backend/routes/auth.py
             user_id=user.id,
             ip_address=request.remote_addr,
             user_agent=request.headers.get("User-Agent")
@@ -160,12 +230,36 @@ def login():
         logger.error(f"Login error: {e!s}")
         return jsonify({"error": "Internal server error"}), 500
 
+=======
+            user_id=user.id, ip_address=request.remote_addr, user_agent=request.headers.get("User-Agent")
+        )
+        db.session.add(user_session)
+        db.session.commit()
+
+        logger.info(f"Successful login for user: {user.username}")
+
+        return (
+            jsonify(
+                {"message": "Login successful", "user": user.to_dict(), "session_token": user_session.session_token}
+            ),
+            200,
+        )
+
+    except ValidationError as e:
+        return jsonify({"error": "Invalid input", "details": e.errors()}), 400
+    except Exception as e:
+        logger.error(f"Login error: {e!s}")
+        return jsonify({"error": "Internal server error"}), 500
+
+
+>>>>>>> origin/main:packages/v1.00D/backend/routes/auth.py
 @auth_bp.route("/auth/logout", methods=["POST"])
 @require_auth
 def logout():
     """User logout"""
     try:
         user_id = session.get("user_id")
+<<<<<<< HEAD:archive/packages/v1.00D/backend/routes/auth.py
         
         # Invalidate all user sessions
         UserSession.query.filter_by(user_id=user_id, is_active=True).update({"is_active": False})
@@ -179,6 +273,22 @@ def logout():
         logger.error(f"Logout error: {e!s}")
         return jsonify({"error": "Internal server error"}), 500
 
+=======
+
+        # Invalidate all user sessions
+        UserSession.query.filter_by(user_id=user_id, is_active=True).update({"is_active": False})
+        db.session.commit()
+
+        session.clear()
+
+        return jsonify({"message": "Logout successful"}), 200
+
+    except Exception as e:
+        logger.error(f"Logout error: {e!s}")
+        return jsonify({"error": "Internal server error"}), 500
+
+
+>>>>>>> origin/main:packages/v1.00D/backend/routes/auth.py
 @auth_bp.route("/auth/me", methods=["GET"])
 @require_auth
 def get_current_user():
@@ -186,11 +296,20 @@ def get_current_user():
     try:
         user = User.query.get(session["user_id"])
         return jsonify({"user": user.to_dict()}), 200
+<<<<<<< HEAD:archive/packages/v1.00D/backend/routes/auth.py
         
     except Exception as e:
         logger.error(f"Get current user error: {e!s}")
         return jsonify({"error": "Internal server error"}), 500
 
+=======
+
+    except Exception as e:
+        logger.error(f"Get current user error: {e!s}")
+        return jsonify({"error": "Internal server error"}), 500
+
+
+>>>>>>> origin/main:packages/v1.00D/backend/routes/auth.py
 @auth_bp.route("/auth/change-password", methods=["POST"])
 @require_auth
 def change_password():
@@ -198,6 +317,7 @@ def change_password():
     try:
         data = request.get_json()
         schema = ChangePasswordSchema(**data)
+<<<<<<< HEAD:archive/packages/v1.00D/backend/routes/auth.py
         
         user = User.query.get(session["user_id"])
         
@@ -217,22 +337,45 @@ def change_password():
         logger.error(f"Change password error: {e!s}")
         return jsonify({"error": "Internal server error"}), 500
 
+=======
+
+        user = User.query.get(session["user_id"])
+
+        if not user.check_password(schema.current_password):
+            return jsonify({"error": "Current password is incorrect"}), 400
+
+        user.set_password(schema.new_password)
+        db.session.commit()
+
+        logger.info(f"Password changed for user: {user.username}")
+
+        return jsonify({"message": "Password changed successfully"}), 200
+
+    except ValidationError as e:
+        return jsonify({"error": "Invalid input", "details": e.errors()}), 400
+    except Exception as e:
+        logger.error(f"Change password error: {e!s}")
+        return jsonify({"error": "Internal server error"}), 500
+
+
+>>>>>>> origin/main:packages/v1.00D/backend/routes/auth.py
 @auth_bp.route("/auth/forgot-password", methods=["POST"])
 def forgot_password():
     """Request password reset"""
     try:
         data = request.get_json()
         schema = PasswordResetRequestSchema(**data)
-        
+
         user = User.query.filter_by(email=schema.email).first()
-        
+
         if user and user.is_active:
             reset_token = user.generate_reset_token()
             db.session.commit()
-            
+
             # TODO: Send email with reset token
             # For now, we'll return the token (in production, this should be sent via email)
             logger.info(f"Password reset requested for user: {user.username}")
+<<<<<<< HEAD:archive/packages/v1.00D/backend/routes/auth.py
             
             # In production, don't return the token
             if current_app.config.get("TESTING") or current_app.config.get("DEBUG"):
@@ -255,34 +398,75 @@ def forgot_password():
         logger.error(f"Forgot password error: {e!s}")
         return jsonify({"error": "Internal server error"}), 500
 
+=======
+
+            # In production, don't return the token
+            if current_app.config.get("TESTING") or current_app.config.get("DEBUG"):
+                return (
+                    jsonify(
+                        {"message": "Password reset token generated", "reset_token": reset_token}  # Only for testing
+                    ),
+                    200,
+                )
+            return jsonify({"message": "If the email exists, a password reset link has been sent"}), 200
+
+        # Always return success to prevent email enumeration
+        return jsonify({"message": "If the email exists, a password reset link has been sent"}), 200
+
+    except ValidationError as e:
+        return jsonify({"error": "Invalid input", "details": e.errors()}), 400
+    except Exception as e:
+        logger.error(f"Forgot password error: {e!s}")
+        return jsonify({"error": "Internal server error"}), 500
+
+
+>>>>>>> origin/main:packages/v1.00D/backend/routes/auth.py
 @auth_bp.route("/auth/reset-password", methods=["POST"])
 def reset_password():
     """Reset password with token"""
     try:
         data = request.get_json()
         schema = PasswordResetSchema(**data)
-        
+
         user = User.query.filter_by(reset_token=schema.token).first()
-        
+
         if not user or not user.verify_reset_token(schema.token):
             return jsonify({"error": "Invalid or expired reset token"}), 400
+<<<<<<< HEAD:archive/packages/v1.00D/backend/routes/auth.py
         
+=======
+
+>>>>>>> origin/main:packages/v1.00D/backend/routes/auth.py
         user.set_password(schema.new_password)
         user.clear_reset_token()
         db.session.commit()
-        
+
         logger.info(f"Password reset completed for user: {user.username}")
+<<<<<<< HEAD:archive/packages/v1.00D/backend/routes/auth.py
         
         return jsonify({"message": "Password reset successful"}), 200
         
+=======
+
+        return jsonify({"message": "Password reset successful"}), 200
+
+>>>>>>> origin/main:packages/v1.00D/backend/routes/auth.py
     except ValidationError as e:
         return jsonify({"error": "Invalid input", "details": e.errors()}), 400
     except Exception as e:
         logger.error(f"Reset password error: {e!s}")
         return jsonify({"error": "Internal server error"}), 500
+<<<<<<< HEAD:archive/packages/v1.00D/backend/routes/auth.py
 
 # User Management Routes (Admin only)
 
+=======
+
+
+# User Management Routes (Admin only)
+
+
+>>>>>>> origin/main:packages/v1.00D/backend/routes/auth.py
 @auth_bp.route("/users", methods=["GET"])
 @require_role("admin")
 def list_users():
@@ -292,19 +476,24 @@ def list_users():
         per_page = request.args.get("per_page", 20, type=int)
         search = request.args.get("search", "")
         role_filter = request.args.get("role", "")
+<<<<<<< HEAD:archive/packages/v1.00D/backend/routes/auth.py
         
+=======
+
+>>>>>>> origin/main:packages/v1.00D/backend/routes/auth.py
         query = User.query
-        
+
         if search:
             query = query.filter(
-                (User.username.contains(search)) |
-                (User.email.contains(search)) |
-                (User.first_name.contains(search)) |
-                (User.last_name.contains(search))
+                (User.username.contains(search))
+                | (User.email.contains(search))
+                | (User.first_name.contains(search))
+                | (User.last_name.contains(search))
             )
-        
+
         if role_filter:
             query = query.filter(User.role == role_filter)
+<<<<<<< HEAD:archive/packages/v1.00D/backend/routes/auth.py
         
         users = query.paginate(
             page=page, per_page=per_page, error_out=False
@@ -322,6 +511,29 @@ def list_users():
         logger.error(f"List users error: {e!s}")
         return jsonify({"error": "Internal server error"}), 500
 
+=======
+
+        users = query.paginate(page=page, per_page=per_page, error_out=False)
+
+        return (
+            jsonify(
+                {
+                    "users": [user.to_dict(include_sensitive=True) for user in users.items],
+                    "total": users.total,
+                    "pages": users.pages,
+                    "current_page": page,
+                    "per_page": per_page,
+                }
+            ),
+            200,
+        )
+
+    except Exception as e:
+        logger.error(f"List users error: {e!s}")
+        return jsonify({"error": "Internal server error"}), 500
+
+
+>>>>>>> origin/main:packages/v1.00D/backend/routes/auth.py
 @auth_bp.route("/users", methods=["POST"])
 @require_role("admin")
 def create_user():
@@ -329,15 +541,17 @@ def create_user():
     try:
         data = request.get_json()
         schema = UserCreateSchema(**data)
-        
+
         # Check if username or email already exists
-        existing_user = User.query.filter(
-            (User.username == schema.username) | (User.email == schema.email)
-        ).first()
-        
+        existing_user = User.query.filter((User.username == schema.username) | (User.email == schema.email)).first()
+
         if existing_user:
             return jsonify({"error": "Username or email already exists"}), 409
+<<<<<<< HEAD:archive/packages/v1.00D/backend/routes/auth.py
         
+=======
+
+>>>>>>> origin/main:packages/v1.00D/backend/routes/auth.py
         # Create user
         user = User(
             username=schema.username,
@@ -348,11 +562,12 @@ def create_user():
             last_name=schema.last_name,
             phone=schema.phone,
             company=schema.company,
-            notes=schema.notes
+            notes=schema.notes,
         )
-        
+
         db.session.add(user)
         db.session.commit()
+<<<<<<< HEAD:archive/packages/v1.00D/backend/routes/auth.py
         
         logger.info(f"User created: {user.username} by {session.get('username')}")
         
@@ -367,6 +582,20 @@ def create_user():
         logger.error(f"Create user error: {e!s}")
         return jsonify({"error": "Internal server error"}), 500
 
+=======
+
+        logger.info(f"User created: {user.username} by {session.get('username')}")
+
+        return jsonify({"message": "User created successfully", "user": user.to_dict()}), 201
+
+    except ValidationError as e:
+        return jsonify({"error": "Invalid input", "details": e.errors()}), 400
+    except Exception as e:
+        logger.error(f"Create user error: {e!s}")
+        return jsonify({"error": "Internal server error"}), 500
+
+
+>>>>>>> origin/main:packages/v1.00D/backend/routes/auth.py
 @auth_bp.route("/users/<int:user_id>", methods=["PUT"])
 @require_role("admin")
 def update_user(user_id):
@@ -375,11 +604,12 @@ def update_user(user_id):
         user = User.query.get_or_404(user_id)
         data = request.get_json()
         schema = UserUpdateSchema(**data)
-        
+
         # Update fields
         for field, value in schema.dict(exclude_unset=True).items():
             if hasattr(user, field) and value is not None:
                 setattr(user, field, value)
+<<<<<<< HEAD:archive/packages/v1.00D/backend/routes/auth.py
         
         db.session.commit()
         
@@ -396,16 +626,33 @@ def update_user(user_id):
         logger.error(f"Update user error: {e!s}")
         return jsonify({"error": "Internal server error"}), 500
 
+=======
+
+        db.session.commit()
+
+        logger.info(f"User updated: {user.username} by {session.get('username')}")
+
+        return jsonify({"message": "User updated successfully", "user": user.to_dict()}), 200
+
+    except ValidationError as e:
+        return jsonify({"error": "Invalid input", "details": e.errors()}), 400
+    except Exception as e:
+        logger.error(f"Update user error: {e!s}")
+        return jsonify({"error": "Internal server error"}), 500
+
+
+>>>>>>> origin/main:packages/v1.00D/backend/routes/auth.py
 @auth_bp.route("/users/<int:user_id>", methods=["DELETE"])
 @require_role("admin")
 def delete_user(user_id):
     """Delete user (admin only)"""
     try:
         user = User.query.get_or_404(user_id)
-        
+
         # Prevent deleting self
         if user.id == session.get("user_id"):
             return jsonify({"error": "Cannot delete your own account"}), 400
+<<<<<<< HEAD:archive/packages/v1.00D/backend/routes/auth.py
         
         username = user.username
         db.session.delete(user)
@@ -419,6 +666,22 @@ def delete_user(user_id):
         logger.error(f"Delete user error: {e!s}")
         return jsonify({"error": "Internal server error"}), 500
 
+=======
+
+        username = user.username
+        db.session.delete(user)
+        db.session.commit()
+
+        logger.info(f"User deleted: {username} by {session.get('username')}")
+
+        return jsonify({"message": "User deleted successfully"}), 200
+
+    except Exception as e:
+        logger.error(f"Delete user error: {e!s}")
+        return jsonify({"error": "Internal server error"}), 500
+
+
+>>>>>>> origin/main:packages/v1.00D/backend/routes/auth.py
 @auth_bp.route("/users/bulk-import", methods=["POST"])
 @require_role("admin")
 def bulk_import_users():
@@ -426,6 +689,7 @@ def bulk_import_users():
     try:
         if "file" not in request.files:
             return jsonify({"error": "No file provided"}), 400
+<<<<<<< HEAD:archive/packages/v1.00D/backend/routes/auth.py
         
         file = request.files["file"]
         if file.filename == "":
@@ -434,29 +698,39 @@ def bulk_import_users():
         if not file.filename.lower().endswith(".csv"):
             return jsonify({"error": "File must be a CSV"}), 400
         
+=======
+
+        file = request.files["file"]
+        if file.filename == "":
+            return jsonify({"error": "No file selected"}), 400
+
+        if not file.filename.lower().endswith(".csv"):
+            return jsonify({"error": "File must be a CSV"}), 400
+
+>>>>>>> origin/main:packages/v1.00D/backend/routes/auth.py
         # Read CSV content
         stream = io.StringIO(file.stream.read().decode("UTF8"), newline=None)
         csv_input = csv.DictReader(stream)
-        
+
         created_users = []
         errors = []
-        
+
         for row_num, row in enumerate(csv_input, start=2):  # Start at 2 for header
             try:
                 # Validate required fields
                 if not row.get("username") or not row.get("email"):
                     errors.append(f"Row {row_num}: Username and email are required")
                     continue
-                
+
                 # Check if user already exists
                 existing_user = User.query.filter(
                     (User.username == row["username"]) | (User.email == row["email"])
                 ).first()
-                
+
                 if existing_user:
                     errors.append(f"Row {row_num}: Username or email already exists")
                     continue
-                
+
                 # Create user
                 user = User(
                     username=row["username"],
@@ -467,14 +741,19 @@ def bulk_import_users():
                     last_name=row.get("last_name"),
                     phone=row.get("phone"),
                     company=row.get("company"),
+<<<<<<< HEAD:archive/packages/v1.00D/backend/routes/auth.py
                     notes=row.get("notes")
+=======
+                    notes=row.get("notes"),
+>>>>>>> origin/main:packages/v1.00D/backend/routes/auth.py
                 )
-                
+
                 db.session.add(user)
                 created_users.append(user.username)
-                
+
             except Exception as e:
                 errors.append(f"Row {row_num}: {e!s}")
+<<<<<<< HEAD:archive/packages/v1.00D/backend/routes/auth.py
         
         if created_users:
             db.session.commit()
@@ -493,17 +772,44 @@ def bulk_import_users():
         logger.error(f"Bulk import error: {e!s}")
         return jsonify({"error": "Internal server error"}), 500
 
+=======
+
+        if created_users:
+            db.session.commit()
+
+        logger.info(f"Bulk import completed: {len(created_users)} users created by {session.get('username')}")
+
+        return (
+            jsonify(
+                {
+                    "message": "Bulk import completed",
+                    "created_users": created_users,
+                    "errors": errors,
+                    "total_created": len(created_users),
+                    "total_errors": len(errors),
+                }
+            ),
+            200,
+        )
+
+    except Exception as e:
+        logger.error(f"Bulk import error: {e!s}")
+        return jsonify({"error": "Internal server error"}), 500
+
+
+>>>>>>> origin/main:packages/v1.00D/backend/routes/auth.py
 @auth_bp.route("/users/<int:user_id>/reset-password", methods=["POST"])
 @require_role("admin")
 def admin_reset_user_password(user_id):
     """Admin reset user password"""
     try:
         user = User.query.get_or_404(user_id)
-        
+
         # Generate new temporary password
         temp_password = user.generate_temporary_password()
         user.set_password(temp_password)
         db.session.commit()
+<<<<<<< HEAD:archive/packages/v1.00D/backend/routes/auth.py
         
         logger.info(f"Password reset for user: {user.username} by admin: {session.get('username')}")
         
@@ -516,21 +822,47 @@ def admin_reset_user_password(user_id):
         logger.error(f"Admin reset password error: {e!s}")
         return jsonify({"error": "Internal server error"}), 500
 
+=======
+
+        logger.info(f"Password reset for user: {user.username} by admin: {session.get('username')}")
+
+        return (
+            jsonify(
+                {
+                    "message": "Password reset successfully",
+                    "temporary_password": temp_password,  # In production, send via email
+                }
+            ),
+            200,
+        )
+
+    except Exception as e:
+        logger.error(f"Admin reset password error: {e!s}")
+        return jsonify({"error": "Internal server error"}), 500
+
+
+>>>>>>> origin/main:packages/v1.00D/backend/routes/auth.py
 @auth_bp.route("/users/<int:user_id>/unlock", methods=["POST"])
 @require_role("admin")
 def unlock_user_account(user_id):
     """Unlock user account (admin only)"""
     try:
         user = User.query.get_or_404(user_id)
-        
+
         user.failed_login_attempts = 0
         user.locked_until = None
         db.session.commit()
-        
+
         logger.info(f"Account unlocked for user: {user.username} by admin: {session.get('username')}")
+<<<<<<< HEAD:archive/packages/v1.00D/backend/routes/auth.py
         
         return jsonify({"message": "Account unlocked successfully"}), 200
         
+=======
+
+        return jsonify({"message": "Account unlocked successfully"}), 200
+
+>>>>>>> origin/main:packages/v1.00D/backend/routes/auth.py
     except Exception as e:
         logger.error(f"Unlock account error: {e!s}")
         return jsonify({"error": "Internal server error"}), 500

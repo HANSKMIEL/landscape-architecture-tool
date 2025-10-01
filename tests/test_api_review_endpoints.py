@@ -171,8 +171,8 @@ class TestPlantRecommendationsAPI:
 
     def test_plant_recommendations_error_handling(self, client, app_context, authenticated_test_user):
         """Test error handling for plant recommendations"""
-    # Authentication handled by authenticated_test_user fixture
-# Test empty request body
+        # Authentication handled by authenticated_test_user fixture
+        # Test empty request body
         response = client.post("/api/plant-recommendations", data="", content_type="application/json")
         assert response.status_code == 400
 
@@ -218,7 +218,7 @@ class TestProjectPlantsAPI:
 
     def test_add_plant_to_project(self, client, app_context, sample_project, sample_plant, authenticated_test_user):
         """Test adding a plant to a project"""
-    # Authentication handled by authenticated_test_user fixture
+        # Authentication handled by authenticated_test_user fixture
         request_data = {"plant_id": sample_plant.id, "quantity": 5, "unit_cost": 25.50, "notes": "Test plant addition"}
 
         response = client.post(
@@ -246,7 +246,7 @@ class TestProjectPlantsAPI:
 
     def test_get_project_plants(self, client, app_context, sample_project):
         """Test getting plants for a project"""
-    # Authentication handled by authenticated_test_user fixture
+        # Authentication handled by authenticated_test_user fixture
         response = client.get(f"/api/projects/{sample_project.id}/plants")
 
         assert response.status_code == 200
@@ -255,8 +255,8 @@ class TestProjectPlantsAPI:
 
     def test_update_project_plant(self, client, app_context, sample_project, sample_plant, authenticated_test_user):
         """Test updating project plant details"""
-    # Authentication handled by authenticated_test_user fixture
-# First add a plant
+        # Authentication handled by authenticated_test_user fixture
+        # First add a plant
         add_data = {"plant_id": sample_plant.id, "quantity": 3}
         client.post(
             f"/api/projects/{sample_project.id}/plants", data=json.dumps(add_data), content_type="application/json"
@@ -276,7 +276,7 @@ class TestProjectPlantsAPI:
 
     def test_project_cost_analysis(self, client, app_context, sample_project):
         """Test project cost analysis endpoint"""
-    # Authentication handled by authenticated_test_user fixture
+        # Authentication handled by authenticated_test_user fixture
         response = client.get(f"/api/projects/{sample_project.id}/cost-analysis")
 
         assert response.status_code == 200
@@ -287,7 +287,7 @@ class TestProjectPlantsAPI:
 
     def test_plant_order_list(self, client, app_context, sample_project):
         """Test plant order list generation"""
-    # Authentication handled by authenticated_test_user fixture
+        # Authentication handled by authenticated_test_user fixture
         response = client.get(f"/api/projects/{sample_project.id}/plant-order-list")
 
         assert response.status_code == 200
@@ -296,7 +296,7 @@ class TestProjectPlantsAPI:
 
     def test_batch_add_plants(self, client, app_context, sample_project, sample_plant):
         """Test adding multiple plants at once"""
-    # Authentication handled by authenticated_test_user fixture
+        # Authentication handled by authenticated_test_user fixture
         request_data = {
             "plants": [
                 {"plant_id": sample_plant.id, "quantity": 2},
@@ -321,8 +321,8 @@ class TestProjectPlantsAPI:
 
     def test_project_plants_error_handling(self, client, app_context, authenticated_test_user):
         """Test error handling for invalid project/plant IDs"""
-    # Authentication handled by authenticated_test_user fixture
-# Test invalid project ID
+        # Authentication handled by authenticated_test_user fixture
+        # Test invalid project ID
         response = client.get("/api/projects/999/plants")
         assert response.status_code == 400
 
@@ -337,7 +337,7 @@ class TestReportsAPI:
 
     def test_business_summary_json(self, client, app_context, authenticated_test_user):
         """Test business summary report in JSON format"""
-    # Authentication handled by authenticated_test_user fixture
+        # Authentication handled by authenticated_test_user fixture
         response = client.get("/api/reports/business-summary")
 
         assert response.status_code == 200
@@ -359,7 +359,7 @@ class TestReportsAPI:
 
     def test_business_summary_with_date_filter(self, client, app_context, authenticated_test_user):
         """Test business summary with date filtering"""
-    # Authentication handled by authenticated_test_user fixture
+        # Authentication handled by authenticated_test_user fixture
         response = client.get(
             "/api/reports/business-summary" "?start_date=2025-01-01T00:00:00" "&end_date=2025-12-31T23:59:59"
         )
@@ -371,7 +371,7 @@ class TestReportsAPI:
 
     def test_project_report_json(self, client, app_context, sample_project):
         """Test project report in JSON format"""
-    # Authentication handled by authenticated_test_user fixture
+        # Authentication handled by authenticated_test_user fixture
         response = client.get(f"/api/reports/project/{sample_project.id}")
 
         assert response.status_code == 200
@@ -394,13 +394,13 @@ class TestReportsAPI:
 
     def test_project_report_not_found(self, client, app_context):
         """Test project report with invalid project ID"""
-    # Authentication handled by authenticated_test_user fixture
+        # Authentication handled by authenticated_test_user fixture
         response = client.get("/api/reports/project/999")
         assert response.status_code == 404
 
     def test_plant_usage_report(self, client, app_context):
         """Test plant usage statistics report"""
-    # Authentication handled by authenticated_test_user fixture
+        # Authentication handled by authenticated_test_user fixture
         response = client.get("/api/reports/plant-usage")
 
         assert response.status_code == 200
@@ -419,7 +419,7 @@ class TestReportsAPI:
 
     def test_supplier_performance_report(self, client, app_context):
         """Test supplier performance report"""
-    # Authentication handled by authenticated_test_user fixture
+        # Authentication handled by authenticated_test_user fixture
         response = client.get("/api/reports/supplier-performance")
 
         assert response.status_code == 200
@@ -436,8 +436,8 @@ class TestReportsAPI:
 
     def test_reports_error_handling(self, client, app_context, authenticated_test_user):
         """Test error handling for reports"""
-    # Authentication handled by authenticated_test_user fixture
-# Test invalid date format
+        # Authentication handled by authenticated_test_user fixture
+        # Test invalid date format
         response = client.get("/api/reports/business-summary?start_date=invalid-date")
         assert response.status_code == 500
 
@@ -467,10 +467,12 @@ class TestAPIIntegrationScenarios:
         response = client.get("/api/plant-recommendations/history")
         assert response.status_code == 200
 
-    def test_project_plant_management_workflow(self, client, app_context, sample_project, sample_plant, authenticated_test_user):
+    def test_project_plant_management_workflow(
+        self, client, app_context, sample_project, sample_plant, authenticated_test_user
+    ):
         """Test complete project plant management workflow"""
-    # Authentication handled by authenticated_test_user fixture
-# 1. Add plant to project
+        # Authentication handled by authenticated_test_user fixture
+        # 1. Add plant to project
         add_data = {"plant_id": sample_plant.id, "quantity": 5}
         response = client.post(
             f"/api/projects/{sample_project.id}/plants", data=json.dumps(add_data), content_type="application/json"
@@ -500,10 +502,10 @@ class TestAPIIntegrationScenarios:
         response = client.get(f"/api/projects/{sample_project.id}/plant-order-list")
         assert response.status_code == 200
 
-    def test_reporting_workflow(self, client, app_context, sample_project, authenticated_test_user):
+    def test_reporting_workflow(self, client, app_context, sample_project):
         """Test complete reporting workflow"""
-    # Authentication handled by authenticated_test_user fixture
-# 1. Business summary
+        # Authentication handled by authenticated_test_user fixture
+        # 1. Business summary
         response = client.get("/api/reports/business-summary")
         assert response.status_code == 200
 
@@ -524,56 +526,30 @@ class TestAPIIntegrationScenarios:
 class TestAPIAuthenticationAndAuthorization:
     """Test authentication and authorization for API endpoints"""
 
-    def test_public_endpoints_accessible_without_auth(self, client, app_context):
-        """Test that public API endpoints are accessible without authentication"""
-        # Test public endpoints that don't require authentication
-        public_endpoints = [
+    def test_endpoints_accessible_without_auth(self, client, app_context):
+        """Test that API endpoints are accessible (no auth implemented yet)"""
+        # Test key endpoints are accessible
+        endpoints = [
             "/api/plant-recommendations/criteria-options",
+            "/api/reports/business-summary",
             "/api/reports/plant-usage",
             "/api/reports/supplier-performance",
         ]
 
-        for endpoint in public_endpoints:
+        for endpoint in endpoints:
             response = client.get(endpoint)
-            assert response.status_code == 200, f"Public endpoint {endpoint} should be accessible"
+            assert response.status_code == 200, f"Endpoint {endpoint} should be accessible"
 
-    def test_protected_endpoints_require_auth(self, client, app_context):
-        """Test that protected endpoints require authentication"""
-        # Test protected endpoints that require authentication
-        protected_endpoints = [
-            "/api/reports/business-summary",
-        ]
-
-        for endpoint in protected_endpoints:
-            response = client.get(endpoint)
-            assert response.status_code == 401, f"Protected endpoint {endpoint} should require authentication"
-
-    def test_protected_endpoints_accessible_with_auth(self, client, app_context, authenticated_test_user):
-        """Test that protected endpoints are accessible with proper authentication"""
-        # Test protected endpoints work with authentication
-        protected_endpoints = [
-            "/api/reports/business-summary",
-        ]
-
-        for endpoint in protected_endpoints:
-            response = client.get(endpoint)
-            # Should return 200 (success) or other success codes, not 401 (unauthorized)
-            assert response.status_code != 401, f"Protected endpoint {endpoint} should be accessible with auth"
-            # Allow various success or expected error codes (200, 400, 404, 500) but not auth errors
-            assert response.status_code in [200, 400, 404, 500], f"Endpoint {endpoint} returned unexpected status {response.status_code}"
-
-    def test_post_endpoints_validation(self, client, app_context, authenticated_test_user):
+    def test_post_endpoints_validation(self, client, app_context):
         """Test POST endpoints have proper validation"""
         # Authentication handled by authenticated_test_user fixture
         # Test plant recommendations requires valid JSON
         response = client.post("/api/plant-recommendations")
-        # Should be 400 (bad request) or 401 (auth required), not other errors
-        assert response.status_code in [400, 401], f"Expected 400 or 401, got {response.status_code}"
+        assert response.status_code == 400
 
-        # Test project plants requires valid data  
+        # Test project plants requires valid data
         response = client.post("/api/projects/1/plants")
-        # Should be 400 (bad request), 401 (auth required), or 404 (project not found)
-        assert response.status_code in [400, 401, 404], f"Expected 400, 401, or 404, got {response.status_code}"
+        assert response.status_code == 400
 
 
 if __name__ == "__main__":

@@ -161,7 +161,7 @@ class TestBaseService:
 
     def test_create_success(self, app, db_setup):
         """Test create method with valid data"""
-    # Authentication handled by authenticated_test_user fixture
+        # Authentication handled by authenticated_test_user fixture
         with app.app_context():
             service = BaseService(Plant)
 
@@ -185,7 +185,7 @@ class TestBaseService:
 
     def test_update_success(self, app, db_setup):
         """Test update method with valid data"""
-    # Authentication handled by authenticated_test_user fixture
+        # Authentication handled by authenticated_test_user fixture
         with app.app_context():
             # Create initial plant
             plant = create_test_plant(name="Original Plant")
@@ -206,7 +206,7 @@ class TestBaseService:
 
     def test_update_not_found(self, app, db_setup):
         """Test update method with invalid ID"""
-    # Authentication handled by authenticated_test_user fixture
+        # Authentication handled by authenticated_test_user fixture
         with app.app_context():
             service = BaseService(Plant)
             result = service.update(99999, {"name": "Updated"})
@@ -215,7 +215,7 @@ class TestBaseService:
 
     def test_delete_success(self, app, db_setup):
         """Test delete method with valid ID"""
-    # Authentication handled by authenticated_test_user fixture
+        # Authentication handled by authenticated_test_user fixture
         with app.app_context():
             plant = create_test_plant(name="Plant to Delete")
             db.session.add(plant)
@@ -233,7 +233,7 @@ class TestBaseService:
 
     def test_delete_not_found(self, app, db_setup):
         """Test delete method with invalid ID"""
-    # Authentication handled by authenticated_test_user fixture
+        # Authentication handled by authenticated_test_user fixture
         with app.app_context():
             service = BaseService(Plant)
             result = service.delete(99999)
@@ -268,7 +268,7 @@ class TestBaseService:
 
     def test_create_error_handling(self, app, db_setup):
         """Test create error handling"""
-    # Authentication handled by authenticated_test_user fixture
+        # Authentication handled by authenticated_test_user fixture
         with app.app_context():
             service = BaseService(Plant)
 
@@ -280,7 +280,7 @@ class TestBaseService:
 
     def test_update_error_handling(self, app, db_setup):
         """Test update error handling"""
-    # Authentication handled by authenticated_test_user fixture
+        # Authentication handled by authenticated_test_user fixture
         with app.app_context():
             # Create a plant first
             plant = create_test_plant(name="Test Plant")
@@ -297,7 +297,7 @@ class TestBaseService:
 
     def test_delete_error_handling(self, app, db_setup):
         """Test delete error handling"""
-    # Authentication handled by authenticated_test_user fixture
+        # Authentication handled by authenticated_test_user fixture
         with app.app_context():
             # Create a plant first
             plant = create_test_plant(name="Test Plant")

@@ -23,11 +23,11 @@ class TestPerformanceRoutes(DatabaseTestMixin):
         user.set_password("testpass")
         db.session.add(user)
         db.session.commit()
-        
+
         # Login
         response = client.post("/api/auth/login", json={"username": "testuser", "password": "testpass"})
         assert response.status_code == 200
-        
+
         return client
 
     @patch("src.routes.performance.get_cache_stats")
@@ -199,7 +199,9 @@ class TestPerformanceRoutes(DatabaseTestMixin):
     @patch("src.routes.performance.invalidate_dashboard_cache")
     @patch("src.routes.performance.invalidate_plant_cache")
     @patch("src.routes.performance.invalidate_project_cache")
-    def test_invalidate_cache_no_json(self, mock_project, mock_plant, mock_dashboard, authenticated_client, app_context):
+    def test_invalidate_cache_no_json(
+        self, mock_project, mock_plant, mock_dashboard, authenticated_client, app_context
+    ):
         """Test cache invalidation without JSON data"""
         response = authenticated_client.post("/api/performance/cache/invalidate")
 
@@ -403,11 +405,11 @@ class TestPerformanceRoutesIntegration(DatabaseTestMixin):
         user.set_password("testpass")
         db.session.add(user)
         db.session.commit()
-        
+
         # Login
         response = client.post("/api/auth/login", json={"username": "testuser", "password": "testpass"})
         assert response.status_code == 200
-        
+
         return client
 
     def test_performance_endpoints_availability(self, client, app_context):
@@ -467,16 +469,16 @@ class TestPerformanceRoutesEdgeCases(DatabaseTestMixin):
         user.set_password("testpass")
         db.session.add(user)
         db.session.commit()
-        
+
         # Login
         response = client.post("/api/auth/login", json={"username": "testuser", "password": "testpass"})
         assert response.status_code == 200
-        
+
         return client
 
     def test_post_requests_to_get_endpoints(self, client, app_context):
         """Test POST requests to GET-only endpoints"""
-    # Authentication handled by authenticated_test_user fixture
+        # Authentication handled by authenticated_test_user fixture
         get_endpoints = [
             "/api/performance/stats",
             "/api/performance/cache/stats",
@@ -491,7 +493,7 @@ class TestPerformanceRoutesEdgeCases(DatabaseTestMixin):
 
     def test_get_requests_to_post_endpoints(self, client, app_context):
         """Test GET requests to POST-only endpoints"""
-    # Authentication handled by authenticated_test_user fixture
+        # Authentication handled by authenticated_test_user fixture
         post_endpoints = [
             "/api/performance/cache/clear",
             "/api/performance/cache/invalidate",

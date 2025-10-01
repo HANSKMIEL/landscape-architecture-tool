@@ -41,6 +41,11 @@ export default [
         HTMLElement: "readonly",
         FormData: "readonly",
         IntersectionObserver: "readonly",
+        localStorage: "readonly",
+        btoa: "readonly",
+        atob: "readonly",
+        TextEncoder: "readonly",
+        TextDecoder: "readonly",
         // Test globals
         describe: "readonly",
         it: "readonly",

@@ -23,14 +23,24 @@ def populate_sample_data():
         if User.query.count() == 0:
             logger.info("Creating sample users...")
             users_data = [
-                {"username": "admin", "email": "admin@landscape.com", "password": "admin123", "role": "admin"},
+                {
+                    "username": "admin",
+                    "email": "admin@landscape.com",
+                    "password": "admin123",
+                    "role": "admin",
+                },
                 {
                     "username": "employee",
                     "email": "employee@landscape.com",
                     "password": "employee123",
                     "role": "employee",
                 },
-                {"username": "client", "email": "client@landscape.com", "password": "client123", "role": "client"},
+                {
+                    "username": "client",
+                    "email": "client@landscape.com",
+                    "password": "client123",
+                    "role": "client",
+                },
             ]
 
             for user_data in users_data:

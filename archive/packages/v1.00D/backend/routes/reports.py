@@ -813,7 +813,6 @@ def generate_supplier_performance_report():
         return jsonify({"error": str(e)}), 500
 
 
-
 @reports_bp.route("/api/reports/generate-pdf", methods=["POST"])
 @login_required
 def generate_comprehensive_pdf():
@@ -822,10 +821,16 @@ def generate_comprehensive_pdf():
         data = request.get_json()
         report_type = data.get("type", "overview")
         date_range = data.get("dateRange", {})
+<<<<<<< HEAD:archive/packages/v1.00D/backend/routes/reports.py
         filters = data.get("filters", {})
         report_data = data.get("data", {})
         language = data.get("language", "en")
         
+=======
+        report_data = data.get("data", {})
+        language = data.get("language", "en")
+
+>>>>>>> origin/main:packages/v1.00D/backend/routes/reports.py
         # Translations for Dutch reports
         translations = {
             "en": {
@@ -846,6 +851,7 @@ def generate_comprehensive_pdf():
                 "top_clients": "Top Clients",
                 "plant_categories": "Plant Category Distribution",
                 "monthly_revenue": "Monthly Revenue",
+<<<<<<< HEAD:archive/packages/v1.00D/backend/routes/reports.py
                 "page": "Page"
             },
             "nl": {
@@ -872,17 +878,38 @@ def generate_comprehensive_pdf():
         
         t = translations.get(language, translations["en"])
         
+=======
+                "page": "Page",
+            },
+            "nl": {
+                "title": "Landschapsarchitectuur Rapport",
+                "generated_on": "Gegenereerd op",
+                "date_range": "Datumbereik",
+                "overview": "Bedrijfsoverzicht",
+                "clients": "Klantanalyse",
+                "projects": "Projectprestaties",
+                "plants": "Plant Analytics",
+                "financial": "Financieel Overzicht",
+                "total_projects": "Totaal Projecten",
+                "total_clients": "Totaal Klanten",
+                "total_plants": "Totaal Planten",
+                "total_budget": "Totaal Budget",
+                "average_budget": "Gemiddeld Budget",
+                "project_status": "Project Status Verdeling",
+                "top_clients": "Top Klanten",
+                "plant_categories": "Plant Categorie Verdeling",
+                "monthly_revenue": "Maandelijkse Omzet",
+                "page": "Pagina",
+            },
+        }
+
+        t = translations.get(language, translations["en"])
+
+>>>>>>> origin/main:packages/v1.00D/backend/routes/reports.py
         # Create PDF buffer
         buffer = io.BytesIO()
-        doc = SimpleDocTemplate(
-            buffer,
-            pagesize=A4,
-            rightMargin=72,
-            leftMargin=72,
-            topMargin=72,
-            bottomMargin=18
-        )
-        
+        doc = SimpleDocTemplate(buffer, pagesize=A4, rightMargin=72, leftMargin=72, topMargin=72, bottomMargin=18)
+
         # Get styles
         styles = getSampleStyleSheet()
         title_style = ParagraphStyle(
@@ -891,6 +918,7 @@ def generate_comprehensive_pdf():
             fontSize=24,
             spaceAfter=30,
             textColor=colors.HexColor("#10b981"),
+<<<<<<< HEAD:archive/packages/v1.00D/backend/routes/reports.py
             alignment=1  # Center alignment
         )
         
@@ -902,30 +930,43 @@ def generate_comprehensive_pdf():
             textColor=colors.HexColor("#374151")
         )
         
+=======
+            alignment=1,  # Center alignment
+        )
+
+>>>>>>> origin/main:packages/v1.00D/backend/routes/reports.py
         # Build PDF content
         story = []
-        
+
         # Title
         report_titles = {
             "overview": t["overview"],
             "clients": t["clients"],
             "projects": t["projects"],
             "plants": t["plants"],
+<<<<<<< HEAD:archive/packages/v1.00D/backend/routes/reports.py
             "financial": t["financial"]
+=======
+            "financial": t["financial"],
+>>>>>>> origin/main:packages/v1.00D/backend/routes/reports.py
         }
-        
+
         title = f"{t['title']} - {report_titles.get(report_type, t['overview'])}"
         story.append(Paragraph(title, title_style))
         story.append(Spacer(1, 20))
-        
+
         # Generation info
         generation_info = f"{t['generated_on']}: {datetime.now().strftime('%d-%m-%Y %H:%M')}"
         if date_range.get("start") and date_range.get("end"):
             generation_info += f"<br/>{t['date_range']}: {date_range['start']} - {date_range['end']}"
+<<<<<<< HEAD:archive/packages/v1.00D/backend/routes/reports.py
         
+=======
+
+>>>>>>> origin/main:packages/v1.00D/backend/routes/reports.py
         story.append(Paragraph(generation_info, styles["Normal"]))
         story.append(Spacer(1, 30))
-        
+
         # Report-specific content
         if report_type == "overview":
             story.extend(generate_overview_pdf_content(report_data, t, styles))
@@ -937,14 +978,15 @@ def generate_comprehensive_pdf():
             story.extend(generate_plants_pdf_content(report_data, t, styles))
         elif report_type == "financial":
             story.extend(generate_financial_pdf_content(report_data, t, styles))
-        
+
         # Build PDF
         doc.build(story)
         buffer.seek(0)
-        
+
         # Generate filename
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         filename = f"landscape_report_{report_type}_{timestamp}.pdf"
+<<<<<<< HEAD:archive/packages/v1.00D/backend/routes/reports.py
         
         return send_file(
             buffer,
@@ -953,6 +995,11 @@ def generate_comprehensive_pdf():
             mimetype="application/pdf"
         )
         
+=======
+
+        return send_file(buffer, as_attachment=True, download_name=filename, mimetype="application/pdf")
+
+>>>>>>> origin/main:packages/v1.00D/backend/routes/reports.py
     except Exception as e:
         logging.error(f"Error generating PDF report: {e!s}")
         return jsonify({"error": str(e)}), 500
@@ -961,17 +1008,22 @@ def generate_comprehensive_pdf():
 def generate_overview_pdf_content(data, t, styles):
     """Generate overview report PDF content"""
     content = []
-    
+
     # Statistics summary
     if "stats" in data:
         stats = data["stats"]
         content.append(Paragraph("Statistieken Overzicht", styles["Heading2"]))
+<<<<<<< HEAD:archive/packages/v1.00D/backend/routes/reports.py
         
+=======
+
+>>>>>>> origin/main:packages/v1.00D/backend/routes/reports.py
         stats_data = [
             [t["total_projects"], str(stats.get("projects", 0))],
             [t["total_clients"], str(stats.get("clients", 0))],
             [t["total_plants"], str(stats.get("plants", 0))],
             ["Totaal Producten", str(stats.get("products", 0))],
+<<<<<<< HEAD:archive/packages/v1.00D/backend/routes/reports.py
             ["Totaal Leveranciers", str(stats.get("suppliers", 0))]
         ]
         
@@ -987,12 +1039,34 @@ def generate_overview_pdf_content(data, t, styles):
             ("GRID", (0, 0), (-1, -1), 1, colors.black)
         ]))
         
+=======
+            ["Totaal Leveranciers", str(stats.get("suppliers", 0))],
+        ]
+
+        stats_table = Table(stats_data, colWidths=[3 * inch, 2 * inch])
+        stats_table.setStyle(
+            TableStyle(
+                [
+                    ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#f3f4f6")),
+                    ("TEXTCOLOR", (0, 0), (-1, 0), colors.black),
+                    ("ALIGN", (0, 0), (-1, -1), "LEFT"),
+                    ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+                    ("FONTSIZE", (0, 0), (-1, 0), 12),
+                    ("BOTTOMPADDING", (0, 0), (-1, 0), 12),
+                    ("BACKGROUND", (0, 1), (-1, -1), colors.white),
+                    ("GRID", (0, 0), (-1, -1), 1, colors.black),
+                ]
+            )
+        )
+
+>>>>>>> origin/main:packages/v1.00D/backend/routes/reports.py
         content.append(stats_table)
         content.append(Spacer(1, 20))
-    
+
     # Top clients
     if data.get("topClients"):
         content.append(Paragraph("Top Klanten", styles["Heading2"]))
+<<<<<<< HEAD:archive/packages/v1.00D/backend/routes/reports.py
         
         client_data = [["Naam", "E-mail", "Stad"]]
         for client in data["topClients"][:5]:
@@ -1014,15 +1088,39 @@ def generate_overview_pdf_content(data, t, styles):
             ("GRID", (0, 0), (-1, -1), 1, colors.black)
         ]))
         
+=======
+
+        client_data = [["Naam", "E-mail", "Stad"]]
+        for client in data["topClients"][:5]:
+            client_data.append([client.get("name", ""), client.get("email", ""), client.get("city", "")])
+
+        client_table = Table(client_data, colWidths=[2 * inch, 2.5 * inch, 1.5 * inch])
+        client_table.setStyle(
+            TableStyle(
+                [
+                    ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#10b981")),
+                    ("TEXTCOLOR", (0, 0), (-1, 0), colors.whitesmoke),
+                    ("ALIGN", (0, 0), (-1, -1), "LEFT"),
+                    ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+                    ("FONTSIZE", (0, 0), (-1, 0), 10),
+                    ("BOTTOMPADDING", (0, 0), (-1, 0), 12),
+                    ("BACKGROUND", (0, 1), (-1, -1), colors.white),
+                    ("GRID", (0, 0), (-1, -1), 1, colors.black),
+                ]
+            )
+        )
+
+>>>>>>> origin/main:packages/v1.00D/backend/routes/reports.py
         content.append(client_table)
         content.append(Spacer(1, 20))
-    
+
     return content
 
 
 def generate_clients_pdf_content(data, t, styles):
     """Generate clients report PDF content"""
     content = []
+<<<<<<< HEAD:archive/packages/v1.00D/backend/routes/reports.py
     
     if data.get("topClientsByProjects"):
         content.append(Paragraph("Top Klanten op Projecten", styles["Heading2"]))
@@ -1049,18 +1147,53 @@ def generate_clients_pdf_content(data, t, styles):
             ("GRID", (0, 0), (-1, -1), 1, colors.black)
         ]))
         
+=======
+
+    if data.get("topClientsByProjects"):
+        content.append(Paragraph("Top Klanten op Projecten", styles["Heading2"]))
+
+        client_data = [["Naam", "E-mail", "Projecten", "Totaal Budget"]]
+        for client in data["topClientsByProjects"][:10]:
+            client_data.append(
+                [
+                    client.get("name", ""),
+                    client.get("email", ""),
+                    str(client.get("projectCount", 0)),
+                    f"€{client.get('totalBudget', 0):,.2f}",
+                ]
+            )
+
+        client_table = Table(client_data, colWidths=[2 * inch, 2 * inch, 1 * inch, 1.5 * inch])
+        client_table.setStyle(
+            TableStyle(
+                [
+                    ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#10b981")),
+                    ("TEXTCOLOR", (0, 0), (-1, 0), colors.whitesmoke),
+                    ("ALIGN", (0, 0), (-1, -1), "LEFT"),
+                    ("ALIGN", (2, 0), (-1, -1), "RIGHT"),
+                    ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+                    ("FONTSIZE", (0, 0), (-1, 0), 10),
+                    ("BOTTOMPADDING", (0, 0), (-1, 0), 12),
+                    ("BACKGROUND", (0, 1), (-1, -1), colors.white),
+                    ("GRID", (0, 0), (-1, -1), 1, colors.black),
+                ]
+            )
+        )
+
+>>>>>>> origin/main:packages/v1.00D/backend/routes/reports.py
         content.append(client_table)
         content.append(Spacer(1, 20))
-    
+
     return content
 
 
 def generate_projects_pdf_content(data, t, styles):
     """Generate projects report PDF content"""
     content = []
-    
+
     # Project statistics
     content.append(Paragraph("Project Statistieken", styles["Heading2"]))
+<<<<<<< HEAD:archive/packages/v1.00D/backend/routes/reports.py
     
     project_stats = [
         [t["total_projects"], str(data.get("totalProjects", 0))],
@@ -1081,12 +1214,39 @@ def generate_projects_pdf_content(data, t, styles):
         ("GRID", (0, 0), (-1, -1), 1, colors.black)
     ]))
     
+=======
+
+    project_stats = [
+        [t["total_projects"], str(data.get("totalProjects", 0))],
+        [t["total_budget"], f"€{data.get('totalBudget', 0):,.2f}"],
+        [t["average_budget"], f"€{data.get('averageBudget', 0):,.2f}"],
+    ]
+
+    stats_table = Table(project_stats, colWidths=[3 * inch, 2 * inch])
+    stats_table.setStyle(
+        TableStyle(
+            [
+                ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#f3f4f6")),
+                ("TEXTCOLOR", (0, 0), (-1, 0), colors.black),
+                ("ALIGN", (0, 0), (-1, -1), "LEFT"),
+                ("ALIGN", (1, 0), (-1, -1), "RIGHT"),
+                ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+                ("FONTSIZE", (0, 0), (-1, 0), 12),
+                ("BOTTOMPADDING", (0, 0), (-1, 0), 12),
+                ("BACKGROUND", (0, 1), (-1, -1), colors.white),
+                ("GRID", (0, 0), (-1, -1), 1, colors.black),
+            ]
+        )
+    )
+
+>>>>>>> origin/main:packages/v1.00D/backend/routes/reports.py
     content.append(stats_table)
     content.append(Spacer(1, 20))
-    
+
     # Status distribution
     if data.get("statusDistribution"):
         content.append(Paragraph("Status Verdeling", styles["Heading2"]))
+<<<<<<< HEAD:archive/packages/v1.00D/backend/routes/reports.py
         
         status_data = [["Status", "Aantal"]]
         for status in data["statusDistribution"]:
@@ -1108,18 +1268,43 @@ def generate_projects_pdf_content(data, t, styles):
             ("GRID", (0, 0), (-1, -1), 1, colors.black)
         ]))
         
+=======
+
+        status_data = [["Status", "Aantal"]]
+        for status in data["statusDistribution"]:
+            status_data.append([status.get("name", ""), str(status.get("value", 0))])
+
+        status_table = Table(status_data, colWidths=[3 * inch, 2 * inch])
+        status_table.setStyle(
+            TableStyle(
+                [
+                    ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#10b981")),
+                    ("TEXTCOLOR", (0, 0), (-1, 0), colors.whitesmoke),
+                    ("ALIGN", (0, 0), (-1, -1), "LEFT"),
+                    ("ALIGN", (1, 0), (-1, -1), "RIGHT"),
+                    ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+                    ("FONTSIZE", (0, 0), (-1, 0), 10),
+                    ("BOTTOMPADDING", (0, 0), (-1, 0), 12),
+                    ("BACKGROUND", (0, 1), (-1, -1), colors.white),
+                    ("GRID", (0, 0), (-1, -1), 1, colors.black),
+                ]
+            )
+        )
+
+>>>>>>> origin/main:packages/v1.00D/backend/routes/reports.py
         content.append(status_table)
         content.append(Spacer(1, 20))
-    
+
     return content
 
 
 def generate_plants_pdf_content(data, t, styles):
     """Generate plants report PDF content"""
     content = []
-    
+
     # Plant statistics
     content.append(Paragraph("Plant Statistieken", styles["Heading2"]))
+<<<<<<< HEAD:archive/packages/v1.00D/backend/routes/reports.py
     
     plant_stats = [
         [t["total_plants"], str(data.get("totalPlants", 0))],
@@ -1140,12 +1325,39 @@ def generate_plants_pdf_content(data, t, styles):
         ("GRID", (0, 0), (-1, -1), 1, colors.black)
     ]))
     
+=======
+
+    plant_stats = [
+        [t["total_plants"], str(data.get("totalPlants", 0))],
+        ["Inheemse Planten", str(data.get("nativePlants", 0))],
+        ["Inheems Percentage", f"{data.get('nativePercentage', 0):.1f}%"],
+    ]
+
+    stats_table = Table(plant_stats, colWidths=[3 * inch, 2 * inch])
+    stats_table.setStyle(
+        TableStyle(
+            [
+                ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#f3f4f6")),
+                ("TEXTCOLOR", (0, 0), (-1, 0), colors.black),
+                ("ALIGN", (0, 0), (-1, -1), "LEFT"),
+                ("ALIGN", (1, 0), (-1, -1), "RIGHT"),
+                ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+                ("FONTSIZE", (0, 0), (-1, 0), 12),
+                ("BOTTOMPADDING", (0, 0), (-1, 0), 12),
+                ("BACKGROUND", (0, 1), (-1, -1), colors.white),
+                ("GRID", (0, 0), (-1, -1), 1, colors.black),
+            ]
+        )
+    )
+
+>>>>>>> origin/main:packages/v1.00D/backend/routes/reports.py
     content.append(stats_table)
     content.append(Spacer(1, 20))
-    
+
     # Category distribution
     if data.get("categoryDistribution"):
         content.append(Paragraph("Categorie Verdeling", styles["Heading2"]))
+<<<<<<< HEAD:archive/packages/v1.00D/backend/routes/reports.py
         
         category_data = [["Categorie", "Aantal"]]
         for category in data["categoryDistribution"]:
@@ -1167,18 +1379,43 @@ def generate_plants_pdf_content(data, t, styles):
             ("GRID", (0, 0), (-1, -1), 1, colors.black)
         ]))
         
+=======
+
+        category_data = [["Categorie", "Aantal"]]
+        for category in data["categoryDistribution"]:
+            category_data.append([category.get("name", ""), str(category.get("value", 0))])
+
+        category_table = Table(category_data, colWidths=[3 * inch, 2 * inch])
+        category_table.setStyle(
+            TableStyle(
+                [
+                    ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#10b981")),
+                    ("TEXTCOLOR", (0, 0), (-1, 0), colors.whitesmoke),
+                    ("ALIGN", (0, 0), (-1, -1), "LEFT"),
+                    ("ALIGN", (1, 0), (-1, -1), "RIGHT"),
+                    ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+                    ("FONTSIZE", (0, 0), (-1, 0), 10),
+                    ("BOTTOMPADDING", (0, 0), (-1, 0), 12),
+                    ("BACKGROUND", (0, 1), (-1, -1), colors.white),
+                    ("GRID", (0, 0), (-1, -1), 1, colors.black),
+                ]
+            )
+        )
+
+>>>>>>> origin/main:packages/v1.00D/backend/routes/reports.py
         content.append(category_table)
         content.append(Spacer(1, 20))
-    
+
     return content
 
 
 def generate_financial_pdf_content(data, t, styles):
     """Generate financial report PDF content"""
     content = []
-    
+
     # Financial statistics
     content.append(Paragraph("Financiële Statistieken", styles["Heading2"]))
+<<<<<<< HEAD:archive/packages/v1.00D/backend/routes/reports.py
     
     financial_stats = [
         ["Totale Omzet", f"€{data.get('totalRevenue', 0):,.2f}"],
@@ -1199,12 +1436,39 @@ def generate_financial_pdf_content(data, t, styles):
         ("GRID", (0, 0), (-1, -1), 1, colors.black)
     ]))
     
+=======
+
+    financial_stats = [
+        ["Totale Omzet", f"€{data.get('totalRevenue', 0):,.2f}"],
+        ["Voltooide Projecten", str(data.get("completedProjects", 0))],
+        ["Gemiddelde Project Waarde", f"€{data.get('averageProjectValue', 0):,.2f}"],
+    ]
+
+    stats_table = Table(financial_stats, colWidths=[3 * inch, 2 * inch])
+    stats_table.setStyle(
+        TableStyle(
+            [
+                ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#f3f4f6")),
+                ("TEXTCOLOR", (0, 0), (-1, 0), colors.black),
+                ("ALIGN", (0, 0), (-1, -1), "LEFT"),
+                ("ALIGN", (1, 0), (-1, -1), "RIGHT"),
+                ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+                ("FONTSIZE", (0, 0), (-1, 0), 12),
+                ("BOTTOMPADDING", (0, 0), (-1, 0), 12),
+                ("BACKGROUND", (0, 1), (-1, -1), colors.white),
+                ("GRID", (0, 0), (-1, -1), 1, colors.black),
+            ]
+        )
+    )
+
+>>>>>>> origin/main:packages/v1.00D/backend/routes/reports.py
     content.append(stats_table)
     content.append(Spacer(1, 20))
-    
+
     # Monthly revenue
     if data.get("monthlyRevenue"):
         content.append(Paragraph("Maandelijkse Omzet", styles["Heading2"]))
+<<<<<<< HEAD:archive/packages/v1.00D/backend/routes/reports.py
         
         revenue_data = [["Maand", "Omzet"]]
         for month_data in data["monthlyRevenue"]:
@@ -1226,7 +1490,31 @@ def generate_financial_pdf_content(data, t, styles):
             ("GRID", (0, 0), (-1, -1), 1, colors.black)
         ]))
         
+=======
+
+        revenue_data = [["Maand", "Omzet"]]
+        for month_data in data["monthlyRevenue"]:
+            revenue_data.append([month_data.get("month", ""), f"€{month_data.get('revenue', 0):,.2f}"])
+
+        revenue_table = Table(revenue_data, colWidths=[3 * inch, 2 * inch])
+        revenue_table.setStyle(
+            TableStyle(
+                [
+                    ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#10b981")),
+                    ("TEXTCOLOR", (0, 0), (-1, 0), colors.whitesmoke),
+                    ("ALIGN", (0, 0), (-1, -1), "LEFT"),
+                    ("ALIGN", (1, 0), (-1, -1), "RIGHT"),
+                    ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+                    ("FONTSIZE", (0, 0), (-1, 0), 10),
+                    ("BOTTOMPADDING", (0, 0), (-1, 0), 12),
+                    ("BACKGROUND", (0, 1), (-1, -1), colors.white),
+                    ("GRID", (0, 0), (-1, -1), 1, colors.black),
+                ]
+            )
+        )
+
+>>>>>>> origin/main:packages/v1.00D/backend/routes/reports.py
         content.append(revenue_table)
         content.append(Spacer(1, 20))
-    
+
     return content
