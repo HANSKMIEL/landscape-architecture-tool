@@ -1,4 +1,0 @@
-Deployment trigger: Force rebuild with authentication fixes
-Timestamp: 2025-09-09 13:04:00
-Commit: Includes authentication mock fixes from a779da9
-Purpose: Ensure GitHub Pages demo has working login functionality
