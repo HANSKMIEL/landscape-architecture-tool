@@ -60,10 +60,7 @@ def get_projects():
         for project in projects.items:
             # Get associated plants and products
             plants = (
-                db.session.query(Plant)
-                .join(project_plants)
-                .filter(project_plants.c.project_id == project.id)
-                .all()
+                db.session.query(Plant).join(project_plants).filter(project_plants.c.project_id == project.id).all()
             )
 
             products = (
@@ -97,9 +94,7 @@ def get_projects():
                         }
                         for p in plants
                     ],
-                    "products": [
-                        {"id": p.id, "name": p.name, "category": p.category} for p in products
-                    ],
+                    "products": [{"id": p.id, "name": p.name, "category": p.category} for p in products],
                     "created_at": (project.created_at.isoformat() if project.created_at else None),
                     "updated_at": (project.updated_at.isoformat() if project.updated_at else None),
                 }
@@ -151,9 +146,7 @@ def create_project():
             spent=float(data["spent"]) if data.get("spent") else None,
             location=data.get("location"),
             area_size=(float(data["area_size"]) if data.get("area_size") else None),
-            start_date=(
-                datetime.fromisoformat(data["start_date"]) if data.get("start_date") else None
-            ),
+            start_date=(datetime.fromisoformat(data["start_date"]) if data.get("start_date") else None),
             end_date=(datetime.fromisoformat(data["end_date"]) if data.get("end_date") else None),
             notes=data.get("notes"),
             client_id=int(data["client_id"]),
@@ -204,18 +197,10 @@ def get_project(project_id):
         project = Project.query.get_or_404(project_id)
 
         # Get associated plants and products
-        plants = (
-            db.session.query(Plant)
-            .join(project_plants)
-            .filter(project_plants.c.project_id == project.id)
-            .all()
-        )
+        plants = db.session.query(Plant).join(project_plants).filter(project_plants.c.project_id == project.id).all()
 
         products = (
-            db.session.query(Product)
-            .join(project_products)
-            .filter(project_products.c.project_id == project.id)
-            .all()
+            db.session.query(Product).join(project_products).filter(project_products.c.project_id == project.id).all()
         )
 
         plants_data = []
@@ -304,13 +289,9 @@ def update_project(project_id):
         if "area_size" in data:
             project.area_size = float(data["area_size"]) if data["area_size"] else None
         if "start_date" in data:
-            project.start_date = (
-                datetime.fromisoformat(data["start_date"]) if data["start_date"] else None
-            )
+            project.start_date = datetime.fromisoformat(data["start_date"]) if data["start_date"] else None
         if "end_date" in data:
-            project.end_date = (
-                datetime.fromisoformat(data["end_date"]) if data["end_date"] else None
-            )
+            project.end_date = datetime.fromisoformat(data["end_date"]) if data["end_date"] else None
         if "notes" in data:
             project.notes = data["notes"]
         if "client_id" in data:
@@ -381,11 +362,7 @@ def get_project_stats():
         total_projects = Project.query.count()
 
         # Status distribution
-        status_stats = (
-            db.session.query(Project.status, db.func.count(Project.id))
-            .group_by(Project.status)
-            .all()
-        )
+        status_stats = db.session.query(Project.status, db.func.count(Project.id)).group_by(Project.status).all()
 
         status_distribution = dict(status_stats)
 
@@ -433,8 +410,7 @@ def get_project_stats():
         )
 
         monthly_trend = [
-            {"month": month.strftime("%Y-%m") if month else "", "count": count}
-            for month, count in monthly_stats
+            {"month": month.strftime("%Y-%m") if month else "", "count": count} for month, count in monthly_stats
         ]
 
         return jsonify(
@@ -445,9 +421,7 @@ def get_project_stats():
                     "total_budget": total_budget,
                     "total_spent": total_spent,
                     "avg_budget": avg_budget,
-                    "utilization_rate": (
-                        (total_spent / total_budget * 100) if total_budget > 0 else 0
-                    ),
+                    "utilization_rate": ((total_spent / total_budget * 100) if total_budget > 0 else 0),
                 },
                 "recent_projects": recent_projects,
                 "top_clients": top_clients,
@@ -567,9 +541,7 @@ def remove_product_from_project(project_id, product_id):
 
         db.session.commit()
 
-        return jsonify(
-            {"message": (f'Product "{product.name}" removed from project "{project.name}"')}
-        )
+        return jsonify({"message": (f'Product "{product.name}" removed from project "{project.name}"')})
 
     except Exception as e:
         db.session.rollback()

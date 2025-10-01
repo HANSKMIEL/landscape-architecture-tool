@@ -58,9 +58,7 @@ def add_plant_to_project(project_id):
     except ValidationError as e:
         # Provide a minimal, generic error message; do not leak internals
         return (
-            jsonify(
-                {"error": "Validation failed", "fields": [err.get("loc", []) for err in e.errors()]}
-            ),
+            jsonify({"error": "Validation failed", "fields": [err.get("loc", []) for err in e.errors()]}),
             400,
         )
     except (ValueError, TypeError) as e:
@@ -83,17 +81,11 @@ def update_project_plant(project_id, plant_id):
 
         # Handle different update operations
         if "quantity" in validated_data:
-            project_plant = service.update_plant_quantity(
-                project_id, plant_id, validated_data["quantity"]
-            )
+            project_plant = service.update_plant_quantity(project_id, plant_id, validated_data["quantity"])
         elif "status" in validated_data:
-            project_plant = service.update_plant_status(
-                project_id, plant_id, validated_data["status"]
-            )
+            project_plant = service.update_plant_status(project_id, plant_id, validated_data["status"])
         elif "unit_cost" in validated_data:
-            project_plant = service.update_plant_cost(
-                project_id, plant_id, validated_data["unit_cost"]
-            )
+            project_plant = service.update_plant_cost(project_id, plant_id, validated_data["unit_cost"])
         else:
             return jsonify({"error": "No valid update fields provided"}), 400
 

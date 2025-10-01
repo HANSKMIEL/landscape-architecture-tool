@@ -1,0 +1,85 @@
+{
+  "timestamp": "2025-10-01T06:47:58.905751",
+  "validation_suite": "Final Comprehensive V1.00D Branch Validation",
+  "tests": [
+    {
+      "description": "Backend Unit Tests",
+      "command": "cd /home/runner/work/landscape-architecture-tool/landscape-architecture-tool && PYTHONPATH=. FLASK_ENV=testing python -m pytest tests/ -v --tb=short --maxfail=5",
+      "returncode": 4,
+      "stdout": "",
+      "stderr": "ERROR: Missing required plugins: pytest-cov>=4.0, pytest-mock>=3.0, pytest-timeout>=2.0\n\n",
+      "status": "FAIL"
+    },
+    {
+      "description": "Black Code Formatting Check",
+      "command": "cd /home/runner/work/landscape-architecture-tool/landscape-architecture-tool && python -m black --check src/ tests/ scripts/",
+      "returncode": 1,
+      "stdout": "",
+      "stderr": "would reformat /home/runner/work/landscape-architecture-tool/landscape-architecture-tool/scripts/code_quality_check.py\nwould reformat /home/runner/work/landscape-architecture-tool/landscape-architecture-tool/scripts/comprehensive_development_analysis.py\nwould reformat /home/runner/work/landscape-architecture-tool/landscape-architecture-tool/scripts/admin_user_testing.py\nwould reformat /home/runner/work/landscape-architecture-tool/landscape-architecture-tool/scripts/comprehensive_admin_test_fix.py\nwould reformat /home/runner/work/landscape-architecture-tool/landscape-architecture-tool/scripts/comprehensive_validation.py\nwould reformat /home/runner/work/landscape-architecture-tool/landscape-architecture-tool/scripts/automated_validation.py\nwould reformat /home/runner/work/landscape-architecture-tool/landscape-architecture-tool/scripts/copilot_workflow.py\nwould reformat /home/runner/work/landscape-architecture-tool/landscape-architecture-tool/scripts/demo_pr_count_fix.py\nwould reformat /home/runner/work/landscape-architecture-tool/landscape-architecture-tool/scripts/comprehensive_ui_analysis.py\nwould reformat /home/runner/work/landscape-architecture-tool/landscape-architecture-tool/scripts/copilot_dependency_analyzer.py\nwould reformat /home/runner/work/landscape-architecture-tool/landscape-architecture-tool/scripts/final_comprehensive_validation.py\nwould reformat /home/runner/work/landscape-architecture-tool/landscape-architecture-tool/scripts/final_ui_fix_report.py\nwould reformat /home/runner/work/landscape-architecture-tool/landscape-architecture-tool/scripts/fix_ui_text_issues.py\nwould reformat /home/runner/work/landscape-architecture-tool/landscape-architecture-tool/scripts/final_comprehensive_report.py\nwould reformat /home/runner/work/landscape-architecture-tool/landscape-architecture-tool/scripts/organize_clutter.py\nwould reformat /home/runner/work/landscape-architecture-tool/landscape-architecture-tool/scripts/phase4_validation.py\nwould reformat /home/runner/wor",
+      "status": "FAIL"
+    },
+    {
+      "description": "Import Organization Check (isort)",
+      "command": "cd /home/runner/work/landscape-architecture-tool/landscape-architecture-tool && python -m isort --check-only src/ tests/ scripts/",
+      "returncode": 1,
+      "stdout": "",
+      "stderr": "ERROR: /home/runner/work/landscape-architecture-tool/landscape-architecture-tool/scripts/final_ui_fix_report.py Imports are incorrectly sorted and/or formatted.\n",
+      "status": "FAIL"
+    },
+    {
+      "description": "Ruff Linting Analysis",
+      "command": "cd /home/runner/work/landscape-architecture-tool/landscape-architecture-tool && python -m ruff check src/ tests/ scripts/ --statistics",
+      "returncode": 1,
+      "stdout": "19\tF811  \t[ ] redefined-while-unused\n 7\tF821  \t[ ] undefined-name\n 4\tC401  \t[ ] unnecessary-generator-set\n 4\tRET504\t[ ] unnecessary-assign\n 2\tE402  \t[ ] module-import-not-at-top-of-file\n 2\tE722  \t[ ] bare-except\n 2\tS112  \t[ ] try-except-continue\n 1\tB904  \t[ ] raise-without-from-inside-except\n 1\tI001  \t[*] unsorted-imports\n 1\tQ000  \t[*] bad-quotes-inline-string\n 1\tRET505\t[*] superfluous-else-return\n 1\tS106  \t[ ] hardcoded-password-func-arg\n 1\tSIM108\t[ ] if-else-block-instead-of-if-exp\nFound 46 errors.\n[*] 3 fixable with the `--fix` option (8 hidden fixes can be enabled with the `--unsafe-fixes` option).\n",
+      "stderr": "",
+      "status": "FAIL"
+    },
+    {
+      "description": "Bandit Security Scan",
+      "command": "cd /home/runner/work/landscape-architecture-tool/landscape-architecture-tool && python -m bandit -r src/ -f json -o /tmp/bandit_final.json",
+      "returncode": 1,
+      "stdout": "Working... \u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501 100% 0:00:01\n",
+      "stderr": "[main]\tINFO\tprofile include tests: None\n[main]\tINFO\tprofile exclude tests: None\n[main]\tINFO\tcli include tests: None\n[main]\tINFO\tcli exclude tests: None\n[json]\tINFO\tJSON output written to file: /tmp/bandit_final.json\n",
+      "status": "FAIL"
+    },
+    {
+      "description": "ESLint Frontend Validation",
+      "command": "cd /home/runner/work/landscape-architecture-tool/landscape-architecture-tool/frontend && npm run lint",
+      "returncode": 1,
+      "stdout": "\n> landscape-frontend-complete@0.0.0 lint\n> eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0\n\n\n/home/runner/work/landscape-architecture-tool/landscape-architecture-tool/frontend/src/App.jsx\n  70:14  error  '_error' is defined but never used  no-unused-vars\n\n/home/runner/work/landscape-architecture-tool/landscape-architecture-tool/frontend/src/components/AIAssistant.jsx\n  35:10  error    'suggestions' is assigned a value but never used. Allowed unused vars must match /^React$|^_/u                      no-unused-vars\n  35:23  error    'setSuggestions' is assigned a value but never used. Allowed unused vars must match /^React$|^_/u                   no-unused-vars\n  61:6   warning  React Hook useEffect has a missing dependency: 'loadInitialData'. Either include it or remove the dependency array  react-hooks/exhaustive-deps\n\n/home/runner/work/landscape-architecture-tool/landscape-architecture-tool/frontend/src/components/Clients.jsx\n  35:10  error  'showImportModal' is assigned a value but never used. Allowed unused vars must match /^React$|^_/u  no-unused-vars\n\n/home/runner/work/landscape-architecture-tool/landscape-architecture-tool/frontend/src/components/ImportExport.jsx\n  20:3   error  'Trash2' is defined but never used. Allowed unused vars must match /^React$|^_/u                      no-unused-vars\n  21:3   error  'Edit' is defined but never used. Allowed unused vars must match /^React$|^_/u                        no-unused-vars\n  41:10  error  'bulkOperations' is assigned a value but never used. Allowed unused vars must match /^React$|^_/u     no-unused-vars\n  41:26  error  'setBulkOperations' is assigned a value but never used. Allowed unused vars must match /^React$|^_/u  no-unused-vars\n\n/home/runner/work/landscape-architecture-tool/landscape-architecture-tool/frontend/src/components/PhotoGallery.jsx\n  150:40  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities\n  172:60  error  `'` can be",
+      "stderr": "",
+      "status": "FAIL"
+    },
+    {
+      "description": "Check for compiled Python files",
+      "command": "cd /home/runner/work/landscape-architecture-tool/landscape-architecture-tool && find . -name '*.pyc' -o -name '__pycache__' | wc -l",
+      "returncode": 0,
+      "stdout": "0\n",
+      "stderr": "",
+      "status": "PASS"
+    },
+    {
+      "description": "Check for uncommitted changes",
+      "command": "cd /home/runner/work/landscape-architecture-tool/landscape-architecture-tool && git status --porcelain | wc -l",
+      "returncode": 0,
+      "stdout": "2\n",
+      "stderr": "",
+      "status": "PASS"
+    },
+    {
+      "description": "Python Dependencies Check",
+      "command": "cd /home/runner/work/landscape-architecture-tool/landscape-architecture-tool && pip check",
+      "returncode": 0,
+      "stdout": "No broken requirements found.\n",
+      "stderr": "",
+      "status": "PASS"
+    }
+  ],
+  "summary": {
+    "total_tests": 9,
+    "passed": 3,
+    "failed": 6,
+    "errors": 0,
+    "success_rate": "33.3%"
+  }
+}

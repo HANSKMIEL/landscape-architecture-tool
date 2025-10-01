@@ -163,9 +163,7 @@ class RecommendationAlgorithm:
     def _is_soil_field(self, plant_value: str, criteria_value: str) -> bool:
         """Check if values are soil type related"""
         soil_values = ["well_drained", "moist", "wet", "dry", "sandy", "clay", "loam"]
-        return any(
-            soil in plant_value.lower() or soil in criteria_value.lower() for soil in soil_values
-        )
+        return any(soil in plant_value.lower() or soil in criteria_value.lower() for soil in soil_values)
 
     def _score_sun_compatibility(self, plant_sun: str, criteria_sun: str) -> float:
         """Score sun requirement compatibility with partial matches"""

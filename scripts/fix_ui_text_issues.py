@@ -24,9 +24,7 @@ def main():
     if report_path.exists():
         with open(report_path) as f:
             analysis = json.load(f)
-            print(
-                f"✅ Loaded analysis report with {len(analysis.get('text_display_issues', []))} issues"
-            )
+            print(f"✅ Loaded analysis report with {len(analysis.get('text_display_issues', []))} issues")
     else:
         print("⚠️ No analysis report found")
         return

@@ -205,9 +205,7 @@ class PhotoService:
                 try:
                     os.remove(file_path)
                 except OSError as cleanup_error:
-                    current_app.logger.error(
-                        f"Error cleaning up file {file_path}: {cleanup_error!s}"
-                    )
+                    current_app.logger.error(f"Error cleaning up file {file_path}: {cleanup_error!s}")
 
             return {"success": False, "error": f"Upload failed: {e!s}"}
 
@@ -262,9 +260,7 @@ class PhotoService:
             current_app.logger.error(f"Error deleting photo {photo_id}: {e!s}")
             return {"success": False, "error": f"Delete failed: {e!s}"}
 
-    def set_primary_photo(
-        self, photo_id: int, entity_id: int, category: PhotoCategory
-    ) -> dict[str, Any]:
+    def set_primary_photo(self, photo_id: int, entity_id: int, category: PhotoCategory) -> dict[str, Any]:
         """Set photo as primary for an entity."""
         try:
             # Clear existing primary photos for this entity

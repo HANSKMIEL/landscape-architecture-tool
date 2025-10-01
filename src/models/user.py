@@ -25,9 +25,7 @@ class User(db.Model):
     password_hash = db.Column(db.String(255), nullable=False)
 
     # Role-based access control
-    role = db.Column(
-        db.String(20), nullable=False, default="user"
-    )  # client, user, admin, sysadmin, developer
+    role = db.Column(db.String(20), nullable=False, default="user")  # client, user, admin, sysadmin, developer
 
     # Profile information
     first_name = db.Column(db.String(50))

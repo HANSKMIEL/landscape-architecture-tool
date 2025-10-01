@@ -273,11 +273,7 @@ class AdminUserTester:
         print("\n3. Testing CRUD Operations...")
         self.test_crud_operations()
 
-        crud_passes = sum(
-            1
-            for result in self.test_results["crud_tests"].values()
-            if result.get("status") == "PASS"
-        )
+        crud_passes = sum(1 for result in self.test_results["crud_tests"].values() if result.get("status") == "PASS")
         crud_total = len(self.test_results["crud_tests"])
         print(f"✅ CRUD Operations: {crud_passes}/{crud_total} passing")
 
@@ -285,11 +281,7 @@ class AdminUserTester:
         print("\n4. Testing Authentication Endpoints...")
         self.test_authentication_endpoints()
 
-        auth_passes = sum(
-            1
-            for result in self.test_results["auth_tests"].values()
-            if result.get("accessible", False)
-        )
+        auth_passes = sum(1 for result in self.test_results["auth_tests"].values() if result.get("accessible", False))
         auth_total = len(self.test_results["auth_tests"])
         print(f"✅ Auth Endpoints: {auth_passes}/{auth_total} accessible")
 
@@ -300,9 +292,7 @@ class AdminUserTester:
             print(f"⚠️ Found {len(issues)} issues:")
             for issue in issues:
                 severity_emoji = (
-                    "🔴"
-                    if issue["severity"] == "HIGH"
-                    else "🟡" if issue["severity"] == "MEDIUM" else "🟢"
+                    "🔴" if issue["severity"] == "HIGH" else "🟡" if issue["severity"] == "MEDIUM" else "🟢"
                 )
                 print(f"  {severity_emoji} {issue['category']}: {issue['description']}")
         else:
@@ -312,9 +302,7 @@ class AdminUserTester:
         print("\n6. Generating Recommendations...")
         recommendations = self.generate_recommendations()
         for rec in recommendations:
-            priority_emoji = (
-                "🔴" if rec["priority"] == "HIGH" else "🟡" if rec["priority"] == "MEDIUM" else "🟢"
-            )
+            priority_emoji = "🔴" if rec["priority"] == "HIGH" else "🟡" if rec["priority"] == "MEDIUM" else "🟢"
             print(f"  {priority_emoji} {rec['action']}: {rec['description']}")
 
         # Summary

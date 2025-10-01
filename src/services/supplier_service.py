@@ -16,9 +16,7 @@ class SupplierService:
     """Service class for supplier operations"""
 
     @staticmethod
-    def get_all_suppliers(
-        search: str = "", specialization: str = "", page: int = 1, per_page: int = 50
-    ) -> dict:
+    def get_all_suppliers(search: str = "", specialization: str = "", page: int = 1, per_page: int = 50) -> dict:
         """Get all suppliers with optional filtering and pagination"""
         query = Supplier.query
 
@@ -38,9 +36,7 @@ class SupplierService:
             query = query.filter(Supplier.specialization.ilike(f"%{specialization}%"))
 
         # Execute query with pagination
-        suppliers = query.order_by(Supplier.name).paginate(
-            page=page, per_page=per_page, error_out=False
-        )
+        suppliers = query.order_by(Supplier.name).paginate(page=page, per_page=per_page, error_out=False)
 
         return {
             "suppliers": [supplier.to_dict() for supplier in suppliers.items],
@@ -120,12 +116,8 @@ class SupplierService:
         total_plants = len(plants)
         total_inventory_value = sum((p.price or 0) * (p.stock_quantity or 0) for p in products)
 
-        average_product_price = (
-            sum(p.price or 0 for p in products) / total_products if total_products > 0 else 0
-        )
-        average_plant_price = (
-            sum(p.price or 0 for p in plants) / total_plants if total_plants > 0 else 0
-        )
+        average_product_price = sum(p.price or 0 for p in products) / total_products if total_products > 0 else 0
+        average_plant_price = sum(p.price or 0 for p in plants) / total_plants if total_plants > 0 else 0
 
         return {
             "supplier_id": supplier_id,
@@ -157,11 +149,7 @@ class SupplierService:
     @staticmethod
     def get_suppliers_by_specialization(specialization: str) -> list[Supplier]:
         """Get suppliers by specialization"""
-        return (
-            Supplier.query.filter(Supplier.specialization.ilike(f"%{specialization}%"))
-            .order_by(Supplier.name)
-            .all()
-        )
+        return Supplier.query.filter(Supplier.specialization.ilike(f"%{specialization}%")).order_by(Supplier.name).all()
 
     @staticmethod
     def get_supplier_specializations() -> list[str]:
@@ -193,13 +181,7 @@ class SupplierService:
 
         # Phone validation
         if supplier_data.get("phone"):
-            phone = (
-                supplier_data["phone"]
-                .replace(" ", "")
-                .replace("-", "")
-                .replace("(", "")
-                .replace(")", "")
-            )
+            phone = supplier_data["phone"].replace(" ", "").replace("-", "").replace("(", "").replace(")", "")
             if not phone.replace("+", "").isdigit():
                 errors.append("Invalid phone number format")
 
@@ -266,8 +248,6 @@ class SupplierService:
             "postal_code": supplier.postal_code,
             "website": supplier.website,
             "full_address": (
-                f"{supplier.address}, {supplier.city} {supplier.postal_code}"
-                if supplier.address
-                else None
+                f"{supplier.address}, {supplier.city} {supplier.postal_code}" if supplier.address else None
             ),
         }

@@ -44,9 +44,7 @@ def populate_sample_data():
             ]
 
             for user_data in users_data:
-                user = User(
-                    username=user_data["username"], email=user_data["email"], role=user_data["role"]
-                )
+                user = User(username=user_data["username"], email=user_data["email"], role=user_data["role"])
                 user.set_password(user_data["password"])
                 db.session.add(user)
 

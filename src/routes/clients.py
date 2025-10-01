@@ -43,9 +43,7 @@ def get_clients():
         clients_data = []
         for client in clients.items:
             project_count = Project.query.filter_by(client_id=client.id).count()
-            active_projects = Project.query.filter_by(
-                client_id=client.id, status="in_progress"
-            ).count()
+            active_projects = Project.query.filter_by(client_id=client.id, status="in_progress").count()
 
             clients_data.append(
                 {
@@ -262,13 +260,7 @@ def delete_client(client_id):
         db.session.delete(client)
         db.session.commit()
 
-        return jsonify(
-            {
-                "message": (
-                    f"Client and {project_count} associated projects " f"deleted successfully"
-                )
-            }
-        )
+        return jsonify({"message": (f"Client and {project_count} associated projects " f"deleted successfully")})
 
     except Exception as e:
         db.session.rollback()
@@ -362,9 +354,7 @@ def search_clients():
                     "name": client.name,
                     "email": client.email,
                     "company": client.company,
-                    "display_name": (
-                        f"{client.name} ({client.company})" if client.company else client.name
-                    ),
+                    "display_name": (f"{client.name} ({client.company})" if client.company else client.name),
                 }
             )
 

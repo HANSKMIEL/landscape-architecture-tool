@@ -79,9 +79,7 @@ class PRInfo:
 class PRAnalyzer:
     """Analyzes pull requests for validation reporting."""
 
-    def __init__(
-        self, github_token: str | None = None, owner: str | None = None, repo: str | None = None
-    ):
+    def __init__(self, github_token: str | None = None, owner: str | None = None, repo: str | None = None):
         """
         Initialize PR analyzer.
 
@@ -197,9 +195,7 @@ class PRAnalyzer:
             update_type = pr.get_update_type()
 
             # Check if it contains critical dependencies
-            has_critical_dep = any(
-                dep.lower() in pr.title.lower() for dep in self.critical_dependencies
-            )
+            has_critical_dep = any(dep.lower() in pr.title.lower() for dep in self.critical_dependencies)
 
             if has_critical_dep:
                 manual_review.append(pr)
@@ -329,9 +325,7 @@ class PRAnalyzer:
 
         if dependabot_data["manual_review_required"] > 0:
             manual_prs = pr_counts["pr_numbers"]["manual_review"]
-            steps.append(
-                f"Manual review required for {dependabot_data['manual_review_required']} PRs: {manual_prs}"
-            )
+            steps.append(f"Manual review required for {dependabot_data['manual_review_required']} PRs: {manual_prs}")
 
         if dependabot_data["major_updates_requiring_testing"] > 0:
             major_prs = pr_counts["pr_numbers"]["major_updates"]

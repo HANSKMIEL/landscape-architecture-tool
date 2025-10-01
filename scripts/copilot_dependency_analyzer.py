@@ -131,8 +131,7 @@ class CopilotDependencyAnalyzer:
         }
 
         is_critical = any(
-            package_name.lower() in critical_dependencies.get(ecosystem, [])
-            for eco in critical_dependencies
+            package_name.lower() in critical_dependencies.get(ecosystem, []) for eco in critical_dependencies
         )
 
         # Assess usage in codebase
@@ -186,9 +185,7 @@ class CopilotDependencyAnalyzer:
             "changelog_available": bool(changelog),
             "changelog_excerpt": changelog[:500] if changelog else None,
             "risk_level": (
-                "high"
-                if potential_breaks
-                else "medium" if dependency_info.get("update_type") == "major" else "low"
+                "high" if potential_breaks else "medium" if dependency_info.get("update_type") == "major" else "low"
             ),
         }
 
@@ -205,18 +202,14 @@ class CopilotDependencyAnalyzer:
         return {
             "security_advisories": security_check,
             "vulnerability_scan": vuln_check,
-            "security_impact": (
-                "positive" if security_check.get("fixes_vulnerabilities") else "neutral"
-            ),
+            "security_impact": ("positive" if security_check.get("fixes_vulnerabilities") else "neutral"),
         }
 
     def _develop_testing_strategy(self, dependency_info: dict) -> dict:
         """Develop comprehensive testing strategy"""
         logger.info("Developing testing strategy")
 
-        impact_level = self.analysis_results.get("impact_assessment", {}).get(
-            "impact_level", "medium"
-        )
+        impact_level = self.analysis_results.get("impact_assessment", {}).get("impact_level", "medium")
 
         base_tests = [
             "run_existing_test_suite",
@@ -265,9 +258,7 @@ class CopilotDependencyAnalyzer:
         # Frontend tests
         logger.info("Running frontend tests")
         try:
-            frontend_result = self._run_command(
-                "cd frontend && npm run test:vitest:run", timeout=120
-            )
+            frontend_result = self._run_command("cd frontend && npm run test:vitest:run", timeout=120)
             results["frontend_tests"] = {"status": "passed", "output": frontend_result[-1000:]}
         except subprocess.CalledProcessError as e:
             results["frontend_tests"] = {
@@ -337,17 +328,13 @@ class CopilotDependencyAnalyzer:
         impl_tasks = ["apply_dependency_update"]
 
         if breaking_changes.get("risk_level") == "high":
-            impl_tasks.extend(
-                ["update_deprecated_apis", "fix_breaking_changes", "update_configuration"]
-            )
+            impl_tasks.extend(["update_deprecated_apis", "fix_breaking_changes", "update_configuration"])
 
         phases.append(
             {
                 "phase": "implementation",
                 "tasks": impl_tasks,
-                "estimated_time": (
-                    "1-3 hours" if impact_level in ["critical", "high"] else "30-60 minutes"
-                ),
+                "estimated_time": ("1-3 hours" if impact_level in ["critical", "high"] else "30-60 minutes"),
             }
         )
 
@@ -361,9 +348,7 @@ class CopilotDependencyAnalyzer:
                     "manual_functionality_testing",
                     "performance_validation",
                 ],
-                "estimated_time": (
-                    "1-2 hours" if impact_level in ["critical", "high"] else "30 minutes"
-                ),
+                "estimated_time": ("1-2 hours" if impact_level in ["critical", "high"] else "30 minutes"),
             }
         )
 
@@ -447,15 +432,11 @@ class CopilotDependencyAnalyzer:
             )
 
             if result.returncode != 0:
-                raise subprocess.CalledProcessError(
-                    result.returncode, command, result.stdout, result.stderr
-                )
+                raise subprocess.CalledProcessError(result.returncode, command, result.stdout, result.stderr)
 
             return result.stdout
         except subprocess.TimeoutExpired:
-            raise subprocess.CalledProcessError(
-                1, command, "", f"Command timed out after {timeout} seconds"
-            )
+            raise subprocess.CalledProcessError(1, command, "", f"Command timed out after {timeout} seconds")
 
     def _determine_ecosystem(self, files: list[dict]) -> str:
         """Determine package ecosystem from changed files"""
@@ -617,9 +598,7 @@ def main():
     import argparse
 
     parser = argparse.ArgumentParser(description="Copilot Dependency Analysis Helper")
-    parser.add_argument(
-        "command", choices=["analyze", "test", "plan", "report"], help="Command to execute"
-    )
+    parser.add_argument("command", choices=["analyze", "test", "plan", "report"], help="Command to execute")
     parser.add_argument("--pr", type=int, help="PR number to analyze")
     parser.add_argument("--issue", type=int, help="Issue number for reporting")
     parser.add_argument("--verbose", "-v", action="store_true", help="Verbose output")

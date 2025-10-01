@@ -157,9 +157,7 @@ Each entry follows this format:
 
             # Show recent entries
             if entries:
-                print(
-                    f"\nRecent Development Log Entries (showing {min(limit, len(entries))} of {len(entries)}):"
-                )
+                print(f"\nRecent Development Log Entries (showing {min(limit, len(entries))} of {len(entries)}):")
                 print("=" * 60)
                 for entry in entries[:limit]:
                     print(entry)

@@ -25,9 +25,7 @@ def check_file_exists(filepath, description, optional=False):
 def run_command_check(command, description):
     """Run a command and check if it succeeds."""
     try:
-        result = subprocess.run(
-            command, check=False, shell=True, capture_output=True, text=True, timeout=60
-        )
+        result = subprocess.run(command, check=False, shell=True, capture_output=True, text=True, timeout=60)
         if result.returncode == 0:
             print(f"✅ {description}")
             return True
@@ -50,15 +48,11 @@ def main():
 
     # 1. Pre-commit hooks validation
     print("\n📋 Step 4.1: Pre-commit Hooks Validation")
-    validation_results.append(
-        check_file_exists(".pre-commit-config.yaml", "Pre-commit configuration")
-    )
+    validation_results.append(check_file_exists(".pre-commit-config.yaml", "Pre-commit configuration"))
 
     # Check if pre-commit is installed with consistent error handling
     try:
-        result = subprocess.run(
-            ["pre-commit", "--version"], check=False, capture_output=True, text=True, timeout=10
-        )
+        result = subprocess.run(["pre-commit", "--version"], check=False, capture_output=True, text=True, timeout=10)
         if result.returncode == 0:
             print("✅ Pre-commit framework installed")
             validation_results.append(True)
@@ -91,9 +85,7 @@ def main():
     validation_results.append(
         check_file_exists(".github/copilot-instructions.md", "Copilot instructions", optional=True)
     )
-    validation_results.append(
-        check_file_exists("scripts/copilot_workflow.py", "Copilot workflow helper")
-    )
+    validation_results.append(check_file_exists("scripts/copilot_workflow.py", "Copilot workflow helper"))
 
     # Test copilot workflow script
     if Path("scripts/copilot_workflow.py").exists():
@@ -106,9 +98,7 @@ def main():
 
     # 4. Monitoring system validation
     print("\n📋 Step 4.4: Monitoring System Validation")
-    validation_results.append(
-        check_file_exists("scripts/pipeline_health_monitor.py", "Pipeline health monitor")
-    )
+    validation_results.append(check_file_exists("scripts/pipeline_health_monitor.py", "Pipeline health monitor"))
 
     # Test monitoring script
     if Path("scripts/pipeline_health_monitor.py").exists():

@@ -127,9 +127,7 @@ class DependencyValidator:
                 logger.warning(f"Optional dependency missing: {dep_name} - {description}")
 
         if self.missing_optional:
-            install_cmds = [
-                f"  {dep}: pip install {dep.replace('_', '-')}" for dep in self.missing_optional
-            ]
+            install_cmds = [f"  {dep}: pip install {dep.replace('_', '-')}" for dep in self.missing_optional]
             missing_deps = ", ".join(self.missing_optional)
             warning_msg = (
                 f"Some optional dependencies are missing: {missing_deps}.\n"
@@ -143,10 +141,7 @@ class DependencyValidator:
                 stacklevel=2,
             )
 
-        optional_available = (
-            f"Optional dependencies: {available_count}/"
-            f"{len(self.OPTIONAL_DEPENDENCIES)} available"
-        )
+        optional_available = f"Optional dependencies: {available_count}/" f"{len(self.OPTIONAL_DEPENDENCIES)} available"
         logger.info(optional_available)
         return available_count, self.missing_optional
 
@@ -165,9 +160,7 @@ class DependencyValidator:
         ]
 
         for dep_name, description in self.CRITICAL_DEPENDENCIES.items():
-            status = (
-                "✅ AVAILABLE" if self.validation_results.get(dep_name, False) else "❌ MISSING"
-            )
+            status = "✅ AVAILABLE" if self.validation_results.get(dep_name, False) else "❌ MISSING"
             report_lines.append(f"  {dep_name}: {status}")
             if not self.validation_results.get(dep_name, False):
                 report_lines.append(f"    → {description}")
@@ -180,9 +173,7 @@ class DependencyValidator:
         )
 
         for dep_name, _description in self.OPTIONAL_DEPENDENCIES.items():
-            status = (
-                "✅ AVAILABLE" if self.validation_results.get(dep_name, False) else "⚠️  MISSING"
-            )
+            status = "✅ AVAILABLE" if self.validation_results.get(dep_name, False) else "⚠️  MISSING"
             report_lines.append(f"  {dep_name}: {status}")
 
         critical_count = len(self.CRITICAL_DEPENDENCIES)
@@ -290,6 +281,5 @@ __all__ = ["DependencyValidator", "validate_dependencies"]
 # Defensive validation to prevent import issues (addresses issue #326)
 if not hasattr(sys.modules[__name__], "DependencyValidator"):
     raise ImportError(
-        "DependencyValidator class not properly defined in module. "
-        "This indicates a module structure issue."
+        "DependencyValidator class not properly defined in module. " "This indicates a module structure issue."
     )

@@ -418,9 +418,7 @@ class VectorworksReportGenerator:
     def __init__(self, sdk_interface: VectorworksSDKInterface):
         self.sdk = sdk_interface
 
-    def generate_plant_schedule(
-        self, project: VectorworksProject, output_path: str, language: str = "nl"
-    ) -> bool:
+    def generate_plant_schedule(self, project: VectorworksProject, output_path: str, language: str = "nl") -> bool:
         """Generate professional plant schedule report"""
         try:
             from reportlab.lib import colors
@@ -515,9 +513,7 @@ class VectorworksReportGenerator:
             total_label = "Totaal:" if language == "nl" else "Total:"
             data.append(["", "", "", "", "", f"€{total_cost:.2f}", total_label])
 
-            table = Table(
-                data, colWidths=[3 * cm, 4 * cm, 1.5 * cm, 2 * cm, 2 * cm, 2 * cm, 3 * cm]
-            )
+            table = Table(data, colWidths=[3 * cm, 4 * cm, 1.5 * cm, 2 * cm, 2 * cm, 2 * cm, 3 * cm])
             table.setStyle(
                 TableStyle(
                     [
@@ -564,9 +560,7 @@ class VectorworksIntegrationService:
         """Export plant data to Vectorworks format"""
         return self.exporter.export_plant_list(plants, output_path)
 
-    def generate_reports(
-        self, project: VectorworksProject, output_dir: str, language: str = "nl"
-    ) -> list[str]:
+    def generate_reports(self, project: VectorworksProject, output_dir: str, language: str = "nl") -> list[str]:
         """Generate all project reports"""
         generated_files = []
 

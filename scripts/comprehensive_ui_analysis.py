@@ -570,11 +570,7 @@ class UIComponentAnalyzer:
             status_emoji = (
                 "✅"
                 if details["status"] == "ACTIVE"
-                else (
-                    "⚠️"
-                    if details["status"] == "PARTIAL"
-                    else "🔄" if details["status"] == "RESTORED" else "❓"
-                )
+                else ("⚠️" if details["status"] == "PARTIAL" else "🔄" if details["status"] == "RESTORED" else "❓")
             )
             print(f"{status_emoji} {component}: {details['status']}")
             print(f"   Purpose: {details['purpose']}")
@@ -606,9 +602,7 @@ class UIComponentAnalyzer:
 
         for feature in missing:
             priority_emoji = (
-                "🔴"
-                if feature["priority"] == "HIGH"
-                else "🟡" if feature["priority"] == "MEDIUM" else "🟢"
+                "🔴" if feature["priority"] == "HIGH" else "🟡" if feature["priority"] == "MEDIUM" else "🟢"
             )
             print(f"{priority_emoji} {feature['category']}: {feature['feature']}")
             print(f"   Priority: {feature['priority']}")
@@ -649,11 +643,7 @@ class UIComponentAnalyzer:
         recommendations = self.generate_recommendations()
 
         for rec in recommendations:
-            priority_emoji = (
-                "🔴"
-                if rec["priority"] == "CRITICAL"
-                else "🟡" if rec["priority"] == "HIGH" else "🟢"
-            )
+            priority_emoji = "🔴" if rec["priority"] == "CRITICAL" else "🟡" if rec["priority"] == "HIGH" else "🟢"
             print(f"{priority_emoji} {rec['priority']}: {rec['action']}")
             print(f"   {rec['description']}")
             print()
@@ -679,9 +669,7 @@ class UIComponentAnalyzer:
 
         # Save detailed report
         report_file = (
-            self.repo_path
-            / "reports"
-            / f"comprehensive_ui_analysis_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+            self.repo_path / "reports" / f"comprehensive_ui_analysis_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
         )
         report_file.parent.mkdir(exist_ok=True)
 

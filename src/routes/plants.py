@@ -180,8 +180,7 @@ def get_plant_recommendations():
             return jsonify(
                 {
                     "recommendations": (
-                        "AI recommendations temporarily unavailable. Here are plants "
-                        "matching your basic criteria."
+                        "AI recommendations temporarily unavailable. Here are plants " "matching your basic criteria."
                     ),
                     "matching_plants": [plant.to_dict() for plant in fallback_plants],
                     "criteria_used": {

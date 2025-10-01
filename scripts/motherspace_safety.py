@@ -95,14 +95,11 @@ class MotherSpaceSafetyManager:
 
                 last_operation = datetime.fromisoformat(cooldown_data.get("last_operation", ""))
                 cooldown_remaining = (
-                    self.config["actor_cooldown_period"]
-                    - (datetime.now() - last_operation).total_seconds()
+                    self.config["actor_cooldown_period"] - (datetime.now() - last_operation).total_seconds()
                 )
 
                 if cooldown_remaining > 0:
-                    print(
-                        f"❄️ Actor {actor} in cooldown for {operation} (remaining: {cooldown_remaining:.0f}s)"
-                    )
+                    print(f"❄️ Actor {actor} in cooldown for {operation} (remaining: {cooldown_remaining:.0f}s)")
                     return False
             except (json.JSONDecodeError, ValueError):
                 # Invalid cooldown file, remove it
@@ -173,9 +170,7 @@ class MotherSpaceSafetyManager:
                 recent_operations = []
                 for op in pattern_data.get("operations", []):
                     op_time = datetime.fromisoformat(op["timestamp"])
-                    if (current_time - op_time).total_seconds() < self.config[
-                        "bot_loop_detection_window"
-                    ]:
+                    if (current_time - op_time).total_seconds() < self.config["bot_loop_detection_window"]:
                         recent_operations.append(op)
 
                 # Check for repeated patterns
@@ -188,19 +183,13 @@ class MotherSpaceSafetyManager:
                     return False
 
                 # Update pattern data
-                recent_operations.append(
-                    {"title": issue_title, "timestamp": current_time.isoformat()}
-                )
+                recent_operations.append({"title": issue_title, "timestamp": current_time.isoformat()})
 
                 pattern_data["operations"] = recent_operations[-50:]  # Keep last 50 operations
             except (json.JSONDecodeError, ValueError):
-                pattern_data = {
-                    "operations": [{"title": issue_title, "timestamp": current_time.isoformat()}]
-                }
+                pattern_data = {"operations": [{"title": issue_title, "timestamp": current_time.isoformat()}]}
         else:
-            pattern_data = {
-                "operations": [{"title": issue_title, "timestamp": current_time.isoformat()}]
-            }
+            pattern_data = {"operations": [{"title": issue_title, "timestamp": current_time.isoformat()}]}
 
         with open(pattern_file, "w") as f:
             json.dump(pattern_data, f, indent=2)
@@ -299,9 +288,7 @@ class MotherSpaceSafetyManager:
 
         return None
 
-    def register_tracking_issue(
-        self, fingerprint: str, issue_number: int, issue_data: dict[str, Any]
-    ) -> None:
+    def register_tracking_issue(self, fingerprint: str, issue_number: int, issue_data: dict[str, Any]) -> None:
         """Register a new tracking issue with its fingerprint."""
         tracking_file = self.safety_dir / "tracking_issues.json"
 
@@ -323,9 +310,7 @@ class MotherSpaceSafetyManager:
             with open(tracking_file, "w") as f:
                 json.dump(tracking_data, f, indent=2)
 
-            print(
-                f"📝 Registered tracking issue #{issue_number} with fingerprint {fingerprint[:8]}..."
-            )
+            print(f"📝 Registered tracking issue #{issue_number} with fingerprint {fingerprint[:8]}...")
         except Exception as e:
             print(f"⚠️ Failed to register tracking issue: {e}")
 
@@ -347,18 +332,14 @@ class MotherSpaceSafetyManager:
                         json.dump(tracking_data, f, indent=2)
 
                     issue_number = issue_info["issue_number"]
-                    print(
-                        f"🔄 Updated existing tracking issue #{issue_number} (update #{issue_info['update_count']})"
-                    )
+                    print(f"🔄 Updated existing tracking issue #{issue_number} (update #{issue_info['update_count']})")
                     return issue_number
         except Exception as e:
             print(f"⚠️ Failed to update tracking issue: {e}")
 
         return None
 
-    def is_safe_operation(
-        self, actor: str, operation: str, issue_data: dict[str, Any]
-    ) -> dict[str, Any]:
+    def is_safe_operation(self, actor: str, operation: str, issue_data: dict[str, Any]) -> dict[str, Any]:
         """Comprehensive safety check for MotherSpace operations."""
         safety_result = {
             "safe": True,

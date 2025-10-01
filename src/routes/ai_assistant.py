@@ -99,9 +99,7 @@ def ai_chat():
 
             # Determine response type based on keywords
             message_lower = user_message.lower()
-            if any(
-                word in message_lower for word in ["plant", "flower", "tree", "shrub", "native"]
-            ):
+            if any(word in message_lower for word in ["plant", "flower", "tree", "shrub", "native"]):
                 response_type = "plant_recommendation"
             elif any(word in message_lower for word in ["project", "manage", "plan", "schedule"]):
                 response_type = "project_management"
@@ -142,10 +140,7 @@ def ai_plant_recommendations():
         for plant in plants:
             matches = True
 
-            if (
-                criteria.get("sun_requirements")
-                and plant.sun_requirements != criteria["sun_requirements"]
-            ):
+            if criteria.get("sun_requirements") and plant.sun_requirements != criteria["sun_requirements"]:
                 matches = False
             if criteria.get("water_needs") and plant.water_needs != criteria["water_needs"]:
                 matches = False

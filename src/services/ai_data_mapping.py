@@ -114,9 +114,7 @@ class AIDataMappingService:
             logger.warning(f"AI validation failed, using fallback: {e}")
             return self._fallback_validation(data, column_mapping)
 
-    def _create_mapping_prompt(
-        self, excel_columns: list[str], target_schema: dict[str, str], data_type: str
-    ) -> str:
+    def _create_mapping_prompt(self, excel_columns: list[str], target_schema: dict[str, str], data_type: str) -> str:
         """Create a prompt for AI column mapping."""
         return f"""
 Analyze these Excel column names and suggest the best mapping to our database schema.
@@ -144,9 +142,7 @@ Consider:
 - Context of landscape architecture industry
 """
 
-    def _create_validation_prompt(
-        self, sample_data: list[dict], column_mapping: dict[str, str], data_type: str
-    ) -> str:
+    def _create_validation_prompt(self, sample_data: list[dict], column_mapping: dict[str, str], data_type: str) -> str:
         """Create a prompt for AI data validation."""
         return f"""
 Analyze this sample data for quality issues and suggest improvements.
@@ -212,9 +208,7 @@ Check for:
             logger.warning(f"Failed to parse AI validation response: {e}")
             return {"issues": [], "recommendations": [], "quality_score": 0.5}
 
-    def _fallback_mapping(
-        self, excel_columns: list[str], target_schema: dict[str, str]
-    ) -> dict[str, dict[str, float]]:
+    def _fallback_mapping(self, excel_columns: list[str], target_schema: dict[str, str]) -> dict[str, dict[str, float]]:
         """Fallback column mapping without AI."""
         mapping = {}
 
@@ -254,9 +248,7 @@ Check for:
 
         return mapping
 
-    def _fallback_validation(
-        self, data: pd.DataFrame, column_mapping: dict[str, str]
-    ) -> dict[str, list[str]]:
+    def _fallback_validation(self, data: pd.DataFrame, column_mapping: dict[str, str]) -> dict[str, list[str]]:
         """Fallback data validation without AI."""
         issues = []
         recommendations = []

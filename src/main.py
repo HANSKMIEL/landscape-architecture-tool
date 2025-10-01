@@ -219,9 +219,7 @@ def create_app():
             "status": "healthy" if critical_ok else "unhealthy",
             "timestamp": datetime.now(UTC).isoformat(),
             "version": __version__,  # Added for test compatibility
-            "environment": os.environ.get(
-                "FLASK_ENV", "development"
-            ),  # Added for test compatibility
+            "environment": os.environ.get("FLASK_ENV", "development"),  # Added for test compatibility
             "database_status": db_status,  # Added for test compatibility
             "dependencies": {
                 "critical": {
@@ -245,14 +243,10 @@ def create_app():
 
         if not critical_ok:
             # Return 503 Service Unavailable if critical dependencies are missing
-            health_data["message"] = (
-                "Critical dependencies missing - application may not function properly"
-            )
+            health_data["message"] = "Critical dependencies missing - application may not function properly"
             return jsonify(health_data), 503
         if missing_optional:
-            health_data["message"] = (
-                "Some optional features may be limited due to missing dependencies"
-            )
+            health_data["message"] = "Some optional features may be limited due to missing dependencies"
 
         return jsonify(health_data)
 
@@ -276,9 +270,7 @@ def create_app():
                         "project_performance": "/api/analytics/project-performance",
                         "client_insights": "/api/analytics/client-insights",
                         "financial": "/api/analytics/financial",
-                        "recommendation_effectiveness": (
-                            "/api/analytics/recommendation-effectiveness"
-                        ),
+                        "recommendation_effectiveness": ("/api/analytics/recommendation-effectiveness"),
                     },
                     "suppliers": "/api/suppliers",
                     "plants": "/api/plants",
@@ -403,9 +395,7 @@ def create_app():
 
             query = query.filter(Supplier.specialization.ilike(f"%{specialization}%"))
 
-            paginated = query.order_by(Supplier.name).paginate(
-                page=page, per_page=per_page, error_out=False
-            )
+            paginated = query.order_by(Supplier.name).paginate(page=page, per_page=per_page, error_out=False)
 
             result = {
                 "suppliers": [supplier.to_dict() for supplier in paginated.items],
@@ -577,9 +567,7 @@ def create_app():
 
         # Calculate inventory value (products only, since they have stock_quantity)
         products = Product.query.filter_by(supplier_id=supplier_id).all()
-        total_inventory_value = sum(
-            (product.price or 0) * (product.stock_quantity or 0) for product in products
-        )
+        total_inventory_value = sum((product.price or 0) * (product.stock_quantity or 0) for product in products)
 
         # Calculate average prices
         product_prices = [product.price for product in products if product.price]
@@ -611,9 +599,7 @@ def create_app():
         """Get all unique supplier specializations"""
 
         specializations = (
-            db.session.query(distinct(Supplier.specialization))
-            .filter(Supplier.specialization.isnot(None))
-            .all()
+            db.session.query(distinct(Supplier.specialization)).filter(Supplier.specialization.isnot(None)).all()
         )
 
         return jsonify({"specializations": [spec[0] for spec in specializations]})
@@ -652,10 +638,7 @@ def create_app():
             .outerjoin(product_counts, Supplier.id == product_counts.c.supplier_id)
             .outerjoin(plant_counts, Supplier.id == plant_counts.c.supplier_id)
             .order_by(
-                (
-                    func.coalesce(product_counts.c.product_count, 0)
-                    + func.coalesce(plant_counts.c.plant_count, 0)
-                ).desc()
+                (func.coalesce(product_counts.c.product_count, 0) + func.coalesce(plant_counts.c.plant_count, 0)).desc()
             )
             .limit(limit)
             .all()
@@ -788,9 +771,7 @@ def create_app():
         filters = []
         if search:
             filters.append(
-                Plant.name.contains(search)
-                | Plant.common_name.contains(search)
-                | Plant.category.contains(search)
+                Plant.name.contains(search) | Plant.common_name.contains(search) | Plant.category.contains(search)
             )
 
         if category:
@@ -806,9 +787,7 @@ def create_app():
             query = query.filter(and_(*filters))
 
         # Apply pagination
-        paginated = query.order_by(Plant.name).paginate(
-            page=page, per_page=per_page, error_out=False
-        )
+        paginated = query.order_by(Plant.name).paginate(page=page, per_page=per_page, error_out=False)
 
         result = {
             "plants": [plant.to_dict() for plant in paginated.items],
@@ -910,9 +889,7 @@ def create_app():
     def get_plant_categories():
         """Get unique plant categories"""
 
-        categories = (
-            db.session.query(distinct(Plant.category)).filter(Plant.category.isnot(None)).all()
-        )
+        categories = db.session.query(distinct(Plant.category)).filter(Plant.category.isnot(None)).all()
 
         return jsonify({"categories": [cat[0] for cat in categories]})
 
@@ -1162,9 +1139,7 @@ def create_app():
         per_page = request.args.get("per_page", 50, type=int)
         client_id = int(client_id) if client_id else None
 
-        result = project_service.get_all(
-            search=search, client_id=client_id, page=page, per_page=per_page
-        )
+        result = project_service.get_all(search=search, client_id=client_id, page=page, per_page=per_page)
         return jsonify(result)
 
     @app.route("/api/projects", methods=["POST"])
@@ -1286,9 +1261,7 @@ def main():
             logger.info(f"Starting Flask server on {host}:{port} (env: {flask_env})")
             app.run(host=host, port=port, debug=debug_mode, use_reloader=use_reloader)
         else:
-            logger.warning(
-                "Use a production WSGI server (like Gunicorn) instead of " "Flask dev server"
-            )
+            logger.warning("Use a production WSGI server (like Gunicorn) instead of " "Flask dev server")
             print("For production, use: gunicorn -c gunicorn.conf.py wsgi:application")
 
     except Exception as e:

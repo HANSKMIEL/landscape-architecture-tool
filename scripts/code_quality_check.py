@@ -16,9 +16,7 @@ def run_command(cmd, description):
     print("=" * 60)
 
     try:
-        result = subprocess.run(
-            cmd, check=False, shell=True, capture_output=True, text=True, timeout=120
-        )
+        result = subprocess.run(cmd, check=False, shell=True, capture_output=True, text=True, timeout=120)
 
         if result.returncode == 0:
             print(f"✅ PASSED: {description}")

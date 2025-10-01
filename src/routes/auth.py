@@ -123,9 +123,7 @@ def login():
         schema = LoginSchema(**data)
 
         # Find user by username or email
-        user = User.query.filter(
-            (User.username == schema.username) | (User.email == schema.username)
-        ).first()
+        user = User.query.filter((User.username == schema.username) | (User.email == schema.username)).first()
 
         if not user:
             logger.warning(f"Login attempt with non-existent user: {schema.username}")
@@ -371,9 +369,7 @@ def create_user():
         schema = UserCreateSchema(**data)
 
         # Check if username or email already exists
-        existing_user = User.query.filter(
-            (User.username == schema.username) | (User.email == schema.email)
-        ).first()
+        existing_user = User.query.filter((User.username == schema.username) | (User.email == schema.email)).first()
 
         if existing_user:
             return jsonify({"error": "Username or email already exists"}), 409
@@ -516,9 +512,7 @@ def bulk_import_users():
         if created_users:
             db.session.commit()
 
-        logger.info(
-            f"Bulk import completed: {len(created_users)} users created by {session.get('username')}"
-        )
+        logger.info(f"Bulk import completed: {len(created_users)} users created by {session.get('username')}")
 
         return (
             jsonify(
@@ -578,9 +572,7 @@ def unlock_user_account(user_id):
         user.locked_until = None
         db.session.commit()
 
-        logger.info(
-            f"Account unlocked for user: {user.username} by admin: {session.get('username')}"
-        )
+        logger.info(f"Account unlocked for user: {user.username} by admin: {session.get('username')}")
 
         return jsonify({"message": "Account unlocked successfully"}), 200
 

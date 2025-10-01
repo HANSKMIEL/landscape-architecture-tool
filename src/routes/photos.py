@@ -321,12 +321,7 @@ def delete_photo(photo_id):
 def get_photo_categories():
     """Get available photo categories."""
     return jsonify(
-        {
-            "categories": [
-                {"value": category.value, "label": category.value.title()}
-                for category in PhotoCategory
-            ]
-        }
+        {"categories": [{"value": category.value, "label": category.value.title()} for category in PhotoCategory]}
     )
 
 

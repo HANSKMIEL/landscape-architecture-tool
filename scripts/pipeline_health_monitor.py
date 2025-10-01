@@ -55,9 +55,7 @@ class PipelineHealthMonitor:
     def _check_git_status(self) -> dict[str, Any]:
         """Check Git repository status."""
         try:
-            result = subprocess.run(
-                ["git", "status", "--porcelain"], check=False, capture_output=True, text=True
-            )
+            result = subprocess.run(["git", "status", "--porcelain"], check=False, capture_output=True, text=True)
             uncommitted = result.stdout.strip().split("\n") if result.stdout.strip() else []
 
             return {
@@ -90,9 +88,7 @@ class PipelineHealthMonitor:
             redis_ok = True
 
             try:
-                conn = psycopg2.connect(
-                    "postgresql://postgres:postgres_password@localhost:5432/" "landscape_test"
-                )
+                conn = psycopg2.connect("postgresql://postgres:postgres_password@localhost:5432/" "landscape_test")
                 conn.close()
             except psycopg2.OperationalError:
                 postgres_ok = False
@@ -123,9 +119,7 @@ class PipelineHealthMonitor:
     def _check_code_quality(self) -> dict[str, Any]:
         """Check code quality tools."""
         try:
-            black_result = subprocess.run(
-                ["black", "--check", "."], check=False, capture_output=True
-            )
+            black_result = subprocess.run(["black", "--check", "."], check=False, capture_output=True)
             isort_result = subprocess.run(
                 ["isort", "--check-only", "--profile", "black", "."],
                 check=False,

@@ -166,9 +166,7 @@ class ClientPresentationGenerator:
         plant_name_lower = plant.name.lower()
         plant_type_lower = plant.characteristics.get("type", "").lower()
 
-        return any(
-            keyword in plant_name_lower or keyword in plant_type_lower for keyword in keywords
-        )
+        return any(keyword in plant_name_lower or keyword in plant_type_lower for keyword in keywords)
 
     def create_presentation(
         self, project_id: int, template: str = "modern", config: PresentationConfig | None = None
@@ -369,17 +367,9 @@ class ClientPresentationGenerator:
                 "special_requirements": project.special_requirements,
                 "timeline": project.timeline,
                 "key_features": [
-                    (
-                        "Duurzame plantkeuze"
-                        if config.language == "nl"
-                        else "Sustainable plant selection"
-                    ),
+                    ("Duurzame plantkeuze" if config.language == "nl" else "Sustainable plant selection"),
                     "Seizoensinteresse" if config.language == "nl" else "Year-round interest",
-                    (
-                        "Onderhoudsarm ontwerp"
-                        if config.language == "nl"
-                        else "Low-maintenance design"
-                    ),
+                    ("Onderhoudsarm ontwerp" if config.language == "nl" else "Low-maintenance design"),
                 ],
             },
             editable_fields=["description", "key_features", "special_requirements"],
@@ -400,13 +390,9 @@ class ClientPresentationGenerator:
             content_type="site_analysis",
             content={
                 "soil_conditions": (
-                    "Leemgrond, goed gedraineerd"
-                    if config.language == "nl"
-                    else "Loamy soil, well-drained"
+                    "Leemgrond, goed gedraineerd" if config.language == "nl" else "Loamy soil, well-drained"
                 ),
-                "sun_exposure": (
-                    "Gedeeltelijk zon/schaduw" if config.language == "nl" else "Partial sun/shade"
-                ),
+                "sun_exposure": ("Gedeeltelijk zon/schaduw" if config.language == "nl" else "Partial sun/shade"),
                 "existing_features": [
                     "Bestaande eikenboom" if config.language == "nl" else "Existing oak tree",
                     "Natuurstenen muur" if config.language == "nl" else "Natural stone wall",
@@ -487,29 +473,13 @@ class ClientPresentationGenerator:
                     else "Working with nature, not against it"
                 ),
                 "approach": [
-                    (
-                        "Inheemse plantensoorten"
-                        if config.language == "nl"
-                        else "Native plant species"
-                    ),
-                    (
-                        "Natuurlijke groeipatronen"
-                        if config.language == "nl"
-                        else "Natural growth patterns"
-                    ),
-                    (
-                        "Ecologische verbindingen"
-                        if config.language == "nl"
-                        else "Ecological connections"
-                    ),
+                    ("Inheemse plantensoorten" if config.language == "nl" else "Native plant species"),
+                    ("Natuurlijke groeipatronen" if config.language == "nl" else "Natural growth patterns"),
+                    ("Ecologische verbindingen" if config.language == "nl" else "Ecological connections"),
                 ],
                 "sustainability": [
                     "Regenwater opvang" if config.language == "nl" else "Rainwater harvesting",
-                    (
-                        "Biodiversiteit bevordering"
-                        if config.language == "nl"
-                        else "Biodiversity enhancement"
-                    ),
+                    ("Biodiversiteit bevordering" if config.language == "nl" else "Biodiversity enhancement"),
                     "Minimaal onderhoud" if config.language == "nl" else "Minimal maintenance",
                 ],
             },
@@ -534,9 +504,7 @@ class ClientPresentationGenerator:
                     {
                         "title": "Symmetrie" if config.language == "nl" else "Symmetry",
                         "description": (
-                            "Formele balans en structuur"
-                            if config.language == "nl"
-                            else "Formal balance and structure"
+                            "Formele balans en structuur" if config.language == "nl" else "Formal balance and structure"
                         ),
                     },
                     {
@@ -548,9 +516,7 @@ class ClientPresentationGenerator:
                         ),
                     },
                     {
-                        "title": (
-                            "Materiaal Keuze" if config.language == "nl" else "Material Selection"
-                        ),
+                        "title": ("Materiaal Keuze" if config.language == "nl" else "Material Selection"),
                         "description": (
                             "Tijdloze en duurzame materialen"
                             if config.language == "nl"
@@ -613,27 +579,17 @@ class ClientPresentationGenerator:
                     {
                         "name": "Boomlaag" if config.language == "nl" else "Canopy Layer",
                         "plants": [asdict(p) for p in trees],
-                        "function": (
-                            "Structuur en schaduw"
-                            if config.language == "nl"
-                            else "Structure and shade"
-                        ),
+                        "function": ("Structuur en schaduw" if config.language == "nl" else "Structure and shade"),
                     },
                     {
                         "name": "Struiklaag" if config.language == "nl" else "Shrub Layer",
                         "plants": [asdict(p) for p in shrubs],
-                        "function": (
-                            "Privacy en habitat"
-                            if config.language == "nl"
-                            else "Privacy and habitat"
-                        ),
+                        "function": ("Privacy en habitat" if config.language == "nl" else "Privacy and habitat"),
                     },
                     {
                         "name": "Kruidlaag" if config.language == "nl" else "Herbaceous Layer",
                         "plants": [asdict(p) for p in perennials],
-                        "function": (
-                            "Kleur en textuur" if config.language == "nl" else "Color and texture"
-                        ),
+                        "function": ("Kleur en textuur" if config.language == "nl" else "Color and texture"),
                     },
                 ]
             },
@@ -655,24 +611,19 @@ class ClientPresentationGenerator:
             content_type="formal_plantings",
             content={
                 "hedge_plants": [
-                    p
-                    for p in plants
-                    if "heg" in p.placement_notes.lower() or "hedge" in p.placement_notes.lower()
+                    p for p in plants if "heg" in p.placement_notes.lower() or "hedge" in p.placement_notes.lower()
                 ],
                 "specimen_plants": [
                     p
                     for p in plants
-                    if "solitair" in p.placement_notes.lower()
-                    or "specimen" in p.placement_notes.lower()
+                    if "solitair" in p.placement_notes.lower() or "specimen" in p.placement_notes.lower()
                 ],
                 "topiary_options": [
                     "Buxus bollen" if config.language == "nl" else "Boxwood spheres",
                     "Taxus piramides" if config.language == "nl" else "Yew pyramids",
                 ],
                 "maintenance_schedule": (
-                    "Tweemaal per jaar snoeien"
-                    if config.language == "nl"
-                    else "Pruning twice yearly"
+                    "Tweemaal per jaar snoeien" if config.language == "nl" else "Pruning twice yearly"
                 ),
             },
             editable_fields=[
@@ -738,9 +689,7 @@ class ClientPresentationGenerator:
                             "Verse uitloop" if config.language == "nl" else "Fresh growth",
                         ],
                         "plants": [
-                            p.name
-                            for p in plants
-                            if "lente" in p.characteristics.get("blooming_season", "").lower()
+                            p.name for p in plants if "lente" in p.characteristics.get("blooming_season", "").lower()
                         ][:3],
                     },
                     {
@@ -750,9 +699,7 @@ class ClientPresentationGenerator:
                             "Weelderige groei" if config.language == "nl" else "Lush growth",
                         ],
                         "plants": [
-                            p.name
-                            for p in plants
-                            if "zomer" in p.characteristics.get("blooming_season", "").lower()
+                            p.name for p in plants if "zomer" in p.characteristics.get("blooming_season", "").lower()
                         ][:3],
                     },
                     {
@@ -762,9 +709,7 @@ class ClientPresentationGenerator:
                             "Zaaddozen" if config.language == "nl" else "Seed heads",
                         ],
                         "plants": [
-                            p.name
-                            for p in plants
-                            if "herfst" in p.characteristics.get("blooming_season", "").lower()
+                            p.name for p in plants if "herfst" in p.characteristics.get("blooming_season", "").lower()
                         ][:3],
                     },
                     {
@@ -774,9 +719,7 @@ class ClientPresentationGenerator:
                             "Wintergroen" if config.language == "nl" else "Evergreen foliage",
                         ],
                         "plants": [
-                            p.name
-                            for p in plants
-                            if "winter" in p.characteristics.get("blooming_season", "").lower()
+                            p.name for p in plants if "winter" in p.characteristics.get("blooming_season", "").lower()
                         ][:3],
                     },
                 ]
@@ -800,55 +743,33 @@ class ClientPresentationGenerator:
             content={
                 "phases": [
                     {
-                        "name": (
-                            "Fase 1: Voorbereiding"
-                            if config.language == "nl"
-                            else "Phase 1: Preparation"
-                        ),
+                        "name": ("Fase 1: Voorbereiding" if config.language == "nl" else "Phase 1: Preparation"),
                         "duration": "2 weken" if config.language == "nl" else "2 weeks",
                         "tasks": [
                             "Grondvoorbereiding" if config.language == "nl" else "Soil preparation",
-                            (
-                                "Verharding aanleggen"
-                                if config.language == "nl"
-                                else "Install hardscape"
-                            ),
+                            ("Verharding aanleggen" if config.language == "nl" else "Install hardscape"),
                         ],
                     },
                     {
-                        "name": (
-                            "Fase 2: Beplanting" if config.language == "nl" else "Phase 2: Planting"
-                        ),
+                        "name": ("Fase 2: Beplanting" if config.language == "nl" else "Phase 2: Planting"),
                         "duration": "1 week",
                         "tasks": [
                             "Bomen planten" if config.language == "nl" else "Plant trees",
-                            (
-                                "Struiken en vaste planten"
-                                if config.language == "nl"
-                                else "Shrubs and perennials"
-                            ),
+                            ("Struiken en vaste planten" if config.language == "nl" else "Shrubs and perennials"),
                         ],
                     },
                     {
-                        "name": (
-                            "Fase 3: Afwerking" if config.language == "nl" else "Phase 3: Finishing"
-                        ),
+                        "name": ("Fase 3: Afwerking" if config.language == "nl" else "Phase 3: Finishing"),
                         "duration": "1 week",
                         "tasks": [
                             "Mulchen" if config.language == "nl" else "Mulching",
-                            (
-                                "Irrigatie installeren"
-                                if config.language == "nl"
-                                else "Install irrigation"
-                            ),
+                            ("Irrigatie installeren" if config.language == "nl" else "Install irrigation"),
                         ],
                     },
                 ],
                 "total_duration": project.timeline or "4 weken",
                 "best_planting_time": (
-                    "Maart-Mei, September-November"
-                    if config.language == "nl"
-                    else "March-May, September-November"
+                    "Maart-Mei, September-November" if config.language == "nl" else "March-May, September-November"
                 ),
             },
             editable_fields=["phases", "total_duration", "best_planting_time"],
@@ -877,9 +798,7 @@ class ClientPresentationGenerator:
                     {
                         "name": "Planten" if config.language == "nl" else "Plants",
                         "amount": plant_cost,
-                        "percentage": (
-                            (plant_cost / project.budget * 100) if project.budget > 0 else 20
-                        ),
+                        "percentage": ((plant_cost / project.budget * 100) if project.budget > 0 else 20),
                     },
                     {
                         "name": "Verharding" if config.language == "nl" else "Hardscape",
@@ -900,18 +819,10 @@ class ClientPresentationGenerator:
                 "total_budget": project.budget,
                 "payment_schedule": [
                     "30% bij opdracht" if config.language == "nl" else "30% on contract",
-                    (
-                        "40% bij start werkzaamheden"
-                        if config.language == "nl"
-                        else "40% on commencement"
-                    ),
+                    ("40% bij start werkzaamheden" if config.language == "nl" else "40% on commencement"),
                     "30% bij oplevering" if config.language == "nl" else "30% on completion",
                 ],
-                "warranty": (
-                    "2 jaar garantie op planten"
-                    if config.language == "nl"
-                    else "2 year plant warranty"
-                ),
+                "warranty": ("2 jaar garantie op planten" if config.language == "nl" else "2 year plant warranty"),
             },
             editable_fields=["categories", "payment_schedule", "warranty"],
             order=order,
@@ -930,9 +841,7 @@ class ClientPresentationGenerator:
             title="Onderhoud" if config.language == "nl" else "Maintenance",
             content_type="maintenance",
             content={
-                "maintenance_level": (
-                    "Laag tot gemiddeld" if config.language == "nl" else "Low to moderate"
-                ),
+                "maintenance_level": ("Laag tot gemiddeld" if config.language == "nl" else "Low to moderate"),
                 "seasonal_tasks": [
                     {
                         "season": "Lente" if config.language == "nl" else "Spring",
@@ -947,38 +856,22 @@ class ClientPresentationGenerator:
                         "tasks": [
                             "Begieten" if config.language == "nl" else "Watering",
                             "Onkruid wieden" if config.language == "nl" else "Weeding",
-                            (
-                                "Uitgebloeide bloemen verwijderen"
-                                if config.language == "nl"
-                                else "Deadheading"
-                            ),
+                            ("Uitgebloeide bloemen verwijderen" if config.language == "nl" else "Deadheading"),
                         ],
                     },
                     {
                         "season": "Herfst" if config.language == "nl" else "Autumn",
                         "tasks": [
                             "Bladeren opruimen" if config.language == "nl" else "Leaf cleanup",
-                            (
-                                "Planten terugsnoeien"
-                                if config.language == "nl"
-                                else "Cut back perennials"
-                            ),
+                            ("Planten terugsnoeien" if config.language == "nl" else "Cut back perennials"),
                             "Winterbescherming" if config.language == "nl" else "Winter protection",
                         ],
                     },
                     {
                         "season": "Winter",
                         "tasks": [
-                            (
-                                "Plannen voor volgend jaar"
-                                if config.language == "nl"
-                                else "Plan for next year"
-                            ),
-                            (
-                                "Gereedschap onderhouden"
-                                if config.language == "nl"
-                                else "Tool maintenance"
-                            ),
+                            ("Plannen voor volgend jaar" if config.language == "nl" else "Plan for next year"),
+                            ("Gereedschap onderhouden" if config.language == "nl" else "Tool maintenance"),
                         ],
                     },
                 ],
@@ -1013,9 +906,7 @@ class ClientPresentationGenerator:
             content={
                 "steps": [
                     {
-                        "title": (
-                            "Ontwerp Goedkeuring" if config.language == "nl" else "Design Approval"
-                        ),
+                        "title": ("Ontwerp Goedkeuring" if config.language == "nl" else "Design Approval"),
                         "description": (
                             "Bevestiging van het definitieve ontwerp"
                             if config.language == "nl"
@@ -1024,11 +915,7 @@ class ClientPresentationGenerator:
                         "timeline": "1 week",
                     },
                     {
-                        "title": (
-                            "Contract Ondertekening"
-                            if config.language == "nl"
-                            else "Contract Signing"
-                        ),
+                        "title": ("Contract Ondertekening" if config.language == "nl" else "Contract Signing"),
                         "description": (
                             "Formalisering van de opdracht"
                             if config.language == "nl"
@@ -1039,9 +926,7 @@ class ClientPresentationGenerator:
                     {
                         "title": "Uitvoering" if config.language == "nl" else "Implementation",
                         "description": (
-                            "Realisatie van het ontwerp"
-                            if config.language == "nl"
-                            else "Realization of the design"
+                            "Realisatie van het ontwerp" if config.language == "nl" else "Realization of the design"
                         ),
                         "timeline": project.timeline or "4 weken",
                     },
@@ -1050,9 +935,7 @@ class ClientPresentationGenerator:
                     "company": config.company_name,
                     "phone": getattr(config, "contact_phone", self.DEFAULT_CONTACT_INFO["phone"]),
                     "email": getattr(config, "contact_email", self.DEFAULT_CONTACT_INFO["email"]),
-                    "website": getattr(
-                        config, "contact_website", self.DEFAULT_CONTACT_INFO["website"]
-                    ),
+                    "website": getattr(config, "contact_website", self.DEFAULT_CONTACT_INFO["website"]),
                 },
                 "call_to_action": (
                     "Laten we uw droomtuin realiseren!"
@@ -1092,9 +975,7 @@ class ClientPresentationGenerator:
             logger.error(f"Error saving presentation: {e}")
             self.db.rollback()
 
-    def update_slide_content(
-        self, presentation_id: str, slide_id: str, field: str, value: Any
-    ) -> bool:
+    def update_slide_content(self, presentation_id: str, slide_id: str, field: str, value: Any) -> bool:
         """Update specific field in a slide"""
         try:
             cursor = self.db.cursor()

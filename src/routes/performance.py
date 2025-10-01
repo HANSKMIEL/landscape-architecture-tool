@@ -78,9 +78,7 @@ def invalidate_cache():
             message = "All cache invalidated"
         else:
             return (
-                jsonify(
-                    {"error": ("Invalid cache type. Use: dashboard, plants, " "projects, or all")}
-                ),
+                jsonify({"error": ("Invalid cache type. Use: dashboard, plants, " "projects, or all")}),
                 400,
             )
 
@@ -108,9 +106,7 @@ def health_check():
         elif hit_rate < 70:
             health_score -= 15
 
-        status = (
-            "healthy" if health_score >= 80 else "degraded" if health_score >= 60 else "unhealthy"
-        )
+        status = "healthy" if health_score >= 80 else "degraded" if health_score >= 60 else "unhealthy"
 
         return jsonify(
             {

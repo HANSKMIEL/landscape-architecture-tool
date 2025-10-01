@@ -21,9 +21,7 @@ class Supplier(db.Model):
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     # Relationships
-    products = db.relationship(
-        "Product", backref="supplier", lazy=True, cascade="all, delete-orphan"
-    )
+    products = db.relationship("Product", backref="supplier", lazy=True, cascade="all, delete-orphan")
     plants = db.relationship("Plant", backref="supplier", lazy=True)
 
     def to_dict(self):
@@ -64,9 +62,7 @@ class Product(db.Model):
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     # Relationships
-    photos = db.relationship(
-        "Photo", foreign_keys="Photo.material_id", back_populates="material", lazy=True
-    )
+    photos = db.relationship("Photo", foreign_keys="Photo.material_id", back_populates="material", lazy=True)
 
     def to_dict(self):
         return {
@@ -167,9 +163,7 @@ class Plant(db.Model):
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     # Relationships
-    photos = db.relationship(
-        "Photo", foreign_keys="Photo.plant_id", back_populates="plant", lazy=True
-    )
+    photos = db.relationship("Photo", foreign_keys="Photo.plant_id", back_populates="plant", lazy=True)
 
     def to_dict(self):
         return {
@@ -355,9 +349,7 @@ class Client(db.Model):
 
     # Relationships
     projects = db.relationship("Project", backref="client", lazy=True, cascade="all, delete-orphan")
-    photos = db.relationship(
-        "Photo", foreign_keys="Photo.client_id", back_populates="client", lazy=True
-    )
+    photos = db.relationship("Photo", foreign_keys="Photo.client_id", back_populates="client", lazy=True)
 
     def to_dict(self):
         return {
@@ -402,12 +394,8 @@ class Project(db.Model):
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     # Relationships
-    project_plants = db.relationship(
-        "ProjectPlant", backref="project", lazy=True, cascade="all, delete-orphan"
-    )
-    photos = db.relationship(
-        "Photo", foreign_keys="Photo.project_id", back_populates="project", lazy=True
-    )
+    project_plants = db.relationship("ProjectPlant", backref="project", lazy=True, cascade="all, delete-orphan")
+    photos = db.relationship("Photo", foreign_keys="Photo.project_id", back_populates="project", lazy=True)
 
     def to_dict(self):
         return {

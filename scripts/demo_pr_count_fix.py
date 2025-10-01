@@ -115,9 +115,7 @@ def print_comparison():
             if "dependabot_prs" in pr_data:
                 dep_data = pr_data["dependabot_prs"]
                 print(f"   safe_auto_merge: {dep_data.get('safe_auto_merge', 'calculated')}")
-                print(
-                    f"   manual_review_required: {dep_data.get('manual_review_required', 'calculated')}"
-                )
+                print(f"   manual_review_required: {dep_data.get('manual_review_required', 'calculated')}")
                 print(
                     f"   major_updates_requiring_testing: {dep_data.get('major_updates_requiring_testing', 'calculated')}"
                 )

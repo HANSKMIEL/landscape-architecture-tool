@@ -67,9 +67,10 @@ function AppContent() {
         .replace('{username}', response.user.username)
       
       toast.success(welcomeMessage)
-    } catch (_error) {
+    } catch (error) {
       const errorMessage = t('auth.loginFailed', 'Login failed. Please check your credentials.')
       
+      console.error('Login error:', error)
       setLoginError(errorMessage)
       toast.error(errorMessage)
     }

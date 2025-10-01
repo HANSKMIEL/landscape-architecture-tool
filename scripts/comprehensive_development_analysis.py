@@ -48,9 +48,7 @@ class DevelopmentAnalyzer:
                 "feature": "AI Assistant Suggestions",
                 "status": "RESTORED",
                 "description": "AI suggestion functionality in AIAssistant component",
-                "files_affected": [
-                    "frontend/src/components/AIAssistant.jsx - Restored suggestions state"
-                ],
+                "files_affected": ["frontend/src/components/AIAssistant.jsx - Restored suggestions state"],
                 "impact": "MEDIUM - AI feature enhancement",
             },
         ]
@@ -274,9 +272,7 @@ class DevelopmentAnalyzer:
 
         # Save report
         report_file = (
-            self.repo_path
-            / "reports"
-            / f"development_analysis_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+            self.repo_path / "reports" / f"development_analysis_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
         )
         report_file.parent.mkdir(exist_ok=True)
 

@@ -159,19 +159,14 @@ def validate_file_structure(df: pd.DataFrame, import_type: str) -> dict[str, Any
     if import_type == "plants" and len(df) > 0:
         if "supplier_id" in df.columns:
             invalid_supplier_ids = df[
-                df["supplier_id"].notna()
-                & ~df["supplier_id"].astype(str).str.match(r"^\d+$", na=False)
+                df["supplier_id"].notna() & ~df["supplier_id"].astype(str).str.match(r"^\d+$", na=False)
             ]
             if len(invalid_supplier_ids) > 0:
-                data_issues.append(
-                    f"{len(invalid_supplier_ids)} ongeldige leverancier IDs gevonden"
-                )
+                data_issues.append(f"{len(invalid_supplier_ids)} ongeldige leverancier IDs gevonden")
 
     if import_type == "products" and len(df) > 0:
         if "price" in df.columns:
-            invalid_prices = df[
-                df["price"].notna() & ~pd.to_numeric(df["price"], errors="coerce").notna()
-            ]
+            invalid_prices = df[df["price"].notna() & ~pd.to_numeric(df["price"], errors="coerce").notna()]
             if len(invalid_prices) > 0:
                 data_issues.append(f"{len(invalid_prices)} ongeldige prijzen gevonden")
 
@@ -186,9 +181,7 @@ def validate_file_structure(df: pd.DataFrame, import_type: str) -> dict[str, Any
         "extra_columns": extra_columns,
         "data_issues": data_issues,
         "sample_data": sample_data,
-        "recommendations": get_import_recommendations(
-            import_type, df, missing_columns, extra_columns
-        ),
+        "recommendations": get_import_recommendations(import_type, df, missing_columns, extra_columns),
     }
 
 
@@ -202,16 +195,12 @@ def get_import_recommendations(
         recommendations.append(f"Voeg de volgende kolommen toe: {', '.join(missing_columns)}")
 
     if extra_columns:
-        recommendations.append(
-            f"Optioneel: verwijder onnodige kolommen: {', '.join(extra_columns)}"
-        )
+        recommendations.append(f"Optioneel: verwijder onnodige kolommen: {', '.join(extra_columns)}")
 
     if import_type == "plants" and "supplier_id" in df.columns:
         # Check if supplier IDs exist
         unique_supplier_ids = df["supplier_id"].dropna().unique()
-        existing_suppliers = (
-            db.session.query(Supplier.id).filter(Supplier.id.in_(unique_supplier_ids)).all()
-        )
+        existing_suppliers = db.session.query(Supplier.id).filter(Supplier.id.in_(unique_supplier_ids)).all()
         existing_ids = [sid[0] for sid in existing_suppliers]
 
         # Safely convert to int with error handling
@@ -233,9 +222,7 @@ def get_import_recommendations(
     if import_type == "products" and "supplier_id" in df.columns:
         # Check if supplier IDs exist
         unique_supplier_ids = df["supplier_id"].dropna().unique()
-        existing_suppliers = (
-            db.session.query(Supplier.id).filter(Supplier.id.in_(unique_supplier_ids)).all()
-        )
+        existing_suppliers = db.session.query(Supplier.id).filter(Supplier.id.in_(unique_supplier_ids)).all()
         existing_ids = [sid[0] for sid in existing_suppliers]
         missing_supplier_ids = [sid for sid in unique_supplier_ids if int(sid) not in existing_ids]
 
@@ -283,9 +270,7 @@ def process_import():
         validation_result = validate_file_structure(df, import_type)
         if not validation_result["valid"]:
             return (
-                jsonify(
-                    {"error": "Bestand validatie gefaald", "validation_result": validation_result}
-                ),
+                jsonify({"error": "Bestand validatie gefaald", "validation_result": validation_result}),
                 400,
             )
 
@@ -299,9 +284,7 @@ def process_import():
         return jsonify({"error": f"Fout bij verwerken import: {e!s}"}), 500
 
 
-def process_import_data(
-    df: pd.DataFrame, import_type: str, update_existing: bool
-) -> dict[str, Any]:
+def process_import_data(df: pd.DataFrame, import_type: str, update_existing: bool) -> dict[str, Any]:
     """Process DataFrame and import data into database"""
 
     successful_imports = 0
@@ -363,9 +346,7 @@ def import_supplier_row(row_dict: dict[str, Any], update_existing: bool) -> dict
     """Import single supplier row"""
     try:
         # Check if supplier already exists
-        existing_supplier = Supplier.query.filter_by(
-            name=row_dict["name"], email=row_dict["email"]
-        ).first()
+        existing_supplier = Supplier.query.filter_by(name=row_dict["name"], email=row_dict["email"]).first()
 
         if existing_supplier and not update_existing:
             return {"success": False, "error": "Leverancier bestaat al"}
@@ -475,9 +456,7 @@ def import_product_row(row_dict: dict[str, Any], update_existing: bool) -> dict[
             "price": float(row_dict["price"]) if row_dict.get("price") else None,
             "unit": row_dict["unit"],
             "supplier_id": supplier_id,
-            "stock_quantity": (
-                int(row_dict["stock_quantity"]) if row_dict.get("stock_quantity") else None
-            ),
+            "stock_quantity": (int(row_dict["stock_quantity"]) if row_dict.get("stock_quantity") else None),
             "notes": row_dict.get("notes", ""),
         }
 

@@ -400,9 +400,7 @@ class FinalComprehensiveAnalyzer:
         }
 
         report_file = (
-            self.repo_path
-            / "reports"
-            / f"final_comprehensive_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+            self.repo_path / "reports" / f"final_comprehensive_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
         )
         report_file.parent.mkdir(exist_ok=True)
 

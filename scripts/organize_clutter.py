@@ -122,9 +122,7 @@ def main():
         action="store_true",
         help="Show what would be moved without actually moving files",
     )
-    parser.add_argument(
-        "--check-only", action="store_true", help="Only check for clutter without organizing"
-    )
+    parser.add_argument("--check-only", action="store_true", help="Only check for clutter without organizing")
     parser.add_argument("--report", action="store_true", help="Generate a cleanup report")
 
     args = parser.parse_args()

@@ -54,9 +54,7 @@ class DashboardService:
         active_projects = Project.query.filter_by(status="active").count()
 
         # Projects by status
-        projects_by_status = (
-            db.session.query(Project.status, func.count(Project.id)).group_by(Project.status).all()
-        )
+        projects_by_status = db.session.query(Project.status, func.count(Project.id)).group_by(Project.status).all()
 
         status_counts = dict(projects_by_status)
 
@@ -112,9 +110,7 @@ class DashboardService:
         )
 
         # Projects by status
-        projects_by_status = (
-            db.session.query(Project.status, func.count(Project.id)).group_by(Project.status).all()
-        )
+        projects_by_status = db.session.query(Project.status, func.count(Project.id)).group_by(Project.status).all()
 
         # Average project budget
         avg_budget = db.session.query(func.avg(Project.budget)).scalar() or 0
@@ -130,12 +126,8 @@ class DashboardService:
         )
 
         result = {
-            "projects_over_time": [
-                {"date": str(date), "count": count} for date, count in projects_by_date
-            ],
-            "projects_by_status": [
-                {"status": status, "count": count} for status, count in projects_by_status
-            ],
+            "projects_over_time": [{"date": str(date), "count": count} for date, count in projects_by_date],
+            "projects_by_status": [{"status": status, "count": count} for status, count in projects_by_status],
             "average_budget": avg_budget,
             "top_clients": [{"name": name, "project_count": count} for name, count in top_clients],
         }
@@ -166,16 +158,10 @@ class DashboardService:
         )
 
         # Plants by category
-        plants_by_category = (
-            db.session.query(Plant.category, func.count(Plant.id)).group_by(Plant.category).all()
-        )
+        plants_by_category = db.session.query(Plant.category, func.count(Plant.id)).group_by(Plant.category).all()
 
         # Plants by sun exposure
-        plants_by_sun = (
-            db.session.query(Plant.sun_exposure, func.count(Plant.id))
-            .group_by(Plant.sun_exposure)
-            .all()
-        )
+        plants_by_sun = db.session.query(Plant.sun_exposure, func.count(Plant.id)).group_by(Plant.sun_exposure).all()
 
         # Native vs non-native plants
         native_count = Plant.query.filter_by(native=True).count()
@@ -192,14 +178,10 @@ class DashboardService:
                 for name, common_name, total_quantity, project_count in most_used_plants
             ],
             "plants_by_category": [
-                {"category": category, "count": count}
-                for category, count in plants_by_category
-                if category
+                {"category": category, "count": count} for category, count in plants_by_category if category
             ],
             "plants_by_sun_exposure": [
-                {"sun_exposure": exposure, "count": count}
-                for exposure, count in plants_by_sun
-                if exposure
+                {"sun_exposure": exposure, "count": count} for exposure, count in plants_by_sun if exposure
             ],
             "native_distribution": {
                 "native": native_count,
@@ -225,11 +207,7 @@ class DashboardService:
         avg_project_value = db.session.query(func.avg(Project.budget)).scalar() or 0
 
         # Project values by status
-        values_by_status = (
-            db.session.query(Project.status, func.sum(Project.budget))
-            .group_by(Project.status)
-            .all()
-        )
+        values_by_status = db.session.query(Project.status, func.sum(Project.budget)).group_by(Project.status).all()
 
         # Top projects by budget
         top_projects = (
@@ -258,8 +236,7 @@ class DashboardService:
             "total_project_value": total_project_value,
             "average_project_value": avg_project_value,
             "values_by_status": [
-                {"status": status, "total_value": float(total) if total else 0}
-                for status, total in values_by_status
+                {"status": status, "total_value": float(total) if total else 0} for status, total in values_by_status
             ],
             "top_projects": [
                 {
@@ -324,10 +301,7 @@ class DashboardService:
             .outerjoin(product_counts, Supplier.id == product_counts.c.supplier_id)
             .outerjoin(plant_counts, Supplier.id == plant_counts.c.supplier_id)
             .order_by(
-                desc(
-                    func.coalesce(product_counts.c.product_count, 0)
-                    + func.coalesce(plant_counts.c.plant_count, 0)
-                )
+                desc(func.coalesce(product_counts.c.product_count, 0) + func.coalesce(plant_counts.c.plant_count, 0))
             )
             .limit(5)
             .all()
@@ -352,9 +326,7 @@ class DashboardService:
                 }
                 for name, product_count, plant_count in suppliers_by_products
             ],
-            "specializations": [
-                {"specialization": spec, "count": count} for spec, count in specializations if spec
-            ],
+            "specializations": [{"specialization": spec, "count": count} for spec, count in specializations if spec],
         }
 
         # Ensure all expected keys are present with appropriate defaults

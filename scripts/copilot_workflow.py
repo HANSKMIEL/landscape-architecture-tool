@@ -19,9 +19,7 @@ def run_command(command, description, timeout=60, retry_count=1):
             if attempt > 0:
                 print(f"🔄 Retrying {description} (attempt {attempt + 1}/{retry_count})...")
 
-            result = subprocess.run(
-                command, check=False, shell=True, capture_output=True, text=True, timeout=timeout
-            )
+            result = subprocess.run(command, check=False, shell=True, capture_output=True, text=True, timeout=timeout)
 
             if result.returncode == 0:
                 print(f"✅ {description} completed")

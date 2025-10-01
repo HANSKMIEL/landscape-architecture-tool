@@ -74,9 +74,7 @@ class TestRecommendationService:
 
         return plants
 
-    def test_get_recommendations_basic_functionality(
-        self, recommendation_service, sample_criteria, test_plants
-    ):
+    def test_get_recommendations_basic_functionality(self, recommendation_service, sample_criteria, test_plants):
         """Test basic recommendation functionality"""
         recommendations = recommendation_service.get_recommendations(sample_criteria)
 
@@ -92,9 +90,7 @@ class TestRecommendationService:
             assert isinstance(rec["score"], float)
             assert 0 <= rec["score"] <= 1
 
-    def test_recommendation_scoring_accuracy(
-        self, recommendation_service, sample_criteria, test_plants
-    ):
+    def test_recommendation_scoring_accuracy(self, recommendation_service, sample_criteria, test_plants):
         """Test that recommendation scoring is accurate"""
         recommendations = recommendation_service.get_recommendations(sample_criteria)
 
@@ -102,9 +98,7 @@ class TestRecommendationService:
         recommendations.sort(key=lambda x: x["score"], reverse=True)
 
         # Find our test plants in the recommendations
-        perfect_rose_rec = next(
-            (r for r in recommendations if r["plant"]["name"] == "Perfect Rose"), None
-        )
+        perfect_rose_rec = next((r for r in recommendations if r["plant"]["name"] == "Perfect Rose"), None)
         hosta_rec = next(
             (r for r in recommendations if r["plant"]["name"] == "Poor Match Hosta"),
             None,
@@ -141,15 +135,9 @@ class TestRecommendationService:
     def test_height_range_matching(self, recommendation_service, db_session):
         """Test height range matching logic"""
         # Create plants with specific heights
-        tall_plant = create_test_plant(
-            name="Tall Tree", height_min=300, height_max=500, plant_type="tree"
-        )
-        short_plant = create_test_plant(
-            name="Short Shrub", height_min=20, height_max=40, plant_type="shrub"
-        )
-        medium_plant = create_test_plant(
-            name="Medium Shrub", height_min=80, height_max=120, plant_type="shrub"
-        )
+        tall_plant = create_test_plant(name="Tall Tree", height_min=300, height_max=500, plant_type="tree")
+        short_plant = create_test_plant(name="Short Shrub", height_min=20, height_max=40, plant_type="shrub")
+        medium_plant = create_test_plant(name="Medium Shrub", height_min=80, height_max=120, plant_type="shrub")
 
         db_session.add_all([tall_plant, short_plant, medium_plant])
         db_session.commit()
@@ -171,9 +159,7 @@ class TestRecommendationService:
         """Test hardiness zone matching logic"""
         plants = [
             create_test_plant(name="Cold Hardy", hardiness_zone="3-7"),
-            create_test_plant(
-                name="Warm Zone", hardiness_zone="9-11"
-            ),  # Changed to not overlap with 6-8
+            create_test_plant(name="Warm Zone", hardiness_zone="9-11"),  # Changed to not overlap with 6-8
             create_test_plant(name="Overlapping", hardiness_zone="5-9"),
             create_test_plant(name="Exact Match", hardiness_zone="6-8"),
         ]
@@ -187,18 +173,14 @@ class TestRecommendationService:
         recommendations = recommendation_service.get_recommendations(criteria)
 
         # Should match plants with overlapping zones
-        matching_names = [
-            r["plant"]["name"] for r in recommendations if r["criteria_match"]["hardiness_zone"]
-        ]
+        matching_names = [r["plant"]["name"] for r in recommendations if r["criteria_match"]["hardiness_zone"]]
 
         assert "Overlapping" in matching_names
         assert "Exact Match" in matching_names
         assert "Cold Hardy" in matching_names  # 3-7 overlaps with 6-8
         assert "Warm Zone" not in matching_names  # 9-11 doesn't overlap with 6-8
 
-    def test_recommendation_reasons_generation(
-        self, recommendation_service, sample_criteria, test_plants
-    ):
+    def test_recommendation_reasons_generation(self, recommendation_service, sample_criteria, test_plants):
         """Test that recommendation reasons are generated correctly"""
         recommendations = recommendation_service.get_recommendations(sample_criteria)
 
@@ -229,20 +211,14 @@ class TestRecommendationService:
         """Test handling of empty or minimal criteria"""
         # Empty criteria should return all plants
         empty_recommendations = recommendation_service.get_recommendations({})
-        assert len(empty_recommendations) >= len(
-            test_plants
-        )  # May include additional plants from other tests
+        assert len(empty_recommendations) >= len(test_plants)  # May include additional plants from other tests
 
         # Single criterion
         single_criteria = {"plant_type": "shrub"}
         single_recommendations = recommendation_service.get_recommendations(single_criteria)
 
         # Should return at least the shrubs we created
-        shrub_names = [
-            rec["plant"]["name"]
-            for rec in single_recommendations
-            if rec["plant"]["plant_type"] == "shrub"
-        ]
+        shrub_names = [rec["plant"]["name"] for rec in single_recommendations if rec["plant"]["plant_type"] == "shrub"]
         expected_shrubs = [p.name for p in test_plants if p.plant_type == "shrub"]
         for shrub_name in expected_shrubs:
             assert shrub_name in shrub_names
@@ -250,9 +226,7 @@ class TestRecommendationService:
     def test_no_matching_plants(self, recommendation_service, db_session):
         """Test behavior when no plants match criteria"""
         # Create plants that won't match impossible criteria
-        plant = create_test_plant(
-            name="Normal Plant", plant_type="shrub", sun_requirements="full_sun"
-        )
+        plant = create_test_plant(name="Normal Plant", plant_type="shrub", sun_requirements="full_sun")
         db_session.add(plant)
         db_session.commit()
 
@@ -325,9 +299,7 @@ class TestRecommendationService:
             create_test_plant(name="Tree 2", plant_type="tree", sun_requirements="full_sun"),
             create_test_plant(name="Shrub 1", plant_type="shrub", sun_requirements="full_sun"),
             create_test_plant(name="Shrub 2", plant_type="shrub", sun_requirements="full_sun"),
-            create_test_plant(
-                name="Perennial 1", plant_type="perennial", sun_requirements="full_sun"
-            ),
+            create_test_plant(name="Perennial 1", plant_type="perennial", sun_requirements="full_sun"),
         ]
 
         for plant in plants:
