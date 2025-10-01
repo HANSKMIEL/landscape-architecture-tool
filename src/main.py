@@ -102,8 +102,14 @@ def create_app():
     config = get_config()
     app.config.from_object(config)
 
-    # Configure session
+    # Configure session with security flags
     app.permanent_session_lifetime = timedelta(hours=1)
+    # HTTPS only in production (not in debug/dev mode)
+    app.config["SESSION_COOKIE_SECURE"] = not app.debug
+    # JavaScript cannot access session cookie (XSS protection)
+    app.config["SESSION_COOKIE_HTTPONLY"] = True
+    # CSRF protection
+    app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
 
     # Validate critical dependencies - only when app is actually created
     # (not during module import for testing or introspection)
@@ -176,10 +182,12 @@ def create_app():
 
     # Register user authentication blueprint
     from src.routes.auth import auth_bp
+    from src.routes.security_docs import security_docs_bp
     from src.routes.user import data_access_required, login_required, user_bp
 
     app.register_blueprint(user_bp, url_prefix="/api")
     app.register_blueprint(auth_bp, url_prefix="/api")
+    app.register_blueprint(security_docs_bp)  # Admin-only security docs
 
     # Register performance monitoring blueprint
     app.register_blueprint(performance_bp)

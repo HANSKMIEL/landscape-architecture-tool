@@ -112,10 +112,29 @@ git log -3 --oneline --decorate
 log "Stopping backend service..."
 systemctl stop landscape-backend 2>/dev/null || warning "Backend service was not running"
 
-# Kill any remaining gunicorn processes
-log "Cleaning up any remaining processes..."
+# Kill any remaining backend processes
+log "Cleaning up any remaining backend processes..."
 pkill -f gunicorn 2>/dev/null || true
 pkill -f "python.*main.py" 2>/dev/null || true
+
+# Kill any frontend processes that might be blocking port 8080
+log "Checking for processes blocking port 8080..."
+PROCESS_ON_8080=$(lsof -ti:8080 2>/dev/null || true)
+if [ -n "$PROCESS_ON_8080" ]; then
+    warning "Found process(es) on port 8080: $PROCESS_ON_8080"
+    log "Killing processes on port 8080..."
+    kill -9 $PROCESS_ON_8080 2>/dev/null || true
+    sleep 2
+    success "Port 8080 cleared"
+else
+    success "Port 8080 is already available"
+fi
+
+# Also kill any npm/node processes that might be running dev servers
+log "Cleaning up any remaining Node.js processes..."
+pkill -f "vite" 2>/dev/null || true
+pkill -f "npm.*dev" 2>/dev/null || true
+
 sleep 3
 
 # Activate Python environment and update dependencies
