@@ -99,15 +99,7 @@ jobs:
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 issue_number: pr.number,
-                body: `⚠️ **Large PR Warning**
-                
-This PR contains ${totalChanges} changes across ${fileCount} files. Consider breaking it down into smaller, more focused PRs for easier review.
-
-**Tips for better PRs:**
-- Keep PRs focused on a single feature or fix
-- Aim for less than 200 lines of changes when possible
-- Split refactoring from feature work
-- Add clear descriptions and test cases`
+                body: `⚠️ **Large PR Warning**\\n\\nThis PR contains ${totalChanges} changes across ${fileCount} files. Consider breaking it down into smaller, more focused PRs for easier review.\\n\\n**Tips for better PRs:**\\n- Keep PRs focused on a single feature or fix\\n- Aim for less than 200 lines of changes when possible\\n- Split refactoring from feature work\\n- Add clear descriptions and test cases`
               });
             }
 

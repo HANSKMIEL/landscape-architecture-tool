@@ -103,10 +103,6 @@ jobs:
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 issue_number: issue.number,
-                body: `👋 Welcome to the Landscape Architecture Tool project, @${author}! 
-
-Thank you for opening your first issue. Our team will review it and get back to you soon.
-
-If you're interested in contributing, please check out our [contributing guidelines](./CONTRIBUTING.md) and feel free to ask questions!`
+                body: `👋 Welcome to the Landscape Architecture Tool project, @${author}!\n\nThank you for opening your first issue. Our team will review it and get back to you soon.\n\nIf you're interested in contributing, please check out our contributing guidelines and feel free to ask questions!`
               });
             }
