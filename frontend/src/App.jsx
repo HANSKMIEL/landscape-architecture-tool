@@ -67,9 +67,10 @@ function AppContent() {
         .replace('{username}', response.user.username)
       
       toast.success(welcomeMessage)
-    } catch (_error) {
+    } catch (error) {
       const errorMessage = t('auth.loginFailed', 'Login failed. Please check your credentials.')
       
+      console.error('Login error:', error)
       setLoginError(errorMessage)
       toast.error(errorMessage)
     }
@@ -214,6 +215,7 @@ function AuthenticatedApp({
                 <Route path="/timeline" element={<ProjectTimeline user={user} />} />
                 <Route path="/settings" element={<Settings user={user} />} />
                 <Route path="/users" element={<UserManagement user={user} />} />
+                <Route path="/password-reset" element={<PasswordReset />} />
               </Routes>
             </Suspense>
           </main>

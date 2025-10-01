@@ -113,7 +113,7 @@ export const mockApi = {
   }),
   
   // Plant Recommendations
-  getPlantRecommendations: (criteria) => Promise.resolve({
+  getPlantRecommendations: (_criteria) => Promise.resolve({
     data: MOCK_DATA.plants.slice(0, 2).map(plant => ({
       ...plant,
       matchScore: Math.floor(Math.random() * 30) + 70,

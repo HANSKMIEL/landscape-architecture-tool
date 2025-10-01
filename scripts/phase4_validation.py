@@ -72,7 +72,11 @@ def main():
     # 2. Developer guidelines validation
     print("\n📋 Step 4.2: Developer Guidelines Validation")
     validation_results.append(
-        check_file_exists("documentation/development/DEVELOPER_GUIDELINES.md", "Developer guidelines", optional=True)
+        check_file_exists(
+            "documentation/development/DEVELOPER_GUIDELINES.md",
+            "Developer guidelines",
+            optional=True,
+        )
     )
 
     # 3. Copilot integration validation

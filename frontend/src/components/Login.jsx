@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
+import { Card as _Card, CardContent as _CardContent, CardDescription as _CardDescription, CardHeader as _CardHeader, CardTitle as _CardTitle } from './ui/card';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
@@ -24,7 +24,7 @@ const Login = ({ onLogin }) => {
   
   const navigate = useNavigate();
   const location = useLocation();
-  const { t } = useLanguage();
+  const { t: _t } = useLanguage();
 
   // Check for success messages from URL params (e.g., after password reset)
   useEffect(() => {

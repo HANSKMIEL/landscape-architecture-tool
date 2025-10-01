@@ -101,7 +101,10 @@ def get_photos():
 
         # Get photos
         photos = get_photo_service().get_photos(
-            category=category, entity_id=entity_id, limit=min(limit, 100), offset=offset  # Max 100 photos per request
+            category=category,
+            entity_id=entity_id,
+            limit=min(limit, 100),
+            offset=offset,  # Max 100 photos per request
         )
 
         return jsonify({"photos": photos, "count": len(photos), "offset": offset, "limit": limit})
@@ -145,7 +148,10 @@ def serve_photo(photo_id):
             return jsonify({"error": "Photo file not found"}), 404
 
         return send_file(
-            photo.file_path, mimetype=photo.mime_type, as_attachment=False, download_name=photo.original_filename
+            photo.file_path,
+            mimetype=photo.mime_type,
+            as_attachment=False,
+            download_name=photo.original_filename,
         )
 
     except Exception as e:

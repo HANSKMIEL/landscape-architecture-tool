@@ -87,11 +87,11 @@ const Dashboard = () => {
           </svg>
         </div>
         <h3 className="text-lg font-semibold text-gray-900 mb-2">
-          Verbinding met backend mislukt
+          {t('errors.connectionFailed', 'Connection to backend failed')}
         </h3>
         <p className="text-gray-600 mb-6">
           {error.includes('Failed to fetch') 
-            ? 'Controleer of de backend server draait op http://127.0.0.1:5000'
+            ? t('errors.checkBackendServer', 'Check if the backend server is running on http://127.0.0.1:5000')
             : error
           }
         </p>
@@ -99,14 +99,14 @@ const Dashboard = () => {
           onClick={handleRetry}
           className="w-full bg-landscape-primary hover:bg-landscape-primary-dark text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200"
         >
-          {retryCount > 0 ? `Opnieuw proberen (${retryCount + 1})` : 'Opnieuw proberen'}
+          {retryCount > 0 ? `${t('common.retry', 'Retry')} (${retryCount + 1})` : t('common.retry', 'Retry')}
         </button>
         <div className="mt-4 text-sm text-gray-500">
-          <p>Zorg ervoor dat:</p>
+          <p>{t('errors.ensureThat', 'Ensure that:')}</p>
           <ul className="list-disc list-inside mt-2 space-y-1">
-            <li>De backend server draait</li>
-            <li>Port 5000 beschikbaar is</li>
-            <li>CORS correct is geconfigureerd</li>
+            <li>{t('errors.backendRunning', 'The backend server is running')}</li>
+            <li>{t('errors.portAvailable', 'Port 5000 is available')}</li>
+            <li>{t('errors.corsConfigured', 'CORS is correctly configured')}</li>
           </ul>
         </div>
       </div>

@@ -25,7 +25,7 @@ def app():
         db.create_all()
 
         # Create test user
-    # Authentication handled by authenticated_test_user fixture
+        # Authentication handled by authenticated_test_user fixture
         yield app
 
         # Cleanup
@@ -208,8 +208,8 @@ class TestPhotoAPI:
 
     def test_delete_photo(self, auth_client, app):
         """Test deleting photo."""
-    # Authentication handled by authenticated_test_user fixture
-# Upload a photo first
+        # Authentication handled by authenticated_test_user fixture
+        # Upload a photo first
         img_data = create_test_image()
         upload_response = auth_client.post(
             "/api/photos/upload", data={"file": (img_data, "test.jpg"), "category": "example"}

@@ -299,7 +299,7 @@ class TestIssueDeduplicationWorkflow:
 
     def test_workflow_integration_mock(self):
         """Test integration with workflow using mocks."""
-    # Authentication handled by authenticated_test_user fixture
+        # Authentication handled by authenticated_test_user fixture
         fingerprinter = IssueFingerprinter()
 
         # Mock GitHub API responses
