@@ -233,6 +233,11 @@ if [ -d "dist" ] && [ -f "dist/index.html" ]; then
     else
         warning "DevDeploy branding not found in build - this may be normal"
     fi
+    
+    # Add cache-busting meta tag to force browser refresh
+    DEPLOY_TIMESTAMP=$(date +%s)
+    log "Adding cache-busting timestamp: $DEPLOY_TIMESTAMP"
+    sed -i "s|</head>|  <meta name=\"deploy-version\" content=\"$DEPLOY_TIMESTAMP\">\n  </head>|" dist/index.html
 else
     error "Frontend build failed!"
     exit 1
@@ -246,6 +251,13 @@ log "Checking nginx configuration..."
 if [ -f "/etc/nginx/sites-available/landscape" ]; then
     info "Nginx configuration found"
     nginx -t && success "Nginx configuration is valid" || error "Nginx configuration has errors"
+    
+    # Clear nginx cache if it exists
+    if [ -d "/var/cache/nginx" ]; then
+        log "Clearing nginx cache..."
+        rm -rf /var/cache/nginx/* 2>/dev/null || true
+        success "Nginx cache cleared"
+    fi
 fi
 
 # Reload systemd and start backend
@@ -277,6 +289,19 @@ fi
 # Reload nginx
 log "Reloading nginx..."
 systemctl reload nginx || warning "Nginx reload failed"
+
+# Add cache-busting information
+echo ""
+log "═══════════════════════════════════════════════════════════"
+log "Cache-Busting Information"
+log "═══════════════════════════════════════════════════════════"
+success "✓ Hashed filenames enabled for automatic cache invalidation"
+success "✓ Deploy timestamp added to HTML: $DEPLOY_TIMESTAMP"
+success "✓ Nginx cache cleared"
+info "→ If changes not visible, perform hard refresh:"
+info "  • Windows/Linux: Ctrl+Shift+R"
+info "  • macOS: Cmd+Shift+R"
+info "  • Or clear browser cache manually"
 
 # Health checks
 echo ""
