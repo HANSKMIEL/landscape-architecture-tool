@@ -184,6 +184,11 @@ export VITE_APP_TITLE="devdeploy - Landscape Architecture Tool (Development)"
 export VITE_APP_ENV="development"
 export VITE_API_URL="http://72.60.176.200:8080/api"
 
+# Set GIT_BRANCH environment variable for backend
+CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+export GIT_BRANCH=$CURRENT_BRANCH
+echo "GIT_BRANCH=$CURRENT_BRANCH" >> ../.env 2>/dev/null || true
+
 # Build production version with devdeploy branding
 log "Building production frontend with devdeploy branding..."
 npm run build

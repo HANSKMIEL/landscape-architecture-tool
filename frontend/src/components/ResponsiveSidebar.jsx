@@ -1,6 +1,7 @@
 import { Link, useLocation } from 'react-router-dom'
 import { useEffect } from 'react'
 import { useLanguage } from '../i18n/LanguageProvider'
+import VersionDisplay from './VersionDisplay'
 import {
   LayoutDashboard,
   Building2,
@@ -275,9 +276,7 @@ const ResponsiveSidebar = ({ isOpen, onClose, user }) => {
             <p className="text-xs text-gray-500">
               © 2025 {currentLanguage === 'nl' ? 'Landschapsarchitectuur' : 'Landscape Architecture'}
             </p>
-            <p className="text-xs text-gray-400 mt-1">
-              v1.0.0
-            </p>
+            <VersionDisplay className="mt-1" />
           </div>
         </div>
       </aside>

@@ -256,6 +256,7 @@ def create_app():
             "version": __version__,  # Added for test compatibility
             # Added for test compatibility
             "environment": os.environ.get("FLASK_ENV", "development"),
+            "branch": os.environ.get("GIT_BRANCH", None),  # Current deployment branch
             "database_status": db_status,  # Added for test compatibility
             "dependencies": {
                 "critical": {
