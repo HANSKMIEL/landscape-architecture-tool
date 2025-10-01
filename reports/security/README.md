@@ -25,6 +25,7 @@ Authorization: Admin role required
 ### Authentication Required
 
 Access requires:
+
 1. **Valid user session** (authenticated via `/api/auth/login`)
 2. **Admin role** (`role = 'admin'` in user table)
 3. **Active account** (`is_active = true`)
@@ -34,6 +35,7 @@ If these conditions are not met, API returns `403 Forbidden`.
 ## 📋 Available Reports
 
 ### Comprehensive Security Audit
+
 - **File**: `COMPREHENSIVE_SECURITY_AUDIT_V1.00D.md`
 - **Date**: October 1, 2025
 - **Coverage**: Complete security analysis of V1.00D branch
@@ -45,6 +47,7 @@ If these conditions are not met, API returns `403 Forbidden`.
   - Quick fix scripts
 
 ### Complete Testing & Validation
+
 - **File**: `V1_00D_COMPLETE_TESTING_VALIDATION_REPORT.md`
 - **Date**: October 1, 2025
 - **Coverage**: Comprehensive testing validation
@@ -58,12 +61,14 @@ If these conditions are not met, API returns `403 Forbidden`.
 ## 🚨 Security Notice
 
 **DO NOT**:
+
 - Share these reports publicly
 - Commit sensitive findings to public repositories
 - Discuss specific vulnerabilities in public channels
 - Grant non-admin access to security endpoints
 
 **DO**:
+
 - Review reports regularly
 - Address high-priority findings immediately
 - Rotate credentials mentioned in reports
@@ -148,7 +153,7 @@ Ensure security endpoints are not cached:
 location /api/security/ {
     # No caching for security endpoints
     add_header Cache-Control "no-store, no-cache, must-revalidate";
-    
+
     # Forward to backend
     proxy_pass http://localhost:5000;
     proxy_set_header Host $host;

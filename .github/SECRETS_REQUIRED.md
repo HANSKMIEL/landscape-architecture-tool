@@ -9,23 +9,26 @@ This document lists all GitHub secrets required for the Landscape Architecture T
 These secrets are required for automated deployment to the VPS development environment:
 
 #### `HOSTINGER_SSH_KEY`
+
 - **Type**: SSH Private Key
 - **Description**: Private SSH key for authenticating to the VPS server
 - **Format**: Multi-line SSH private key (begins with `-----BEGIN OPENSSH PRIVATE KEY-----`)
-- **Used by**: 
+- **Used by**:
   - `.github/workflows/enhanced-deployment.yml`
   - `.github/workflows/devdeploy-v1d.yml`
   - `.github/workflows/vps-deploy-v1d.yml`
-- **Setup**: 
+- **Setup**:
+
   ```bash
   # Generate key pair (if not exists)
   ssh-keygen -t ed25519 -C "github-actions@landscape-tool"
-  
+
   # Add public key to VPS ~/.ssh/authorized_keys
   # Add private key to GitHub Secrets as HOSTINGER_SSH_KEY
   ```
 
 #### `HOSTINGER_USERNAME`
+
 - **Type**: String
 - **Description**: SSH username for VPS server access
 - **Example**: `u123456789` or `root`
@@ -33,6 +36,7 @@ These secrets are required for automated deployment to the VPS development envir
 - **Setup**: VPS username provided by hosting provider
 
 #### `HOSTINGER_HOST`
+
 - **Type**: String (IP address or hostname)
 - **Description**: VPS server hostname or IP address
 - **Example**: `72.60.176.200` or `vps.example.com`
@@ -42,6 +46,7 @@ These secrets are required for automated deployment to the VPS development envir
 ### Optional Secrets
 
 #### `STAGING_URL`
+
 - **Type**: String (URL)
 - **Description**: Staging environment URL for testing
 - **Example**: `http://staging.example.com`
@@ -49,6 +54,7 @@ These secrets are required for automated deployment to the VPS development envir
 - **Required**: No (deployment works without it)
 
 #### `PRODUCTION_URL`
+
 - **Type**: String (URL)
 - **Description**: Production environment URL
 - **Example**: `https://optura.nl`
@@ -67,6 +73,7 @@ These secrets are required for automated deployment to the VPS development envir
 ## ⚠️ Security Best Practices
 
 ### Secret Management
+
 - **Never commit secrets** to the repository
 - **Rotate SSH keys** every 90 days
 - **Use separate keys** for development and production
@@ -74,6 +81,7 @@ These secrets are required for automated deployment to the VPS development envir
 - **Monitor secret usage** in workflow logs
 
 ### Key Rotation Schedule
+
 ```bash
 # Recommended rotation schedule
 SSH Keys:     Every 90 days
@@ -82,6 +90,7 @@ API Tokens:   Every 30 days
 ```
 
 ### SSH Key Security
+
 ```bash
 # On VPS: Restrict SSH key to specific IP (GitHub Actions)
 # Edit ~/.ssh/authorized_keys
@@ -101,24 +110,27 @@ Check if secrets are configured correctly:
 
 ## 📋 Secret Audit Log
 
-| Secret Name | Last Rotated | Expires | Notes |
-|-------------|--------------|---------|-------|
-| HOSTINGER_SSH_KEY | - | - | Initial setup, needs rotation date |
-| HOSTINGER_USERNAME | N/A | N/A | Static value |
-| HOSTINGER_HOST | N/A | N/A | Static value |
+| Secret Name        | Last Rotated | Expires | Notes                              |
+| ------------------ | ------------ | ------- | ---------------------------------- |
+| HOSTINGER_SSH_KEY  | -            | -       | Initial setup, needs rotation date |
+| HOSTINGER_USERNAME | N/A          | N/A     | Static value                       |
+| HOSTINGER_HOST     | N/A          | N/A     | Static value                       |
 
 ## 🚨 Troubleshooting
 
 ### Deployment fails with "Permission denied (publickey)"
+
 - Verify `HOSTINGER_SSH_KEY` contains the complete private key including headers
 - Ensure public key is added to VPS `~/.ssh/authorized_keys`
 - Check SSH key format (should be OpenSSH format, not PEM)
 
 ### Deployment fails with "Host key verification failed"
+
 - Add `StrictHostKeyChecking=no` to SSH command (already in workflows)
 - Or add VPS host key to GitHub Actions known_hosts
 
 ### Secret not found error
+
 - Verify secret name spelling (case-sensitive)
 - Check secret is set at repository level (not environment level)
 - Ensure workflow has access to secrets
@@ -138,7 +150,7 @@ Consider automating secret rotation with GitHub Actions:
 name: Rotate SSH Keys
 on:
   schedule:
-    - cron: '0 0 1 */3 *'  # Every 3 months
+    - cron: "0 0 1 */3 *" # Every 3 months
   workflow_dispatch:
 
 jobs:
@@ -147,11 +159,11 @@ jobs:
     steps:
       - name: Generate new SSH key
         run: ssh-keygen -t ed25519 -f new_key -N ""
-      
+
       - name: Update VPS authorized_keys
         run: |
           ssh-copy-id -i new_key.pub ${{ secrets.HOSTINGER_USERNAME }}@${{ secrets.HOSTINGER_HOST }}
-      
+
       - name: Manual step required
         run: echo "Update HOSTINGER_SSH_KEY secret in GitHub with contents of new_key"
 ```

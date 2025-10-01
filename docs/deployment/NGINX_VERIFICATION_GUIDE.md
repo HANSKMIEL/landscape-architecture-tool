@@ -9,6 +9,7 @@ Based on the repository structure and deployment scripts, here's how the fronten
 The V1.00D deployment uses **Nginx** to serve the static frontend files, NOT Node.js/Vite dev server.
 
 #### Deployment Flow:
+
 ```bash
 1. Frontend built with: npm run build
    → Generates static files in: frontend/dist/
@@ -28,20 +29,20 @@ The Nginx config should look like this (located at `/etc/nginx/sites-available/l
 server {
     listen 80;
     server_name 72.60.176.200;
-    
+
     # Frontend - Static files
     location / {
         root /var/www/landscape-architecture-tool/frontend/dist;
         try_files $uri $uri/ /index.html;
         index index.html;
-        
+
         # Cache static assets
         location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {
             expires 1y;
             add_header Cache-Control "public, immutable";
         }
     }
-    
+
     # Backend API - Reverse proxy
     location /api/ {
         proxy_pass http://localhost:5000;
@@ -50,13 +51,13 @@ server {
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
     }
-    
+
     # Health endpoint
     location /health {
         proxy_pass http://localhost:5000;
         proxy_set_header Host $host;
     }
-    
+
     # Gzip compression
     gzip on;
     gzip_types text/plain text/css application/json application/javascript text/xml application/xml;
@@ -68,12 +69,14 @@ server {
 **Problem**: Changes not appearing after deployment
 
 **Possible Causes**:
+
 1. Old Node.js dev server still running on port 8080
 2. Nginx not reloading properly
 3. Browser caching old frontend version
 4. Build artifacts not being replaced
 
 **Solution** (now implemented in `vps_deploy_v1d.sh`):
+
 ```bash
 # Kill any process on port 8080
 lsof -ti:8080 | xargs kill -9
@@ -173,6 +176,7 @@ When deploying V1.00D to VPS:
 #### Issue: "Changes not appearing after deployment"
 
 **Diagnosis**:
+
 ```bash
 # Check last modification time of dist files
 stat /var/www/landscape-architecture-tool/frontend/dist/index.html
@@ -186,6 +190,7 @@ curl -I http://72.60.176.200:8080/
 ```
 
 **Solutions**:
+
 1. **Hard browser refresh**: Ctrl+Shift+R (Windows/Linux) or Cmd+Shift+R (Mac)
 2. **Clear browser cache**: Settings → Clear browsing data → Cached files
 3. **Force rebuild**:
@@ -208,6 +213,7 @@ curl -I http://72.60.176.200:8080/
 **Cause**: Backend not running or Nginx can't reach it
 
 **Solution**:
+
 ```bash
 # Check backend status
 systemctl status landscape-backend
@@ -227,6 +233,7 @@ journalctl -u landscape-backend -n 50
 **Cause**: Nginx reverse proxy misconfigured
 
 **Solution**:
+
 ```bash
 # Verify proxy_pass configuration
 grep -A 5 "location /api/" /etc/nginx/sites-available/landscape
@@ -241,6 +248,7 @@ nginx -t && systemctl reload nginx
 ### 📊 Monitoring
 
 **Check deployment status**:
+
 ```bash
 # Full system check
 systemctl status landscape-backend nginx
@@ -258,6 +266,7 @@ tail -50 /var/log/nginx/error.log
 ### 🔐 Security Considerations
 
 **Nginx Security Headers** (should be in config):
+
 ```nginx
 add_header X-Frame-Options "DENY" always;
 add_header X-Content-Type-Options "nosniff" always;
@@ -266,6 +275,7 @@ add_header Referrer-Policy "strict-origin-when-cross-origin" always;
 ```
 
 **Rate Limiting** (for API endpoints):
+
 ```nginx
 limit_req_zone $binary_remote_addr zone=api:10m rate=10r/s;
 
