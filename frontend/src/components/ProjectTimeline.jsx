@@ -22,12 +22,12 @@ import toast from 'react-hot-toast'
 
 const ProjectTimeline = ({ user }) => {
   const { t } = useLanguage()
-  const [projects, setProjects] = useState([])
-  const [selectedProject, setSelectedProject] = useState(null)
-  const [timelineData, setTimelineData] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [showAddMilestone, setShowAddMilestone] = useState(false)
-  const [newMilestone, setNewMilestone] = useState({
+  const [__projects, set_projects] = useState([])
+  const [__selectedProject, set_selectedProject] = useState(null)
+  const [__timelineData, set_timelineData] = useState([])
+  const [__loading, set_loading] = useState(true)
+  const [__showAddMilestone, set_showAddMilestone] = useState(false)
+  const [__newMilestone, set_newMilestone] = useState({
     title: '',
     description: '',
     target_date: '',
@@ -196,7 +196,7 @@ const ProjectTimeline = ({ user }) => {
 
     try {
       // For demo purposes, add to local state
-      const milestone = {
+      const __milestone = {
         id: timelineData.length + 1,
         project_id: selectedProject.id,
         ...newMilestone,

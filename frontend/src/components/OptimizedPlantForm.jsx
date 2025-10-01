@@ -6,7 +6,7 @@ import React, { useState, useCallback, useMemo, useRef } from 'react';
 
 // Fixed input handler with proper memoization
 const useOptimizedFormHandler = (initialFormData) => {
-  const [formData, setFormData] = useState(initialFormData);
+  const [__formData, set_formData] = useState(initialFormData);
   const formRef = useRef(null);
   
   // Memoized input change handler to prevent re-creation

@@ -26,8 +26,8 @@ import {
 } from 'lucide-react'
 
 const PlantRecommendations = () => {
-  const [criteriaOptions, setCriteriaOptions] = useState(null)
-  const [searchCriteria, setSearchCriteria] = useState({
+  const [__criteriaOptions, set_criteriaOptions] = useState(null)
+  const [__searchCriteria, set_searchCriteria] = useState({
     hardiness_zone: '',
     sun_exposure: '',
     soil_type: '',
@@ -51,14 +51,14 @@ const PlantRecommendations = () => {
     groundcover_purpose: false,
     slope_planting: false,
   })
-  const [recommendations, setRecommendations] = useState([])
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState(null)
-  const [requestId, setRequestId] = useState(null)
-  const [selectedPlants, setSelectedPlants] = useState([])
-  const [showFeedback, setShowFeedback] = useState(false)
+  const [__recommendations, set_recommendations] = useState([])
+  const [__loading, set_loading] = useState(false)
+  const [__error, set_error] = useState(null)
+  const [__requestId, set_requestId] = useState(null)
+  const [__selectedPlants, set_selectedPlants] = useState([])
+  const [__showFeedback, set_showFeedback] = useState(false)
 
-  const translations = {
+  const __translations = {
     en: {
       title: 'Plant Recommendations',
       subtitle: 'Get AI-powered plant recommendations for your projects',

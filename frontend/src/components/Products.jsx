@@ -22,18 +22,18 @@ import { useLanguage } from '../i18n/LanguageProvider'
 const Products = () => {
   const { t } = useLanguage()
   // State management
-  const [products, setProducts] = useState([])
-  const [suppliers, setSuppliers] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
-  const [showAddModal, setShowAddModal] = useState(false)
-  const [showEditModal, setShowEditModal] = useState(false)
-  const [editingProduct, setEditingProduct] = useState(null)
-  const [searchTerm, setSearchTerm] = useState('')
-  const [totalProducts, setTotalProducts] = useState(0)
+  const [__products, set_products] = useState([])
+  const [__suppliers, set_suppliers] = useState([])
+  const [__loading, set_loading] = useState(true)
+  const [__error, set_error] = useState(null)
+  const [__showAddModal, set_showAddModal] = useState(false)
+  const [__showEditModal, set_showEditModal] = useState(false)
+  const [__editingProduct, set_editingProduct] = useState(null)
+  const [__searchTerm, set_searchTerm] = useState('')
+  const [__totalProducts, set_totalProducts] = useState(0)
 
   // Form state
-  const [formData, setFormData] = useState({
+  const [__formData, set_formData] = useState({
     name: '',
     description: '',
     price: '',

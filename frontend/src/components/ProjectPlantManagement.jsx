@@ -14,19 +14,19 @@ import {
 } from 'lucide-react';
 
 const ProjectPlantManagement = ({ projectId, language = 'en' }) => {
-  const [projectPlants, setProjectPlants] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [availablePlants, setAvailablePlants] = useState([]);
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [costAnalysis, setCostAnalysis] = useState(null);
-  const [selectedPlant, setSelectedPlant] = useState(null);
-  const [quantity, setQuantity] = useState(1);
-  const [unitCost, setUnitCost] = useState('');
-  const [notes, setNotes] = useState('');
+  const [__projectPlants, set_projectPlants] = useState([]);
+  const [__loading, set_loading] = useState(false);
+  const [__error, set_error] = useState(null);
+  const [__searchTerm, set_searchTerm] = useState('');
+  const [__availablePlants, set_availablePlants] = useState([]);
+  const [__showAddModal, set_showAddModal] = useState(false);
+  const [__costAnalysis, set_costAnalysis] = useState(null);
+  const [__selectedPlant, set_selectedPlant] = useState(null);
+  const [__quantity, set_quantity] = useState(1);
+  const [__unitCost, set_unitCost] = useState('');
+  const [__notes, set_notes] = useState('');
 
-  const translations = {
+  const __translations = {
     en: {
       title: 'Project Plants',
       subtitle: 'Manage plants for this project',

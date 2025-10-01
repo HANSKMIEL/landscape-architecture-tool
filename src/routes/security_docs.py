@@ -12,9 +12,7 @@ from src.routes.auth import require_role
 
 logger = logging.getLogger(__name__)
 
-security_docs_bp = Blueprint(
-    "security_docs", __name__, url_prefix="/api/security"
-)
+security_docs_bp = Blueprint("security_docs", __name__, url_prefix="/api/security")
 
 
 @security_docs_bp.route("/reports/<path:filename>", methods=["GET"])
@@ -72,19 +70,19 @@ def list_security_reports():
         reports = []
         for file_path in reports_dir.glob("*.md"):
             stat = file_path.stat()
-            reports.append({
-                "filename": file_path.name,
-                "size": stat.st_size,
-                "modified": stat.st_mtime,
-                "url": f"/api/security/reports/{file_path.name}"
-            })
+            reports.append(
+                {
+                    "filename": file_path.name,
+                    "size": stat.st_size,
+                    "modified": stat.st_mtime,
+                    "url": f"/api/security/reports/{file_path.name}",
+                }
+            )
 
         # Sort by modification time, newest first
         reports.sort(key=lambda x: x["modified"], reverse=True)
 
-        logger.info(
-            f"Admin user listing security reports: {len(reports)} found"
-        )
+        logger.info(f"Admin user listing security reports: {len(reports)} found")
         return jsonify({"reports": reports}), 200
 
     except Exception as e:

@@ -4,11 +4,11 @@ import { useLanguage } from '../i18n/LanguageProvider';
 
 const Dashboard = () => {
   const { t } = useLanguage();
-  const [stats, setStats] = useState(null);
-  const [recentActivity, setRecentActivity] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [retryCount, setRetryCount] = useState(0);
+  const [__stats, set_stats] = useState(null);
+  const [__recentActivity, set_recentActivity] = useState([]);
+  const [__loading, set_loading] = useState(true);
+  const [__error, set_error] = useState(null);
+  const [__retryCount, set_retryCount] = useState(0);
 
   const fetchDashboardData = async () => {
     try {

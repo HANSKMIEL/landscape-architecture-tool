@@ -9,7 +9,7 @@ export const Button = ({
   ...props 
 }) => {
   const baseClasses = 'btn';
-  const variantClasses = {
+  const __variantClasses = {
     primary: 'btn-primary',
     secondary: 'btn-secondary',
     nature: 'btn-nature',
@@ -18,7 +18,7 @@ export const Button = ({
     outline: 'btn-outline'
   };
   
-  const sizeClasses = {
+  const __sizeClasses = {
     sm: 'px-3 py-1.5 text-xs',
     md: 'px-4 py-2 text-sm',
     lg: 'px-6 py-3 text-base'
@@ -42,7 +42,7 @@ export const Card = ({
   ...props 
 }) => {
   const baseClasses = 'card';
-  const variantClasses = {
+  const __variantClasses = {
     default: '',
     landscape: 'card-landscape',
     water: 'card-water',
@@ -66,7 +66,7 @@ export const Container = ({
   className = '',
   ...props 
 }) => {
-  const sizeClasses = {
+  const __sizeClasses = {
     narrow: 'max-w-3xl mx-auto px-4',
     default: 'max-w-6xl mx-auto px-4',
     wide: 'max-w-7xl mx-auto px-4'
@@ -88,7 +88,7 @@ export const Stack = ({
   className = '',
   ...props 
 }) => {
-  const spaceClasses = {
+  const __spaceClasses = {
     sm: 'stack-sm',
     md: 'stack',
     lg: 'stack-lg'
@@ -111,7 +111,7 @@ export const Grid = ({
   className = '',
   ...props 
 }) => {
-  const colsClasses = {
+  const __colsClasses = {
     auto: 'grid-cols-auto',
     responsive: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3',
     1: 'grid-cols-1',
@@ -120,7 +120,7 @@ export const Grid = ({
     4: 'grid-cols-4'
   };
 
-  const gapClasses = {
+  const __gapClasses = {
     sm: 'gap-2',
     md: 'gap-4',
     lg: 'gap-6'

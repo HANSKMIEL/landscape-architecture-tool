@@ -21,12 +21,12 @@ import toast from 'react-hot-toast'
 
 const Photos = ({ user }) => {
   const { t } = useLanguage()
-  const [photos, setPhotos] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [viewMode, setViewMode] = useState('grid') // 'grid' or 'list'
-  const [selectedCategory, setSelectedCategory] = useState('all')
-  const [searchTerm, setSearchTerm] = useState('')
-  const [showUpload, setShowUpload] = useState(false)
+  const [__photos, set_photos] = useState([])
+  const [__loading, set_loading] = useState(true)
+  const [__viewMode, set_viewMode] = useState('grid') // 'grid' or 'list'
+  const [__selectedCategory, set_selectedCategory] = useState('all')
+  const [__searchTerm, set_searchTerm] = useState('')
+  const [__showUpload, set_showUpload] = useState(false)
 
   // Photo categories for organization
   const categories = [

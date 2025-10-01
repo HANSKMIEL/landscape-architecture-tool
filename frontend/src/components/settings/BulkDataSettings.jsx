@@ -16,7 +16,7 @@ import {
 import ExcelImportManager from '../ExcelImportManager'
 
 const BulkDataSettings = () => {
-  const [importSettings, setImportSettings] = useState({
+  const [__importSettings, set_importSettings] = useState({
     validateDuplicates: true,
     autoCorrectData: true,
     requireAllFields: false,
@@ -24,14 +24,14 @@ const BulkDataSettings = () => {
     enableBackup: true
   })
 
-  const [exportSettings, setExportSettings] = useState({
+  const [__exportSettings, set_exportSettings] = useState({
     includeEmptyFields: false,
     dateFormat: 'DD-MM-YYYY',
     includeImages: false,
     compressionLevel: 'medium'
   })
 
-  const translations = {
+  const __translations = {
     en: {
       title: 'Bulk Data Management',
       subtitle: 'Configure import, export, and data processing settings',
@@ -107,7 +107,7 @@ const BulkDataSettings = () => {
   const { t } = useLanguage()
 
   const saveSettings = () => {
-    const settings = {
+    const __settings = {
       import: importSettings,
       export: exportSettings,
       timestamp: new Date().toISOString()

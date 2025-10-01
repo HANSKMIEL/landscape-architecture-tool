@@ -29,14 +29,14 @@ import {
 } from 'lucide-react';
 
 const ReportingDashboard = () => {
-  const [analyticsData, setAnalyticsData] = useState({});
-  const [loading, setLoading] = useState(false);
-  const [dateRange, setDateRange] = useState({ 
+  const [__analyticsData, set_analyticsData] = useState({});
+  const [__loading, set_loading] = useState(false);
+  const [__dateRange, set_dateRange] = useState({ 
     start: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], 
     end: new Date().toISOString().split('T')[0] 
   });
 
-  const translations = {
+  const __translations = {
     en: {
       title: 'Advanced Reporting Dashboard',
       subtitle: 'Comprehensive business intelligence and analytics',

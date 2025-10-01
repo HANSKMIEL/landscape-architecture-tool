@@ -2,14 +2,12 @@
 OpenAPI 3.0 Specification Generator for Landscape Architecture Tool API
 """
 
-from datetime import datetime
-
 
 def generate_openapi_spec():
     """
     Generate OpenAPI 3.0 specification for the API
     """
-    spec = {
+    return {
         "openapi": "3.0.3",
         "info": {
             "title": "Landscape Architecture Tool API",
@@ -37,46 +35,76 @@ Professional API for managing landscape architecture projects, suppliers, plants
             "version": "2.0.0",
             "contact": {
                 "name": "Landscape Architecture Tool Support",
-                "url": "https://github.com/HANSKMIEL/landscape-architecture-tool"
+                "url": "https://github.com/HANSKMIEL/landscape-architecture-tool",
             },
             "license": {
                 "name": "MIT",
-                "url": "https://opensource.org/licenses/MIT"
-            }
+                "url": "https://opensource.org/licenses/MIT",
+            },
         },
         "servers": [
             {
                 "url": "http://localhost:5000",
-                "description": "Development server"
+                "description": "Development server",
             },
             {
                 "url": "http://72.60.176.200:8080",
-                "description": "V1.00D DevDeploy server"
+                "description": "V1.00D DevDeploy server",
             },
             {
                 "url": "https://optura.nl",
-                "description": "Production server (V1.00)"
-            }
+                "description": "Production server (V1.00)",
+            },
         ],
         "tags": [
-            {"name": "Health", "description": "System health and status endpoints"},
-            {"name": "Authentication", "description": "User authentication and session management"},
-            {"name": "Suppliers", "description": "Supplier management operations"},
+            {
+                "name": "Health",
+                "description": "System health and status endpoints",
+            },
+            {
+                "name": "Authentication",
+                "description": "User authentication and session management",
+            },
+            {
+                "name": "Suppliers",
+                "description": "Supplier management operations",
+            },
             {"name": "Plants", "description": "Plant catalog and management"},
-            {"name": "Products", "description": "Product catalog and inventory"},
+            {
+                "name": "Products",
+                "description": "Product catalog and inventory",
+            },
             {"name": "Clients", "description": "Client management"},
-            {"name": "Projects", "description": "Project management and tracking"},
+            {
+                "name": "Projects",
+                "description": "Project management and tracking",
+            },
             {"name": "Analytics", "description": "Analytics and statistics"},
-            {"name": "Dashboard", "description": "Dashboard data and insights"},
+            {
+                "name": "Dashboard",
+                "description": "Dashboard data and insights",
+            },
             {"name": "Reports", "description": "Report generation"},
-            {"name": "Invoices", "description": "Invoice and quote management"},
+            {
+                "name": "Invoices",
+                "description": "Invoice and quote management",
+            },
             {"name": "Photos", "description": "Photo upload and management"},
-            {"name": "Plant Recommendations", "description": "AI-powered plant recommendations"},
-            {"name": "Excel Import", "description": "Bulk data import from Excel"},
+            {
+                "name": "Plant Recommendations",
+                "description": "AI-powered plant recommendations",
+            },
+            {
+                "name": "Excel Import",
+                "description": "Bulk data import from Excel",
+            },
             {"name": "Settings", "description": "Application settings"},
-            {"name": "N8n Webhooks", "description": "N8n integration webhooks"},
+            {
+                "name": "N8n Webhooks",
+                "description": "N8n integration webhooks",
+            },
             {"name": "AI Assistant", "description": "AI-powered assistance"},
-            {"name": "Performance", "description": "Performance monitoring"}
+            {"name": "Performance", "description": "Performance monitoring"},
         ],
         "paths": {
             "/health": {
@@ -93,22 +121,35 @@ Professional API for managing landscape architecture projects, suppliers, plants
                                     "schema": {
                                         "type": "object",
                                         "properties": {
-                                            "status": {"type": "string", "example": "healthy"},
-                                            "timestamp": {"type": "string", "format": "date-time"},
-                                            "version": {"type": "string", "example": "2.0.0"},
-                                            "environment": {"type": "string", "example": "development"},
-                                            "database_status": {"type": "string", "example": "connected"},
+                                            "status": {
+                                                "type": "string",
+                                                "example": "healthy",
+                                            },
+                                            "timestamp": {
+                                                "type": "string",
+                                                "format": "date-time",
+                                            },
+                                            "version": {
+                                                "type": "string",
+                                                "example": "2.0.0",
+                                            },
+                                            "environment": {
+                                                "type": "string",
+                                                "example": "development",
+                                            },
+                                            "database_status": {
+                                                "type": "string",
+                                                "example": "connected",
+                                            },
                                             "dependencies": {"type": "object"},
-                                            "services": {"type": "object"}
-                                        }
+                                            "services": {"type": "object"},
+                                        },
                                     }
                                 }
-                            }
+                            },
                         },
-                        "503": {
-                            "description": "System is unhealthy - critical dependencies missing"
-                        }
-                    }
+                        "503": {"description": "System is unhealthy - critical dependencies missing"},
+                    },
                 }
             },
             "/api": {
@@ -127,13 +168,16 @@ Professional API for managing landscape architecture projects, suppliers, plants
                                         "properties": {
                                             "message": {"type": "string"},
                                             "version": {"type": "string"},
-                                            "endpoints": {"type": "array", "items": {"type": "string"}}
-                                        }
+                                            "endpoints": {
+                                                "type": "array",
+                                                "items": {"type": "string"},
+                                            },
+                                        },
                                     }
                                 }
-                            }
+                            },
                         }
-                    }
+                    },
                 }
             },
             "/api/suppliers": {
@@ -152,14 +196,14 @@ Professional API for managing landscape architecture projects, suppliers, plants
                                         "properties": {
                                             "suppliers": {
                                                 "type": "array",
-                                                "items": {"$ref": "#/components/schemas/Supplier"}
+                                                "items": {"$ref": "#/components/schemas/Supplier"},
                                             }
-                                        }
+                                        },
                                     }
                                 }
-                            }
+                            },
                         }
-                    }
+                    },
                 },
                 "post": {
                     "tags": ["Suppliers"],
@@ -168,11 +212,7 @@ Professional API for managing landscape architecture projects, suppliers, plants
                     "operationId": "createSupplier",
                     "requestBody": {
                         "required": True,
-                        "content": {
-                            "application/json": {
-                                "schema": {"$ref": "#/components/schemas/SupplierCreate"}
-                            }
-                        }
+                        "content": {"application/json": {"schema": {"$ref": "#/components/schemas/SupplierCreate"}}},
                     },
                     "responses": {
                         "201": {
@@ -181,16 +221,14 @@ Professional API for managing landscape architecture projects, suppliers, plants
                                 "application/json": {
                                     "schema": {
                                         "type": "object",
-                                        "properties": {
-                                            "supplier": {"$ref": "#/components/schemas/Supplier"}
-                                        }
+                                        "properties": {"supplier": {"$ref": "#/components/schemas/Supplier"}},
                                     }
                                 }
-                            }
+                            },
                         },
-                        "400": {"description": "Invalid input"}
-                    }
-                }
+                        "400": {"description": "Invalid input"},
+                    },
+                },
             },
             "/api/suppliers/{supplier_id}": {
                 "get": {
@@ -204,7 +242,7 @@ Professional API for managing landscape architecture projects, suppliers, plants
                             "in": "path",
                             "required": True,
                             "schema": {"type": "integer"},
-                            "description": "Supplier ID"
+                            "description": "Supplier ID",
                         }
                     ],
                     "responses": {
@@ -214,15 +252,13 @@ Professional API for managing landscape architecture projects, suppliers, plants
                                 "application/json": {
                                     "schema": {
                                         "type": "object",
-                                        "properties": {
-                                            "supplier": {"$ref": "#/components/schemas/Supplier"}
-                                        }
+                                        "properties": {"supplier": {"$ref": "#/components/schemas/Supplier"}},
                                     }
                                 }
-                            }
+                            },
                         },
-                        "404": {"description": "Supplier not found"}
-                    }
+                        "404": {"description": "Supplier not found"},
+                    },
                 },
                 "put": {
                     "tags": ["Suppliers"],
@@ -234,21 +270,17 @@ Professional API for managing landscape architecture projects, suppliers, plants
                             "name": "supplier_id",
                             "in": "path",
                             "required": True,
-                            "schema": {"type": "integer"}
+                            "schema": {"type": "integer"},
                         }
                     ],
                     "requestBody": {
                         "required": True,
-                        "content": {
-                            "application/json": {
-                                "schema": {"$ref": "#/components/schemas/SupplierUpdate"}
-                            }
-                        }
+                        "content": {"application/json": {"schema": {"$ref": "#/components/schemas/SupplierUpdate"}}},
                     },
                     "responses": {
                         "200": {"description": "Supplier updated successfully"},
-                        "404": {"description": "Supplier not found"}
-                    }
+                        "404": {"description": "Supplier not found"},
+                    },
                 },
                 "delete": {
                     "tags": ["Suppliers"],
@@ -260,14 +292,14 @@ Professional API for managing landscape architecture projects, suppliers, plants
                             "name": "supplier_id",
                             "in": "path",
                             "required": True,
-                            "schema": {"type": "integer"}
+                            "schema": {"type": "integer"},
                         }
                     ],
                     "responses": {
                         "204": {"description": "Supplier deleted successfully"},
-                        "404": {"description": "Supplier not found"}
-                    }
-                }
+                        "404": {"description": "Supplier not found"},
+                    },
+                },
             },
             "/api/analytics/summary": {
                 "get": {
@@ -287,15 +319,15 @@ Professional API for managing landscape architecture projects, suppliers, plants
                                             "plants": {"type": "object"},
                                             "products": {"type": "object"},
                                             "clients": {"type": "object"},
-                                            "projects": {"type": "object"}
-                                        }
+                                            "projects": {"type": "object"},
+                                        },
                                     }
                                 }
-                            }
+                            },
                         }
-                    }
+                    },
                 }
-            }
+            },
         },
         "components": {
             "schemas": {
@@ -303,18 +335,46 @@ Professional API for managing landscape architecture projects, suppliers, plants
                     "type": "object",
                     "properties": {
                         "id": {"type": "integer", "example": 1},
-                        "name": {"type": "string", "example": "Green Supplies BV"},
-                        "contact_person": {"type": "string", "example": "John Doe"},
-                        "email": {"type": "string", "format": "email", "example": "john@greensupplies.nl"},
-                        "phone": {"type": "string", "example": "+31 20 123 4567"},
-                        "address": {"type": "string", "example": "Main Street 123"},
+                        "name": {
+                            "type": "string",
+                            "example": "Green Supplies BV",
+                        },
+                        "contact_person": {
+                            "type": "string",
+                            "example": "John Doe",
+                        },
+                        "email": {
+                            "type": "string",
+                            "format": "email",
+                            "example": "john@greensupplies.nl",
+                        },
+                        "phone": {
+                            "type": "string",
+                            "example": "+31 20 123 4567",
+                        },
+                        "address": {
+                            "type": "string",
+                            "example": "Main Street 123",
+                        },
                         "city": {"type": "string", "example": "Amsterdam"},
-                        "postal_code": {"type": "string", "example": "1012 AB"},
-                        "country": {"type": "string", "example": "Netherlands"},
+                        "postal_code": {
+                            "type": "string",
+                            "example": "1012 AB",
+                        },
+                        "country": {
+                            "type": "string",
+                            "example": "Netherlands",
+                        },
                         "notes": {"type": "string", "nullable": True},
-                        "created_at": {"type": "string", "format": "date-time"},
-                        "updated_at": {"type": "string", "format": "date-time"}
-                    }
+                        "created_at": {
+                            "type": "string",
+                            "format": "date-time",
+                        },
+                        "updated_at": {
+                            "type": "string",
+                            "format": "date-time",
+                        },
+                    },
                 },
                 "SupplierCreate": {
                     "type": "object",
@@ -328,8 +388,8 @@ Professional API for managing landscape architecture projects, suppliers, plants
                         "city": {"type": "string"},
                         "postal_code": {"type": "string"},
                         "country": {"type": "string"},
-                        "notes": {"type": "string"}
-                    }
+                        "notes": {"type": "string"},
+                    },
                 },
                 "SupplierUpdate": {
                     "type": "object",
@@ -342,32 +402,30 @@ Professional API for managing landscape architecture projects, suppliers, plants
                         "city": {"type": "string"},
                         "postal_code": {"type": "string"},
                         "country": {"type": "string"},
-                        "notes": {"type": "string"}
-                    }
+                        "notes": {"type": "string"},
+                    },
                 },
                 "Error": {
                     "type": "object",
                     "properties": {
                         "error": {"type": "string"},
-                        "message": {"type": "string"}
-                    }
-                }
+                        "message": {"type": "string"},
+                    },
+                },
             },
             "securitySchemes": {
                 "cookieAuth": {
                     "type": "apiKey",
                     "in": "cookie",
                     "name": "session",
-                    "description": "Session-based authentication"
+                    "description": "Session-based authentication",
                 },
                 "apiKeyAuth": {
                     "type": "apiKey",
                     "in": "header",
                     "name": "X-API-Key",
-                    "description": "API key authentication (coming in Phase 4)"
-                }
-            }
-        }
+                    "description": "API key authentication (coming in Phase 4)",
+                },
+            },
+        },
     }
-    
-    return spec

@@ -14,7 +14,7 @@ import {
 } from 'lucide-react'
 
 const ReportSettings = () => {
-  const [reportSettings, setReportSettings] = useState({
+  const [__reportSettings, set_reportSettings] = useState({
     defaultFormat: 'pdf',
     includeImages: true,
     includePricing: true,
@@ -24,7 +24,7 @@ const ReportSettings = () => {
     watermark: false
   })
 
-  const [templates, setTemplates] = useState({
+  const [__templates, set_templates] = useState({
     projectReport: true,
     quoteTemplate: true,
     invoiceTemplate: true,
@@ -32,14 +32,14 @@ const ReportSettings = () => {
     maintenanceSchedule: false
   })
 
-  const [automation, setAutomation] = useState({
+  const [__automation, set_automation] = useState({
     scheduleReports: false,
     emailReports: false,
     frequency: 'weekly',
     recipients: ''
   })
 
-  const translations = {
+  const __translations = {
     en: {
       title: 'Report Generation Settings',
       subtitle: 'Configure report templates, formats, and automation',
@@ -149,7 +149,7 @@ const ReportSettings = () => {
   const { t } = useLanguage()
 
   const saveSettings = () => {
-    const settings = {
+    const __settings = {
       reportSettings,
       templates,
       automation,

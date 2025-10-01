@@ -10,17 +10,17 @@ import { useLanguage } from '../i18n/LanguageProvider';
 
 const PasswordReset = () => {
   const { t } = useLanguage();
-  const [formData, setFormData] = useState({
+  const [__formData, set_formData] = useState({
     new_password: '',
     confirm_password: ''
   });
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
-  const [token, setToken] = useState('');
-  const [tokenValid, setTokenValid] = useState(null);
+  const [__showPassword, set_showPassword] = useState(false);
+  const [__showConfirmPassword, set_showConfirmPassword] = useState(false);
+  const [__isLoading, set_isLoading] = useState(false);
+  const [__error, set_error] = useState('');
+  const [__success, set_success] = useState('');
+  const [__token, set_token] = useState('');
+  const [__tokenValid, set_tokenValid] = useState(null);
 
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();

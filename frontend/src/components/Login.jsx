@@ -9,22 +9,22 @@ import { Loader2, Eye, EyeOff, Mail, Lock, User, AlertCircle, CheckCircle, LogIn
 import { useLanguage } from '../i18n/LanguageProvider';
 
 const Login = ({ onLogin }) => {
-  const [formData, setFormData] = useState({
+  const [__formData, set_formData] = useState({
     username: '',
     password: ''
   });
-  const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [errorType, setErrorType] = useState(''); // 'network', 'auth', 'validation', 'server'
-  const [retryCount, setRetryCount] = useState(0);
-  const [success, setSuccess] = useState('');
-  const [showForgotPassword, setShowForgotPassword] = useState(false);
-  const [forgotPasswordEmail, setForgotPasswordEmail] = useState('');
-  const [forgotPasswordLoading, setForgotPasswordLoading] = useState(false);
-  const [forgotPasswordSuccess, setForgotPasswordSuccess] = useState(false);
-  const [isRetrying, setIsRetrying] = useState(false);
-  const [focusedField, setFocusedField] = useState('');
+  const [__showPassword, set_showPassword] = useState(false);
+  const [__isLoading, set_isLoading] = useState(false);
+  const [__error, set_error] = useState('');
+  const [__errorType, set_errorType] = useState(''); // 'network', 'auth', 'validation', 'server'
+  const [__retryCount, set_retryCount] = useState(0);
+  const [__success, set_success] = useState('');
+  const [__showForgotPassword, set_showForgotPassword] = useState(false);
+  const [__forgotPasswordEmail, set_forgotPasswordEmail] = useState('');
+  const [__forgotPasswordLoading, set_forgotPasswordLoading] = useState(false);
+  const [__forgotPasswordSuccess, set_forgotPasswordSuccess] = useState(false);
+  const [__isRetrying, set_isRetrying] = useState(false);
+  const [__focusedField, set_focusedField] = useState('');
   
   const navigate = useNavigate();
   const location = useLocation();
@@ -32,7 +32,7 @@ const Login = ({ onLogin }) => {
 
   // Error analytics logging
   const logError = (errorType, errorMessage, context = {}) => {
-    const errorData = {
+    const __errorData = {
       timestamp: new Date().toISOString(),
       type: errorType,
       message: errorMessage,
@@ -147,7 +147,7 @@ const Login = ({ onLogin }) => {
     // Small delay for better UX
     await new Promise(resolve => setTimeout(resolve, 500));
     
-    const syntheticEvent = {
+    const __syntheticEvent = {
       preventDefault: () => {},
       target: { checkValidity: () => true }
     };

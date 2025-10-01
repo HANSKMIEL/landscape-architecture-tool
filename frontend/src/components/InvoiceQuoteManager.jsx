@@ -6,7 +6,7 @@ import apiService from '../services/api';
 const GenerateButton = ({ onClick, icon: Icon, text, variant, isLoading, disabled }) => {
   const baseClasses = "inline-flex items-center px-3 py-2 text-sm leading-4 font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed";
   
-  const variantClasses = {
+  const __variantClasses = {
     outline: "border border-gray-300 shadow-sm text-gray-700 bg-white hover:bg-gray-50",
     solid: "border border-transparent text-white bg-green-600 hover:bg-green-700"
   };
@@ -35,10 +35,10 @@ const GenerateButton = ({ onClick, icon: Icon, text, variant, isLoading, disable
 };
 
 const InvoiceQuoteManager = () => {
-  const [projects, setProjects] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [generatingPdf, setGeneratingPdf] = useState(null);
+  const [__projects, set_projects] = useState([]);
+  const [__loading, set_loading] = useState(true);
+  const [__error, set_error] = useState(null);
+  const [__generatingPdf, set_generatingPdf] = useState(null);
 
   useEffect(() => {
     loadInvoiceableProjects();

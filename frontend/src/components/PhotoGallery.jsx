@@ -27,12 +27,12 @@ const PhotoGallery = ({
   columns = 4,
   onPhotoUpdate = () => {}
 }) => {
-  const [photos, setPhotos] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [__photos, set_photos] = useState([]);
+  const [__loading, set_loading] = useState(true);
   // Note: useToast hook would need to be imported from your toast library
   // const { toast } = useToast();
 
-  const categoryLabels = {
+  const __categoryLabels = {
     plant: 'Plant',
     material: 'Materiaal',
     property: 'Eigendom',
