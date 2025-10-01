@@ -33,15 +33,11 @@ jobs:
           cd frontend
           npm ci
 
-      - name: Build frontend for demo
+      - name: Build frontend
         env:
           NODE_ENV: production
-          # Use demo mode to enable mock API and GitHub Pages base path
-          VITE_BUILD_MODE: demo
         run: |
           cd frontend
-          # Use the demo environment configuration
-          cp .env.demo .env.production
           npm run build
 
       - name: Setup Pages
