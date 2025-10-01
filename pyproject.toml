@@ -223,3 +223,26 @@ generate-hashes = false
 # Disable hash generation for faster compilation
 emit-index-url = true
 emit-options = true
+
+[tool.pyright]
+# Pyright/Pylance configuration
+pythonVersion = "3.11"
+typeCheckingMode = "basic"
+reportMissingImports = true
+reportMissingTypeStubs = false
+reportUnusedImport = false
+reportUnusedVariable = false
+reportUnusedClass = false
+reportUnusedFunction = false
+# Exclude patterns
+exclude = [
+    "**/__pycache__",
+    "**/node_modules",
+    ".venv",
+    "venv",
+    "migrations",
+    "frontend/dist",
+    "frontend/node_modules",
+]
+# Include patterns
+include = ["src", "tests"]
