@@ -4,6 +4,7 @@ import { Toaster } from 'react-hot-toast'
 import ResponsiveSidebar from './components/ResponsiveSidebar'
 import Header from './components/Header'
 import Login from './components/Login'
+import Register from './components/Register'
 import ErrorBoundary from './components/ErrorBoundary'
 import authService from './services/authService'
 import toast from 'react-hot-toast'
@@ -163,13 +164,21 @@ function AuthenticatedApp({
     )
   }
 
-  // Show login screen if not authenticated
+  // Show login/register screen if not authenticated
   if (!user) {
-    return <Login onLogin={handleLogin} error={loginError} />
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-blue-50">
+        <Routes>
+          <Route path="/login" element={<Login onLogin={handleLogin} error={loginError} />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="*" element={<Navigate to="/login" replace />} />
+        </Routes>
+      </div>
+    )
   }
 
   return (
-        <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50">
         {/* Responsive Sidebar */}
         <ResponsiveSidebar 
           isOpen={sidebarOpen} 
@@ -201,6 +210,7 @@ function AuthenticatedApp({
             }>
               <Routes>
                 <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                <Route path="/login" element={<Login onLogin={handleLogin} error={loginError} />} />
                 <Route path="/dashboard" element={<Dashboard user={user} />} />
                 <Route path="/suppliers" element={<Suppliers user={user} />} />
                 <Route path="/plants" element={<Plants user={user} />} />

@@ -17,7 +17,8 @@ import {
   X,
   Shield,
   Eye,
-  Bot
+  Bot,
+  UserCog
 } from 'lucide-react'
 
 const ResponsiveSidebar = ({ isOpen, onClose, user }) => {
@@ -102,6 +103,12 @@ const ResponsiveSidebar = ({ isOpen, onClose, user }) => {
       href: '/settings', 
       icon: Settings,
       roles: ['admin', 'employee', 'client']
+    },
+    { 
+      name: t('navigation.users', 'User Management'), 
+      href: '/users', 
+      icon: UserCog,
+      roles: ['admin']  // Only admins can access user management
     },
   ]
 

@@ -1,5 +1,23 @@
 # Landscape Architecture Tool - Developer Instructions
 
+**CRITICAL: BRANCH PROTECTION ACTIVE**
+
+## 🛡️ BRANCH PROTECTION RULES - READ FIRST
+
+### ❌ MAIN BRANCH - PROTECTED
+- **NO direct commits allowed** - Main branch is production-protected
+- **NO workflow modifications** without promotion process  
+- **NO experimental features** or breaking changes
+- **ONLY promoted changes** via `./scripts/deployment/promote_v1d_to_v1.sh`
+- **Production URL**: https://optura.nl (completely protected)
+
+### ✅ V1.00D BRANCH - DEVELOPMENT ZONE
+- **All development work** happens on V1.00D branch
+- **Automatic devdeploy deployment** on every push
+- **Development URL**: http://72.60.176.200:8080
+- **Title**: "devdeploy - Landscape Architecture Tool (Development)"
+- **Complete isolation** from production environment
+
 **ALWAYS follow these instructions first.** Only search for additional information or run exploratory bash commands if the information provided here is incomplete or found to be in error.
 
 The Landscape Architecture Tool is a Python Flask backend with React/Vite frontend for managing landscape architecture projects, suppliers, plants, products, and clients.

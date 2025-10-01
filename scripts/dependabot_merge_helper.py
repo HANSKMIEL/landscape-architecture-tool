@@ -98,7 +98,11 @@ class DependabotMergeHelper:
                 return True
             print(f"❌ Repository health check failed: {result.stderr}")
             return False
+<<<<<<< HEAD
+                
+=======
 
+>>>>>>> origin/main
         except Exception as e:
             print(f"❌ Health check error: {e}")
             return False

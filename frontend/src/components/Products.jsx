@@ -108,13 +108,14 @@ const Products = () => {
   }, [loadProducts])
 
   // Handle form input changes
-  const handleInputChange = (e) => {
+  const handleInputChange = useCallback((e) => {
     const { name, value } = e.target
+    
     setFormData(prev => ({
       ...prev,
       [name]: value
     }))
-  }
+  }, [])
 
   // Reset form
   const resetForm = () => {

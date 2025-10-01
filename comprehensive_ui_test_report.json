@@ -1,0 +1,131 @@
+{
+  "vps_url": "http://72.60.176.200:8080",
+  "timestamp": "2025-09-25 10:07:56",
+  "summary": {
+    "total_tests": 4,
+    "passed": 3,
+    "failed": 0,
+    "warnings": 1,
+    "issues_found": 11
+  },
+  "language_test_results": {
+    "English": {
+      "expected_found": [
+        "Dashboard",
+        "Data"
+      ],
+      "unexpected_found": [
+        "Leveranciers",
+        "Planten",
+        "Producten",
+        "Klanten",
+        "Projecten",
+        "Dashboard"
+      ],
+      "text_changed": true,
+      "before_length": 659,
+      "after_length": 568
+    },
+    "Nederlands": {
+      "expected_found": [
+        "Leveranciers",
+        "Planten",
+        "Producten",
+        "Klanten",
+        "Projecten",
+        "Dashboard",
+        "Welkom"
+      ],
+      "unexpected_found": [
+        "Dashboard",
+        "Data"
+      ],
+      "text_changed": true,
+      "before_length": 568,
+      "after_length": 659
+    }
+  },
+  "detailed_results": [
+    {
+      "test": "VPS Login",
+      "status": "PASS",
+      "details": "Successfully logged in",
+      "timestamp": "2025-09-25 10:06:07"
+    },
+    {
+      "test": "Language Switch to English",
+      "status": "PASS",
+      "details": "Found 2 expected terms: ['Dashboard', 'Data']...",
+      "timestamp": "2025-09-25 10:06:30"
+    },
+    {
+      "test": "Language Switch to Nederlands",
+      "status": "PASS",
+      "details": "Found 7 expected terms: ['Leveranciers', 'Planten', 'Producten']...",
+      "timestamp": "2025-09-25 10:06:36"
+    },
+    {
+      "test": "Panel Testing Summary",
+      "status": "WARN",
+      "details": "0/8 panels accessible",
+      "timestamp": "2025-09-25 10:07:56"
+    }
+  ],
+  "issues_found": [
+    {
+      "category": "Incomplete Translation",
+      "issue": "Still found 6 Dutch terms: ['Leveranciers', 'Planten', 'Producten']...",
+      "timestamp": "2025-09-25 10:06:30"
+    },
+    {
+      "category": "Incomplete Translation",
+      "issue": "Still found 2 English terms: ['Dashboard', 'Data']...",
+      "timestamp": "2025-09-25 10:06:36"
+    },
+    {
+      "category": "Settings Panel",
+      "issue": "Navigation link not found for Settings",
+      "timestamp": "2025-09-25 10:06:46"
+    },
+    {
+      "category": "Suppliers Panel",
+      "issue": "Navigation link not found for Suppliers",
+      "timestamp": "2025-09-25 10:06:56"
+    },
+    {
+      "category": "Plants Panel",
+      "issue": "Navigation link not found for Plants",
+      "timestamp": "2025-09-25 10:07:06"
+    },
+    {
+      "category": "Products Panel",
+      "issue": "Navigation link not found for Products",
+      "timestamp": "2025-09-25 10:07:16"
+    },
+    {
+      "category": "Clients Panel",
+      "issue": "Navigation link not found for Clients",
+      "timestamp": "2025-09-25 10:07:26"
+    },
+    {
+      "category": "Projects Panel",
+      "issue": "Navigation link not found for Projects",
+      "timestamp": "2025-09-25 10:07:36"
+    },
+    {
+      "category": "Reports Panel",
+      "issue": "Navigation link not found for Reports",
+      "timestamp": "2025-09-25 10:07:46"
+    },
+    {
+      "category": "Photos Panel",
+      "issue": "Navigation link not found for Photos",
+      "timestamp": "2025-09-25 10:07:56"
+    },
+    {
+      "category": "Missing Texts",
+      "issue": "Found potential missing texts: ['{from{transform:scale(0) rotate(45deg);opacity:0;}', '{transform:scale(1) rotate(45deg);opacity:1;}', '{from{transform:scale(0);opacity:0;}']",
+      "timestamp": "2025-09-25 10:07:56"
+    }
+  ]
+}

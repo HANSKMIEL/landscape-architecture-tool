@@ -1,0 +1,784 @@
+{
+  "workflow_analysis": {
+    "deployment_workflows": [
+      {
+        "name": "enhanced-deployment.yml",
+        "error": "while scanning a simple key\n  in \".github/workflows/enhanced-deployment.yml\", line 264, column 1\ncould not find expected ':'\n  in \".github/workflows/enhanced-deployment.yml\", line 265, column 1",
+        "analysis_failed": true
+      },
+      {
+        "name": "manual-deploy.yml",
+        "workflow_name": "Manual Deploy to VPS (Improved)",
+        "triggers": {},
+        "jobs": [
+          "deploy"
+        ],
+        "environment_urls": [],
+        "secrets_used": [
+          "VPS_HOST"
+        ],
+        "vps_related": true,
+        "deployment_steps": [
+          {
+            "job": "deploy",
+            "step": "Run tests",
+            "type": "deployment"
+          },
+          {
+            "job": "deploy",
+            "step": "Set up SSH key",
+            "type": "deployment"
+          },
+          {
+            "job": "deploy",
+            "step": "Test VPS connectivity",
+            "type": "deployment"
+          },
+          {
+            "job": "deploy",
+            "step": "Backup user data",
+            "type": "deployment"
+          },
+          {
+            "job": "deploy",
+            "step": "Deploy frontend",
+            "type": "deployment"
+          },
+          {
+            "job": "deploy",
+            "step": "Deploy backend",
+            "type": "deployment"
+          },
+          {
+            "job": "deploy",
+            "step": "Install backend dependencies on VPS",
+            "type": "deployment"
+          },
+          {
+            "job": "deploy",
+            "step": "Restart services",
+            "type": "deployment"
+          },
+          {
+            "job": "deploy",
+            "step": "Test deployment",
+            "type": "deployment"
+          },
+          {
+            "job": "deploy",
+            "step": "Notify on success",
+            "type": "deployment"
+          },
+          {
+            "job": "deploy",
+            "step": "Notify on failure",
+            "type": "deployment"
+          }
+        ]
+      },
+      {
+        "name": "v1d-devdeploy.yml",
+        "workflow_name": "V1.00D DevDeploy Deployment",
+        "triggers": {},
+        "jobs": [
+          "deploy-to-devdeploy"
+        ],
+        "environment_urls": [
+          "http://72.60.176.200:8080"
+        ],
+        "secrets_used": [],
+        "vps_related": true,
+        "deployment_steps": [
+          {
+            "job": "deploy-to-devdeploy",
+            "step": "Validate V1.00D Branch",
+            "type": "deployment"
+          },
+          {
+            "job": "deploy-to-devdeploy",
+            "step": "Build Frontend for DevDeploy",
+            "type": "deployment"
+          },
+          {
+            "job": "deploy-to-devdeploy",
+            "step": "Deploy to VPS DevDeploy Environment",
+            "type": "deployment"
+          },
+          {
+            "job": "deploy-to-devdeploy",
+            "step": "Verify DevDeploy Deployment",
+            "type": "deployment"
+          },
+          {
+            "job": "deploy-to-devdeploy",
+            "step": "Generate Deployment Report",
+            "type": "deployment"
+          },
+          {
+            "job": "deploy-to-devdeploy",
+            "step": "Upload Deployment Artifacts",
+            "type": "deployment"
+          },
+          {
+            "job": "deploy-to-devdeploy",
+            "step": "Notify Deployment Success",
+            "type": "deployment"
+          }
+        ]
+      },
+      {
+        "name": "deploy-demo-updated.yml",
+        "workflow_name": "Deploy Demo to GitHub Pages",
+        "triggers": {},
+        "jobs": [
+          "build",
+          "deploy"
+        ],
+        "environment_urls": [
+          "${{ steps.deployment.outputs.page_url }}"
+        ],
+        "secrets_used": [],
+        "vps_related": true,
+        "deployment_steps": [
+          {
+            "job": "deploy",
+            "step": "Deploy to GitHub Pages",
+            "type": "deployment"
+          }
+        ]
+      },
+      {
+        "name": "production-deployment.yml",
+        "workflow_name": "Production Deployment",
+        "triggers": {},
+        "jobs": [
+          "test",
+          "build",
+          "deploy-staging",
+          "deploy-production",
+          "security",
+          "monitor"
+        ],
+        "environment_urls": [],
+        "secrets_used": [
+          "STAGING_DATABASE_URL",
+          "STAGING_REDIS_URL",
+          "STAGING_SECRET_KEY",
+          "PRODUCTION_DATABASE_URL",
+          "PRODUCTION_DATABASE_URL",
+          "PRODUCTION_REDIS_URL",
+          "PRODUCTION_SECRET_KEY"
+        ],
+        "vps_related": true,
+        "deployment_steps": [
+          {
+            "job": "deploy-staging",
+            "step": "Configure deployment",
+            "type": "deployment"
+          },
+          {
+            "job": "deploy-staging",
+            "step": "Deploy to staging",
+            "type": "deployment"
+          },
+          {
+            "job": "deploy-staging",
+            "step": "Run smoke tests",
+            "type": "deployment"
+          },
+          {
+            "job": "deploy-staging",
+            "step": "Notify staging deployment",
+            "type": "deployment"
+          },
+          {
+            "job": "deploy-production",
+            "step": "Configure production deployment",
+            "type": "deployment"
+          },
+          {
+            "job": "deploy-production",
+            "step": "Create backup",
+            "type": "deployment"
+          },
+          {
+            "job": "deploy-production",
+            "step": "Deploy to production",
+            "type": "deployment"
+          },
+          {
+            "job": "deploy-production",
+            "step": "Run production smoke tests",
+            "type": "deployment"
+          },
+          {
+            "job": "deploy-production",
+            "step": "Notify production deployment",
+            "type": "deployment"
+          },
+          {
+            "job": "monitor",
+            "step": "Setup monitoring",
+            "type": "deployment"
+          },
+          {
+            "job": "monitor",
+            "step": "Create deployment summary",
+            "type": "deployment"
+          }
+        ]
+      },
+      {
+        "name": "deploy-demo.yml",
+        "workflow_name": "Deploy Demo to GitHub Pages",
+        "triggers": {},
+        "jobs": [
+          "build",
+          "deploy"
+        ],
+        "environment_urls": [
+          "${{ steps.deployment.outputs.page_url }}"
+        ],
+        "secrets_used": [],
+        "vps_related": true,
+        "deployment_steps": [
+          {
+            "job": "deploy",
+            "step": "Deploy to GitHub Pages",
+            "type": "deployment"
+          }
+        ]
+      },
+      {
+        "name": "deploy-production.yml",
+        "workflow_name": "Deploy to Production",
+        "triggers": {},
+        "jobs": [
+          "build-and-deploy"
+        ],
+        "environment_urls": [],
+        "secrets_used": [],
+        "vps_related": true,
+        "deployment_steps": [
+          {
+            "job": "build-and-deploy",
+            "step": "Install deployment tools",
+            "type": "deployment"
+          },
+          {
+            "job": "build-and-deploy",
+            "step": "Deploy to VPS",
+            "type": "deployment"
+          },
+          {
+            "job": "build-and-deploy",
+            "step": "Verify deployment",
+            "type": "deployment"
+          }
+        ]
+      },
+      {
+        "name": "ci-enhanced.yml",
+        "workflow_name": "Enhanced CI Pipeline",
+        "triggers": {},
+        "jobs": [
+          "code-quality",
+          "test-backend",
+          "test-frontend",
+          "integration-tests",
+          "build-and-scan",
+          "deployment-check",
+          "status-report"
+        ],
+        "environment_urls": [],
+        "secrets_used": [],
+        "vps_related": true,
+        "deployment_steps": [
+          {
+            "job": "deployment-check",
+            "step": "Deployment readiness validation",
+            "type": "deployment"
+          }
+        ]
+      },
+      {
+        "name": "v1-deployment.yml",
+        "workflow_name": "V1.00 Package Deployment",
+        "triggers": {},
+        "jobs": [
+          "validate-v1-package",
+          "deploy-github-pages",
+          "deploy-production",
+          "deploy-staging"
+        ],
+        "environment_urls": [
+          "${{ steps.deployment.outputs.page_url }}",
+          "${{ vars.PRODUCTION_URL }}",
+          "${{ vars.STAGING_URL }}"
+        ],
+        "secrets_used": [],
+        "vps_related": true,
+        "deployment_steps": [
+          {
+            "job": "validate-v1-package",
+            "step": "Validate Input",
+            "type": "deployment"
+          },
+          {
+            "job": "validate-v1-package",
+            "step": "Build V1.00 Frontend",
+            "type": "deployment"
+          },
+          {
+            "job": "deploy-github-pages",
+            "step": "Deploy to GitHub Pages",
+            "type": "deployment"
+          },
+          {
+            "job": "deploy-github-pages",
+            "step": "Deployment Summary",
+            "type": "deployment"
+          },
+          {
+            "job": "deploy-production",
+            "step": "Deploy to VPS",
+            "type": "deployment"
+          },
+          {
+            "job": "deploy-production",
+            "step": "Upload deployment package",
+            "type": "deployment"
+          },
+          {
+            "job": "deploy-staging",
+            "step": "Deploy to Staging",
+            "type": "deployment"
+          },
+          {
+            "job": "deploy-staging",
+            "step": "Create staging report",
+            "type": "deployment"
+          }
+        ]
+      },
+      {
+        "name": "v1-development.yml",
+        "workflow_name": "V1.00D Development CI",
+        "triggers": {},
+        "jobs": [
+          "test-v1-development",
+          "validate-promotion-readiness"
+        ],
+        "environment_urls": [],
+        "secrets_used": [],
+        "vps_related": true,
+        "deployment_steps": [
+          {
+            "job": "test-v1-development",
+            "step": "Check Archive Organization",
+            "type": "deployment"
+          }
+        ]
+      }
+    ],
+    "vps_related_workflows": [
+      {
+        "name": "manual-deploy.yml",
+        "workflow_name": "Manual Deploy to VPS (Improved)",
+        "triggers": {},
+        "jobs": [
+          "deploy"
+        ],
+        "environment_urls": [],
+        "secrets_used": [
+          "VPS_HOST"
+        ],
+        "vps_related": true,
+        "deployment_steps": [
+          {
+            "job": "deploy",
+            "step": "Run tests",
+            "type": "deployment"
+          },
+          {
+            "job": "deploy",
+            "step": "Set up SSH key",
+            "type": "deployment"
+          },
+          {
+            "job": "deploy",
+            "step": "Test VPS connectivity",
+            "type": "deployment"
+          },
+          {
+            "job": "deploy",
+            "step": "Backup user data",
+            "type": "deployment"
+          },
+          {
+            "job": "deploy",
+            "step": "Deploy frontend",
+            "type": "deployment"
+          },
+          {
+            "job": "deploy",
+            "step": "Deploy backend",
+            "type": "deployment"
+          },
+          {
+            "job": "deploy",
+            "step": "Install backend dependencies on VPS",
+            "type": "deployment"
+          },
+          {
+            "job": "deploy",
+            "step": "Restart services",
+            "type": "deployment"
+          },
+          {
+            "job": "deploy",
+            "step": "Test deployment",
+            "type": "deployment"
+          },
+          {
+            "job": "deploy",
+            "step": "Notify on success",
+            "type": "deployment"
+          },
+          {
+            "job": "deploy",
+            "step": "Notify on failure",
+            "type": "deployment"
+          }
+        ]
+      },
+      {
+        "name": "v1d-devdeploy.yml",
+        "workflow_name": "V1.00D DevDeploy Deployment",
+        "triggers": {},
+        "jobs": [
+          "deploy-to-devdeploy"
+        ],
+        "environment_urls": [
+          "http://72.60.176.200:8080"
+        ],
+        "secrets_used": [],
+        "vps_related": true,
+        "deployment_steps": [
+          {
+            "job": "deploy-to-devdeploy",
+            "step": "Validate V1.00D Branch",
+            "type": "deployment"
+          },
+          {
+            "job": "deploy-to-devdeploy",
+            "step": "Build Frontend for DevDeploy",
+            "type": "deployment"
+          },
+          {
+            "job": "deploy-to-devdeploy",
+            "step": "Deploy to VPS DevDeploy Environment",
+            "type": "deployment"
+          },
+          {
+            "job": "deploy-to-devdeploy",
+            "step": "Verify DevDeploy Deployment",
+            "type": "deployment"
+          },
+          {
+            "job": "deploy-to-devdeploy",
+            "step": "Generate Deployment Report",
+            "type": "deployment"
+          },
+          {
+            "job": "deploy-to-devdeploy",
+            "step": "Upload Deployment Artifacts",
+            "type": "deployment"
+          },
+          {
+            "job": "deploy-to-devdeploy",
+            "step": "Notify Deployment Success",
+            "type": "deployment"
+          }
+        ]
+      },
+      {
+        "name": "deploy-demo-updated.yml",
+        "workflow_name": "Deploy Demo to GitHub Pages",
+        "triggers": {},
+        "jobs": [
+          "build",
+          "deploy"
+        ],
+        "environment_urls": [
+          "${{ steps.deployment.outputs.page_url }}"
+        ],
+        "secrets_used": [],
+        "vps_related": true,
+        "deployment_steps": [
+          {
+            "job": "deploy",
+            "step": "Deploy to GitHub Pages",
+            "type": "deployment"
+          }
+        ]
+      },
+      {
+        "name": "production-deployment.yml",
+        "workflow_name": "Production Deployment",
+        "triggers": {},
+        "jobs": [
+          "test",
+          "build",
+          "deploy-staging",
+          "deploy-production",
+          "security",
+          "monitor"
+        ],
+        "environment_urls": [],
+        "secrets_used": [
+          "STAGING_DATABASE_URL",
+          "STAGING_REDIS_URL",
+          "STAGING_SECRET_KEY",
+          "PRODUCTION_DATABASE_URL",
+          "PRODUCTION_DATABASE_URL",
+          "PRODUCTION_REDIS_URL",
+          "PRODUCTION_SECRET_KEY"
+        ],
+        "vps_related": true,
+        "deployment_steps": [
+          {
+            "job": "deploy-staging",
+            "step": "Configure deployment",
+            "type": "deployment"
+          },
+          {
+            "job": "deploy-staging",
+            "step": "Deploy to staging",
+            "type": "deployment"
+          },
+          {
+            "job": "deploy-staging",
+            "step": "Run smoke tests",
+            "type": "deployment"
+          },
+          {
+            "job": "deploy-staging",
+            "step": "Notify staging deployment",
+            "type": "deployment"
+          },
+          {
+            "job": "deploy-production",
+            "step": "Configure production deployment",
+            "type": "deployment"
+          },
+          {
+            "job": "deploy-production",
+            "step": "Create backup",
+            "type": "deployment"
+          },
+          {
+            "job": "deploy-production",
+            "step": "Deploy to production",
+            "type": "deployment"
+          },
+          {
+            "job": "deploy-production",
+            "step": "Run production smoke tests",
+            "type": "deployment"
+          },
+          {
+            "job": "deploy-production",
+            "step": "Notify production deployment",
+            "type": "deployment"
+          },
+          {
+            "job": "monitor",
+            "step": "Setup monitoring",
+            "type": "deployment"
+          },
+          {
+            "job": "monitor",
+            "step": "Create deployment summary",
+            "type": "deployment"
+          }
+        ]
+      },
+      {
+        "name": "deploy-demo.yml",
+        "workflow_name": "Deploy Demo to GitHub Pages",
+        "triggers": {},
+        "jobs": [
+          "build",
+          "deploy"
+        ],
+        "environment_urls": [
+          "${{ steps.deployment.outputs.page_url }}"
+        ],
+        "secrets_used": [],
+        "vps_related": true,
+        "deployment_steps": [
+          {
+            "job": "deploy",
+            "step": "Deploy to GitHub Pages",
+            "type": "deployment"
+          }
+        ]
+      },
+      {
+        "name": "deploy-production.yml",
+        "workflow_name": "Deploy to Production",
+        "triggers": {},
+        "jobs": [
+          "build-and-deploy"
+        ],
+        "environment_urls": [],
+        "secrets_used": [],
+        "vps_related": true,
+        "deployment_steps": [
+          {
+            "job": "build-and-deploy",
+            "step": "Install deployment tools",
+            "type": "deployment"
+          },
+          {
+            "job": "build-and-deploy",
+            "step": "Deploy to VPS",
+            "type": "deployment"
+          },
+          {
+            "job": "build-and-deploy",
+            "step": "Verify deployment",
+            "type": "deployment"
+          }
+        ]
+      },
+      {
+        "name": "ci-enhanced.yml",
+        "workflow_name": "Enhanced CI Pipeline",
+        "triggers": {},
+        "jobs": [
+          "code-quality",
+          "test-backend",
+          "test-frontend",
+          "integration-tests",
+          "build-and-scan",
+          "deployment-check",
+          "status-report"
+        ],
+        "environment_urls": [],
+        "secrets_used": [],
+        "vps_related": true,
+        "deployment_steps": [
+          {
+            "job": "deployment-check",
+            "step": "Deployment readiness validation",
+            "type": "deployment"
+          }
+        ]
+      },
+      {
+        "name": "v1-deployment.yml",
+        "workflow_name": "V1.00 Package Deployment",
+        "triggers": {},
+        "jobs": [
+          "validate-v1-package",
+          "deploy-github-pages",
+          "deploy-production",
+          "deploy-staging"
+        ],
+        "environment_urls": [
+          "${{ steps.deployment.outputs.page_url }}",
+          "${{ vars.PRODUCTION_URL }}",
+          "${{ vars.STAGING_URL }}"
+        ],
+        "secrets_used": [],
+        "vps_related": true,
+        "deployment_steps": [
+          {
+            "job": "validate-v1-package",
+            "step": "Validate Input",
+            "type": "deployment"
+          },
+          {
+            "job": "validate-v1-package",
+            "step": "Build V1.00 Frontend",
+            "type": "deployment"
+          },
+          {
+            "job": "deploy-github-pages",
+            "step": "Deploy to GitHub Pages",
+            "type": "deployment"
+          },
+          {
+            "job": "deploy-github-pages",
+            "step": "Deployment Summary",
+            "type": "deployment"
+          },
+          {
+            "job": "deploy-production",
+            "step": "Deploy to VPS",
+            "type": "deployment"
+          },
+          {
+            "job": "deploy-production",
+            "step": "Upload deployment package",
+            "type": "deployment"
+          },
+          {
+            "job": "deploy-staging",
+            "step": "Deploy to Staging",
+            "type": "deployment"
+          },
+          {
+            "job": "deploy-staging",
+            "step": "Create staging report",
+            "type": "deployment"
+          }
+        ]
+      },
+      {
+        "name": "v1-development.yml",
+        "workflow_name": "V1.00D Development CI",
+        "triggers": {},
+        "jobs": [
+          "test-v1-development",
+          "validate-promotion-readiness"
+        ],
+        "environment_urls": [],
+        "secrets_used": [],
+        "vps_related": true,
+        "deployment_steps": [
+          {
+            "job": "test-v1-development",
+            "step": "Check Archive Organization",
+            "type": "deployment"
+          }
+        ]
+      }
+    ],
+    "automation_features": [],
+    "secrets_required": [
+      "STAGING_REDIS_URL",
+      "STAGING_DATABASE_URL",
+      "PRODUCTION_SECRET_KEY",
+      "STAGING_SECRET_KEY",
+      "VPS_HOST",
+      "PRODUCTION_REDIS_URL",
+      "PRODUCTION_DATABASE_URL"
+    ],
+    "deployment_targets": {
+      "vps": "http://72.60.176.200:8080"
+    },
+    "workflow_summary": {}
+  },
+  "vps_connectivity": {
+    "vps_url": "http://72.60.176.200:8080",
+    "connection_status": "timeout",
+    "response_time": null,
+    "status_code": null,
+    "has_devdeploy_title": false,
+    "api_health": "unknown"
+  },
+  "timestamp": "2025-09-25 05:59:02.051249"
+}
