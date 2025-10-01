@@ -72,8 +72,8 @@ class TestN8nWebhookEndpoints:
     @patch("src.routes.webhooks.requests.post")
     def test_project_created_webhook_failure(self, mock_post, client):
         """Test failed project created webhook trigger"""
-    # Authentication handled by authenticated_test_user fixture
-# Mock failed N8n response
+        # Authentication handled by authenticated_test_user fixture
+        # Mock failed N8n response
         mock_response = Mock()
         mock_response.status_code = 500
         mock_post.return_value = mock_response
@@ -136,7 +136,7 @@ class TestN8nWebhookEndpoints:
     @patch("src.routes.webhooks.requests.post")
     def test_project_milestone_webhook(self, mock_post, client):
         """Test project milestone webhook trigger"""
-    # Authentication handled by authenticated_test_user fixture
+        # Authentication handled by authenticated_test_user fixture
         mock_response = Mock()
         mock_response.status_code = 200
         mock_post.return_value = mock_response

@@ -6,8 +6,10 @@ import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Alert, AlertDescription } from './ui/alert';
 import { Loader2, Eye, EyeOff, Lock, AlertCircle, CheckCircle, KeyRound } from 'lucide-react';
+import { useLanguage } from '../i18n/LanguageProvider';
 
 const PasswordReset = () => {
+  const { t } = useLanguage();
   const [formData, setFormData] = useState({
     new_password: '',
     confirm_password: ''
@@ -33,12 +35,12 @@ const PasswordReset = () => {
     }
   }, [searchParams]);
 
-  const validateToken = async (resetToken) => {
+  const validateToken = async (_resetToken) => {
     try {
       // We'll validate the token when the user submits the form
       // For now, just assume it's valid if it exists
       setTokenValid(true);
-    } catch (err) {
+    } catch {
       setError('Invalid or expired reset token.');
       setTokenValid(false);
     }
@@ -56,16 +58,16 @@ const PasswordReset = () => {
 
   const validatePassword = (password) => {
     if (password.length < 8) {
-      return 'Password must be at least 8 characters long';
+      return t('password.validation.minLength', 'Password must be at least 8 characters long');
     }
     if (!/(?=.*[a-z])/.test(password)) {
-      return 'Password must contain at least one lowercase letter';
+      return t('password.validation.lowercase', 'Password must contain at least one lowercase letter');
     }
     if (!/(?=.*[A-Z])/.test(password)) {
-      return 'Password must contain at least one uppercase letter';
+      return t('password.validation.uppercase', 'Password must contain at least one uppercase letter');
     }
     if (!/(?=.*\d)/.test(password)) {
-      return 'Password must contain at least one number';
+      return t('password.validation.number', 'Password must contain at least one number');
     }
     return null;
   };
@@ -116,8 +118,8 @@ const PasswordReset = () => {
           setError(data.error || 'Failed to reset password');
         }
       }
-    } catch (err) {
-      console.error('Password reset error:', err);
+    } catch (_err) {
+      console.error('Password reset error:', _err);
       setError('Network error. Please try again.');
     } finally {
       setIsLoading(false);
@@ -224,7 +226,7 @@ const PasswordReset = () => {
                   type={showPassword ? 'text' : 'password'}
                   value={formData.new_password}
                   onChange={handleInputChange}
-                  placeholder="Enter your new password"
+                  placeholder={t("password.placeholder.new", "Enter your new password")}
                   className="pl-10 pr-10"
                   required
                   disabled={isLoading}
@@ -291,7 +293,7 @@ const PasswordReset = () => {
                   type={showConfirmPassword ? 'text' : 'password'}
                   value={formData.confirm_password}
                   onChange={handleInputChange}
-                  placeholder="Confirm your new password"
+                  placeholder={t("password.placeholder.confirm", "Confirm your new password")}
                   className="pl-10 pr-10"
                   required
                   disabled={isLoading}

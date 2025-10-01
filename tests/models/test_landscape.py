@@ -11,7 +11,7 @@ class TestPlantRecommendationRequest:
 
     def test_plant_recommendation_request_to_dict(self, app_context):
         """Test PlantRecommendationRequest to_dict method"""
-    # Authentication handled by authenticated_test_user fixture
+        # Authentication handled by authenticated_test_user fixture
         request = PlantRecommendationRequest(
             project_type="Garden",
             hardiness_zone="5-8",

@@ -345,7 +345,7 @@ const Products = () => {
                 type="number"
                 value={formData.stock_quantity}
                 onChange={handleInputChange}
-                placeholder="0"
+                placeholder="Enter quantity"
                 min="0"
               />
             </div>

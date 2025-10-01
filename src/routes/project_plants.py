@@ -57,7 +57,10 @@ def add_plant_to_project(project_id):
         return jsonify({"error": e.description}), e.code
     except ValidationError as e:
         # Provide a minimal, generic error message; do not leak internals
-        return jsonify({"error": "Validation failed", "fields": [err.get("loc", []) for err in e.errors()]}), 400
+        return (
+            jsonify({"error": "Validation failed", "fields": [err.get("loc", []) for err in e.errors()]}),
+            400,
+        )
     except (ValueError, TypeError) as e:
         return jsonify({"error": str(e)}), 400
     except Exception as e:
@@ -196,7 +199,12 @@ def add_multiple_plants_to_project(project_id):
 
             except Exception:
                 # Do not expose internal exception details; log if necessary
-                errors.append({"plant_data": plant_data, "error": "Failed to add plant due to internal error."})
+                errors.append(
+                    {
+                        "plant_data": plant_data,
+                        "error": "Failed to add plant due to internal error.",
+                    }
+                )
 
         response = {
             "added_plants": results,

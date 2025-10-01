@@ -67,11 +67,11 @@ class TestPlantRecommendationHistoryRoute:
             user.set_password("testpass")
             db.session.add(user)
             db.session.commit()
-            
+
             # Login
             response = client.post("/api/auth/login", json={"username": "testuser", "password": "testpass"})
             assert response.status_code == 200
-            
+
             return client
 
     def test_get_history_basic(self, client, app, db_setup):
@@ -156,11 +156,11 @@ class TestPlantRecommendationExportRoute:
             user.set_password("testpass")
             db.session.add(user)
             db.session.commit()
-            
+
             # Login
             response = client.post("/api/auth/login", json={"username": "testuser", "password": "testpass"})
             assert response.status_code == 200
-            
+
             return client
 
     def test_export_missing_request_id(self, authenticated_client, app, db_setup):
@@ -260,11 +260,11 @@ class TestPlantRecommendationImportRoute:
             user.set_password("testpass")
             db.session.add(user)
             db.session.commit()
-            
+
             # Login
             response = client.post("/api/auth/login", json={"username": "testuser", "password": "testpass"})
             assert response.status_code == 200
-            
+
             return client
 
     def test_import_no_file(self, authenticated_client, app, db_setup):
@@ -417,11 +417,11 @@ class TestPlantRecommendationErrorHandling:
             user.set_password("testpass")
             db.session.add(user)
             db.session.commit()
-            
+
             # Login
             response = client.post("/api/auth/login", json={"username": "testuser", "password": "testpass"})
             assert response.status_code == 200
-            
+
             return client
 
     def test_get_recommendations_invalid_json(self, authenticated_client, app, db_setup):
@@ -523,11 +523,11 @@ class TestPlantRecommendationIntegration:
             user.set_password("testpass")
             db.session.add(user)
             db.session.commit()
-            
+
             # Login
             response = client.post("/api/auth/login", json={"username": "testuser", "password": "testpass"})
             assert response.status_code == 200
-            
+
             return client
 
     def test_recommendation_with_logging_failure(self, authenticated_client, app, db_setup):
@@ -570,7 +570,7 @@ class TestPlantRecommendationIntegration:
 
     def test_empty_plant_database(self, authenticated_client, app):
         """Test recommendations with empty plant database"""
-    # Authentication handled by authenticated_test_user fixture
+        # Authentication handled by authenticated_test_user fixture
         with app.app_context():
             db.create_all()  # Empty database
 

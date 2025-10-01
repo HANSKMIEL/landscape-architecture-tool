@@ -92,7 +92,15 @@ def validate_code_quality():
 
 def cleanup_copilot_files():
     """Clean up Copilot temporary files with enhanced safety."""
-    cleanup_patterns = ["*.copilot.md", "*_copilot_*", "temp_*.py", "draft_*.py", "*.tmp", "*_backup_*", "*.bak"]
+    cleanup_patterns = [
+        "*.copilot.md",
+        "*_copilot_*",
+        "temp_*.py",
+        "draft_*.py",
+        "*.tmp",
+        "*_backup_*",
+        "*.bak",
+    ]
 
     files_removed = 0
     errors = []

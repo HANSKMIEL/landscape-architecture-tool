@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { Input as _Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -57,7 +57,7 @@ const AIAssistant = () => {
       timestamp: new Date()
     }
     setMessages([welcomeMessage])
-    loadInitialData()
+    loadInitialData, [loadInitialData]()
   }, [language])
 
   // Load initial data for insights

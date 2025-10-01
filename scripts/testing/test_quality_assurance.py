@@ -38,7 +38,13 @@ class TestQualityAssurance:
         for attempt in range(retry_count):
             try:
                 result = subprocess.run(
-                    cmd, check=False, shell=True, capture_output=True, text=True, timeout=timeout, cwd=self.repo_root
+                    cmd,
+                    check=False,
+                    shell=True,
+                    capture_output=True,
+                    text=True,
+                    timeout=timeout,
+                    cwd=self.repo_root,
                 )
 
                 return {
@@ -62,7 +68,13 @@ class TestQualityAssurance:
                 time.sleep(2**attempt)  # Exponential backoff
 
             except Exception as e:
-                return {"success": False, "returncode": -1, "stdout": "", "stderr": str(e), "attempt": attempt + 1}
+                return {
+                    "success": False,
+                    "returncode": -1,
+                    "stdout": "",
+                    "stderr": str(e),
+                    "attempt": attempt + 1,
+                }
         return None
 
     def validate_test_environment(self) -> bool:
@@ -253,7 +265,10 @@ class TestQualityAssurance:
             stability_enhancements.append("Pytest configuration validated")
 
         # 3. Set up test isolation
-        isolation_setup = ["mkdir -p /tmp/landscape_test_isolation", "chmod 755 /tmp/landscape_test_isolation"]
+        isolation_setup = [
+            "mkdir -p /tmp/landscape_test_isolation",
+            "chmod 755 /tmp/landscape_test_isolation",
+        ]
 
         for cmd in isolation_setup:
             result = self.run_command(cmd, timeout=10)

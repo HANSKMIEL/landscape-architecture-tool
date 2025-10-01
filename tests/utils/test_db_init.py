@@ -144,8 +144,8 @@ class TestPopulateSampleData:
 
     def test_populate_sample_data_supplier_data_structure(self, app_context):
         """Test that supplier data has expected structure"""
-    # Authentication handled by authenticated_test_user fixture
-# This tests the actual data structure without mocking
+        # Authentication handled by authenticated_test_user fixture
+        # This tests the actual data structure without mocking
         with patch("src.utils.db_init.db.session") as mock_session:
             mock_session.add = Mock()
             mock_session.flush = Mock()
@@ -191,7 +191,7 @@ class TestPopulateSampleData:
 
     def test_populate_sample_data_plant_data_structure(self, app_context):
         """Test that plant data has expected structure"""
-    # Authentication handled by authenticated_test_user fixture
+        # Authentication handled by authenticated_test_user fixture
         with patch("src.utils.db_init.db.session") as mock_session:
             mock_session.add = Mock()
             mock_session.flush = Mock()
@@ -243,7 +243,7 @@ class TestPopulateSampleData:
 
     def test_populate_sample_data_project_data_structure(self, app_context):
         """Test that project data has expected structure"""
-    # Authentication handled by authenticated_test_user fixture
+        # Authentication handled by authenticated_test_user fixture
         with patch("src.utils.db_init.db.session") as mock_session:
             mock_session.add = Mock()
             mock_session.flush = Mock()

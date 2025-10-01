@@ -1,6 +1,10 @@
 """
 Email service for password reset and user notifications
 """
+<<<<<<< HEAD:archive/packages/v1.00/backend/services/email_service.py
+=======
+
+>>>>>>> origin/main:packages/v1.00/backend/services/email_service.py
 import logging
 import os
 import smtplib
@@ -14,9 +18,10 @@ from flask import current_app, render_template_string
 
 logger = logging.getLogger(__name__)
 
+
 class EmailService:
     """Email service for sending notifications"""
-    
+
     def __init__(self):
         self.smtp_server = os.getenv("SMTP_SERVER", "localhost")
         self.smtp_port = int(os.getenv("SMTP_PORT", "587"))
@@ -25,29 +30,40 @@ class EmailService:
         self.smtp_use_tls = os.getenv("SMTP_USE_TLS", "true").lower() == "true"
         self.from_email = os.getenv("FROM_EMAIL", "noreply@optura.nl")
         self.from_name = os.getenv("FROM_NAME", "Landscape Architecture Tool")
+<<<<<<< HEAD:archive/packages/v1.00/backend/services/email_service.py
     
     def send_email(self, to_email: str, subject: str, html_body: str, text_body: str = None, attachments: list = None):
+=======
+
+    def send_email(
+        self, to_email: str, subject: str, html_body: str, text_body: str | None = None, attachments: list | None = None
+    ):
+>>>>>>> origin/main:packages/v1.00/backend/services/email_service.py
         """Send email with HTML and optional text body"""
         try:
             msg = MimeMultipart("alternative")
             msg["Subject"] = subject
             msg["From"] = f"{self.from_name} <{self.from_email}>"
             msg["To"] = to_email
+<<<<<<< HEAD:archive/packages/v1.00/backend/services/email_service.py
             
+=======
+
+>>>>>>> origin/main:packages/v1.00/backend/services/email_service.py
             # Add text part if provided
             if text_body:
                 text_part = MimeText(text_body, "plain")
                 msg.attach(text_part)
-            
+
             # Add HTML part
             html_part = MimeText(html_body, "html")
             msg.attach(html_part)
-            
+
             # Add attachments if provided
             if attachments:
                 for attachment in attachments:
                     self._add_attachment(msg, attachment)
-            
+
             # Send email
             if self.smtp_username and self.smtp_password:
                 # Use SMTP authentication
@@ -62,37 +78,45 @@ class EmailService:
                 server = smtplib.SMTP(self.smtp_server, self.smtp_port)
                 server.send_message(msg)
                 server.quit()
-            
+
             logger.info(f"Email sent successfully to {to_email}")
             return True
-            
+
         except Exception as e:
             logger.error(f"Failed to send email to {to_email}: {e!s}")
             return False
-    
+
     def _add_attachment(self, msg, attachment_path: str):
         """Add attachment to email"""
         try:
             with open(attachment_path, "rb") as attachment:
                 part = MimeBase("application", "octet-stream")
                 part.set_payload(attachment.read())
-            
+
             encoders.encode_base64(part)
+<<<<<<< HEAD:archive/packages/v1.00/backend/services/email_service.py
             part.add_header(
                 "Content-Disposition",
                 f"attachment; filename= {os.path.basename(attachment_path)}"
             )
+=======
+            part.add_header("Content-Disposition", f"attachment; filename= {os.path.basename(attachment_path)}")
+>>>>>>> origin/main:packages/v1.00/backend/services/email_service.py
             msg.attach(part)
-            
+
         except Exception as e:
             logger.error(f"Failed to add attachment {attachment_path}: {e!s}")
+<<<<<<< HEAD:archive/packages/v1.00/backend/services/email_service.py
     
+=======
+
+>>>>>>> origin/main:packages/v1.00/backend/services/email_service.py
     def send_password_reset_email(self, user_email: str, user_name: str, reset_token: str):
         """Send password reset email"""
         reset_url = f"{current_app.config.get('FRONTEND_URL', 'https://optura.nl')}/reset-password?token={reset_token}"
-        
+
         subject = "Password Reset Request - Landscape Architecture Tool"
-        
+
         html_body = f"""
         <!DOCTYPE html>
         <html>
@@ -147,7 +171,7 @@ class EmailService:
         </body>
         </html>
         """
-        
+
         text_body = f"""
         Password Reset Request - Landscape Architecture Tool
         
@@ -165,15 +189,15 @@ class EmailService:
         
         If you have any questions, please contact your system administrator.
         """
-        
+
         return self.send_email(user_email, subject, html_body, text_body)
-    
-    def send_welcome_email(self, user_email: str, user_name: str, username: str, temporary_password: str = None):
+
+    def send_welcome_email(self, user_email: str, user_name: str, username: str, temporary_password: str | None = None):
         """Send welcome email to new user"""
         login_url = f"{current_app.config.get('FRONTEND_URL', 'https://optura.nl')}/login"
-        
+
         subject = "Welcome to Landscape Architecture Tool"
-        
+
         password_info = ""
         if temporary_password:
             password_info = f"""
@@ -183,7 +207,7 @@ class EmailService:
                 <em>Please change this password after your first login for security.</em>
             </div>
             """
-        
+
         html_body = f"""
         <!DOCTYPE html>
         <html>
@@ -246,7 +270,7 @@ class EmailService:
         </body>
         </html>
         """
-        
+
         text_body = f"""
         Welcome to Landscape Architecture Tool
         
@@ -265,13 +289,17 @@ class EmailService:
         
         If you have any questions, please contact your system administrator.
         """
-        
+
         return self.send_email(user_email, subject, html_body, text_body)
+<<<<<<< HEAD:archive/packages/v1.00/backend/services/email_service.py
     
+=======
+
+>>>>>>> origin/main:packages/v1.00/backend/services/email_service.py
     def send_bulk_import_report(self, admin_email: str, admin_name: str, created_users: list[str], errors: list[str]):
         """Send bulk import report to admin"""
         subject = f"Bulk User Import Report - {len(created_users)} users created"
-        
+
         error_section = ""
         if errors:
             error_list = "<br>".join([f"• {error}" for error in errors])
@@ -281,7 +309,7 @@ class EmailService:
                 {error_list}
             </div>
             """
-        
+
         success_section = ""
         if created_users:
             user_list = "<br>".join([f"• {user}" for user in created_users])
@@ -291,7 +319,7 @@ class EmailService:
                 {user_list}
             </div>
             """
-        
+
         html_body = f"""
         <!DOCTYPE html>
         <html>
@@ -334,8 +362,9 @@ class EmailService:
         </body>
         </html>
         """
-        
+
         return self.send_email(admin_email, subject, html_body)
+
 
 # Global email service instance
 email_service = EmailService()
