@@ -171,7 +171,7 @@ multidict==6.6.3
     #   yarl
 numpy==2.3.2
     # via pandas
-openai==1.98.0
+openai==1.109.1
     # via -r requirements.in
 openpyxl==3.1.5
     # via -r requirements.in
