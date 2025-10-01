@@ -259,40 +259,10 @@ jobs:
           pip install requests pytest
 
       - name: API endpoint tests
+        env:
+          STAGING_URL: ${{ env.STAGING_URL }}
         run: |
-          python -c "
-import requests
-import sys
-
-def test_api_endpoints():
-    base_url = '${{ env.STAGING_URL }}'
-    
-    # Test health endpoint
-    response = requests.get(f'{base_url}/health')
-    assert response.status_code == 200, f'Health check failed: {response.status_code}'
-    print('✅ Health endpoint working')
-    
-    # Test dashboard stats
-    response = requests.get(f'{base_url}/api/dashboard/stats')
-    assert response.status_code == 200, f'Dashboard stats failed: {response.status_code}'
-    print('✅ Dashboard stats working')
-    
-    # Test authentication (using environment variables for test credentials)
-    import os
-    test_username = os.environ.get('TEST_USERNAME', 'admin')
-    test_password = os.environ.get('TEST_PASSWORD', 'change_me_in_production')
-    auth_data = {'username': test_username, 'password': test_password}
-    response = requests.post(f'{base_url}/api/auth/login', json=auth_data)
-    # Auth may require actual credentials, so 401 is acceptable in testing
-    if response.status_code in [200, 401]:
-        print('✅ Authentication endpoint working')
-    else:
-        print(f'⚠️ Authentication returned: {response.status_code}')
-    
-    print('✅ All API tests passed')
-
-test_api_endpoints()
-"
+          python scripts/test_api_endpoints.py
 
       - name: Frontend tests
         run: |
@@ -441,18 +411,20 @@ test_api_endpoints()
         uses: actions/github-script@v7
         with:
           script: |
+            const message = `## 🚀 Deployment Status
+            
+            ${{ steps.status.outputs.message }}
+            
+            **Environments:**
+            - **Staging**: ${{ env.STAGING_URL }}
+            - **Production**: ${{ env.PRODUCTION_URL }}
+            
+            **Commit**: \`${{ needs.validate-environment.outputs.git-sha }}\`
+            **Workflow**: [View Run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})`;
+            
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: `## 🚀 Deployment Status
-
-${{ steps.status.outputs.message }}
-
-**Environments:**
-- **Staging**: ${{ env.STAGING_URL }}
-- **Production**: ${{ env.PRODUCTION_URL }}
-
-**Commit**: \`${{ needs.validate-environment.outputs.git-sha }}\`
-**Workflow**: [View Run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})`
+              body: message
             })
