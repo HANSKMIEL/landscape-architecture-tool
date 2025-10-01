@@ -1,5 +1,4 @@
-import React, { useState, useEffect } from 'react';
-import ApiService from '../services/api';
+import { useEffect, useState } from 'react';
 
 /**
  * VersionDisplay Component

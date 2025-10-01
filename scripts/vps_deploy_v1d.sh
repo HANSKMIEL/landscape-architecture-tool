@@ -170,7 +170,7 @@ cd frontend
 log "Clearing npm and build caches..."
 npm cache clean --force 2>/dev/null || true
 
-# Force remove node_modules completely to avoid ENOTEMPTY errors
+# Force remove node_modules and lock file completely to avoid ENOTEMPTY errors
 if [ -d "node_modules" ]; then
     log "Removing existing node_modules..."
     rm -rf node_modules 2>/dev/null || true
@@ -181,12 +181,26 @@ if [ -d "node_modules" ]; then
     fi
 fi
 
+# Remove lock file to force fresh dependency resolution
+rm -f package-lock.json 2>/dev/null || true
+
 # Clear other build artifacts
 rm -rf node_modules/.cache .next dist build 2>/dev/null || true
 
-# Install dependencies fresh
-log "Installing frontend dependencies..."
+# Install dependencies fresh with clean slate
+log "Installing frontend dependencies (this may take a few minutes)..."
 npm install --legacy-peer-deps
+
+# Verify critical dependencies are installed
+log "Verifying critical dependencies..."
+if [ ! -d "node_modules/clsx" ]; then
+    error "Critical dependency 'clsx' not installed! Retrying..."
+    npm install clsx --save --legacy-peer-deps
+fi
+if [ ! -d "node_modules/recharts" ]; then
+    error "Critical dependency 'recharts' not installed! Retrying..."
+    npm install recharts --save --legacy-peer-deps
+fi
 
 # Set devdeploy environment
 log "Configuring devdeploy environment..."

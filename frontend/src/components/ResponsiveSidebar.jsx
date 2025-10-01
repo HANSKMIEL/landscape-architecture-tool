@@ -1,26 +1,26 @@
-import { Link, useLocation } from 'react-router-dom'
+import {
+  Bot,
+  Building2,
+  Calendar,
+  Camera,
+  Eye,
+  FileText,
+  FolderOpen,
+  LayoutDashboard,
+  Leaf,
+  Lightbulb,
+  Package,
+  Receipt,
+  Settings,
+  Shield,
+  UserCog,
+  Users,
+  X
+} from 'lucide-react'
 import { useEffect } from 'react'
+import { Link, useLocation } from 'react-router-dom'
 import { useLanguage } from '../i18n/LanguageProvider'
 import VersionDisplay from './VersionDisplay'
-import {
-  LayoutDashboard,
-  Building2,
-  Package,
-  Leaf,
-  Users,
-  FolderOpen,
-  Lightbulb,
-  FileText,
-  Receipt,
-  Camera,
-  Calendar,
-  Settings,
-  X,
-  Shield,
-  Eye,
-  Bot,
-  UserCog
-} from 'lucide-react'
 
 const ResponsiveSidebar = ({ isOpen, onClose, user }) => {
   const location = useLocation()
