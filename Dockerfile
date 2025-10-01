@@ -5,7 +5,7 @@
 # docker build --no-cache -t landscape-architecture-tool .
 #
 # Stage 1: Build stage
-FROM python:3.11-slim as builder
+FROM python:3.13.7-slim as builder
 
 WORKDIR /app
 
@@ -36,7 +36,7 @@ COPY src/utils/dependency_validator.py /tmp/dependency_validator.py
 RUN python -c "import sys; sys.path.insert(0, '/tmp'); from dependency_validator import DependencyValidator; validator = DependencyValidator(); critical_ok, missing = validator.validate_critical_dependencies(); exit(0 if critical_ok else 1)"
 
 # Stage 2: Production stage
-FROM python:3.11-slim as production
+FROM python:3.13.7-slim as production
 
 WORKDIR /app
 
