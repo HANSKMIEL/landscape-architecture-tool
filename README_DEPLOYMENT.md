@@ -66,6 +66,59 @@ chmod +x /root/quick_deploy.sh
 echo "0 */4 * * * /root/quick_deploy.sh >> /var/log/deploy.log 2>&1" | crontab -
 ```
 
+## 🔍 Troubleshooting
+
+### If deployment fails:
+
+1. **Run diagnostic script:**
+   ```bash
+   scp scripts/vps_diagnostic.sh root@72.60.176.200:/tmp/
+   ssh root@72.60.176.200 "bash /tmp/vps_diagnostic.sh"
+   ```
+
+2. **Check service logs:**
+   ```bash
+   ssh root@72.60.176.200 "journalctl -u landscape-backend -n 50"
+   ```
+
+3. **Verify services are running:**
+   ```bash
+   ssh root@72.60.176.200 "systemctl status landscape-backend nginx"
+   ```
+
+### Common Issues:
+
+**Issue:** Backend won't start  
+**Fix:** Check logs, kill port 5000, restart service
+
+**Issue:** Frontend not updating  
+**Fix:** Clear dist/ and rebuild: `rm -rf frontend/dist && cd frontend && npm run build`
+
+**Issue:** Git fetch fails  
+**Fix:** Check network, reset repo: `git reset --hard HEAD && git fetch --all`
+
+## 🛠️ Helper Scripts
+
+We've created helper scripts to make deployment easier:
+
+- **`scripts/vps_ssh_helper.sh`** - Interactive menu for common VPS tasks
+- **`scripts/vps_diagnostic.sh`** - Full diagnostic report
+- **`scripts/deploy_vps_automated.sh`** - Automated deployment with backup
+
+**Quick usage:**
+```bash
+# Interactive menu
+./scripts/vps_ssh_helper.sh
+
+# Or direct commands
+./scripts/vps_ssh_helper.sh quick-deploy
+./scripts/vps_ssh_helper.sh diagnose
+./scripts/vps_ssh_helper.sh status
+```
+
 ## 📚 Full Documentation
 
-See `VPS_DEPLOYMENT_FIX.md` for complete details and troubleshooting.
+- **Quick Fix:** This file (README_DEPLOYMENT.md)
+- **Complete Guide:** `VPS_DEPLOYMENT_GUIDE.md`
+- **Quick Reference:** `VPS_DEPLOYMENT_SOLUTION.md`
+- **Original Fix:** `VPS_DEPLOYMENT_FIX.md`
