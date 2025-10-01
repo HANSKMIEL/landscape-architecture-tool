@@ -7,6 +7,7 @@ This comprehensive deployment script handles the complete V1.00D development dep
 ## 📋 Prerequisites
 
 ### On VPS (72.60.176.200)
+
 - Root access via SSH
 - Git installed
 - Python 3.x with venv
@@ -15,6 +16,7 @@ This comprehensive deployment script handles the complete V1.00D development dep
 - Systemd service configured (`landscape-backend.service`)
 
 ### Repository Setup
+
 The repository should be cloned at `/var/www/landscape-architecture-tool` on the VPS.
 
 ## 🚀 Deployment Process
@@ -22,22 +24,26 @@ The repository should be cloned at `/var/www/landscape-architecture-tool` on the
 ### Option 1: Direct Deployment on VPS (Recommended)
 
 1. **Copy the script to your VPS:**
+
 ```bash
 scp scripts/vps_deploy_v1d.sh root@72.60.176.200:/root/
 ```
 
 2. **SSH to your VPS:**
+
 ```bash
 ssh root@72.60.176.200
 ```
 
 3. **Run the deployment script:**
+
 ```bash
 cd /root
 bash vps_deploy_v1d.sh
 ```
 
 The script will automatically:
+
 - ✅ Create backup of current deployment
 - ✅ Pull latest V1.00D changes from GitHub
 - ✅ Update Python dependencies
@@ -69,18 +75,21 @@ This will automatically deploy the latest V1.00D changes every 6 hours.
 ## 🔍 What the Script Does
 
 ### 1. Pre-deployment Checks
+
 - ✓ Verifies root access
 - ✓ Checks application directory exists
 - ✓ Creates timestamped backup
 - ✓ Shows current git status
 
 ### 2. Repository Update
+
 - ✓ Fetches latest changes from GitHub
 - ✓ Switches to V1.00D branch if needed
 - ✓ Displays commits behind origin
 - ✓ Resets to latest origin/V1.00D
 
 ### 3. Backend Updates
+
 - ✓ Stops running services gracefully
 - ✓ Kills any remaining processes
 - ✓ Activates Python virtual environment
@@ -89,6 +98,7 @@ This will automatically deploy the latest V1.00D changes every 6 hours.
 - ✓ Runs database migrations
 
 ### 4. Frontend Rebuild
+
 - ✓ Clears npm and build caches
 - ✓ Installs dependencies with `--legacy-peer-deps`
 - ✓ Sets devdeploy environment variables
@@ -96,6 +106,7 @@ This will automatically deploy the latest V1.00D changes every 6 hours.
 - ✓ Verifies build artifacts
 
 ### 5. Service Management
+
 - ✓ Reloads systemd configuration
 - ✓ Starts backend service
 - ✓ Enables service on boot
@@ -103,6 +114,7 @@ This will automatically deploy the latest V1.00D changes every 6 hours.
 - ✓ Reloads nginx
 
 ### 6. Health Checks
+
 - ✓ Backend health endpoint (localhost)
 - ✓ External access validation
 - ✓ Frontend homepage check
@@ -158,16 +170,19 @@ Deployment completed successfully! 🎉
 ### Deployment Fails
 
 **Check service logs:**
+
 ```bash
 journalctl -u landscape-backend -n 50 --no-pager
 ```
 
 **Check nginx logs:**
+
 ```bash
 tail -f /var/log/nginx/error.log
 ```
 
 **Manual service restart:**
+
 ```bash
 systemctl restart landscape-backend
 systemctl restart nginx
@@ -176,11 +191,13 @@ systemctl restart nginx
 ### Frontend Not Updating
 
 **Clear browser cache or test with:**
+
 ```bash
 curl -I http://72.60.176.200:8080/
 ```
 
 **Verify dist directory:**
+
 ```bash
 ls -lh /var/www/landscape-architecture-tool/frontend/dist/
 ```
@@ -188,6 +205,7 @@ ls -lh /var/www/landscape-architecture-tool/frontend/dist/
 ### Backend Not Starting
 
 **Check Python environment:**
+
 ```bash
 cd /var/www/landscape-architecture-tool
 source venv/bin/activate
@@ -195,6 +213,7 @@ python -c "import src.main; print('OK')"
 ```
 
 **Test manually:**
+
 ```bash
 cd /var/www/landscape-architecture-tool
 source venv/bin/activate
@@ -221,12 +240,14 @@ systemctl restart nginx
 ## 🔐 Security Considerations
 
 ### Script Safety
+
 - ✅ Runs with `set -e` (exits on error)
 - ✅ Creates backup before changes
 - ✅ Validates all critical steps
 - ✅ Provides rollback capability
 
 ### Service Security
+
 - Ensure systemd service runs with appropriate user
 - Configure firewall rules for port 8080
 - Use SSL/TLS for production deployments
@@ -235,6 +256,7 @@ systemctl restart nginx
 ## 📈 Monitoring
 
 ### Real-time Logs
+
 ```bash
 # Backend logs
 journalctl -u landscape-backend -f
@@ -247,6 +269,7 @@ tail -f /var/log/landscape-deploy.log
 ```
 
 ### Health Checks
+
 ```bash
 # Quick health check
 curl http://72.60.176.200:8080/health
@@ -286,6 +309,7 @@ The V1.00D deployment includes special devdeploy branding to distinguish it from
 - **URL**: http://72.60.176.200:8080
 
 This is configured via environment variables:
+
 ```bash
 VITE_APP_TITLE="devdeploy - Landscape Architecture Tool (Development)"
 VITE_APP_ENV="development"
@@ -297,6 +321,7 @@ VITE_API_URL="http://72.60.176.200:8080/api"
 ### Useful Commands
 
 **Check deployment status:**
+
 ```bash
 systemctl status landscape-backend
 nginx -t
@@ -305,11 +330,13 @@ free -h
 ```
 
 **View recent deployments:**
+
 ```bash
 ls -lht /var/backups/landscape-* | head -10
 ```
 
 **Git status:**
+
 ```bash
 cd /var/www/landscape-architecture-tool
 git branch --show-current
@@ -321,16 +348,19 @@ git log -5 --oneline
 After successful deployment:
 
 1. **Verify the deployment:**
+
    - Visit http://72.60.176.200:8080/
    - Check that "devdeploy" branding is visible
    - Test key functionality
 
 2. **Set up monitoring:**
+
    - Configure uptime monitoring
    - Set up log aggregation
    - Enable email/Slack notifications
 
 3. **Automate deployments:**
+
    - Add cron job for automatic updates
    - Integrate with GitHub webhooks
    - Set up CI/CD pipeline
