@@ -14,6 +14,7 @@ from flask_cors import CORS
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_migrate import Migrate
+from flask_swagger_ui import get_swaggerui_blueprint
 from pydantic import ValidationError
 from sqlalchemy import and_, distinct, func, or_, text
 
@@ -64,6 +65,7 @@ from src.utils.db_init import initialize_database, populate_sample_data
 # IMPORTANT: DependencyValidator is used in create_app() and health endpoint - do not remove (issue #326)
 from src.utils.dependency_validator import DependencyValidator
 from src.utils.error_handlers import handle_errors, register_error_handlers
+from src.utils.openapi_spec import generate_openapi_spec
 
 # Define version for health endpoint
 __version__ = "2.0.0"
@@ -194,6 +196,24 @@ def create_app():
     project_service = ProjectService()
     dashboard_service = DashboardService()
     analytics_service = AnalyticsService()
+
+    # Swagger UI setup for API documentation
+    SWAGGER_URL = "/api/docs"
+    API_URL = "/api/openapi.json"
+
+    swaggerui_blueprint = get_swaggerui_blueprint(
+        SWAGGER_URL,
+        API_URL,
+        config={"app_name": "Landscape Architecture Tool API", "docExpansion": "list", "defaultModelsExpandDepth": 3},
+    )
+    app.register_blueprint(swaggerui_blueprint)
+
+    # OpenAPI specification endpoint
+    @app.route("/api/openapi.json", methods=["GET"])
+    def openapi_spec():
+        """Return OpenAPI 3.0 specification"""
+        spec = generate_openapi_spec()
+        return jsonify(spec)
 
     # Health check endpoint with dependency validation
     @app.route("/health", methods=["GET"])
