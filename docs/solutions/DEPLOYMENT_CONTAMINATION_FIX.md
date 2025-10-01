@@ -20,7 +20,7 @@ The V1.00D development branch was accidentally deployed to the **production envi
 
 ```yaml
 find_deployment_dir() {
-    for dir in "/var/www/landscape-architecture-tool" "/var/www/landscape-architecture-tool-dev" ...
+for dir in "/var/www/landscape-architecture-tool" "/var/www/landscape-architecture-tool-dev" ...
 }
 ```
 
@@ -38,11 +38,13 @@ find_deployment_dir() {
 ### 1. Fixed Directory Priority (`.github/workflows/v1d-devdeploy.yml`)
 
 **Changed line 153** from:
+
 ```yaml
 for dir in "/var/www/landscape-architecture-tool" "/var/www/landscape-architecture-tool-dev" ...
 ```
 
 **To**:
+
 ```yaml
 for dir in "/var/www/landscape-architecture-tool-dev" "/var/www/landscape-architecture-tool" ...
 ```
@@ -52,6 +54,7 @@ for dir in "/var/www/landscape-architecture-tool-dev" "/var/www/landscape-archit
 ### 2. Added Safety Check (`.github/workflows/v1d-devdeploy.yml`)
 
 **Added after line 172**:
+
 ```bash
 # CRITICAL SAFETY CHECK: Prevent accidental production deployment
 if [[ "$DEPLOY_DIR" == "/var/www/landscape-architecture-tool" ]] && [[ ! "$DEPLOY_DIR" =~ -dev ]]; then
@@ -70,6 +73,7 @@ fi
 **File**: `scripts/deployment/EMERGENCY_RESTORE_PRODUCTION_TITLE.sh`
 
 This script:
+
 - ✅ Creates backup of current production state
 - ✅ Checks out `main` branch (NOT V1.00D)
 - ✅ Rebuilds frontend with correct production title
@@ -145,18 +149,23 @@ curl -s http://127.0.0.1/ | grep "<title>"
 After applying the fix, verify:
 
 1. **Title Check**:
+
    ```bash
    curl -s https://optura.nl | grep "<title>"
    ```
+
    Should return: `<title>Landscape Architecture Tool - Professional Garden Design Management</title>`
 
 2. **Branch Check** (on VPS):
+
    ```bash
    cd /var/www/landscape-architecture-tool && git branch --show-current
    ```
+
    Should return: `main`
 
 3. **Browser Check**:
+
    - Visit https://optura.nl
    - Check browser tab title
    - Should show: "Landscape Architecture Tool - Professional Garden Design Management"
@@ -180,6 +189,7 @@ After applying the fix, verify:
 To maintain proper isolation going forward:
 
 - [ ] **Production** (`/var/www/landscape-architecture-tool/`)
+
   - [ ] Always deployed from `main` branch
   - [ ] Title: "Landscape Architecture Tool - Professional Garden Design Management"
   - [ ] URL: https://optura.nl
