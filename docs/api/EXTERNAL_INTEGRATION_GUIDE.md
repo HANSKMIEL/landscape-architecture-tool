@@ -24,16 +24,19 @@ This guide provides complete information for integrating external software with 
 ### Base URLs
 
 **Development**:
+
 ```
 http://localhost:5000
 ```
 
 **V1.00D DevDeploy**:
+
 ```
 http://72.60.176.200:8080
 ```
 
 **Production** (V1.00):
+
 ```
 https://optura.nl
 ```
@@ -63,6 +66,7 @@ curl http://localhost:5000/health
 The API currently uses session-based authentication for the web interface.
 
 **Login**:
+
 ```bash
 curl -X POST http://localhost:5000/api/auth/login \
   -H "Content-Type: application/json" \
@@ -73,6 +77,7 @@ curl -X POST http://localhost:5000/api/auth/login \
 ```
 
 **Response**:
+
 ```json
 {
   "user": {
@@ -89,6 +94,7 @@ Session cookie will be set automatically.
 ### Coming Soon: API Key Authentication
 
 API key authentication for external integrations will be available soon. This will allow:
+
 - Separate authentication from user sessions
 - Revocable access tokens
 - Usage tracking per integration
@@ -101,6 +107,7 @@ API key authentication for external integrations will be available soon. This wi
 ### Core Resources
 
 #### Suppliers
+
 - `GET /api/suppliers` - List all suppliers
 - `POST /api/suppliers` - Create new supplier
 - `GET /api/suppliers/{id}` - Get supplier by ID
@@ -108,6 +115,7 @@ API key authentication for external integrations will be available soon. This wi
 - `DELETE /api/suppliers/{id}` - Delete supplier
 
 #### Plants
+
 - `GET /api/plants` - List all plants
 - `POST /api/plants` - Create new plant
 - `GET /api/plants/{id}` - Get plant by ID
@@ -115,6 +123,7 @@ API key authentication for external integrations will be available soon. This wi
 - `DELETE /api/plants/{id}` - Delete plant
 
 #### Products
+
 - `GET /api/products` - List all products
 - `POST /api/products` - Create new product
 - `GET /api/products/{id}` - Get product by ID
@@ -122,6 +131,7 @@ API key authentication for external integrations will be available soon. This wi
 - `DELETE /api/products/{id}` - Delete product
 
 #### Clients
+
 - `GET /api/clients` - List all clients
 - `POST /api/clients` - Create new client
 - `GET /api/clients/{id}` - Get client by ID
@@ -129,6 +139,7 @@ API key authentication for external integrations will be available soon. This wi
 - `DELETE /api/clients/{id}` - Delete client
 
 #### Projects
+
 - `GET /api/projects` - List all projects
 - `POST /api/projects` - Create new project
 - `GET /api/projects/{id}` - Get project by ID
@@ -207,22 +218,22 @@ else:
 ### JavaScript (Node.js)
 
 ```javascript
-const axios = require('axios');
+const axios = require("axios");
 
-const BASE_URL = 'http://localhost:5000';
+const BASE_URL = "http://localhost:5000";
 
 // Get all plants
 async function getPlants() {
   try {
     const response = await axios.get(`${BASE_URL}/api/plants`);
     const plants = response.data.plants;
-    
+
     console.log(`Found ${plants.length} plants`);
-    plants.forEach(plant => {
+    plants.forEach((plant) => {
       console.log(`- ${plant.botanical_name} (${plant.common_name})`);
     });
   } catch (error) {
-    console.error('Error:', error.response?.data || error.message);
+    console.error("Error:", error.response?.data || error.message);
   }
 }
 
@@ -239,17 +250,14 @@ async function createPlant() {
       bloom_time: "Summer",
       sun_requirements: "Full sun",
       water_requirements: "Moderate",
-      soil_type: "Well-drained, fertile"
+      soil_type: "Well-drained, fertile",
     };
-    
-    const response = await axios.post(
-      `${BASE_URL}/api/plants`,
-      newPlant
-    );
-    
-    console.log('Created plant:', response.data.plant);
+
+    const response = await axios.post(`${BASE_URL}/api/plants`, newPlant);
+
+    console.log("Created plant:", response.data.plant);
   } catch (error) {
-    console.error('Error:', error.response?.data || error.message);
+    console.error("Error:", error.response?.data || error.message);
   }
 }
 
@@ -298,10 +306,12 @@ curl -X DELETE http://localhost:5000/api/products/10
 The API implements rate limiting to ensure fair usage:
 
 **Default Limits**:
+
 - 100 requests per minute per IP address
 - 1000 requests per hour per IP address
 
 **Rate Limit Headers**:
+
 ```
 X-RateLimit-Limit: 100
 X-RateLimit-Remaining: 95
@@ -310,6 +320,7 @@ X-RateLimit-Reset: 1633036800
 
 **429 Too Many Requests**:
 When rate limit is exceeded:
+
 ```json
 {
   "error": "Rate limit exceeded",
@@ -318,6 +329,7 @@ When rate limit is exceeded:
 ```
 
 **Best Practices**:
+
 - Cache responses when possible
 - Implement exponential backoff on errors
 - Respect rate limit headers
@@ -332,11 +344,13 @@ The API includes built-in N8n webhook support for workflow automation.
 ### Available Webhooks
 
 #### Client Onboarding
+
 ```
 POST /webhooks/client-onboarding
 ```
 
 Payload:
+
 ```json
 {
   "client_id": 123,
@@ -347,11 +361,13 @@ Payload:
 ```
 
 #### Project Milestone
+
 ```
 POST /webhooks/project-milestone
 ```
 
 Payload:
+
 ```json
 {
   "project_id": 456,
@@ -363,11 +379,13 @@ Payload:
 ```
 
 #### Inventory Alert
+
 ```
 POST /webhooks/inventory-alert
 ```
 
 Payload:
+
 ```json
 {
   "product_id": 789,
@@ -382,6 +400,7 @@ Payload:
 ### N8n Workflow Templates
 
 Workflow templates are available in the repository:
+
 ```
 n8n-workflows/
 ├── client-onboarding.json
@@ -422,10 +441,7 @@ Import these into your N8n instance to get started quickly.
 ```json
 {
   "error": "Validation failed",
-  "validation_errors": [
-    "Email is required",
-    "Phone number format is invalid"
-  ]
+  "validation_errors": ["Email is required", "Phone number format is invalid"]
 }
 ```
 
@@ -438,6 +454,7 @@ Import these into your N8n instance to get started quickly.
 **Problem**: Cannot connect to API
 
 **Solutions**:
+
 ```bash
 # 1. Check if service is running
 curl http://localhost:5000/health
@@ -458,6 +475,7 @@ tail -f logs/app.log
 **Problem**: 401 Unauthorized
 
 **Solutions**:
+
 - Ensure you're logged in with valid credentials
 - Check if session cookie is being sent
 - Verify CORS settings if calling from browser
@@ -467,6 +485,7 @@ tail -f logs/app.log
 **Problem**: 429 Too Many Requests
 
 **Solutions**:
+
 ```python
 import time
 import requests
@@ -474,16 +493,16 @@ import requests
 def api_call_with_retry(url, max_retries=3):
     for attempt in range(max_retries):
         response = requests.get(url)
-        
+
         if response.status_code == 429:
             # Exponential backoff
             wait_time = 2 ** attempt
             print(f"Rate limited. Waiting {wait_time} seconds...")
             time.sleep(wait_time)
             continue
-            
+
         return response
-    
+
     raise Exception("Max retries exceeded")
 ```
 
@@ -492,6 +511,7 @@ def api_call_with_retry(url, max_retries=3):
 **Problem**: Validation errors
 
 **Solutions**:
+
 - Check required fields are present
 - Verify data types match schema
 - Use API documentation for field formats
@@ -510,6 +530,7 @@ def api_call_with_retry(url, max_retries=3):
 ## 🆘 Support
 
 For issues or questions:
+
 1. Check the [Swagger UI documentation](http://localhost:5000/api/docs)
 2. Review [troubleshooting section](#troubleshooting)
 3. Open an issue on GitHub

@@ -2,8 +2,10 @@
 
 ## 📊 Huidige Situatie
 
-### _internal/docs/ (71 bestanden, 884KB)
+### \_internal/docs/ (71 bestanden, 884KB)
+
 **Belangrijke bestanden:**
+
 - ARCHITECTURE.md (16KB)
 - COMPREHENSIVE_DEVELOPMENT_STATUS.md (13KB)
 - HOSTINGER_DEPLOYMENT_GUIDE.md (18KB)
@@ -11,28 +13,35 @@
 - PRODUCTION_DEPLOYMENT.md (11KB)
 
 **Submappen:**
+
 - issues/ → verplaatst naar docs/development/issues/
 - pipeline/ → verplaatst naar docs/deployment/pipeline/
 - guides/ → samengevoegd met docs/guides/
 
-### _internal/documentation/ (12 bestanden, 140KB)
+### \_internal/documentation/ (12 bestanden, 140KB)
+
 **Structuur:**
+
 - deployment/ → samengevoegd met docs/deployment/
 - development/ → samengevoegd met docs/development/
 
 ### archive/packages/ (6.1MB)
+
 **Inhoud:**
+
 - v1.00/ (3.1MB) → comprimeren naar v1.00-archived.tar.gz (~500KB)
 - v1.00D/ (3.1MB) → comprimeren naar v1.00D-archived.tar.gz (~500KB)
 - **Besparing: ~5.1MB** (van 6.1MB naar ~1MB gecomprimeerd)
 
 ### .manus/ (tijdelijke handoff bestanden)
+
 **Inhoud:**
+
 - handoff/
 - reports/
 - scripts/
 - context/
-**Actie:** Toevoegen aan .gitignore (niet verwijderen, gewoon niet meer tracken)
+  **Actie:** Toevoegen aan .gitignore (niet verwijderen, gewoon niet meer tracken)
 
 ---
 
@@ -82,38 +91,42 @@ archive/
 ## 🎯 Impact
 
 ### Voordelen
+
 ✅ **Centrale documentatie**: Alles in docs/ in plaats van verspreid  
 ✅ **Ruimtebesparing**: ~5.1MB gereduceerd door compressie  
 ✅ **Duidelijke structuur**: docs/architecture/, docs/development/, docs/deployment/  
 ✅ **Minder clutter**: .manus/ niet meer in git tracked  
-✅ **Betere navigatie**: Nieuwe docs/README.md als index  
+✅ **Betere navigatie**: Nieuwe docs/README.md als index
 
 ### Behouden
+
 ✅ **Geen data verlies**: Alles wordt verplaatst of gecomprimeerd, niet verwijderd  
 ✅ **Git history**: Gebruikt `git mv` voor tracking  
 ✅ **Archive toegankelijk**: Tar.gz bestanden zijn decomprimeerbaar  
-✅ **.manus/ blijft**: Alleen toegevoegd aan .gitignore, niet verwijderd  
+✅ **.manus/ blijft**: Alleen toegevoegd aan .gitignore, niet verwijderd
 
 ---
 
 ## ⚠️ Wat gebeurt er NIET
 
-❌ **Geen verwijdering** van _internal/ folder (alleen legen)  
+❌ **Geen verwijdering** van \_internal/ folder (alleen legen)  
 ❌ **Geen data verlies** - alles wordt bewaard  
 ❌ **Geen workflow changes** - dit is alleen documentatie  
-❌ **Geen code changes** - src/ en frontend/ onaangeroerd  
+❌ **Geen code changes** - src/ en frontend/ onaangeroerd
 
 ---
 
 ## 🚀 Uitvoering
 
 **Optie 1: Automatisch (aanbevolen)**
+
 ```bash
 bash scripts/refactoring/phase2_docs_consolidation.sh
 # Vraagt om bevestiging, dan automatisch uitgevoerd
 ```
 
 **Optie 2: Stap voor stap (handmatig)**
+
 ```bash
 # 1. Merge _internal/docs/ bestanden
 git mv _internal/docs/issues docs/development/
@@ -129,6 +142,7 @@ echo ".manus/" >> .gitignore
 ```
 
 **Optie 3: Dry-run (simulatie)**
+
 ```bash
 # Ik kan een dry-run versie maken die alleen laat zien wat er zou gebeuren
 ```
@@ -138,6 +152,7 @@ echo ".manus/" >> .gitignore
 ## 📝 Na Uitvoering
 
 **Direct controleren:**
+
 ```bash
 # Bekijk nieuwe structuur
 tree docs/ -L 2
@@ -150,6 +165,7 @@ git status
 ```
 
 **Committen:**
+
 ```bash
 git add -A
 git commit -m "refactor: Phase 2 - Documentation consolidation
@@ -170,6 +186,7 @@ Part of V1.00D refactoring plan"
 ## 🤔 Aanbeveling
 
 **Ik raad aan om door te gaan** omdat:
+
 1. ✅ Geen data wordt verwijderd
 2. ✅ Git history blijft behouden
 3. ✅ 5.1MB ruimtebesparing
@@ -177,6 +194,7 @@ Part of V1.00D refactoring plan"
 5. ✅ Makkelijker te onderhouden
 
 **Wil je:**
+
 - A) Direct uitvoeren (automatisch script)
 - B) Stap voor stap zelf doen (ik geef je alle commands)
 - C) Eerst een dry-run simulatie

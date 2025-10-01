@@ -25,10 +25,11 @@ The V1.00D branch has **significant organizational issues** that require immedia
 **Issue**: 45+ files in root directory, including 21 markdown files
 
 **Current State**:
+
 ```
 Root Directory Files (Should be ~5-10 files):
 ├── 21 Markdown files (.md)
-├── 12 Python scripts (.py) 
+├── 12 Python scripts (.py)
 ├── 8 JSON files (.json)
 ├── 4 Text files (.txt)
 └── Standard config files
@@ -61,7 +62,8 @@ CRITICAL CLUTTER:
 - workflow_analyzer.py
 ```
 
-**Impact**: 
+**Impact**:
+
 - ⚠️ Difficult to find actual project documentation
 - ⚠️ Poor first impression for new developers
 - ⚠️ Confusing project structure
@@ -76,23 +78,26 @@ CRITICAL CLUTTER:
 **Issue**: 1,499+ markdown files across repository
 
 **Distribution**:
+
 ```
 Locations with excessive .md files:
 ├── Root: 21 files (CRITICAL)
 ├── docs/: ~200-300 files
-├── _internal/: ~150-200 files  
+├── _internal/: ~150-200 files
 ├── archive/: ~800-1000 files (includes duplicates)
 ├── .manus/: ~30-50 files (temporary handoff files)
 └── frontend/: ~10-20 files
 ```
 
 **Duplication Issues**:
+
 - Same content in `docs/` and `_internal/docs/`
 - Archive contains duplicates from `archive/packages/v1.00/` and `archive/packages/v1.00D/`
 - Multiple VPS deployment guides with same content
 - Analysis reports generated multiple times
 
 **Impact**:
+
 - ⚠️ Search results polluted with duplicates
 - ⚠️ Unclear which documentation is current
 - ⚠️ Wasted storage space
@@ -107,6 +112,7 @@ Locations with excessive .md files:
 **Issue**: 31 GitHub Actions workflows
 
 **Workflow Count**:
+
 ```
 Total Workflows: 31
 ├── CI/Testing: 7 workflows
@@ -156,12 +162,14 @@ Total Workflows: 31
 ```
 
 **Issues**:
+
 - Redundant CI workflows (ci.yml vs ci-enhanced.yml vs main-ci.yml)
 - Duplicate deployment workflows with overlapping functionality
 - Multiple demo deploy workflows
 - High GitHub Actions minutes consumption
 
 **Impact**:
+
 - ⚠️ Difficult to understand which workflow does what
 - ⚠️ Potential for conflicting workflow executions
 - ⚠️ High maintenance burden
@@ -176,6 +184,7 @@ Total Workflows: 31
 **Issue**: Multiple overlapping directory structures
 
 **Problematic Directories**:
+
 ```
 ├── docs/                    # Primary documentation (good)
 ├── _internal/               # Internal docs + operations (confusing)
@@ -195,12 +204,14 @@ Total Workflows: 31
 ```
 
 **Questions Raised**:
+
 - Why are there full duplicate projects in `archive/packages/`?
 - Is `_internal/docs/` different from `docs/`?
 - Should `.manus/` be in repository or .gitignored?
 - Are `archive/packages/v1.00/` and `v1.00D/` still needed?
 
 **Impact**:
+
 - ⚠️ Unclear where to place new files
 - ⚠️ Risk of editing wrong version
 - ⚠️ Confusion about documentation hierarchy
@@ -213,6 +224,7 @@ Total Workflows: 31
 ## ✅ What's Working Well
 
 ### 1. Backend Architecture (EXCELLENT)
+
 ```
 src/
 ├── models/             ✅ Clean model definitions
@@ -232,6 +244,7 @@ API Structure:
 ```
 
 ### 2. API Design (EXCELLENT)
+
 ```python
 API Endpoints Available:
 ✅ /health - System health check
@@ -253,12 +266,14 @@ API Endpoints Available:
 ```
 
 **API Documentation**:
+
 - ✅ Self-documenting via `/api/` endpoint
 - ✅ Returns API version, available endpoints, status
 - ✅ Well-structured JSON responses
 - ✅ Ready for external integrations
 
 ### 3. Testing Infrastructure (GOOD)
+
 ```
 tests/
 ├── Unit tests ✅
@@ -273,6 +288,7 @@ Test Results:
 ```
 
 ### 4. Frontend Structure (GOOD)
+
 ```
 frontend/
 ├── src/
@@ -285,6 +301,7 @@ frontend/
 ```
 
 ### 5. Docker & DevOps (GOOD)
+
 ```
 ✅ docker-compose.yml present
 ✅ Dockerfile configured
@@ -351,9 +368,10 @@ cookies.txt → DELETE (security risk!)
 ```
 
 **Keep in Root**:
+
 ```
 ✅ README.md
-✅ LICENSE  
+✅ LICENSE
 ✅ requirements.txt
 ✅ requirements-dev.txt
 ✅ pyproject.toml
@@ -371,6 +389,7 @@ cookies.txt → DELETE (security risk!)
 **Actions**:
 
 1. **Merge Duplicate Docs**:
+
    ```bash
    # Consolidate docs/ and _internal/docs/
    # Keep docs/ as primary
@@ -379,16 +398,18 @@ cookies.txt → DELETE (security risk!)
    ```
 
 2. **Archive Cleanup**:
+
    ```bash
    # Remove full duplicate projects
    archive/packages/v1.00/ → DELETE or compress to .tar.gz
    archive/packages/v1.00D/ → DELETE or compress to .tar.gz
-   
+
    # Keep only necessary archive files
    # Document what's archived and why
    ```
 
 3. **.manus/ Cleanup**:
+
    ```bash
    # Add to .gitignore if temporary
    # Or consolidate handoff files into single document
@@ -396,11 +417,12 @@ cookies.txt → DELETE (security risk!)
    ```
 
 4. **VPS Documentation Consolidation**:
+
    ```bash
    # Multiple VPS guides exist - consolidate to ONE
    docs/VPS_DEPLOYMENT_INSTRUCTIONS.md ← KEEP (most recent)
    docs/QUICK_VPS_DEPLOY.md ← KEEP (quick reference)
-   
+
    # Archive these duplicates:
    VPS_DEPLOYMENT_GUIDE.md → archive/old_docs/
    VPS_DEPLOYMENT_FIX.md → docs/solutions/ (historical)
@@ -414,6 +436,7 @@ cookies.txt → DELETE (security risk!)
 **Consolidation Plan**:
 
 1. **CI Workflows** - Merge into ONE:
+
    ```yaml
    # NEW: .github/workflows/ci.yml (consolidated)
    # REMOVE: ci-enhanced.yml, main-ci.yml
@@ -423,11 +446,12 @@ cookies.txt → DELETE (security risk!)
    ```
 
 2. **Deployment Workflows** - Simplify:
+
    ```yaml
    # KEEP:
    - v1d-devdeploy.yml (V1.00D development)
    - production-deployment.yml (main production)
-   
+
    # REMOVE or MERGE:
    - deploy-production.yml → merge into production-deployment.yml
    - enhanced-deployment.yml → merge features into production-deployment.yml
@@ -516,6 +540,7 @@ landscape-architecture-tool/
 ```
 
 **Remove**:
+
 ```
 ❌ _internal/ - Consolidate into docs/ and scripts/
 ❌ .manus/ - Add to .gitignore or consolidate
@@ -532,6 +557,7 @@ landscape-architecture-tool/
 ### Current State: GOOD ✅
 
 **Existing API Capabilities**:
+
 - REST API with 19 route modules
 - Self-documenting via `/api/` endpoint
 - N8n integration ready (webhooks + receivers)
@@ -543,6 +569,7 @@ landscape-architecture-tool/
 #### 1. API Documentation Enhancement
 
 **Add OpenAPI/Swagger**:
+
 ```python
 # Install: pip install flask-swagger-ui
 from flask_swagger_ui import get_swaggerui_blueprint
@@ -561,6 +588,7 @@ app.register_blueprint(swagger_ui_blueprint, url_prefix=SWAGGER_URL)
 #### 2. API Versioning
 
 **Implement Version Prefix**:
+
 ```python
 # Current: /api/suppliers
 # Recommended: /api/v2/suppliers
@@ -572,6 +600,7 @@ app.register_blueprint(suppliers_bp, url_prefix="/api/v2/suppliers")
 #### 3. API Key Authentication for External Systems
 
 **Add API Key Support**:
+
 ```python
 # For external system integrations
 # Separate from session-based auth
@@ -587,6 +616,7 @@ def check_api_key():
 #### 4. Rate Limiting
 
 **Add Flask-Limiter**:
+
 ```python
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
@@ -601,21 +631,25 @@ limiter = Limiter(
 #### 5. Webhook Documentation
 
 **Create Integration Guide**:
+
 ```markdown
 docs/api/EXTERNAL_INTEGRATION_GUIDE.md
 
 # External Integration Guide
 
 ## Available Webhooks
+
 - POST /api/n8n/project-created
 - POST /api/n8n/client-onboarding
 - POST /api/n8n/inventory-alert
 
 ## API Endpoints for External Systems
+
 - GET /api/v2/suppliers?api_key=xxx
 - POST /api/v2/projects?api_key=xxx
 
 ## Authentication Methods
+
 1. Session-based (for frontend)
 2. API Key (for external systems)
 3. Webhook signatures (for N8n)
@@ -624,6 +658,7 @@ docs/api/EXTERNAL_INTEGRATION_GUIDE.md
 #### 6. CORS Configuration Review
 
 **Ensure External Access**:
+
 ```python
 # Already configured, but verify:
 CORS(app, resources={
@@ -642,6 +677,7 @@ CORS(app, resources={
 ### Phase 1: Immediate Cleanup (2 hours)
 
 **Week 1 - Day 1**:
+
 ```bash
 1. Create new directory structure
    mkdir -p docs/{api,deployment,development,architecture,solutions,planning}
@@ -662,16 +698,17 @@ CORS(app, resources={
    git commit -m "refactor: Clean up root directory clutter
 
    - Move 21 .md files to appropriate docs/ subdirectories
-   - Organize scripts into scripts/ structure  
+   - Organize scripts into scripts/ structure
    - Remove security risks (cookies files)
    - Improve project organization
-   
+
    Ref: docs/solutions/V1_00D_REFACTORING_ANALYSIS.md"
 ```
 
 ### Phase 2: Documentation Consolidation (2 hours)
 
 **Week 1 - Day 2**:
+
 ```bash
 1. Audit _internal/ vs docs/
    - Identify duplicates
@@ -702,6 +739,7 @@ CORS(app, resources={
 ### Phase 3: Workflow Optimization (1-2 hours)
 
 **Week 1 - Day 3**:
+
 ```bash
 1. Audit all 31 workflows
    - Identify overlaps
@@ -730,6 +768,7 @@ CORS(app, resources={
 ### Phase 4: API Enhancement (Optional - 2 hours)
 
 **Week 2**:
+
 ```bash
 1. Add OpenAPI/Swagger documentation
 2. Implement API versioning (/api/v2/)
@@ -743,6 +782,7 @@ CORS(app, resources={
 ## ✅ Success Metrics
 
 ### Before Refactoring:
+
 ```
 Root Files: 45+
 Markdown Files: 1,499+
@@ -753,6 +793,7 @@ External Integration: Possible but undocumented
 ```
 
 ### After Refactoring:
+
 ```
 Root Files: ~10 (essential only)
 Markdown Files: ~1,000 (after deduplication)
@@ -769,6 +810,7 @@ External Integration: Well-documented with examples
 **YES, REFACTOR IS STRONGLY RECOMMENDED**
 
 **Reasons**:
+
 1. ✅ Backend code is solid - refactoring won't break functionality
 2. ✅ Significant technical debt in organization
 3. ✅ Will improve developer experience
@@ -776,6 +818,7 @@ External Integration: Well-documented with examples
 5. ✅ Better first impression for new developers/contributors
 
 **When to Refactor**:
+
 - After current VPS deployment is stable
 - Before promoting to main branch
 - Before adding major new features
@@ -790,7 +833,7 @@ External Integration: Well-documented with examples
 ## 📞 Questions to Answer Before Refactoring
 
 1. **archive/packages/** - Can these full duplicate projects be deleted?
-2. **_internal/** - What's the intended purpose vs docs/?
+2. **\_internal/** - What's the intended purpose vs docs/?
 3. **.manus/** - Should this be in version control or .gitignored?
 4. **Workflows** - Which workflows are actively used in production?
 5. **VPS Docs** - Which is the canonical deployment guide?

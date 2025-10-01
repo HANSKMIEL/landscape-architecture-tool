@@ -11,6 +11,7 @@
 ### ✅ What's Already Excellent
 
 **19 API Route Modules**:
+
 1. `auth.py` - Authentication endpoints
 2. `suppliers.py` - Supplier CRUD operations
 3. `plants.py` - Plant management
@@ -42,9 +43,11 @@
 ## 🎯 Phase 4 Enhancements
 
 ### 1. OpenAPI/Swagger Documentation
+
 **Goal**: Professional API documentation with interactive testing
 
 **Implementation**:
+
 - Install `flask-swagger-ui`
 - Create OpenAPI 3.0 specification
 - Add `/api/docs` endpoint
@@ -53,6 +56,7 @@
 - Include authentication requirements
 
 **Benefits**:
+
 - ✅ Interactive API testing in browser
 - ✅ Auto-generated client libraries
 - ✅ Professional presentation
@@ -61,15 +65,18 @@
 ---
 
 ### 2. API Versioning
+
 **Goal**: Future-proof API with version management
 
 **Implementation**:
+
 - Add `/api/v1/` prefix to all current routes
 - Keep backward compatibility with `/api/`
 - Prepare structure for `/api/v2/`
 - Version-specific documentation
 
 **Benefits**:
+
 - ✅ Backwards compatibility
 - ✅ Safe to introduce breaking changes
 - ✅ Clear API evolution path
@@ -78,9 +85,11 @@
 ---
 
 ### 3. API Key Authentication
+
 **Goal**: Separate authentication for external systems
 
 **Implementation**:
+
 - Create `api_keys` table
 - Add API key generation endpoint
 - Implement API key middleware
@@ -88,6 +97,7 @@
 - Add key rotation capability
 
 **Benefits**:
+
 - ✅ External system authentication
 - ✅ Separate from user sessions
 - ✅ Revocable access
@@ -96,9 +106,11 @@
 ---
 
 ### 4. Rate Limiting
+
 **Goal**: Protect API from abuse
 
 **Implementation**:
+
 - Install `Flask-Limiter`
 - Configure reasonable limits:
   - 100 requests/minute per IP
@@ -108,6 +120,7 @@
 - Return 429 status on limit exceeded
 
 **Benefits**:
+
 - ✅ Prevent API abuse
 - ✅ Fair resource usage
 - ✅ Production-ready security
@@ -116,9 +129,11 @@
 ---
 
 ### 5. External Integration Guide
+
 **Goal**: Complete guide for external developers
 
 **Implementation**:
+
 - Create `docs/api/EXTERNAL_INTEGRATION.md`
 - Document authentication methods
 - Provide code examples (Python, JavaScript, curl)
@@ -127,6 +142,7 @@
 - Include troubleshooting guide
 
 **Benefits**:
+
 - ✅ Easy external integration
 - ✅ Reduces support burden
 - ✅ Professional presentation
@@ -137,6 +153,7 @@
 ## 📋 Implementation Plan
 
 ### Step 1: Install Dependencies
+
 ```bash
 pip install flask-swagger-ui flask-limiter
 echo "flask-swagger-ui>=4.11.1" >> requirements.txt
@@ -144,12 +161,14 @@ echo "Flask-Limiter>=3.5.0" >> requirements.txt
 ```
 
 ### Step 2: Create OpenAPI Specification
+
 ```python
 # src/utils/openapi_spec.py
 # Generate OpenAPI 3.0 spec from routes
 ```
 
 ### Step 3: Add Swagger UI
+
 ```python
 # src/main.py
 from flask_swagger_ui import get_swaggerui_blueprint
@@ -166,16 +185,18 @@ app.register_blueprint(swaggerui_blueprint)
 ```
 
 ### Step 4: Implement API Versioning
+
 ```python
 # src/routes/__init__.py
 def register_v1_routes(app):
     # Register all routes with /api/v1/ prefix
-    
+
 # src/main.py
 register_v1_routes(app)
 ```
 
 ### Step 5: Add API Key Authentication
+
 ```python
 # src/models/api_key.py
 class APIKey(db.Model):
@@ -192,6 +213,7 @@ def require_api_key(f):
 ```
 
 ### Step 6: Implement Rate Limiting
+
 ```python
 # src/main.py
 from flask_limiter import Limiter
@@ -211,12 +233,15 @@ def expensive_operation():
 ```
 
 ### Step 7: Create External Integration Guide
+
 ```markdown
 # docs/api/EXTERNAL_INTEGRATION.md
+
 # Complete guide with examples
 ```
 
 ### Step 8: Test Everything
+
 ```bash
 # Test Swagger docs
 curl http://localhost:5000/api/docs
@@ -233,18 +258,21 @@ for i in {1..110}; do curl http://localhost:5000/api/v1/test; done
 ## 🎯 Expected Benefits
 
 ### For External Developers
+
 - ✅ Interactive API documentation (Swagger UI)
 - ✅ Clear authentication guide
 - ✅ Code examples in multiple languages
 - ✅ Easy to test API calls
 
 ### For You (Maintainer)
+
 - ✅ Professional API presentation
 - ✅ Reduced support questions
 - ✅ Better API versioning
 - ✅ Protection from abuse
 
 ### For Production
+
 - ✅ Rate limiting prevents overload
 - ✅ API keys enable usage tracking
 - ✅ Versioning allows safe updates
@@ -269,6 +297,7 @@ for i in {1..110}; do curl http://localhost:5000/api/v1/test; done
 ## 🎓 Files to Create/Modify
 
 **New Files**:
+
 - `src/utils/openapi_spec.py` - OpenAPI specification generator
 - `src/models/api_key.py` - API key model
 - `src/utils/auth_middleware.py` - API key authentication
@@ -276,6 +305,7 @@ for i in {1..110}; do curl http://localhost:5000/api/v1/test; done
 - `docs/api/API_REFERENCE.md` - Complete API reference
 
 **Modified Files**:
+
 - `src/main.py` - Add Swagger UI, rate limiter, API versioning
 - `requirements.txt` - Add flask-swagger-ui, Flask-Limiter
 - `src/routes/__init__.py` - Add version prefixes
@@ -285,6 +315,7 @@ for i in {1..110}; do curl http://localhost:5000/api/v1/test; done
 ## 📊 Phase 4 Validation
 
 **Before implementation, verify**:
+
 - ✅ All 19 routes documented
 - ✅ Request/response schemas defined
 - ✅ Authentication methods clear
@@ -292,6 +323,7 @@ for i in {1..110}; do curl http://localhost:5000/api/v1/test; done
 - ✅ Examples tested and working
 
 **After implementation, test**:
+
 - ✅ Swagger UI accessible at /api/docs
 - ✅ All endpoints documented
 - ✅ API key authentication works

@@ -60,7 +60,8 @@ Professional API for managing landscape architecture projects, suppliers, plants
         ],
         "tags": [
             {"name": "Health", "description": "System health and status endpoints"},
-            {"name": "Authentication", "description": "User authentication and session management"},
+            {"name": "Authentication",
+                "description": "User authentication and session management"},
             {"name": "Suppliers", "description": "Supplier management operations"},
             {"name": "Plants", "description": "Plant catalog and management"},
             {"name": "Products", "description": "Product catalog and inventory"},
@@ -71,7 +72,8 @@ Professional API for managing landscape architecture projects, suppliers, plants
             {"name": "Reports", "description": "Report generation"},
             {"name": "Invoices", "description": "Invoice and quote management"},
             {"name": "Photos", "description": "Photo upload and management"},
-            {"name": "Plant Recommendations", "description": "AI-powered plant recommendations"},
+            {"name": "Plant Recommendations",
+                "description": "AI-powered plant recommendations"},
             {"name": "Excel Import", "description": "Bulk data import from Excel"},
             {"name": "Settings", "description": "Application settings"},
             {"name": "N8n Webhooks", "description": "N8n integration webhooks"},
@@ -369,5 +371,5 @@ Professional API for managing landscape architecture projects, suppliers, plants
             }
         }
     }
-    
+
     return spec
