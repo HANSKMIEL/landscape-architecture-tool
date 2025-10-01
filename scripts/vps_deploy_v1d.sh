@@ -208,13 +208,18 @@ export VITE_APP_TITLE="devdeploy - Landscape Architecture Tool (Development)"
 export VITE_APP_ENV="development"
 export VITE_API_URL="http://72.60.176.200:8080/api"
 
+# Update index.html with devdeploy title BEFORE build
+log "Setting devdeploy branding in index.html..."
+sed -i 's|<title>.*</title>|<title>devdeploy - Landscape Architecture Tool (Development)</title>|g' index.html
+
 # Set GIT_BRANCH environment variable for backend
 CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
 export GIT_BRANCH=$CURRENT_BRANCH
 echo "GIT_BRANCH=$CURRENT_BRANCH" >> ../.env 2>/dev/null || true
 
-# Build production version with devdeploy branding
-log "Building production frontend with devdeploy branding..."
+# Build optimized bundle with devdeploy branding
+log "Building optimized frontend bundle with devdeploy branding..."
+log "Note: 'production' mode = optimized build, NOT production environment"
 npm run build
 
 # Verify build
