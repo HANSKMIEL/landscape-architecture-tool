@@ -231,7 +231,9 @@ def generate_quote_pdf(data):
                 ]
             )
 
-        items_table = Table(items_data, colWidths=[2.5 * inch, 0.8 * inch, 0.8 * inch, 1.2 * inch, 1.2 * inch])
+        items_table = Table(
+            items_data, colWidths=[2.5 * inch, 0.8 * inch, 0.8 * inch, 1.2 * inch, 1.2 * inch]
+        )
         items_table.setStyle(
             TableStyle(
                 [
@@ -435,7 +437,9 @@ def generate_invoice_pdf(data):
                 ]
             )
 
-        items_table = Table(items_data, colWidths=[2.5 * inch, 0.8 * inch, 0.8 * inch, 1.2 * inch, 1.2 * inch])
+        items_table = Table(
+            items_data, colWidths=[2.5 * inch, 0.8 * inch, 0.8 * inch, 1.2 * inch, 1.2 * inch]
+        )
         items_table.setStyle(
             TableStyle(
                 [

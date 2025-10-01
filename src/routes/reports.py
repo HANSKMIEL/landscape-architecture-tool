@@ -148,7 +148,9 @@ def generate_business_summary():
                     "total_budget": total_budget,
                     "total_spent": total_spent,
                     "avg_budget": avg_budget,
-                    "utilization_rate": ((total_spent / total_budget * 100) if total_budget > 0 else 0),
+                    "utilization_rate": (
+                        (total_spent / total_budget * 100) if total_budget > 0 else 0
+                    ),
                 },
             },
             "top_clients": top_clients_data,
@@ -688,7 +690,8 @@ def generate_project_report_pdf(data):
             buffer,
             as_attachment=True,
             download_name=(
-                f'project_{project["name"].replace(" ", "_")}_' f'{datetime.now(UTC).strftime("%Y%m%d")}.pdf'
+                f'project_{project["name"].replace(" ", "_")}_'
+                f'{datetime.now(UTC).strftime("%Y%m%d")}.pdf'
             ),
             mimetype="application/pdf",
         )
@@ -872,7 +875,9 @@ def generate_comprehensive_pdf():
 
         # Create PDF buffer
         buffer = io.BytesIO()
-        doc = SimpleDocTemplate(buffer, pagesize=A4, rightMargin=72, leftMargin=72, topMargin=72, bottomMargin=18)
+        doc = SimpleDocTemplate(
+            buffer, pagesize=A4, rightMargin=72, leftMargin=72, topMargin=72, bottomMargin=18
+        )
 
         # Get styles
         styles = getSampleStyleSheet()
@@ -904,7 +909,9 @@ def generate_comprehensive_pdf():
         # Generation info
         generation_info = f"{t['generated_on']}: {datetime.now().strftime('%d-%m-%Y %H:%M')}"
         if date_range.get("start") and date_range.get("end"):
-            generation_info += f"<br/>{t['date_range']}: {date_range['start']} - {date_range['end']}"
+            generation_info += (
+                f"<br/>{t['date_range']}: {date_range['start']} - {date_range['end']}"
+            )
 
         story.append(Paragraph(generation_info, styles["Normal"]))
         story.append(Spacer(1, 30))
@@ -929,7 +936,9 @@ def generate_comprehensive_pdf():
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         filename = f"landscape_report_{report_type}_{timestamp}.pdf"
 
-        return send_file(buffer, as_attachment=True, download_name=filename, mimetype="application/pdf")
+        return send_file(
+            buffer, as_attachment=True, download_name=filename, mimetype="application/pdf"
+        )
 
     except Exception as e:
         logging.error(f"Error generating PDF report: {e!s}")
@@ -978,7 +987,9 @@ def generate_overview_pdf_content(data, t, styles):
 
         client_data = [["Naam", "E-mail", "Stad"]]
         for client in data["topClients"][:5]:
-            client_data.append([client.get("name", ""), client.get("email", ""), client.get("city", "")])
+            client_data.append(
+                [client.get("name", ""), client.get("email", ""), client.get("city", "")]
+            )
 
         client_table = Table(client_data, colWidths=[2 * inch, 2.5 * inch, 1.5 * inch])
         client_table.setStyle(
@@ -1210,7 +1221,9 @@ def generate_financial_pdf_content(data, t, styles):
 
         revenue_data = [["Maand", "Omzet"]]
         for month_data in data["monthlyRevenue"]:
-            revenue_data.append([month_data.get("month", ""), f"€{month_data.get('revenue', 0):,.2f}"])
+            revenue_data.append(
+                [month_data.get("month", ""), f"€{month_data.get('revenue', 0):,.2f}"]
+            )
 
         revenue_table = Table(revenue_data, colWidths=[3 * inch, 2 * inch])
         revenue_table.setStyle(

@@ -25,7 +25,10 @@ def fix_unused_imports():
             "file": "frontend/src/components/AIAssistant.jsx",
             "changes": [
                 ("import { Input }", "import { Input as _Input }"),
-                ("const [suggestions, setSuggestions] = useState", "const [_suggestions, _setSuggestions] = useState"),
+                (
+                    "const [suggestions, setSuggestions] = useState",
+                    "const [_suggestions, _setSuggestions] = useState",
+                ),
                 ("loadInitialData", "loadInitialData, [loadInitialData]"),
             ],
         },
@@ -82,10 +85,22 @@ def fix_case_declarations():
 
         # Fix case declarations
         case_fixes = [
-            ("case 'suppliers':\n        const suppliersData =", "case 'suppliers': {\n        const suppliersData ="),
-            ("case 'plants':\n        const plantsData =", "case 'plants': {\n        const plantsData ="),
-            ("case 'projects':\n        const projectsData =", "case 'projects': {\n        const projectsData ="),
-            ("case 'clients':\n        const clientsData =", "case 'clients': {\n        const clientsData ="),
+            (
+                "case 'suppliers':\n        const suppliersData =",
+                "case 'suppliers': {\n        const suppliersData =",
+            ),
+            (
+                "case 'plants':\n        const plantsData =",
+                "case 'plants': {\n        const plantsData =",
+            ),
+            (
+                "case 'projects':\n        const projectsData =",
+                "case 'projects': {\n        const projectsData =",
+            ),
+            (
+                "case 'clients':\n        const clientsData =",
+                "case 'clients': {\n        const clientsData =",
+            ),
         ]
 
         for old, new in case_fixes:

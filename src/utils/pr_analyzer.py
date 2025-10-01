@@ -79,7 +79,9 @@ class PRInfo:
 class PRAnalyzer:
     """Analyzes pull requests for validation reporting."""
 
-    def __init__(self, github_token: str | None = None, owner: str | None = None, repo: str | None = None):
+    def __init__(
+        self, github_token: str | None = None, owner: str | None = None, repo: str | None = None
+    ):
         """
         Initialize PR analyzer.
 
@@ -113,7 +115,10 @@ class PRAnalyzer:
 
     def get_headers(self) -> dict[str, str]:
         """Get headers for GitHub API requests."""
-        headers = {"Accept": "application/vnd.github.v3+json", "User-Agent": "landscape-architecture-tool-pr-analyzer"}
+        headers = {
+            "Accept": "application/vnd.github.v3+json",
+            "User-Agent": "landscape-architecture-tool-pr-analyzer",
+        }
         if self.github_token:
             headers["Authorization"] = f"token {self.github_token}"
         return headers
@@ -134,7 +139,13 @@ class PRAnalyzer:
 
         while True:
             url = f"https://api.github.com/repos/{self.owner}/{self.repo}/pulls"
-            params = {"state": state, "per_page": per_page, "page": page, "sort": "updated", "direction": "desc"}
+            params = {
+                "state": state,
+                "per_page": per_page,
+                "page": page,
+                "sort": "updated",
+                "direction": "desc",
+            }
 
             try:
                 response = requests.get(url, headers=self.get_headers(), params=params, timeout=60)
@@ -186,7 +197,9 @@ class PRAnalyzer:
             update_type = pr.get_update_type()
 
             # Check if it contains critical dependencies
-            has_critical_dep = any(dep.lower() in pr.title.lower() for dep in self.critical_dependencies)
+            has_critical_dep = any(
+                dep.lower() in pr.title.lower() for dep in self.critical_dependencies
+            )
 
             if has_critical_dep:
                 manual_review.append(pr)
@@ -203,10 +216,16 @@ class PRAnalyzer:
             else:
                 manual_review.append(pr)
 
-        return {"safe_auto_merge": safe_auto_merge, "manual_review": manual_review, "major_updates": major_updates}
+        return {
+            "safe_auto_merge": safe_auto_merge,
+            "manual_review": manual_review,
+            "major_updates": major_updates,
+        }
 
     def generate_pr_counts(
-        self, categorized_prs: dict[str, list[PRInfo]] | None = None, all_prs: list[PRInfo] | None = None
+        self,
+        categorized_prs: dict[str, list[PRInfo]] | None = None,
+        all_prs: list[PRInfo] | None = None,
     ) -> dict[str, Any]:
         """
         Generate PR count statistics.
@@ -310,7 +329,9 @@ class PRAnalyzer:
 
         if dependabot_data["manual_review_required"] > 0:
             manual_prs = pr_counts["pr_numbers"]["manual_review"]
-            steps.append(f"Manual review required for {dependabot_data['manual_review_required']} PRs: {manual_prs}")
+            steps.append(
+                f"Manual review required for {dependabot_data['manual_review_required']} PRs: {manual_prs}"
+            )
 
         if dependabot_data["major_updates_requiring_testing"] > 0:
             major_prs = pr_counts["pr_numbers"]["major_updates"]

@@ -50,12 +50,17 @@ def main():
     results = []
 
     # 1. Code formatting with black
-    results.append(run_command("black --check src/ tests/ scripts/ --line-length=120", "Black code formatting check"))
+    results.append(
+        run_command(
+            "black --check src/ tests/ scripts/ --line-length=120", "Black code formatting check"
+        )
+    )
 
     # 2. Import sorting with isort
     results.append(
         run_command(
-            "isort --check-only src/ tests/ scripts/ --profile=black --line-length=120", "Import sorting check (isort)"
+            "isort --check-only src/ tests/ scripts/ --profile=black --line-length=120",
+            "Import sorting check (isort)",
         )
     )
 
@@ -74,7 +79,9 @@ def main():
     results.append(run_command("make backend-test", "Backend tests", timeout=180))
 
     # 6. Frontend linting
-    results.append(run_command("cd frontend && npm run lint", "Frontend linting (ESLint)", timeout=60))
+    results.append(
+        run_command("cd frontend && npm run lint", "Frontend linting (ESLint)", timeout=60)
+    )
 
     # 7. Frontend tests
     results.append(run_command("cd frontend && npm run test:run", "Frontend tests", timeout=120))
@@ -86,7 +93,9 @@ def main():
     results.append(run_command("pip-compile --dry-run requirements.in", "Requirements validation"))
 
     # 10. Security check
-    results.append(run_command("bandit -r src/ -f json -o bandit-report.json", "Security scan (bandit)"))
+    results.append(
+        run_command("bandit -r src/ -f json -o bandit-report.json", "Security scan (bandit)")
+    )
 
     # Summary
     print("\n" + "=" * 50)

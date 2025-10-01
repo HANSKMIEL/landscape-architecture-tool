@@ -15,7 +15,9 @@ import time
 from pathlib import Path
 
 # Configure logging
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+)
 logger = logging.getLogger(__name__)
 
 
@@ -38,7 +40,13 @@ class TestQualityAssurance:
         for attempt in range(retry_count):
             try:
                 result = subprocess.run(
-                    cmd, check=False, shell=True, capture_output=True, text=True, timeout=timeout, cwd=self.repo_root
+                    cmd,
+                    check=False,
+                    shell=True,
+                    capture_output=True,
+                    text=True,
+                    timeout=timeout,
+                    cwd=self.repo_root,
                 )
 
                 return {
@@ -62,7 +70,13 @@ class TestQualityAssurance:
                 time.sleep(2**attempt)  # Exponential backoff
 
             except Exception as e:
-                return {"success": False, "returncode": -1, "stdout": "", "stderr": str(e), "attempt": attempt + 1}
+                return {
+                    "success": False,
+                    "returncode": -1,
+                    "stdout": "",
+                    "stderr": str(e),
+                    "attempt": attempt + 1,
+                }
         return None
 
     def validate_test_environment(self) -> bool:
@@ -98,9 +112,13 @@ class TestQualityAssurance:
         try:
             version_info = sys.version_info
             if version_info >= (3, 8):
-                logger.info(f"✅ Python version: {version_info.major}.{version_info.minor}.{version_info.micro}")
+                logger.info(
+                    f"✅ Python version: {version_info.major}.{version_info.minor}.{version_info.micro}"
+                )
                 return True
-            logger.error(f"❌ Python version too old: {version_info.major}.{version_info.minor}.{version_info.micro}")
+            logger.error(
+                f"❌ Python version too old: {version_info.major}.{version_info.minor}.{version_info.micro}"
+            )
             return False
         except Exception as e:
             logger.error(f"❌ Could not check Python version: {e}")
@@ -127,7 +145,9 @@ class TestQualityAssurance:
     def _check_test_database(self) -> bool:
         """Check test database configuration."""
         try:
-            test_db_url = os.getenv("TEST_DATABASE_URL") or os.getenv("DATABASE_URL", "sqlite+pysqlite:///:memory:")
+            test_db_url = os.getenv("TEST_DATABASE_URL") or os.getenv(
+                "DATABASE_URL", "sqlite+pysqlite:///:memory:"
+            )
 
             # Safety check
             if any(prod_keyword in test_db_url.lower() for prod_keyword in ["prod", "production"]):
@@ -174,7 +194,9 @@ class TestQualityAssurance:
                 missing_required.append(var)
 
         if missing_required:
-            logger.warning(f"⚠️ Missing required environment variables: {', '.join(missing_required)}")
+            logger.warning(
+                f"⚠️ Missing required environment variables: {', '.join(missing_required)}"
+            )
             # Auto-set FLASK_ENV if missing
             if "FLASK_ENV" in missing_required:
                 os.environ["FLASK_ENV"] = "testing"
@@ -253,7 +275,10 @@ class TestQualityAssurance:
             stability_enhancements.append("Pytest configuration validated")
 
         # 3. Set up test isolation
-        isolation_setup = ["mkdir -p /tmp/landscape_test_isolation", "chmod 755 /tmp/landscape_test_isolation"]
+        isolation_setup = [
+            "mkdir -p /tmp/landscape_test_isolation",
+            "chmod 755 /tmp/landscape_test_isolation",
+        ]
 
         for cmd in isolation_setup:
             result = self.run_command(cmd, timeout=10)
@@ -318,10 +343,14 @@ class TestQualityAssurance:
             # Don't log the full error for PluggyTeardownRaisedWarning
             error_msg = result["stderr"]
             if "PluggyTeardownRaisedWarning" in error_msg:
-                logger.warning(f"⚠️ Backend test strategy {i + 1} had plugin warnings but may have passed")
+                logger.warning(
+                    f"⚠️ Backend test strategy {i + 1} had plugin warnings but may have passed"
+                )
                 # Check if tests actually passed despite warnings
                 if "passed" in result["stdout"] and "failed" not in result["stdout"]:
-                    logger.info(f"✅ Backend tests actually passed (strategy {i + 1}) - ignoring plugin warnings")
+                    logger.info(
+                        f"✅ Backend tests actually passed (strategy {i + 1}) - ignoring plugin warnings"
+                    )
                     return True
             else:
                 logger.warning(f"⚠️ Backend test strategy {i + 1} failed: {error_msg[:200]}")

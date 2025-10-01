@@ -33,7 +33,9 @@ def trigger_n8n_workflow(webhook_url, data):
         if response.status_code == 200:
             logger.info(f"Successfully triggered N8n workflow: {webhook_url}")
             return True
-        logger.error(f"Failed to trigger N8n workflow: {webhook_url}, " f"Status: {response.status_code}")
+        logger.error(
+            f"Failed to trigger N8n workflow: {webhook_url}, " f"Status: {response.status_code}"
+        )
         return False
 
     except requests.RequestException as e:

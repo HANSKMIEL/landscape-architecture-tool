@@ -268,7 +268,11 @@ class VectorworksDataExtractor:
                     "y": 15.2,
                     "layer": "Planting Plan",
                     "class": "Trees",
-                    "data": {"quantity": "3", "size": "8-10cm caliper", "supplier": "Local Nursery"},
+                    "data": {
+                        "quantity": "3",
+                        "size": "8-10cm caliper",
+                        "supplier": "Local Nursery",
+                    },
                 },
                 {
                     "name": "Buxus sempervirens",
@@ -414,7 +418,9 @@ class VectorworksReportGenerator:
     def __init__(self, sdk_interface: VectorworksSDKInterface):
         self.sdk = sdk_interface
 
-    def generate_plant_schedule(self, project: VectorworksProject, output_path: str, language: str = "nl") -> bool:
+    def generate_plant_schedule(
+        self, project: VectorworksProject, output_path: str, language: str = "nl"
+    ) -> bool:
         """Generate professional plant schedule report"""
         try:
             from reportlab.lib import colors
@@ -429,7 +435,11 @@ class VectorworksReportGenerator:
 
             # Title
             title_style = ParagraphStyle(
-                "CustomTitle", parent=styles["Heading1"], fontSize=18, spaceAfter=30, alignment=1  # Center alignment
+                "CustomTitle",
+                parent=styles["Heading1"],
+                fontSize=18,
+                spaceAfter=30,
+                alignment=1,  # Center alignment
             )
 
             title_text = "Plantenlijst" if language == "nl" else "Plant Schedule"
@@ -460,9 +470,25 @@ class VectorworksReportGenerator:
 
             # Plant schedule table
             if language == "nl":
-                headers = ["Naam", "Wetenschappelijke naam", "Aantal", "Maat", "Prijs/st", "Totaal", "Leverancier"]
+                headers = [
+                    "Naam",
+                    "Wetenschappelijke naam",
+                    "Aantal",
+                    "Maat",
+                    "Prijs/st",
+                    "Totaal",
+                    "Leverancier",
+                ]
             else:
-                headers = ["Name", "Scientific Name", "Quantity", "Size", "Unit Price", "Total", "Supplier"]
+                headers = [
+                    "Name",
+                    "Scientific Name",
+                    "Quantity",
+                    "Size",
+                    "Unit Price",
+                    "Total",
+                    "Supplier",
+                ]
 
             data = [headers]
             total_cost = 0
@@ -489,7 +515,9 @@ class VectorworksReportGenerator:
             total_label = "Totaal:" if language == "nl" else "Total:"
             data.append(["", "", "", "", "", f"€{total_cost:.2f}", total_label])
 
-            table = Table(data, colWidths=[3 * cm, 4 * cm, 1.5 * cm, 2 * cm, 2 * cm, 2 * cm, 3 * cm])
+            table = Table(
+                data, colWidths=[3 * cm, 4 * cm, 1.5 * cm, 2 * cm, 2 * cm, 2 * cm, 3 * cm]
+            )
             table.setStyle(
                 TableStyle(
                     [
@@ -536,7 +564,9 @@ class VectorworksIntegrationService:
         """Export plant data to Vectorworks format"""
         return self.exporter.export_plant_list(plants, output_path)
 
-    def generate_reports(self, project: VectorworksProject, output_dir: str, language: str = "nl") -> list[str]:
+    def generate_reports(
+        self, project: VectorworksProject, output_dir: str, language: str = "nl"
+    ) -> list[str]:
         """Generate all project reports"""
         generated_files = []
 
@@ -573,6 +603,8 @@ class VectorworksIntegrationService:
 
 
 # Factory function
-def create_vectorworks_service(vectorworks_path: str | None = None) -> VectorworksIntegrationService:
+def create_vectorworks_service(
+    vectorworks_path: str | None = None,
+) -> VectorworksIntegrationService:
     """Create Vectorworks integration service"""
     return VectorworksIntegrationService(vectorworks_path)

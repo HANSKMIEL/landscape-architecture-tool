@@ -29,7 +29,9 @@ class PlantService:
         # Apply filters
         if search:
             search_term = f"%{search}%"
-            query = query.filter(or_(Plant.name.ilike(search_term), Plant.common_name.ilike(search_term)))
+            query = query.filter(
+                or_(Plant.name.ilike(search_term), Plant.common_name.ilike(search_term))
+            )
 
         if category:
             query = query.filter(Plant.category == category)
@@ -102,7 +104,9 @@ class PlantService:
         """Search plants by name or common name"""
         search_term = f"%{search_term}%"
         return (
-            Plant.query.filter(or_(Plant.name.ilike(search_term), Plant.common_name.ilike(search_term)))
+            Plant.query.filter(
+                or_(Plant.name.ilike(search_term), Plant.common_name.ilike(search_term))
+            )
             .order_by(Plant.name)
             .all()
         )

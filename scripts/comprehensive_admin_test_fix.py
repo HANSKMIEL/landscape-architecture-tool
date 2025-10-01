@@ -71,7 +71,9 @@ class AdminTestAndFix:
 
         except Exception as e:
             print(f"❌ Authentication test failed: {e}")
-            self.issues_found.append({"type": "auth_error", "description": f"Authentication system error: {e}"})
+            self.issues_found.append(
+                {"type": "auth_error", "description": f"Authentication system error: {e}"}
+            )
 
     def test_api_endpoints(self):
         """Test all available API endpoints"""
@@ -160,7 +162,10 @@ class AdminTestAndFix:
 
         if not ui_report_files:
             print("⚠️ No UI analysis report found - running analysis...")
-            subprocess.run(["python", str(self.repo_path / "scripts" / "ui_text_analysis.py")], cwd=self.repo_path)
+            subprocess.run(
+                ["python", str(self.repo_path / "scripts" / "ui_text_analysis.py")],
+                cwd=self.repo_path,
+            )
             ui_report_files = list(reports_dir.glob("ui_text_analysis_*.json"))
 
         if ui_report_files:
@@ -200,7 +205,9 @@ class AdminTestAndFix:
             if translation_issues:
                 print(f"🌐 Found {len(translation_issues)} translation issues")
                 disabled_translation_files = [
-                    issue["file"] for issue in translation_issues if issue.get("type") == "disabled_translation"
+                    issue["file"]
+                    for issue in translation_issues
+                    if issue.get("type") == "disabled_translation"
                 ]
                 if disabled_translation_files:
                     print(f"⚠️ Files with disabled translation: {len(disabled_translation_files)}")
@@ -217,7 +224,9 @@ class AdminTestAndFix:
 
         for command, description in lint_commands:
             try:
-                result = subprocess.run(command, cwd=self.repo_path, capture_output=True, text=True, timeout=60)
+                result = subprocess.run(
+                    command, cwd=self.repo_path, capture_output=True, text=True, timeout=60
+                )
 
                 if result.returncode == 0:
                     print(f"✅ {description}: Passed")
@@ -238,7 +247,11 @@ class AdminTestAndFix:
         # Frontend linting
         try:
             result = subprocess.run(
-                ["npm", "run", "lint"], cwd=self.repo_path / "frontend", capture_output=True, text=True, timeout=60
+                ["npm", "run", "lint"],
+                cwd=self.repo_path / "frontend",
+                capture_output=True,
+                text=True,
+                timeout=60,
             )
 
             if result.returncode == 0:
@@ -321,7 +334,9 @@ class AdminTestAndFix:
         }
 
         report_file = (
-            self.repo_path / "reports" / f"admin_comprehensive_test_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+            self.repo_path
+            / "reports"
+            / f"admin_comprehensive_test_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
         )
         report_file.parent.mkdir(exist_ok=True)
 

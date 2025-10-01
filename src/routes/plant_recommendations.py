@@ -98,7 +98,9 @@ def get_plant_recommendations():
         min_score = data.get("min_score", 0.3)
 
         # Get recommendations
-        recommendations = recommendation_engine.get_recommendations(criteria, max_results, min_score)
+        recommendations = recommendation_engine.get_recommendations(
+            criteria, max_results, min_score
+        )
 
         # Generate session ID if not exists
         if "session_id" not in session:
@@ -221,7 +223,9 @@ def submit_feedback():
             return jsonify({"error": "request_id is required"}), 400
 
         # Save feedback
-        success = recommendation_engine.save_user_feedback(request_id=request_id, feedback=feedback, rating=rating)
+        success = recommendation_engine.save_user_feedback(
+            request_id=request_id, feedback=feedback, rating=rating
+        )
 
         if success:
             return jsonify({"message": "Feedback saved successfully"})
@@ -264,7 +268,12 @@ def get_recommendation_history():
         elif session_id:
             query = query.filter(PlantRecommendationRequest.session_id == session_id)
 
-        requests = query.order_by(PlantRecommendationRequest.created_at.desc()).offset(offset).limit(limit).all()
+        requests = (
+            query.order_by(PlantRecommendationRequest.created_at.desc())
+            .offset(offset)
+            .limit(limit)
+            .all()
+        )
 
         history = []
         for req in requests:
@@ -273,7 +282,9 @@ def get_recommendation_history():
                     "id": req.id,
                     "created_at": (req.created_at.isoformat() if req.created_at else None),
                     "criteria_summary": _format_request_criteria(req),
-                    "recommendations_count": (len(req.recommended_plants) if req.recommended_plants else 0),
+                    "recommendations_count": (
+                        len(req.recommended_plants) if req.recommended_plants else 0
+                    ),
                     "feedback_rating": req.feedback_rating,
                     "has_feedback": bool(req.user_feedback),
                 }
@@ -387,7 +398,11 @@ def export_recommendations():
         return Response(
             csv_content,
             mimetype="text/csv",
-            headers={"Content-Disposition": (f"attachment; filename=plant_recommendations_{request_id}.csv")},
+            headers={
+                "Content-Disposition": (
+                    f"attachment; filename=plant_recommendations_{request_id}.csv"
+                )
+            },
         )
 
     except Exception as e:
@@ -525,7 +540,9 @@ def _format_criteria_summary(criteria: RecommendationCriteria) -> dict[str, Any]
     if criteria.soil_type:
         summary["Soil Type"] = criteria.soil_type
     if criteria.desired_height_min or criteria.desired_height_max:
-        height_range = f"{criteria.desired_height_min or 'Any'}-" f"{criteria.desired_height_max or 'Any'}m"
+        height_range = (
+            f"{criteria.desired_height_min or 'Any'}-" f"{criteria.desired_height_max or 'Any'}m"
+        )
         summary["Desired Height"] = height_range
     if criteria.maintenance_level:
         summary["Maintenance Level"] = criteria.maintenance_level

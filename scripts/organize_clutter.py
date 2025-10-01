@@ -35,10 +35,24 @@ def organize_files(dry_run=False):
 
     # File patterns and their target directories
     file_patterns = {
-        "reports/validation": ["automated_validation_report_*.json", "validation_*.json", "*_validation_*.json"],
+        "reports/validation": [
+            "automated_validation_report_*.json",
+            "validation_*.json",
+            "*_validation_*.json",
+        ],
         "reports/health": ["pipeline_health_report_*.json", "health_*.json", "*_health_*.json"],
-        "reports/security": ["bandit-report.json", "safety-report.json", "security_*.json", "*_security_*.json"],
-        "docs/solutions": ["*_SOLUTION*.md", "*_SUMMARY*.md", "*_IMPLEMENTATION*.md", "SOLUTION_*.md"],
+        "reports/security": [
+            "bandit-report.json",
+            "safety-report.json",
+            "security_*.json",
+            "*_security_*.json",
+        ],
+        "docs/solutions": [
+            "*_SOLUTION*.md",
+            "*_SUMMARY*.md",
+            "*_IMPLEMENTATION*.md",
+            "SOLUTION_*.md",
+        ],
         "docs/planning": ["*_PLAN*.md", "*_ROADMAP*.md", "PLANNED_*.md", "dev_log.md"],
     }
 
@@ -103,8 +117,14 @@ def generate_report(moved_files, remaining_clutter):
 
 def main():
     parser = argparse.ArgumentParser(description="Organize repository clutter")
-    parser.add_argument("--dry-run", action="store_true", help="Show what would be moved without actually moving files")
-    parser.add_argument("--check-only", action="store_true", help="Only check for clutter without organizing")
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Show what would be moved without actually moving files",
+    )
+    parser.add_argument(
+        "--check-only", action="store_true", help="Only check for clutter without organizing"
+    )
     parser.add_argument("--report", action="store_true", help="Generate a cleanup report")
 
     args = parser.parse_args()

@@ -21,7 +21,9 @@ class RecommendationService:
         self.engine = PlantRecommendationEngine()
         self._cache = {}
 
-    def get_recommendations(self, criteria: dict, max_results: int = 10, min_score: float = 0.0) -> list[dict]:
+    def get_recommendations(
+        self, criteria: dict, max_results: int = 10, min_score: float = 0.0
+    ) -> list[dict]:
         """
         Get plant recommendations based on criteria
 
@@ -155,7 +157,9 @@ class RecommendationService:
             )
 
         if "soil_type" in criteria:
-            match["soil_type"] = self._check_soil_match(plant_score.plant.soil_type, criteria["soil_type"])
+            match["soil_type"] = self._check_soil_match(
+                plant_score.plant.soil_type, criteria["soil_type"]
+            )
 
         if "plant_type" in criteria:
             match["plant_type"] = plant_score.plant.category == criteria["plant_type"]

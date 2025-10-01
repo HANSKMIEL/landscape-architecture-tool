@@ -60,7 +60,12 @@ class AutomatedValidator:
                 "stderr": result.stderr if capture_output else "",
             }
         except subprocess.TimeoutExpired:
-            return {"success": False, "returncode": -1, "stdout": "", "stderr": f"Command timed out after {timeout}s"}
+            return {
+                "success": False,
+                "returncode": -1,
+                "stdout": "",
+                "stderr": f"Command timed out after {timeout}s",
+            }
         except Exception as e:
             return {"success": False, "returncode": -1, "stdout": "", "stderr": str(e)}
 
@@ -70,7 +75,9 @@ class AutomatedValidator:
 
         # Check for uncommitted changes
         result = self.run_command("git status --porcelain")
-        uncommitted_files = len(result["stdout"].strip().split("\n")) if result["stdout"].strip() else 0
+        uncommitted_files = (
+            len(result["stdout"].strip().split("\n")) if result["stdout"].strip() else 0
+        )
 
         # Check recent commits
         recent_commits = self.run_command("git log --oneline -5")
@@ -80,7 +87,9 @@ class AutomatedValidator:
         self.results["validation_steps"]["git_status"] = {
             "status": status,
             "uncommitted_files": uncommitted_files,
-            "recent_commits": recent_commits["stdout"].split("\n")[:5] if recent_commits["success"] else [],
+            "recent_commits": (
+                recent_commits["stdout"].split("\n")[:5] if recent_commits["success"] else []
+            ),
         }
 
         return status == "healthy"
@@ -163,7 +172,8 @@ class AutomatedValidator:
         if not backend_passed and "timeout" not in backend_test.get("stderr", "").lower():
             print("🔄 Retrying backend tests due to potential transient failure...")
             backend_retry = self.run_command(
-                "PYTHONPATH=. FLASK_ENV=testing python -m pytest tests/ " "--tb=short --maxfail=5 -v --timeout=60",
+                "PYTHONPATH=. FLASK_ENV=testing python -m pytest tests/ "
+                "--tb=short --maxfail=5 -v --timeout=60",
                 timeout=300,
             )
             if backend_retry["success"]:
@@ -256,7 +266,10 @@ class AutomatedValidator:
             return status == "healthy"
 
         except Exception as e:
-            self.results["validation_steps"]["application_health"] = {"status": "error", "error": str(e)}
+            self.results["validation_steps"]["application_health"] = {
+                "status": "error",
+                "error": str(e),
+            }
             return False
 
     def validate_database_setup(self):
@@ -301,7 +314,9 @@ print('Database initialized')
             }
 
             if not db_test["success"]:
-                self.results["recommendations"].append("Database initialization failed. Check database configuration.")
+                self.results["recommendations"].append(
+                    "Database initialization failed. Check database configuration."
+                )
 
             return status == "healthy"
 
@@ -326,7 +341,8 @@ print('Database initialized')
             lambda line: line.strip().endswith("failed"),
             lambda line: " passed," in line or " failed," in line,
             # Handle different pytest output formats
-            lambda line: "==" in line and any(keyword in line for keyword in ["passed", "failed", "error"]),
+            lambda line: "==" in line
+            and any(keyword in line for keyword in ["passed", "failed", "error"]),
         ]
 
         for pattern in patterns:
@@ -345,7 +361,9 @@ print('Database initialized')
             summary = {"raw": summary_line.strip()}
 
             # Try regex-based extraction
-            numbers = re.findall(r"(\d+)\s*(passed|failed|error|skipped)", summary_line, re.IGNORECASE)
+            numbers = re.findall(
+                r"(\d+)\s*(passed|failed|error|skipped)", summary_line, re.IGNORECASE
+            )
 
             for count, status in numbers:
                 with contextlib.suppress(ValueError, KeyError):
@@ -406,7 +424,11 @@ print('Database initialized')
                         return {
                             "raw": line,
                             "total": int(numbers[0]) if numbers else 0,
-                            "passed": int(numbers[1]) if len(numbers) > 1 else int(numbers[0]) if numbers else 0,
+                            "passed": (
+                                int(numbers[1])
+                                if len(numbers) > 1
+                                else int(numbers[0]) if numbers else 0
+                            ),
                         }
 
             # Fallback to first informative line
@@ -416,7 +438,9 @@ print('Database initialized')
 
     def generate_overall_status(self):
         """Generate overall status based on all validation steps"""
-        statuses = [step.get("status", "error") for step in self.results["validation_steps"].values()]
+        statuses = [
+            step.get("status", "error") for step in self.results["validation_steps"].values()
+        ]
 
         if all(status == "healthy" for status in statuses):
             self.results["overall_status"] = "healthy"
@@ -448,7 +472,9 @@ print('Database initialized')
                     "total_dependabot_prs": pr_counts["dependabot_prs"]["total"],
                     "safe_auto_merge_count": pr_counts["dependabot_prs"]["safe_auto_merge"],
                     "manual_review_count": pr_counts["dependabot_prs"]["manual_review_required"],
-                    "major_updates_count": pr_counts["dependabot_prs"]["major_updates_requiring_testing"],
+                    "major_updates_count": pr_counts["dependabot_prs"][
+                        "major_updates_requiring_testing"
+                    ],
                 },
                 "pr_numbers": pr_counts["pr_numbers"],
                 "recommendation": "These counts are calculated dynamically from live GitHub data",
@@ -486,7 +512,9 @@ print('Database initialized')
         self.results["summary"] = {
             "total_steps": total_steps,
             "healthy_steps": healthy_steps,
-            "health_percentage": round((healthy_steps / total_steps) * 100, 1) if total_steps > 0 else 0,
+            "health_percentage": (
+                round((healthy_steps / total_steps) * 100, 1) if total_steps > 0 else 0
+            ),
             "status_distribution": {
                 "healthy": sum(1 for step in steps.values() if step.get("status") == "healthy"),
                 "warning": sum(1 for step in steps.values() if step.get("status") == "warning"),
@@ -500,13 +528,20 @@ print('Database initialized')
                 0, "❌ Critical issues found. Address errors before continuing development."
             )
         elif self.results["overall_status"] == "warning":
-            self.results["recommendations"].insert(0, "⚠️ Some issues found. Review warnings and consider fixing them.")
+            self.results["recommendations"].insert(
+                0, "⚠️ Some issues found. Review warnings and consider fixing them."
+            )
         else:
-            self.results["recommendations"].insert(0, "✅ All validation checks passed! Pipeline is healthy.")
+            self.results["recommendations"].insert(
+                0, "✅ All validation checks passed! Pipeline is healthy."
+            )
 
     def save_report(self):
         """Save validation report to file"""
-        report_file = self.repo_root / f"automated_validation_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+        report_file = (
+            self.repo_root
+            / f"automated_validation_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+        )
 
         with open(report_file, "w") as f:
             json.dump(self.results, f, indent=2)
@@ -529,7 +564,9 @@ print('Database initialized')
 
         print("\nValidation Steps:")
         for step_name, step_data in self.results["validation_steps"].items():
-            status_icon = {"healthy": "✅", "warning": "⚠️", "error": "❌"}.get(step_data["status"], "❓")
+            status_icon = {"healthy": "✅", "warning": "⚠️", "error": "❌"}.get(
+                step_data["status"], "❓"
+            )
             print(f"  {status_icon} {step_name}: {step_data['status']}")
 
         # Show PR analysis if available

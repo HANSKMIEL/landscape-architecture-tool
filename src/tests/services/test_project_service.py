@@ -49,7 +49,9 @@ class TestProjectService:
         client.name = "Test Client"
         return client
 
-    def test_create_project_success(self, app_context, project_service, sample_project_data, mock_client):
+    def test_create_project_success(
+        self, app_context, project_service, sample_project_data, mock_client
+    ):
         """Test successful project creation"""
         with patch("src.models.user.db.session") as mock_session:
 
@@ -276,7 +278,9 @@ class TestProjectService:
             assert result["total"] == 25
             assert result["pages"] == 3
             assert result["current_page"] == 1
-            mock_query.order_by.return_value.paginate.assert_called_once_with(page=1, per_page=10, error_out=False)
+            mock_query.order_by.return_value.paginate.assert_called_once_with(
+                page=1, per_page=10, error_out=False
+            )
 
     def test_combined_search_and_client_filter(self, app_context, project_service):
         """Test combining search and client filtering"""

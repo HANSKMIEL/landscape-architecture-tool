@@ -38,13 +38,19 @@ class DevelopmentAnalyzer:
                     "src/routes/auth.py - Backend endpoints intact",
                 ],
                 "impact": "CRITICAL - User authentication feature",
-                "backend_endpoints": ["/auth/forgot-password", "/auth/reset-password", "/users/<id>/reset-password"],
+                "backend_endpoints": [
+                    "/auth/forgot-password",
+                    "/auth/reset-password",
+                    "/users/<id>/reset-password",
+                ],
             },
             {
                 "feature": "AI Assistant Suggestions",
                 "status": "RESTORED",
                 "description": "AI suggestion functionality in AIAssistant component",
-                "files_affected": ["frontend/src/components/AIAssistant.jsx - Restored suggestions state"],
+                "files_affected": [
+                    "frontend/src/components/AIAssistant.jsx - Restored suggestions state"
+                ],
                 "impact": "MEDIUM - AI feature enhancement",
             },
         ]
@@ -71,7 +77,10 @@ class DevelopmentAnalyzer:
                 "area": "State Variables",
                 "risk_level": "LOW",
                 "description": "Some state variables were prefixed with underscore",
-                "examples": ["bulkOperations in ImportExport.jsx", "showImportModal in Clients.jsx"],
+                "examples": [
+                    "bulkOperations in ImportExport.jsx",
+                    "showImportModal in Clients.jsx",
+                ],
                 "recommendation": "Verify these aren't planned for upcoming features",
             },
             {
@@ -134,7 +143,10 @@ class DevelopmentAnalyzer:
                     testing_results[endpoint] = "SKIP - POST endpoint"
                 else:
                     result = subprocess.run(
-                        ["curl", "-s", f"http://localhost:5000{endpoint}"], capture_output=True, text=True, timeout=5
+                        ["curl", "-s", f"http://localhost:5000{endpoint}"],
+                        capture_output=True,
+                        text=True,
+                        timeout=5,
                     )
                     if result.returncode == 0:
                         testing_results[endpoint] = "RESPONDING"
@@ -166,7 +178,10 @@ class DevelopmentAnalyzer:
                 "priority": "MEDIUM",
                 "action": "Review Disabled UI Components",
                 "description": "Check if prefixed/disabled components are planned for future releases",
-                "files": ["frontend/src/components/Clients.jsx", "frontend/src/components/AIAssistant.jsx"],
+                "files": [
+                    "frontend/src/components/Clients.jsx",
+                    "frontend/src/components/AIAssistant.jsx",
+                ],
             },
             {
                 "priority": "MEDIUM",
@@ -259,7 +274,9 @@ class DevelopmentAnalyzer:
 
         # Save report
         report_file = (
-            self.repo_path / "reports" / f"development_analysis_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+            self.repo_path
+            / "reports"
+            / f"development_analysis_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
         )
         report_file.parent.mkdir(exist_ok=True)
 

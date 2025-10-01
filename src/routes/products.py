@@ -327,12 +327,14 @@ def import_products():
                     name=str(product_data["name"]),
                     description=(
                         str(product_data.get("description", ""))
-                        if product_data.get("description") and not pd.isna(product_data.get("description"))
+                        if product_data.get("description")
+                        and not pd.isna(product_data.get("description"))
                         else None
                     ),
                     category=(
                         str(product_data.get("category", ""))
-                        if product_data.get("category") and not pd.isna(product_data.get("category"))
+                        if product_data.get("category")
+                        and not pd.isna(product_data.get("category"))
                         else None
                     ),
                     price=(
@@ -382,7 +384,9 @@ def import_products():
 def export_products():
     """Export all products to JSON"""
     try:
-        products = Product.query.join(Supplier, Product.supplier_id == Supplier.id, isouter=True).all()
+        products = Product.query.join(
+            Supplier, Product.supplier_id == Supplier.id, isouter=True
+        ).all()
 
         products_data = []
         for product in products:

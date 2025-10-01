@@ -11,20 +11,22 @@ import {
   Settings,
   X
 } from 'lucide-react'
+import { useLanguage } from '../i18n/LanguageProvider'
 
 const Sidebar = ({ isOpen, onClose }) => {
   const location = useLocation()
+  const { t } = useLanguage()
 
   const navigation = [
-    { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-    { name: 'Suppliers', href: '/suppliers', icon: Building2 },
-    { name: 'Products', href: '/products', icon: Package },
-    { name: 'Plants', href: '/plants', icon: Leaf },
-    { name: 'Clients', href: '/clients', icon: Users },
-    { name: 'Projects', href: '/projects', icon: FolderOpen },
-    { name: 'Plant Recommendations', href: '/plant-recommendations', icon: Lightbulb },
-    { name: 'Reports', href: '/reports', icon: FileText },
-    { name: 'Settings', href: '/settings', icon: Settings },
+    { name: t('nav.dashboard', 'Dashboard'), href: '/dashboard', icon: LayoutDashboard },
+    { name: t('nav.suppliers', 'Suppliers'), href: '/suppliers', icon: Building2 },
+    { name: t('nav.products', 'Products'), href: '/products', icon: Package },
+    { name: t('nav.plants', 'Plants'), href: '/plants', icon: Leaf },
+    { name: t('nav.clients', 'Clients'), href: '/clients', icon: Users },
+    { name: t('nav.projects', 'Projects'), href: '/projects', icon: FolderOpen },
+    { name: t('nav.plantRecommendations', 'Plant Recommendations'), href: '/plant-recommendations', icon: Lightbulb },
+    { name: t('nav.reports', 'Reports'), href: '/reports', icon: FileText },
+    { name: t('nav.settings', 'Settings'), href: '/settings', icon: Settings },
   ]
 
   return (
@@ -48,8 +50,8 @@ const Sidebar = ({ isOpen, onClose }) => {
               <Leaf className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h1 className="text-lg font-semibold text-gray-900">Landscape</h1>
-              <p className="text-sm text-gray-500">Architecture Tool</p>
+              <h1 className="text-lg font-semibold text-gray-900">{t('app.name', 'Landscape')}</h1>
+              <p className="text-sm text-gray-500">{t('app.subtitle', 'Architecture Tool')}</p>
             </div>
           </div>
           
@@ -57,6 +59,7 @@ const Sidebar = ({ isOpen, onClose }) => {
           <button
             onClick={onClose}
             className="p-1 rounded-md hover:bg-gray-100 transition-colors"
+            aria-label={t('common.close', 'Close')}
           >
             <X className="w-5 h-5" />
           </button>

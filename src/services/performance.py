@@ -191,7 +191,9 @@ class QueryPerformanceMonitor:
 
                 # Log slow queries (configurable threshold)
                 try:
-                    slow_query_threshold = float(current_app.config.get("SLOW_QUERY_THRESHOLD", 0.1))
+                    slow_query_threshold = float(
+                        current_app.config.get("SLOW_QUERY_THRESHOLD", 0.1)
+                    )
                 except RuntimeError:
                     # No Flask context, use default threshold
                     slow_query_threshold = 0.1
@@ -202,13 +204,17 @@ class QueryPerformanceMonitor:
                             f"Slow query detected: {func.__name__} took " f"{execution_time:.3f}s"
                         )
                     except RuntimeError:
-                        logging.warning(f"Slow query detected: {func.__name__} took " f"{execution_time:.3f}s")
+                        logging.warning(
+                            f"Slow query detected: {func.__name__} took " f"{execution_time:.3f}s"
+                        )
 
                 return result
             except Exception as e:
                 execution_time = time.time() - start_time
                 try:
-                    current_app.logger.error(f"Query error in {func.__name__} after " f"{execution_time:.3f}s: {e!s}")
+                    current_app.logger.error(
+                        f"Query error in {func.__name__} after " f"{execution_time:.3f}s: {e!s}"
+                    )
                 except RuntimeError:
                     logging.getLogger(__name__).error(
                         f"Query error in {func.__name__} after " f"{execution_time:.3f}s: {e!s}"

@@ -123,7 +123,9 @@ def login():
         schema = LoginSchema(**data)
 
         # Find user by username or email
-        user = User.query.filter((User.username == schema.username) | (User.email == schema.username)).first()
+        user = User.query.filter(
+            (User.username == schema.username) | (User.email == schema.username)
+        ).first()
 
         if not user:
             logger.warning(f"Login attempt with non-existent user: {schema.username}")
@@ -135,7 +137,10 @@ def login():
 
         if user.is_account_locked():
             logger.warning(f"Login attempt with locked account: {user.username}")
-            return jsonify({"error": "Account is temporarily locked due to failed login attempts"}), 423
+            return (
+                jsonify({"error": "Account is temporarily locked due to failed login attempts"}),
+                423,
+            )
 
         if not user.check_password(schema.password):
             user.record_failed_login()
@@ -154,7 +159,9 @@ def login():
 
         # Create session tracking record
         user_session = UserSession(
-            user_id=user.id, ip_address=request.remote_addr, user_agent=request.headers.get("User-Agent")
+            user_id=user.id,
+            ip_address=request.remote_addr,
+            user_agent=request.headers.get("User-Agent"),
         )
         db.session.add(user_session)
         db.session.commit()
@@ -163,7 +170,11 @@ def login():
 
         return (
             jsonify(
-                {"message": "Login successful", "user": user.to_dict(), "session_token": user_session.session_token}
+                {
+                    "message": "Login successful",
+                    "user": user.to_dict(),
+                    "session_token": user_session.session_token,
+                }
             ),
             200,
         )
@@ -256,11 +267,17 @@ def forgot_password():
             if current_app.config.get("TESTING") or current_app.config.get("DEBUG"):
                 return (
                     jsonify(
-                        {"message": "Password reset token generated", "reset_token": reset_token}  # Only for testing
+                        {
+                            "message": "Password reset token generated",
+                            "reset_token": reset_token,
+                        }  # Only for testing
                     ),
                     200,
                 )
-            return jsonify({"message": "If the email exists, a password reset link has been sent"}), 200
+            return (
+                jsonify({"message": "If the email exists, a password reset link has been sent"}),
+                200,
+            )
 
         # Always return success to prevent email enumeration
         return jsonify({"message": "If the email exists, a password reset link has been sent"}), 200
@@ -354,7 +371,9 @@ def create_user():
         schema = UserCreateSchema(**data)
 
         # Check if username or email already exists
-        existing_user = User.query.filter((User.username == schema.username) | (User.email == schema.email)).first()
+        existing_user = User.query.filter(
+            (User.username == schema.username) | (User.email == schema.email)
+        ).first()
 
         if existing_user:
             return jsonify({"error": "Username or email already exists"}), 409
@@ -497,7 +516,9 @@ def bulk_import_users():
         if created_users:
             db.session.commit()
 
-        logger.info(f"Bulk import completed: {len(created_users)} users created by {session.get('username')}")
+        logger.info(
+            f"Bulk import completed: {len(created_users)} users created by {session.get('username')}"
+        )
 
         return (
             jsonify(
@@ -557,7 +578,9 @@ def unlock_user_account(user_id):
         user.locked_until = None
         db.session.commit()
 
-        logger.info(f"Account unlocked for user: {user.username} by admin: {session.get('username')}")
+        logger.info(
+            f"Account unlocked for user: {user.username} by admin: {session.get('username')}"
+        )
 
         return jsonify({"message": "Account unlocked successfully"}), 200
 

@@ -78,7 +78,9 @@ class TestRecommendationPerformance:
         memory_growth = final_memory - initial_memory
 
         # Memory growth should be reasonable (less than 50MB)
-        assert memory_growth < 50 * 1024 * 1024, f"Memory grew by {memory_growth / 1024 / 1024:.1f}MB"
+        assert (
+            memory_growth < 50 * 1024 * 1024
+        ), f"Memory grew by {memory_growth / 1024 / 1024:.1f}MB"
 
     def test_concurrent_recommendation_requests(self, large_plant_dataset):
         """Test handling of concurrent recommendation requests"""

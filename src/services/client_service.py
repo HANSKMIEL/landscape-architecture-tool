@@ -33,14 +33,18 @@ class ClientService:
             )
 
         # Execute query with pagination
-        clients = query.order_by(Client.name).paginate(page=page, per_page=per_page, error_out=False)
+        clients = query.order_by(Client.name).paginate(
+            page=page, per_page=per_page, error_out=False
+        )
 
         # Add project counts to each client
         clients_data = []
         for client in clients.items:
             client_dict = client.to_dict()
             client_dict["project_count"] = Project.query.filter_by(client_id=client.id).count()
-            client_dict["active_projects"] = Project.query.filter_by(client_id=client.id, status="active").count()
+            client_dict["active_projects"] = Project.query.filter_by(
+                client_id=client.id, status="active"
+            ).count()
             clients_data.append(client_dict)
 
         return {
@@ -99,7 +103,9 @@ class ClientService:
     @staticmethod
     def get_client_projects(client_id: int) -> list[Project]:
         """Get all projects for a specific client"""
-        return Project.query.filter_by(client_id=client_id).order_by(Project.created_at.desc()).all()
+        return (
+            Project.query.filter_by(client_id=client_id).order_by(Project.created_at.desc()).all()
+        )
 
     @staticmethod
     def get_client_statistics(client_id: int) -> dict:
@@ -169,7 +175,13 @@ class ClientService:
 
         # Phone validation
         if client_data.get("phone"):
-            phone = client_data["phone"].replace(" ", "").replace("-", "").replace("(", "").replace(")", "")
+            phone = (
+                client_data["phone"]
+                .replace(" ", "")
+                .replace("-", "")
+                .replace("(", "")
+                .replace(")", "")
+            )
             if not phone.replace("+", "").isdigit():
                 errors.append("Invalid phone number format")
 

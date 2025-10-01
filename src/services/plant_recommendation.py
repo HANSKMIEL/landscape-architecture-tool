@@ -206,7 +206,8 @@ class PlantRecommendationEngine:
                 match_reasons.append(f"Compatible hardiness zone ({plant.hardiness_zone})")
             else:
                 warnings.append(
-                    f"Hardiness zone mismatch: plant {plant.hardiness_zone}, " f"site {criteria.hardiness_zone}"
+                    f"Hardiness zone mismatch: plant {plant.hardiness_zone}, "
+                    f"site {criteria.hardiness_zone}"
                 )
 
         # Sun exposure matching
@@ -218,7 +219,8 @@ class PlantRecommendationEngine:
             else:
                 score += 0.3  # Partial compatibility
                 warnings.append(
-                    f"Sun exposure concern: plant needs {plant.sun_requirements}, " f"site has {criteria.sun_exposure}"
+                    f"Sun exposure concern: plant needs {plant.sun_requirements}, "
+                    f"site has {criteria.sun_exposure}"
                 )
 
         # Soil type matching
@@ -239,7 +241,8 @@ class PlantRecommendationEngine:
             else:
                 score += 0.2
                 warnings.append(
-                    f"pH concern: plant prefers {plant.soil_ph_min}-" f"{plant.soil_ph_max}, site is {criteria.soil_ph}"
+                    f"pH concern: plant prefers {plant.soil_ph_min}-"
+                    f"{plant.soil_ph_max}, site is {criteria.soil_ph}"
                 )
 
         # Moisture level matching
@@ -251,7 +254,8 @@ class PlantRecommendationEngine:
             else:
                 score += 0.4
                 warnings.append(
-                    f"Water needs mismatch: plant needs {plant.water_needs}, " f"site has {criteria.moisture_level}"
+                    f"Water needs mismatch: plant needs {plant.water_needs}, "
+                    f"site has {criteria.moisture_level}"
                 )
 
         return score / total_factors if total_factors > 0 else 0.5
@@ -268,13 +272,15 @@ class PlantRecommendationEngine:
         total_factors = 0
 
         # Height matching
-        if (criteria.desired_height_min is not None or criteria.desired_height_max is not None) and (
-            plant.height_min is not None or plant.height_max is not None
-        ):
+        if (
+            criteria.desired_height_min is not None or criteria.desired_height_max is not None
+        ) and (plant.height_min is not None or plant.height_max is not None):
             total_factors += 1
 
             plant_height_avg = self._get_average_size(plant.height_min, plant.height_max)
-            criteria_height_avg = self._get_average_range(criteria.desired_height_min, criteria.desired_height_max)
+            criteria_height_avg = self._get_average_range(
+                criteria.desired_height_min, criteria.desired_height_max
+            )
 
             if self._size_compatible(
                 criteria.desired_height_min,
@@ -370,7 +376,9 @@ class PlantRecommendationEngine:
                 match_reasons.append(f"Within budget (${plant.price})")
             else:
                 score += 0.2
-                warnings.append(f"Price concern: ${plant.price} may exceed " f"{criteria.budget_range} budget")
+                warnings.append(
+                    f"Price concern: ${plant.price} may exceed " f"{criteria.budget_range} budget"
+                )
 
         # Pest and disease resistance
         if plant.pest_resistance or plant.disease_resistance:
@@ -619,7 +627,9 @@ class PlantRecommendationEngine:
             desired_height_max=criteria.desired_height_max,
             desired_width_min=criteria.desired_width_min,
             desired_width_max=criteria.desired_width_max,
-            color_preferences=(",".join(criteria.color_preferences) if criteria.color_preferences else None),
+            color_preferences=(
+                ",".join(criteria.color_preferences) if criteria.color_preferences else None
+            ),
             bloom_season=criteria.bloom_season,
             maintenance_level=criteria.maintenance_level,
             budget_range=criteria.budget_range,
@@ -656,7 +666,9 @@ class PlantRecommendationEngine:
             db.session.rollback()
             raise e
 
-    def save_user_feedback(self, request_id: int, feedback: dict, rating: int | None = None) -> bool:
+    def save_user_feedback(
+        self, request_id: int, feedback: dict, rating: int | None = None
+    ) -> bool:
         """
         Save user feedback for a recommendation request
 

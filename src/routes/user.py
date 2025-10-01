@@ -143,7 +143,9 @@ def create_user():
         schema = UserCreateSchema(**data)
 
         # Check if user already exists
-        existing_user = User.query.filter((User.username == schema.username) | (User.email == schema.email)).first()
+        existing_user = User.query.filter(
+            (User.username == schema.username) | (User.email == schema.email)
+        ).first()
 
         if existing_user:
             return jsonify({"error": "User with this username or email already exists"}), 409

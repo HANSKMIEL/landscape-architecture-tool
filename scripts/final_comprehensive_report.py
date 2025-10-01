@@ -108,7 +108,11 @@ class FinalComprehensiveAnalyzer:
             "Authentication & Security": {
                 "Login.jsx": {
                     "status": "✅ FULLY FUNCTIONAL",
-                    "features": ["User authentication", "Password reset link", "Session management"],
+                    "features": [
+                        "User authentication",
+                        "Password reset link",
+                        "Session management",
+                    ],
                     "testing": "COMPLETED - Login flow working",
                     "issues": "Minor: Card imports disabled (cosmetic only)",
                 },
@@ -396,7 +400,9 @@ class FinalComprehensiveAnalyzer:
         }
 
         report_file = (
-            self.repo_path / "reports" / f"final_comprehensive_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+            self.repo_path
+            / "reports"
+            / f"final_comprehensive_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
         )
         report_file.parent.mkdir(exist_ok=True)
 

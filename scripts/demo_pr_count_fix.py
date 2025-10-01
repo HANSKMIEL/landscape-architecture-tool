@@ -45,7 +45,10 @@ def generate_new_style_report():
 
         # Generate report with dynamic PR counts
         return create_validation_report(
-            backend_status="passed", frontend_status="passed", database_status="functional", security_status="completed"
+            backend_status="passed",
+            frontend_status="passed",
+            database_status="functional",
+            security_status="completed",
         )
     except Exception as e:
         # Fallback for demonstration purposes
@@ -112,7 +115,9 @@ def print_comparison():
             if "dependabot_prs" in pr_data:
                 dep_data = pr_data["dependabot_prs"]
                 print(f"   safe_auto_merge: {dep_data.get('safe_auto_merge', 'calculated')}")
-                print(f"   manual_review_required: {dep_data.get('manual_review_required', 'calculated')}")
+                print(
+                    f"   manual_review_required: {dep_data.get('manual_review_required', 'calculated')}"
+                )
                 print(
                     f"   major_updates_requiring_testing: {dep_data.get('major_updates_requiring_testing', 'calculated')}"
                 )

@@ -44,7 +44,9 @@ class Photo(db.Model):
 
     # Entity relationships (foreign keys)
     plant_id = Column(Integer, ForeignKey("plants.id"), nullable=True)
-    material_id = Column(Integer, ForeignKey("products.id"), nullable=True)  # Materials are products
+    material_id = Column(
+        Integer, ForeignKey("products.id"), nullable=True
+    )  # Materials are products
     client_id = Column(Integer, ForeignKey("clients.id"), nullable=True)
     project_id = Column(Integer, ForeignKey("projects.id"), nullable=True)
 

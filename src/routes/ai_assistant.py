@@ -68,7 +68,10 @@ def ai_chat():
 
             response = client.chat.completions.create(
                 model="gpt-3.5-turbo",
-                messages=[{"role": "system", "content": system_prompt}, {"role": "user", "content": user_message}],
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_message},
+                ],
                 max_tokens=500,
                 temperature=0.7,
             )
@@ -96,7 +99,9 @@ def ai_chat():
 
             # Determine response type based on keywords
             message_lower = user_message.lower()
-            if any(word in message_lower for word in ["plant", "flower", "tree", "shrub", "native"]):
+            if any(
+                word in message_lower for word in ["plant", "flower", "tree", "shrub", "native"]
+            ):
                 response_type = "plant_recommendation"
             elif any(word in message_lower for word in ["project", "manage", "plan", "schedule"]):
                 response_type = "project_management"
@@ -107,7 +112,13 @@ def ai_chat():
 
             ai_response = fallback_responses[language][response_type]
 
-        return jsonify({"response": ai_response, "timestamp": datetime.now(UTC).isoformat(), "language": language})
+        return jsonify(
+            {
+                "response": ai_response,
+                "timestamp": datetime.now(UTC).isoformat(),
+                "language": language,
+            }
+        )
 
     except Exception as e:
         logging.error(f"AI chat error: {e!s}")
@@ -131,7 +142,10 @@ def ai_plant_recommendations():
         for plant in plants:
             matches = True
 
-            if criteria.get("sun_requirements") and plant.sun_requirements != criteria["sun_requirements"]:
+            if (
+                criteria.get("sun_requirements")
+                and plant.sun_requirements != criteria["sun_requirements"]
+            ):
                 matches = False
             if criteria.get("water_needs") and plant.water_needs != criteria["water_needs"]:
                 matches = False

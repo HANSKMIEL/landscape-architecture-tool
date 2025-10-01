@@ -29,7 +29,12 @@ class EmailService:
         self.from_name = os.getenv("FROM_NAME", "Landscape Architecture Tool")
 
     def send_email(
-        self, to_email: str, subject: str, html_body: str, text_body: str | None = None, attachments: list | None = None
+        self,
+        to_email: str,
+        subject: str,
+        html_body: str,
+        text_body: str | None = None,
+        attachments: list | None = None,
     ):
         """Send email with HTML and optional text body"""
         try:
@@ -82,7 +87,9 @@ class EmailService:
                 part.set_payload(attachment.read())
 
             encoders.encode_base64(part)
-            part.add_header("Content-Disposition", f"attachment; filename= {os.path.basename(attachment_path)}")
+            part.add_header(
+                "Content-Disposition", f"attachment; filename= {os.path.basename(attachment_path)}"
+            )
             msg.attach(part)
 
         except Exception as e:
@@ -169,7 +176,9 @@ class EmailService:
 
         return self.send_email(user_email, subject, html_body, text_body)
 
-    def send_welcome_email(self, user_email: str, user_name: str, username: str, temporary_password: str | None = None):
+    def send_welcome_email(
+        self, user_email: str, user_name: str, username: str, temporary_password: str | None = None
+    ):
         """Send welcome email to new user"""
         login_url = f"{current_app.config.get('FRONTEND_URL', 'https://optura.nl')}/login"
 
@@ -269,7 +278,9 @@ class EmailService:
 
         return self.send_email(user_email, subject, html_body, text_body)
 
-    def send_bulk_import_report(self, admin_email: str, admin_name: str, created_users: list[str], errors: list[str]):
+    def send_bulk_import_report(
+        self, admin_email: str, admin_name: str, created_users: list[str], errors: list[str]
+    ):
         """Send bulk import report to admin"""
         subject = f"Bulk User Import Report - {len(created_users)} users created"
 

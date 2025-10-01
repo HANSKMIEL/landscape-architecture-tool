@@ -19,7 +19,9 @@ def run_command(command, description, timeout=60, retry_count=1):
             if attempt > 0:
                 print(f"🔄 Retrying {description} (attempt {attempt + 1}/{retry_count})...")
 
-            result = subprocess.run(command, check=False, shell=True, capture_output=True, text=True, timeout=timeout)
+            result = subprocess.run(
+                command, check=False, shell=True, capture_output=True, text=True, timeout=timeout
+            )
 
             if result.returncode == 0:
                 print(f"✅ {description} completed")
@@ -92,7 +94,15 @@ def validate_code_quality():
 
 def cleanup_copilot_files():
     """Clean up Copilot temporary files with enhanced safety."""
-    cleanup_patterns = ["*.copilot.md", "*_copilot_*", "temp_*.py", "draft_*.py", "*.tmp", "*_backup_*", "*.bak"]
+    cleanup_patterns = [
+        "*.copilot.md",
+        "*_copilot_*",
+        "temp_*.py",
+        "draft_*.py",
+        "*.tmp",
+        "*_backup_*",
+        "*.bak",
+    ]
 
     files_removed = 0
     errors = []

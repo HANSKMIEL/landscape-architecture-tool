@@ -57,7 +57,9 @@ def get_recent_activity():
             activities.append(
                 {
                     "type": "project",
-                    "message": (f'New project "{project.name}" created for ' f"{project.client.name}"),
+                    "message": (
+                        f'New project "{project.name}" created for ' f"{project.client.name}"
+                    ),
                     "timestamp": project.created_at.isoformat(),
                     "icon": "folder",
                 }

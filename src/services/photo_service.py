@@ -51,7 +51,10 @@ class PhotoService:
             return {"valid": False, "error": "No file provided"}
 
         if not self.allowed_file(file.filename):
-            return {"valid": False, "error": f'File type not allowed. Allowed: {", ".join(self.ALLOWED_EXTENSIONS)}'}
+            return {
+                "valid": False,
+                "error": f'File type not allowed. Allowed: {", ".join(self.ALLOWED_EXTENSIONS)}',
+            }
 
         # Check file size (approximate)
         file.seek(0, 2)  # Seek to end
@@ -59,7 +62,10 @@ class PhotoService:
         file.seek(0)  # Reset to beginning
 
         if size > self.MAX_FILE_SIZE:
-            return {"valid": False, "error": f"File too large. Maximum size: {self.MAX_FILE_SIZE // (1024*1024)}MB"}
+            return {
+                "valid": False,
+                "error": f"File too large. Maximum size: {self.MAX_FILE_SIZE // (1024*1024)}MB",
+            }
 
         return {"valid": True, "size": size}
 
@@ -184,7 +190,11 @@ class PhotoService:
             db.session.add(photo)
             db.session.commit()
 
-            return {"success": True, "photo": photo.to_dict(), "message": "Photo uploaded successfully"}
+            return {
+                "success": True,
+                "photo": photo.to_dict(),
+                "message": "Photo uploaded successfully",
+            }
 
         except Exception as e:
             db.session.rollback()
@@ -195,12 +205,18 @@ class PhotoService:
                 try:
                     os.remove(file_path)
                 except OSError as cleanup_error:
-                    current_app.logger.error(f"Error cleaning up file {file_path}: {cleanup_error!s}")
+                    current_app.logger.error(
+                        f"Error cleaning up file {file_path}: {cleanup_error!s}"
+                    )
 
             return {"success": False, "error": f"Upload failed: {e!s}"}
 
     def get_photos(
-        self, category: PhotoCategory | None = None, entity_id: int | None = None, limit: int = 50, offset: int = 0
+        self,
+        category: PhotoCategory | None = None,
+        entity_id: int | None = None,
+        limit: int = 50,
+        offset: int = 0,
     ) -> list[dict[str, Any]]:
         """Get photos with optional filtering."""
         query = Photo.query
@@ -246,7 +262,9 @@ class PhotoService:
             current_app.logger.error(f"Error deleting photo {photo_id}: {e!s}")
             return {"success": False, "error": f"Delete failed: {e!s}"}
 
-    def set_primary_photo(self, photo_id: int, entity_id: int, category: PhotoCategory) -> dict[str, Any]:
+    def set_primary_photo(
+        self, photo_id: int, entity_id: int, category: PhotoCategory
+    ) -> dict[str, Any]:
         """Set photo as primary for an entity."""
         try:
             # Clear existing primary photos for this entity

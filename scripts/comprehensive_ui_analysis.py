@@ -91,7 +91,10 @@ class UIComponentAnalyzer:
                 "purpose": "Data import/export with bulk operations",
                 "features": ["Excel import", "CSV export", "Data validation", "Bulk operations"],
                 "status": "PARTIAL",
-                "disabled_features": ["Bulk operations state disabled", "Trash2/Edit icons disabled"],
+                "disabled_features": [
+                    "Bulk operations state disabled",
+                    "Trash2/Edit icons disabled",
+                ],
                 "testing_needed": "Import/export, bulk operations functionality",
             },
             "PlantRecommendations.jsx": {
@@ -130,7 +133,10 @@ class UIComponentAnalyzer:
                 "purpose": "User authentication",
                 "features": ["Login form", "Password reset link", "Remember me"],
                 "status": "ACTIVE",
-                "disabled_features": ["Card components imports disabled", "Translation variable prefixed"],
+                "disabled_features": [
+                    "Card components imports disabled",
+                    "Translation variable prefixed",
+                ],
                 "testing_needed": "Login flow, password reset integration",
             },
             "PasswordReset.jsx": {
@@ -162,7 +168,10 @@ class UIComponentAnalyzer:
                 "purpose": "Bulk data operation settings",
                 "features": ["Import/export configuration", "Validation rules"],
                 "status": "PARTIAL",
-                "disabled_features": ["Several icon imports disabled", "Translation variables disabled"],
+                "disabled_features": [
+                    "Several icon imports disabled",
+                    "Translation variables disabled",
+                ],
                 "testing_needed": "Bulk data configuration",
             },
             "settings/ReportSettings.jsx": {
@@ -409,7 +418,11 @@ class UIComponentAnalyzer:
         # Backend tests
         try:
             result = subprocess.run(
-                ["make", "backend-test"], cwd=self.repo_path, capture_output=True, text=True, timeout=180
+                ["make", "backend-test"],
+                cwd=self.repo_path,
+                capture_output=True,
+                text=True,
+                timeout=180,
             )
             if "passed" in result.stdout:
                 testing_results["backend_tests"] = "PASSED - Backend functionality verified"
@@ -424,15 +437,27 @@ class UIComponentAnalyzer:
             try:
                 if tool == "ruff":
                     result = subprocess.run(
-                        [tool, "check", "."], cwd=self.repo_path, capture_output=True, text=True, timeout=30
+                        [tool, "check", "."],
+                        cwd=self.repo_path,
+                        capture_output=True,
+                        text=True,
+                        timeout=30,
                     )
                 elif tool == "black":
                     result = subprocess.run(
-                        [tool, "--check", "."], cwd=self.repo_path, capture_output=True, text=True, timeout=30
+                        [tool, "--check", "."],
+                        cwd=self.repo_path,
+                        capture_output=True,
+                        text=True,
+                        timeout=30,
                     )
                 elif tool == "isort":
                     result = subprocess.run(
-                        [tool, "--check-only", "."], cwd=self.repo_path, capture_output=True, text=True, timeout=30
+                        [tool, "--check-only", "."],
+                        cwd=self.repo_path,
+                        capture_output=True,
+                        text=True,
+                        timeout=30,
                     )
 
                 if result.returncode == 0:
@@ -445,7 +470,11 @@ class UIComponentAnalyzer:
         # Frontend linting
         try:
             result = subprocess.run(
-                ["npm", "run", "lint"], cwd=self.frontend_path, capture_output=True, text=True, timeout=60
+                ["npm", "run", "lint"],
+                cwd=self.frontend_path,
+                capture_output=True,
+                text=True,
+                timeout=60,
             )
             if result.returncode == 0:
                 testing_results["eslint"] = "PASSED"
@@ -541,7 +570,11 @@ class UIComponentAnalyzer:
             status_emoji = (
                 "✅"
                 if details["status"] == "ACTIVE"
-                else "⚠️" if details["status"] == "PARTIAL" else "🔄" if details["status"] == "RESTORED" else "❓"
+                else (
+                    "⚠️"
+                    if details["status"] == "PARTIAL"
+                    else "🔄" if details["status"] == "RESTORED" else "❓"
+                )
             )
             print(f"{status_emoji} {component}: {details['status']}")
             print(f"   Purpose: {details['purpose']}")
@@ -573,7 +606,9 @@ class UIComponentAnalyzer:
 
         for feature in missing:
             priority_emoji = (
-                "🔴" if feature["priority"] == "HIGH" else "🟡" if feature["priority"] == "MEDIUM" else "🟢"
+                "🔴"
+                if feature["priority"] == "HIGH"
+                else "🟡" if feature["priority"] == "MEDIUM" else "🟢"
             )
             print(f"{priority_emoji} {feature['category']}: {feature['feature']}")
             print(f"   Priority: {feature['priority']}")
@@ -614,7 +649,11 @@ class UIComponentAnalyzer:
         recommendations = self.generate_recommendations()
 
         for rec in recommendations:
-            priority_emoji = "🔴" if rec["priority"] == "CRITICAL" else "🟡" if rec["priority"] == "HIGH" else "🟢"
+            priority_emoji = (
+                "🔴"
+                if rec["priority"] == "CRITICAL"
+                else "🟡" if rec["priority"] == "HIGH" else "🟢"
+            )
             print(f"{priority_emoji} {rec['priority']}: {rec['action']}")
             print(f"   {rec['description']}")
             print()
@@ -640,7 +679,9 @@ class UIComponentAnalyzer:
 
         # Save detailed report
         report_file = (
-            self.repo_path / "reports" / f"comprehensive_ui_analysis_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+            self.repo_path
+            / "reports"
+            / f"comprehensive_ui_analysis_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
         )
         report_file.parent.mkdir(exist_ok=True)
 

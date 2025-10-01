@@ -259,7 +259,8 @@ def initialize_sample_data():
         {
             "name": "Jansen Family Garden Renovation",
             "description": (
-                "Complete renovation of backyard garden with focus on " "native plants and low maintenance"
+                "Complete renovation of backyard garden with focus on "
+                "native plants and low maintenance"
             ),
             "client_id": clients[0].id,
             "status": "In Progress",
@@ -275,7 +276,9 @@ def initialize_sample_data():
         },
         {
             "name": "Vondelpark East Entrance Redesign",
-            "description": ("Redesign of the eastern entrance to Vondelpark " "with sustainable landscaping"),
+            "description": (
+                "Redesign of the eastern entrance to Vondelpark " "with sustainable landscaping"
+            ),
             "client_id": clients[1].id,
             "status": "Planning",
             "project_type": "Public Space",
@@ -290,7 +293,9 @@ def initialize_sample_data():
         },
         {
             "name": "Hotel Courtyard Garden",
-            "description": ("Elegant courtyard garden design for boutique hotel " "with year-round interest"),
+            "description": (
+                "Elegant courtyard garden design for boutique hotel " "with year-round interest"
+            ),
             "client_id": clients[2].id,
             "status": "Completed",
             "project_type": "Commercial Landscape",

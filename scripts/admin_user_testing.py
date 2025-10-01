@@ -35,7 +35,11 @@ class AdminUserTester:
             response = self.session.get(f"{self.base_url}/health")
             if response.status_code == 200:
                 data = response.json()
-                self.test_results["api_tests"]["health"] = {"status": "PASS", "response_code": 200, "data": data}
+                self.test_results["api_tests"]["health"] = {
+                    "status": "PASS",
+                    "response_code": 200,
+                    "data": data,
+                }
                 return True
             self.test_results["api_tests"]["health"] = {
                 "status": "FAIL",
@@ -105,7 +109,9 @@ class AdminUserTester:
                     }
 
                     response = self.session.post(
-                        f"{self.base_url}/api/{entity}", json=create_data, headers={"Content-Type": "application/json"}
+                        f"{self.base_url}/api/{entity}",
+                        json=create_data,
+                        headers={"Content-Type": "application/json"},
                     )
 
                     if response.status_code in [200, 201]:
@@ -121,7 +127,10 @@ class AdminUserTester:
                         }
 
             except Exception as e:
-                self.test_results["crud_tests"][f"{entity}_error"] = {"status": "ERROR", "error": str(e)}
+                self.test_results["crud_tests"][f"{entity}_error"] = {
+                    "status": "ERROR",
+                    "error": str(e),
+                }
 
     def test_authentication_endpoints(self):
         """Test authentication related endpoints"""
@@ -264,7 +273,11 @@ class AdminUserTester:
         print("\n3. Testing CRUD Operations...")
         self.test_crud_operations()
 
-        crud_passes = sum(1 for result in self.test_results["crud_tests"].values() if result.get("status") == "PASS")
+        crud_passes = sum(
+            1
+            for result in self.test_results["crud_tests"].values()
+            if result.get("status") == "PASS"
+        )
         crud_total = len(self.test_results["crud_tests"])
         print(f"✅ CRUD Operations: {crud_passes}/{crud_total} passing")
 
@@ -272,7 +285,11 @@ class AdminUserTester:
         print("\n4. Testing Authentication Endpoints...")
         self.test_authentication_endpoints()
 
-        auth_passes = sum(1 for result in self.test_results["auth_tests"].values() if result.get("accessible", False))
+        auth_passes = sum(
+            1
+            for result in self.test_results["auth_tests"].values()
+            if result.get("accessible", False)
+        )
         auth_total = len(self.test_results["auth_tests"])
         print(f"✅ Auth Endpoints: {auth_passes}/{auth_total} accessible")
 
@@ -283,7 +300,9 @@ class AdminUserTester:
             print(f"⚠️ Found {len(issues)} issues:")
             for issue in issues:
                 severity_emoji = (
-                    "🔴" if issue["severity"] == "HIGH" else "🟡" if issue["severity"] == "MEDIUM" else "🟢"
+                    "🔴"
+                    if issue["severity"] == "HIGH"
+                    else "🟡" if issue["severity"] == "MEDIUM" else "🟢"
                 )
                 print(f"  {severity_emoji} {issue['category']}: {issue['description']}")
         else:
@@ -293,7 +312,9 @@ class AdminUserTester:
         print("\n6. Generating Recommendations...")
         recommendations = self.generate_recommendations()
         for rec in recommendations:
-            priority_emoji = "🔴" if rec["priority"] == "HIGH" else "🟡" if rec["priority"] == "MEDIUM" else "🟢"
+            priority_emoji = (
+                "🔴" if rec["priority"] == "HIGH" else "🟡" if rec["priority"] == "MEDIUM" else "🟢"
+            )
             print(f"  {priority_emoji} {rec['action']}: {rec['description']}")
 
         # Summary

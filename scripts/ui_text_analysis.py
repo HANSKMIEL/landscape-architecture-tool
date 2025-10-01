@@ -266,12 +266,18 @@ class UITextAnalyzer:
             # Collect issues by type
             if component_analysis.get("text_issues"):
                 self.analysis_results["text_display_issues"].extend(
-                    [{**issue, "file": component_analysis["file"]} for issue in component_analysis["text_issues"]]
+                    [
+                        {**issue, "file": component_analysis["file"]}
+                        for issue in component_analysis["text_issues"]
+                    ]
                 )
 
             if component_analysis.get("input_issues"):
                 self.analysis_results["input_field_issues"].extend(
-                    [{**issue, "file": component_analysis["file"]} for issue in component_analysis["input_issues"]]
+                    [
+                        {**issue, "file": component_analysis["file"]}
+                        for issue in component_analysis["input_issues"]
+                    ]
                 )
 
             if component_analysis.get("translation_issues"):
@@ -307,7 +313,9 @@ class UITextAnalyzer:
                     "category": "Text Display",
                     "action": "Implement Consistent Translation System",
                     "description": "Fix hardcoded text and ensure all components use translation system",
-                    "affected_files": len(set(issue["file"] for issue in self.analysis_results["text_display_issues"])),
+                    "affected_files": len(
+                        set(issue["file"] for issue in self.analysis_results["text_display_issues"])
+                    ),
                 }
             )
 
@@ -319,7 +327,9 @@ class UITextAnalyzer:
                     "category": "Input Fields",
                     "action": "Fix Input Field Accessibility and Validation",
                     "description": "Add proper labels, validation, and form handling to all input fields",
-                    "affected_files": len(set(issue["file"] for issue in self.analysis_results["input_field_issues"])),
+                    "affected_files": len(
+                        set(issue["file"] for issue in self.analysis_results["input_field_issues"])
+                    ),
                 }
             )
 
@@ -331,7 +341,9 @@ class UITextAnalyzer:
                     "category": "Translation",
                     "action": "Restore and Standardize Translation Usage",
                     "description": "Fix disabled translation functions and standardize translation usage",
-                    "affected_files": len(set(issue["file"] for issue in self.analysis_results["translation_issues"])),
+                    "affected_files": len(
+                        set(issue["file"] for issue in self.analysis_results["translation_issues"])
+                    ),
                 }
             )
 
@@ -344,7 +356,10 @@ class UITextAnalyzer:
                     "action": "Restore Disabled Functionality and Add Error Handling",
                     "description": "Fix disabled state variables and add proper error handling",
                     "affected_files": len(
-                        set(issue["file"] for issue in self.analysis_results["ui_functionality_issues"])
+                        set(
+                            issue["file"]
+                            for issue in self.analysis_results["ui_functionality_issues"]
+                        )
                     ),
                 }
             )
@@ -423,7 +438,9 @@ class UITextAnalyzer:
         print("🎯 RECOMMENDATIONS")
         print("-" * 30)
         for rec in recommendations:
-            priority_emoji = "🔴" if rec["priority"] == "HIGH" else "🟡" if rec["priority"] == "MEDIUM" else "🟢"
+            priority_emoji = (
+                "🔴" if rec["priority"] == "HIGH" else "🟡" if rec["priority"] == "MEDIUM" else "🟢"
+            )
             print(f"{priority_emoji} {rec['priority']}: {rec['action']}")
             print(f"  Category: {rec['category']}")
             print(f"  Description: {rec['description']}")
@@ -440,7 +457,11 @@ class UITextAnalyzer:
         print(f"• Total Recommendations: {len(recommendations)}")
 
         # Save report
-        report_file = self.repo_path / "reports" / f"ui_text_analysis_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+        report_file = (
+            self.repo_path
+            / "reports"
+            / f"ui_text_analysis_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+        )
         report_file.parent.mkdir(exist_ok=True)
 
         with open(report_file, "w") as f:

@@ -12,7 +12,9 @@ class Config:
 
     SECRET_KEY = os.environ.get("SECRET_KEY") or "dev-secret-key-change-in-production"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URL") or "sqlite:///landscape_architecture.db"
+    SQLALCHEMY_DATABASE_URI = (
+        os.environ.get("DATABASE_URL") or "sqlite:///landscape_architecture.db"
+    )
 
     # Validate secret key in production
     @classmethod
@@ -21,7 +23,9 @@ class Config:
         issues = []
         # S105: This is intentional comparison with development default - not a hardcoded secret
         if cls.SECRET_KEY == "dev-secret-key-change-in-production":  # noqa: S105
-            issues.append("SECRET_KEY is using default development value - set SECRET_KEY environment variable")
+            issues.append(
+                "SECRET_KEY is using default development value - set SECRET_KEY environment variable"
+            )
         return issues
 
     # Security configurations
@@ -37,7 +41,9 @@ class Config:
     RATELIMIT_STRATEGY = "moving-window"
 
     # CORS settings
-    CORS_ORIGINS = os.environ.get("CORS_ORIGINS", "http://localhost:5174,http://127.0.0.1:5174").split(",")
+    CORS_ORIGINS = os.environ.get(
+        "CORS_ORIGINS", "http://localhost:5174,http://127.0.0.1:5174"
+    ).split(",")
 
     # Logging
     LOG_LEVEL = os.environ.get("LOG_LEVEL", "INFO")
@@ -80,7 +86,9 @@ class ProductionConfig(Config):
                 warnings.warn(f"SECURITY WARNING: {issue}", UserWarning, stacklevel=2)
 
     # Production database - use SQLite for demo, PostgreSQL in real production
-    SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URL") or "sqlite:///landscape_architecture_prod.db"
+    SQLALCHEMY_DATABASE_URI = (
+        os.environ.get("DATABASE_URL") or "sqlite:///landscape_architecture_prod.db"
+    )
 
     # Enhanced security for production
     SESSION_COOKIE_SECURE = True
