@@ -1,0 +1,93 @@
+name: Check VPS Firewall Status
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check-firewall:
+    name: Check VPS Firewall and Network Status
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Setup SSH Key
+        env:
+          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+        run: |
+          mkdir -p ~/.ssh
+          echo "$VPS_SSH_KEY" > ~/.ssh/vps_key
+          chmod 600 ~/.ssh/vps_key
+
+      - name: Check Firewall and Network Status
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST != '' && secrets.VPS_HOST || '72.60.176.200' }}
+          VPS_USER: ${{ secrets.VPS_USER != '' && secrets.VPS_USER || 'root' }}
+        run: |
+          SSH_OPTS="-i ~/.ssh/vps_key -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=30"
+          
+          ssh $SSH_OPTS $VPS_USER@$VPS_HOST << 'EOF'
+          echo "=========================================="
+          echo "🔥 VPS Firewall & Network Status Check"
+          echo "=========================================="
+          echo ""
+          
+          echo "1️⃣ UFW Status:"
+          echo "----------------------------"
+          if command -v ufw &> /dev/null; then
+              ufw status verbose 2>/dev/null || echo "Unable to check (may need root)"
+          else
+              echo "UFW not installed"
+          fi
+          echo ""
+          
+          echo "2️⃣ iptables Rules:"
+          echo "----------------------------"
+          echo "INPUT chain:"
+          iptables -L INPUT -n -v --line-numbers 2>/dev/null | head -20 || echo "Unable to check (may need root)"
+          echo ""
+          
+          echo "3️⃣ Listening Ports:"
+          echo "----------------------------"
+          ss -tlnp 2>/dev/null | grep -E "LISTEN.*(5000|5001|8080)" || netstat -tlnp 2>/dev/null | grep -E "LISTEN.*(5000|5001|8080)" || echo "No services on target ports"
+          echo ""
+          
+          echo "4️⃣ Service Status:"
+          echo "----------------------------"
+          for service in nginx landscape-backend-dev landscape-backend; do
+              if systemctl list-unit-files | grep -q "$service"; then
+                  status=$(systemctl is-active $service 2>/dev/null || echo "inactive")
+                  echo "$service: $status"
+              fi
+          done
+          echo ""
+          
+          echo "5️⃣ Network Interfaces:"
+          echo "----------------------------"
+          ip addr show | grep -E "(inet |UP|DOWN)" | head -15 || echo "Unable to check"
+          echo ""
+          
+          echo "6️⃣ Test Local Connectivity:"
+          echo "----------------------------"
+          echo "Frontend (8080):"
+          curl -s -o /dev/null -w "HTTP Status: %{http_code}\n" http://localhost:8080 2>/dev/null || echo "Failed"
+          
+          echo "Backend (5001):"
+          curl -s http://localhost:5001/health 2>/dev/null || echo "Failed"
+          echo ""
+          
+          echo "7️⃣ Test External Connectivity (from VPS):"
+          echo "----------------------------"
+          PUBLIC_IP=$(curl -s ifconfig.me 2>/dev/null || echo "unknown")
+          echo "VPS Public IP: $PUBLIC_IP"
+          
+          echo "Testing connection to own public IP on port 8080:"
+          timeout 3 curl -s -o /dev/null -w "HTTP Status: %{http_code}\n" http://$PUBLIC_IP:8080 2>/dev/null || echo "Connection failed (firewall likely blocking)"
+          
+          echo ""
+          echo "=========================================="
+          echo "🏁 Check Complete"
+          echo "=========================================="
+          EOF
