@@ -36,7 +36,7 @@ pip install -r requirements.txt
 ### 4. Setup Frontend
 ```bash
 cd frontend
-npm ci --legacy-peer-deps
+npm ci
 npm run build
 cd ..
 ```
@@ -83,7 +83,8 @@ systemctl restart landscape-backend
 ### Frontend Issues
 ```bash
 cd /var/www/landscape-architecture-tool/frontend
-npm ci --legacy-peer-deps && npm run build
+npm ci
+npm run build
 systemctl restart landscape-backend
 ```
 

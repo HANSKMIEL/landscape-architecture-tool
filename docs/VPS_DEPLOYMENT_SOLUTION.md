@@ -167,7 +167,7 @@ journalctl -u landscape-backend -n 100
 ```bash
 # Rebuild frontend
 cd /var/www/landscape-architecture-tool/frontend
-npm ci --legacy-peer-deps
+npm ci
 npm run build
 
 # Restart service

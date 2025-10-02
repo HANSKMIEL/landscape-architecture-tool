@@ -72,7 +72,7 @@ cp .env.example .env
 
 # 7. Build frontend
 cd frontend
-npm ci --legacy-peer-deps
+npm ci
 npm run build
 cd ..
 
@@ -273,7 +273,7 @@ ls -la /var/www/landscape-architecture-tool/frontend/build/
 **Rebuild frontend if needed:**
 ```bash
 cd /var/www/landscape-architecture-tool/frontend
-npm ci --legacy-peer-deps
+npm ci
 npm run build
 ```
 
@@ -328,7 +328,7 @@ git fetch --all
 git reset --hard origin/V1.00D
 source venv/bin/activate
 pip install -r requirements.txt
-cd frontend && npm ci --legacy-peer-deps && npm run build && cd ..
+cd frontend && npm ci && npm run build && cd ..
 systemctl restart landscape-backend
 ```
 
