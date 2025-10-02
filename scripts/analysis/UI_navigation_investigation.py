@@ -1,20 +1,23 @@
 #!/usr/bin/env python3
 """
-UI Navigation Investigation for Plants Component
+UI Navigation Investigation for Plants Component.
 
-This script investigates UI navigation issues preventing access to the Add Plant button
-and other UI elements, and provides solutions for complete testing.
+This script investigates UI navigation issues preventing access to the
+Add Plant button and other UI elements, and provides solutions for
+complete testing.
 """
 
-import time
 import json
+import time
 from datetime import datetime
+
 from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import NoSuchElementException, TimeoutException
 from selenium.webdriver.chrome.options import Options
-from selenium.common.exceptions import TimeoutException, NoSuchElementException
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
+
 
 def setup_driver():
     """Setup Chrome driver with appropriate options"""
@@ -58,7 +61,8 @@ def investigate_ui_navigation():
         # Step 2: Check login page structure
         print("🔐 Analyzing login page...")
         try:
-            login_form = wait.until(EC.presence_of_element_located((By.TAG_NAME, "form")))
+            # Check for login form presence
+            wait.until(EC.presence_of_element_located((By.TAG_NAME, "form")))
             results["findings"]["login_page"] = "Found login form"
             
             # Look for demo credentials or login button
@@ -116,7 +120,9 @@ def investigate_ui_navigation():
             results["findings"]["login_attempt"] = "Login attempt completed"
             
         except NoSuchElementException as e:
-            results["navigation_issues"].append(f"Login form elements not found: {str(e)}")
+            results["navigation_issues"].append(
+                f"Login form elements not found: {e!s}"
+            )
         
         # Step 4: Check if we're on the dashboard
         print("📊 Checking dashboard access...")
@@ -133,7 +139,7 @@ def investigate_ui_navigation():
             dashboard_found = False
             for indicator in dashboard_indicators:
                 try:
-                    element = driver.find_element(By.XPATH, indicator)
+                    driver.find_element(By.XPATH, indicator)
                     dashboard_found = True
                     results["findings"]["dashboard_access"] = f"Dashboard detected via: {indicator}"
                     break
@@ -144,7 +150,9 @@ def investigate_ui_navigation():
                 results["navigation_issues"].append("Dashboard not accessible after login")
                 
         except Exception as e:
-            results["navigation_issues"].append(f"Dashboard check failed: {str(e)}")
+            results["navigation_issues"].append(
+                f"Dashboard check failed: {e!s}"
+            )
         
         # Step 5: Investigate navigation to Plants page
         print("🌱 Investigating Plants page navigation...")
@@ -184,8 +192,10 @@ def investigate_ui_navigation():
                 
                 for indicator in plants_page_indicators:
                     try:
-                        element = driver.find_element(By.XPATH, indicator)
-                        results["findings"]["plants_page_access"] = f"Plants page confirmed: {indicator}"
+                        driver.find_element(By.XPATH, indicator)
+                        results["findings"]["plants_page_access"] = (
+                            f"Plants page confirmed: {indicator}"
+                        )
                         break
                     except NoSuchElementException:
                         continue
@@ -194,7 +204,9 @@ def investigate_ui_navigation():
                 results["navigation_issues"].append("Plants navigation link not found")
                 
         except Exception as e:
-            results["navigation_issues"].append(f"Plants navigation failed: {str(e)}")
+            results["navigation_issues"].append(
+                f"Plants navigation failed: {e!s}"
+            )
         
         # Step 6: Look for Add Plant button
         print("➕ Searching for Add Plant button...")
@@ -232,7 +244,7 @@ def investigate_ui_navigation():
                     modal_found = False
                     for modal_selector in modal_selectors:
                         try:
-                            modal = driver.find_element(By.XPATH, modal_selector)
+                            driver.find_element(By.XPATH, modal_selector)
                             modal_found = True
                             results["findings"]["add_plant_modal"] = f"Add Plant modal opened: {modal_selector}"
                             break
@@ -251,7 +263,9 @@ def investigate_ui_navigation():
                 results["navigation_issues"].append("Add Plant button not found with any selector")
                 
         except Exception as e:
-            results["navigation_issues"].append(f"Add Plant button search failed: {str(e)}")
+            results["navigation_issues"].append(
+                f"Add Plant button search failed: {e!s}"
+            )
         
         # Step 7: Test input field if modal is open
         print("📝 Testing input field behavior...")
@@ -311,7 +325,9 @@ def investigate_ui_navigation():
                         time.sleep(0.1)
                         
                     except Exception as e:
-                        results["navigation_issues"].append(f"Input field test failed at character {i}: {str(e)}")
+                        results["navigation_issues"].append(
+                            f"Input field test failed at character {i}: {e!s}"
+                        )
                         break
                 
                 # Check final value
@@ -324,13 +340,13 @@ def investigate_ui_navigation():
                 results["navigation_issues"].append("Scientific name input field not found for testing")
                 
         except Exception as e:
-            results["navigation_issues"].append(f"Input field testing failed: {str(e)}")
+            results["navigation_issues"].append(
+                f"Input field testing failed: {e!s}"
+            )
         
         # Step 8: Document page structure
         print("🏗️ Documenting page structure...")
         try:
-            page_source = driver.page_source
-            
             # Extract key structural elements
             structural_elements = {
                 "forms": len(driver.find_elements(By.TAG_NAME, "form")),
@@ -343,7 +359,9 @@ def investigate_ui_navigation():
             results["findings"]["page_structure"] = structural_elements
             
         except Exception as e:
-            results["navigation_issues"].append(f"Page structure analysis failed: {str(e)}")
+            results["navigation_issues"].append(
+                f"Page structure analysis failed: {e!s}"
+            )
         
         # Step 9: Generate solutions
         print("💡 Generating solutions...")
@@ -363,8 +381,8 @@ def investigate_ui_navigation():
         print("✅ UI Navigation Investigation Complete!")
         
     except Exception as e:
-        results["navigation_issues"].append(f"Critical investigation error: {str(e)}")
-        print(f"❌ Investigation failed: {str(e)}")
+        results["navigation_issues"].append(f"Critical investigation error: {e!s}")
+        print(f"❌ Investigation failed: {e!s}")
         
     finally:
         if driver:
@@ -389,7 +407,7 @@ if __name__ == "__main__":
     
     if investigation_results["test_results"].get("input_field_test"):
         test_results = investigation_results["test_results"]["input_field_test"]
-        print(f"\n📝 Input Field Test Results:")
+        print("\n📝 Input Field Test Results:")
         print(f"- Characters typed: {len(test_results.get('characters_typed', []))}")
         print(f"- Focus events tracked: {len(test_results.get('focus_events', []))}")
         print(f"- Test passed: {test_results.get('test_passed', False)}")
@@ -402,4 +420,4 @@ if __name__ == "__main__":
     for issue in investigation_results["navigation_issues"]:
         print(f"  - {issue}")
     
-    print(f"\n📋 Full results saved to: ui_navigation_investigation.json")
+    print("\n📋 Full results saved to: ui_navigation_investigation.json")

@@ -249,7 +249,7 @@ class TestPlantRoutes(DatabaseTestMixin):
             "notes": "Updated notes",
         }
 
-        response = client.put(
+        response = authenticated_client.put(
             f"/api/plants/{sample_plant.id}",
             data=json.dumps(update_data),
             content_type="application/json",
@@ -265,7 +265,7 @@ class TestPlantRoutes(DatabaseTestMixin):
         """Test updating non-existent plant"""
         update_data = {"name": "Updated Name"}
 
-        response = client.put(
+        response = authenticated_client.put(
             "/api/plants/999",
             data=json.dumps(update_data),
             content_type="application/json",
@@ -279,7 +279,7 @@ class TestPlantRoutes(DatabaseTestMixin):
         """Test updating plant with invalid data"""
         update_data = {"height_min": 200.0, "height_max": 100.0}  # Invalid: max < min
 
-        response = client.put(
+        response = authenticated_client.put(
             f"/api/plants/{sample_plant.id}",
             data=json.dumps(update_data),
             content_type="application/json",
@@ -293,7 +293,7 @@ class TestPlantRoutes(DatabaseTestMixin):
         """Test deleting a plant successfully"""
         plant_id = sample_plant.id
 
-        response = client.delete(f"/api/plants/{plant_id}")
+        response = authenticated_client.delete(f"/api/plants/{plant_id}")
 
         assert response.status_code == 200
         data = response.get_json()
@@ -304,7 +304,7 @@ class TestPlantRoutes(DatabaseTestMixin):
 
     def test_delete_plant_not_found(self, authenticated_client, app_context):
         """Test deleting non-existent plant"""
-        response = client.delete("/api/plants/999")
+        response = authenticated_client.delete("/api/plants/999")
 
         assert response.status_code == 404
         data = response.get_json()
@@ -468,7 +468,7 @@ class TestPlantRoutesIntegration(DatabaseTestMixin):
 
         # 3. Update plant
         update_data = {"price": 55.99, "notes": "Updated in workflow test"}
-        response = client.put(
+        response = authenticated_client.put(
             f"/api/plants/{plant_id}",
             data=json.dumps(update_data),
             content_type="application/json",
@@ -485,7 +485,7 @@ class TestPlantRoutesIntegration(DatabaseTestMixin):
         assert search_results["plants"][0]["id"] == plant_id
 
         # 5. Delete plant
-        response = client.delete(f"/api/plants/{plant_id}")
+        response = authenticated_client.delete(f"/api/plants/{plant_id}")
         assert response.status_code == 200
 
         # 6. Verify deletion

@@ -3,8 +3,9 @@
 Simple API Test - Tests the landscape architecture tool API locally
 """
 
-import sys
 import os
+import sys
+
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 def test_api_endpoints():
@@ -20,7 +21,7 @@ def test_api_endpoints():
         
         with app.test_client() as client:
             # Test health endpoint
-            response = client.get('/health')
+            response = client.get("/health")
             if response.status_code == 200:
                 print("✅ Health endpoint: WORKING")
                 print(f"   Response: {response.get_json()}")
@@ -28,7 +29,7 @@ def test_api_endpoints():
                 print(f"❌ Health endpoint: FAILED (status: {response.status_code})")
                 
             # Test public API endpoint
-            response = client.get('/api/plant-recommendations/criteria-options')
+            response = client.get("/api/plant-recommendations/criteria-options")
             if response.status_code == 200:
                 data = response.get_json()
                 print("✅ Plant recommendations criteria: WORKING")
@@ -37,7 +38,7 @@ def test_api_endpoints():
                 print(f"❌ Plant recommendations criteria: FAILED (status: {response.status_code})")
                 
             # Test protected endpoint (should return 401 without auth)
-            response = client.get('/api/suppliers')
+            response = client.get("/api/suppliers")
             if response.status_code == 401:
                 print("✅ Suppliers endpoint: PROPERLY SECURED (401 without auth)")
             elif response.status_code == 200:
@@ -50,18 +51,18 @@ def test_api_endpoints():
                 "username": "admin",
                 "password": "admin123"
             }
-            response = client.post('/api/auth/login', json=login_data)
+            response = client.post("/api/auth/login", json=login_data)
             if response.status_code == 200:
                 data = response.get_json()
                 print("✅ Authentication: WORKING")
                 print(f"   User: {data.get('user', {}).get('username', 'Unknown')}")
                 
                 # Now test protected endpoint with session
-                response = client.get('/api/suppliers')
+                response = client.get("/api/suppliers")
                 if response.status_code == 200:
                     data = response.get_json()
                     print("✅ Protected endpoints: WORKING WITH AUTH")
-                    if isinstance(data, dict) and 'suppliers' in data:
+                    if isinstance(data, dict) and "suppliers" in data:
                         print(f"   Suppliers count: {len(data['suppliers'])}")
                     
             else:
@@ -70,15 +71,15 @@ def test_api_endpoints():
         return True
                 
     except Exception as e:
-        print(f"❌ API Test Failed: {str(e)}")
+        print(f"❌ API Test Failed: {e!s}")
         return False
 
 def test_database_initialization():
     """Test if database is properly initialized"""
     try:
         from src.main import create_app
+        from src.models.landscape import Plant, Product, Supplier
         from src.models.user import db
-        from src.models.landscape import Supplier, Plant, Product
         
         app = create_app()
         with app.app_context():
@@ -87,7 +88,7 @@ def test_database_initialization():
             plant_count = Plant.query.count()
             product_count = Product.query.count()
             
-            print(f"✅ Database initialized:")
+            print("✅ Database initialized:")
             print(f"   Suppliers: {supplier_count}")
             print(f"   Plants: {plant_count}")
             print(f"   Products: {product_count}")
@@ -95,7 +96,7 @@ def test_database_initialization():
             return True
             
     except Exception as e:
-        print(f"❌ Database test failed: {str(e)}")
+        print(f"❌ Database test failed: {e!s}")
         return False
 
 def main():
@@ -121,13 +122,12 @@ def main():
         print("✅ Database properly initialized")
         print("✅ Ready for production deployment")
         return 0
-    else:
-        print("❌ SOME TESTS FAILED")
-        if not api_success:
-            print("❌ API functionality issues")
-        if not db_success:
-            print("❌ Database initialization issues")
-        return 1
+    print("❌ SOME TESTS FAILED")
+    if not api_success:
+        print("❌ API functionality issues")
+    if not db_success:
+        print("❌ Database initialization issues")
+    return 1
 
 if __name__ == "__main__":
     sys.exit(main())

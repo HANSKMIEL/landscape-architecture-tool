@@ -5,18 +5,20 @@ Investigating the specific input field reactivation issue mentioned by @HANSKMIE
 Focus: Text truncation, focus loss, controlled input behavior
 """
 
-import time
 import json
+import time
+
 from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import NoSuchElementException, StaleElementReferenceException, TimeoutException
 from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.common.action_chains import ActionChains
-from selenium.common.exceptions import TimeoutException, NoSuchElementException, StaleElementReferenceException
-from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
+from webdriver_manager.chrome import ChromeDriverManager
+
 
 class InputFieldInvestigator:
     def __init__(self, base_url="http://72.60.176.200:8080"):
@@ -51,7 +53,7 @@ class InputFieldInvestigator:
             "test": test_name,
             "status": status,
             "details": details,
-            "timestamp": time.strftime('%Y-%m-%d %H:%M:%S')
+            "timestamp": time.strftime("%Y-%m-%d %H:%M:%S")
         }
         self.investigation_results.append(result)
         status_icon = "✅" if status == "PASS" else "❌" if status == "FAIL" else "⚠️"
@@ -62,7 +64,7 @@ class InputFieldInvestigator:
         self.issues_found.append({
             "category": category,
             "issue": issue,
-            "timestamp": time.strftime('%Y-%m-%d %H:%M:%S')
+            "timestamp": time.strftime("%Y-%m-%d %H:%M:%S")
         })
         print(f"🔍 ISSUE [{category}]: {issue}")
         
@@ -78,7 +80,7 @@ class InputFieldInvestigator:
             
             # Check if already logged in
             try:
-                dashboard_element = self.driver.find_element(By.XPATH, "//h1[contains(text(), 'Dashboard') or contains(text(), 'Landschap')]")
+                self.driver.find_element(By.XPATH, "//h1[contains(text(), 'Dashboard') or contains(text(), 'Landschap')]")
                 self.log_result("Already Logged In", "PASS", "Already authenticated")
                 return True
             except NoSuchElementException:
@@ -140,13 +142,13 @@ class InputFieldInvestigator:
                     
                     # Check if we're on plants page
                     try:
-                        plants_indicator = self.driver.find_element(By.XPATH, "//h1[contains(text(), 'Plants') or contains(text(), 'Planten')] | //div[contains(@class, 'plants')] | //button[contains(text(), 'Add Plant') or contains(text(), 'Plant Toevoegen')]")
+                        self.driver.find_element(By.XPATH, "//h1[contains(text(), 'Plants') or contains(text(), 'Planten')] | //div[contains(@class, 'plants')] | //button[contains(text(), 'Add Plant') or contains(text(), 'Plant Toevoegen')]")
                         self.log_result(f"Navigation via {strategy_name}", "PASS", "Successfully reached Plants section")
                         return True
                     except NoSuchElementException:
                         continue
                         
-                except Exception as e:
+                except Exception:
                     continue
             
             self.log_issue("Navigation", "Failed to navigate to Plants section with any strategy")
@@ -236,11 +238,11 @@ class InputFieldInvestigator:
             print(f"      🔍 Testing {field_name}...")
             
             # Get field attributes
-            field_type = input_field.get_attribute('type')
-            field_name_attr = input_field.get_attribute('name')
-            field_placeholder = input_field.get_attribute('placeholder')
-            field_value = input_field.get_attribute('value')
-            field_id = input_field.get_attribute('id')
+            field_type = input_field.get_attribute("type")
+            field_name_attr = input_field.get_attribute("name")
+            field_placeholder = input_field.get_attribute("placeholder")
+            input_field.get_attribute("value")
+            input_field.get_attribute("id")
             
             self.log_result(f"{field_name} Attributes", "INFO", 
                           f"Type: {field_type}, Name: {field_name_attr}, Placeholder: {field_placeholder}")
@@ -301,7 +303,7 @@ class InputFieldInvestigator:
                     time.sleep(0.1)  # Small delay
                     
                     # Check value after typing
-                    current_value = input_field.get_attribute('value')
+                    current_value = input_field.get_attribute("value")
                     expected_value = test_text[:i+1]
                     
                     if current_value != expected_value:
@@ -322,7 +324,7 @@ class InputFieldInvestigator:
                     return False
             
             # Final value check
-            final_value = input_field.get_attribute('value')
+            final_value = input_field.get_attribute("value")
             if final_value != test_text:
                 self.log_issue(f"{field_name} Final Value", 
                              f"Final value mismatch: expected '{test_text}', got '{final_value}'")
@@ -343,7 +345,7 @@ class InputFieldInvestigator:
             input_field.send_keys(test_text)  # Type all at once
             time.sleep(0.2)
             
-            rapid_value = input_field.get_attribute('value')
+            rapid_value = input_field.get_attribute("value")
             if rapid_value != test_text:
                 self.log_issue(f"{field_name} Rapid Typing", 
                              f"Rapid typing failed: expected '{test_text}', got '{rapid_value}'")
@@ -385,8 +387,8 @@ class InputFieldInvestigator:
             
             # Try to see current page structure
             page_source = self.driver.page_source
-            if 'plants' in page_source.lower():
-                plant_mentions = page_source.lower().count('plants')
+            if "plants" in page_source.lower():
+                plant_mentions = page_source.lower().count("plants")
                 self.log_result("Plants Content Detection", "PASS", f"Found {plant_mentions} mentions of 'plants' in page")
             else:
                 self.log_issue("Plants Content", "No 'plants' content found in current page")
@@ -397,8 +399,8 @@ class InputFieldInvestigator:
     def generate_investigation_report(self):
         """Generate comprehensive investigation report"""
         total_tests = len(self.investigation_results)
-        passed_tests = len([r for r in self.investigation_results if r['status'] == 'PASS'])
-        failed_tests = len([r for r in self.investigation_results if r['status'] == 'FAIL'])
+        passed_tests = len([r for r in self.investigation_results if r["status"] == "PASS"])
+        failed_tests = len([r for r in self.investigation_results if r["status"] == "FAIL"])
         total_issues = len(self.issues_found)
         
         print("\n" + "="*80)
@@ -411,17 +413,17 @@ class InputFieldInvestigator:
         print(f"🔍 Issues Found: {total_issues}")
         
         if total_issues > 0:
-            print(f"\n🔍 DETAILED ISSUES:")
+            print("\n🔍 DETAILED ISSUES:")
             print("-" * 40)
             for issue in self.issues_found:
                 print(f"  [{issue['category']}] {issue['issue']}")
         
         # Check for specific patterns
-        focus_issues = [i for i in self.issues_found if 'focus' in i['issue'].lower()]
-        truncation_issues = [i for i in self.issues_found if 'truncat' in i['issue'].lower()]
-        value_issues = [i for i in self.issues_found if 'value' in i['issue'].lower()]
+        focus_issues = [i for i in self.issues_found if "focus" in i["issue"].lower()]
+        truncation_issues = [i for i in self.issues_found if "truncat" in i["issue"].lower()]
+        value_issues = [i for i in self.issues_found if "value" in i["issue"].lower()]
         
-        print(f"\n📋 ISSUE PATTERNS:")
+        print("\n📋 ISSUE PATTERNS:")
         print("-" * 40)
         print(f"  Focus Issues: {len(focus_issues)}")
         print(f"  Truncation Issues: {len(truncation_issues)}")
@@ -431,24 +433,24 @@ class InputFieldInvestigator:
         
         # Save detailed report
         report_data = {
-            'vps_url': self.base_url,
-            'timestamp': time.strftime('%Y-%m-%d %H:%M:%S'),
-            'summary': {
-                'total_tests': total_tests,
-                'passed': passed_tests,
-                'failed': failed_tests,
-                'issues_found': total_issues
+            "vps_url": self.base_url,
+            "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
+            "summary": {
+                "total_tests": total_tests,
+                "passed": passed_tests,
+                "failed": failed_tests,
+                "issues_found": total_issues
             },
-            'issue_patterns': {
-                'focus_issues': len(focus_issues),
-                'truncation_issues': len(truncation_issues),
-                'value_issues': len(value_issues)
+            "issue_patterns": {
+                "focus_issues": len(focus_issues),
+                "truncation_issues": len(truncation_issues),
+                "value_issues": len(value_issues)
             },
-            'detailed_results': self.investigation_results,
-            'issues_found': self.issues_found
+            "detailed_results": self.investigation_results,
+            "issues_found": self.issues_found
         }
         
-        with open('input_field_investigation_report.json', 'w') as f:
+        with open("input_field_investigation_report.json", "w") as f:
             json.dump(report_data, f, indent=2)
         
         return total_issues == 0
@@ -482,8 +484,7 @@ class InputFieldInvestigator:
                 self.test_alternative_navigation()
             
             # Generate report
-            success = self.generate_investigation_report()
-            return success
+            return self.generate_investigation_report()
             
         finally:
             self.cleanup()

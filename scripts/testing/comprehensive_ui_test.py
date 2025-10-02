@@ -8,18 +8,19 @@ Specifically tests the issues mentioned by @HANSKMIEL:
 4. Missing texts identification
 """
 
-import time
 import json
+import time
+
 from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import NoSuchElementException, TimeoutException
 from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.support.ui import Select
-from selenium.common.exceptions import TimeoutException, NoSuchElementException
-from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import Select, WebDriverWait
+from webdriver_manager.chrome import ChromeDriverManager
+
 
 class ComprehensiveUITester:
     def __init__(self, base_url="http://72.60.176.200:8080"):
@@ -56,7 +57,7 @@ class ComprehensiveUITester:
             "test": test_name,
             "status": status,
             "details": details,
-            "timestamp": time.strftime('%Y-%m-%d %H:%M:%S')
+            "timestamp": time.strftime("%Y-%m-%d %H:%M:%S")
         }
         self.test_results.append(result)
         status_icon = "✅" if status == "PASS" else "❌" if status == "FAIL" else "⚠️"
@@ -67,7 +68,7 @@ class ComprehensiveUITester:
         self.issues_found.append({
             "category": category,
             "issue": issue,
-            "timestamp": time.strftime('%Y-%m-%d %H:%M:%S')
+            "timestamp": time.strftime("%Y-%m-%d %H:%M:%S")
         })
         print(f"🔍 ISSUE [{category}]: {issue}")
     
@@ -84,7 +85,7 @@ class ComprehensiveUITester:
             
             # Check if already logged in by looking for dashboard elements
             try:
-                dashboard_element = self.driver.find_element(By.XPATH, "//h1[contains(text(), 'Dashboard') or contains(text(), 'Landschap')]")
+                self.driver.find_element(By.XPATH, "//h1[contains(text(), 'Dashboard') or contains(text(), 'Landschap')]")
                 self.log_test("Already Logged In", "PASS", "Already authenticated")
                 return True
             except NoSuchElementException:
@@ -185,7 +186,7 @@ class ComprehensiveUITester:
                     # Try finding option by partial text
                     options = select.options
                     for option in options:
-                        if target_name.lower() in option.text.lower() or target_lang in option.get_attribute('value'):
+                        if target_name.lower() in option.text.lower() or target_lang in option.get_attribute("value"):
                             option.click()
                             selection_success = True
                             break
@@ -253,7 +254,7 @@ class ComprehensiveUITester:
         
         if len(found_unexpected) > 0:
             self.log_issue("Incomplete Translation", 
-                          f"Still found {len(found_unexpected)} {target_name == 'English' and 'Dutch' or 'English'} terms: {found_unexpected[:3]}...")
+                          f"Still found {len(found_unexpected)} {(target_name == 'English' and 'Dutch') or 'English'} terms: {found_unexpected[:3]}...")
     
     def test_all_panels(self):
         """Test all panels including Settings and other sections"""
@@ -340,9 +341,8 @@ class ComprehensiveUITester:
                         self.test_plants_input_fields()
                     
                     return True
-                else:
-                    self.log_issue(f"{panel_name} Panel", f"No content found after clicking {panel_name}")
-                    return False
+                self.log_issue(f"{panel_name} Panel", f"No content found after clicking {panel_name}")
+                return False
                     
             except Exception as e:
                 self.log_issue(f"{panel_name} Panel", f"Error checking panel content: {e}")
@@ -380,7 +380,7 @@ class ComprehensiveUITester:
             
             # Test language selector in settings if available
             try:
-                language_setting = self.driver.find_element(By.XPATH, "//select[option[contains(text(), 'English') or contains(text(), 'Nederlands')]]")
+                self.driver.find_element(By.XPATH, "//select[option[contains(text(), 'English') or contains(text(), 'Nederlands')]]")
                 self.log_test("Settings Language Selector", "PASS", "Language selector found in settings")
             except NoSuchElementException:
                 self.log_issue("Settings Language", "No language selector found in settings panel")
@@ -454,7 +454,7 @@ class ComprehensiveUITester:
                     input_field.click()
                 
                 # Check current value
-                current_value = input_field.get_attribute('value')
+                current_value = input_field.get_attribute("value")
                 expected_value = test_text[:i+1]
                 
                 if current_value != expected_value:
@@ -480,12 +480,12 @@ class ComprehensiveUITester:
             
             # Look for common patterns that indicate missing translations
             missing_patterns = [
-                r'\b[a-z]+\.[a-z]+\.[a-z]+\b',  # dot notation like 'plants.categories.tree'
-                r'\{[^}]+\}',                    # placeholder patterns like {name}
-                r'undefined',                    # undefined values
-                r'\bundefined\b',               # undefined as separate word
-                r'null',                        # null values
-                r'\[object Object\]',           # serialized objects
+                r"\b[a-z]+\.[a-z]+\.[a-z]+\b",  # dot notation like 'plants.categories.tree'
+                r"\{[^}]+\}",                    # placeholder patterns like {name}
+                r"undefined",                    # undefined values
+                r"\bundefined\b",               # undefined as separate word
+                r"null",                        # null values
+                r"\[object Object\]",           # serialized objects
             ]
             
             import re
@@ -507,9 +507,9 @@ class ComprehensiveUITester:
     def generate_comprehensive_report(self):
         """Generate comprehensive test report"""
         total_tests = len(self.test_results)
-        passed_tests = len([r for r in self.test_results if r['status'] == 'PASS'])
-        failed_tests = len([r for r in self.test_results if r['status'] == 'FAIL'])
-        warning_tests = len([r for r in self.test_results if r['status'] == 'WARN'])
+        passed_tests = len([r for r in self.test_results if r["status"] == "PASS"])
+        failed_tests = len([r for r in self.test_results if r["status"] == "FAIL"])
+        warning_tests = len([r for r in self.test_results if r["status"] == "WARN"])
         total_issues = len(self.issues_found)
         
         print("\n" + "="*80)
@@ -522,18 +522,18 @@ class ComprehensiveUITester:
         print(f"⚠️ Warnings: {warning_tests}")
         print(f"🔍 Issues Found: {total_issues}")
         
-        print(f"\n🌍 LANGUAGE SWITCHING RESULTS:")
+        print("\n🌍 LANGUAGE SWITCHING RESULTS:")
         print("-" * 40)
         for lang, results in self.language_test_results.items():
             print(f"Language: {lang}")
             print(f"  Expected terms found: {len(results['expected_found'])}")
             print(f"  Unexpected terms found: {len(results['unexpected_found'])}")
             print(f"  Text changed: {results['text_changed']}")
-            if results['unexpected_found']:
+            if results["unexpected_found"]:
                 print(f"  Issues: {results['unexpected_found'][:3]}...")
         
         if total_issues > 0:
-            print(f"\n🔍 ISSUES FOUND:")
+            print("\n🔍 ISSUES FOUND:")
             print("-" * 40)
             for issue in self.issues_found:
                 print(f"  [{issue['category']}] {issue['issue']}")
@@ -542,21 +542,21 @@ class ComprehensiveUITester:
         
         # Save detailed report
         report_data = {
-            'vps_url': self.base_url,
-            'timestamp': time.strftime('%Y-%m-%d %H:%M:%S'),
-            'summary': {
-                'total_tests': total_tests,
-                'passed': passed_tests,
-                'failed': failed_tests,
-                'warnings': warning_tests,
-                'issues_found': total_issues
+            "vps_url": self.base_url,
+            "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
+            "summary": {
+                "total_tests": total_tests,
+                "passed": passed_tests,
+                "failed": failed_tests,
+                "warnings": warning_tests,
+                "issues_found": total_issues
             },
-            'language_test_results': self.language_test_results,
-            'detailed_results': self.test_results,
-            'issues_found': self.issues_found
+            "language_test_results": self.language_test_results,
+            "detailed_results": self.test_results,
+            "issues_found": self.issues_found
         }
         
-        with open('comprehensive_ui_test_report.json', 'w') as f:
+        with open("comprehensive_ui_test_report.json", "w") as f:
             json.dump(report_data, f, indent=2)
         
         return total_issues == 0 and failed_tests == 0
@@ -591,9 +591,8 @@ class ComprehensiveUITester:
             self.identify_missing_texts()
             
             # Generate comprehensive report
-            success = self.generate_comprehensive_report()
+            return self.generate_comprehensive_report()
             
-            return success
             
         finally:
             self.cleanup()

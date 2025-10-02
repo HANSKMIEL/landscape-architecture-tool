@@ -9,11 +9,13 @@ Specifically addresses @HANSKMIEL's concerns:
 5. Features that need work
 """
 
-import requests
 import json
-import sys
 import os
+import sys
 from pathlib import Path
+
+import requests
+
 
 class VPSIssueAnalyzer:
     def __init__(self, base_url="http://72.60.176.200:8080"):
@@ -49,9 +51,9 @@ class VPSIssueAnalyzer:
                 return
             
             # Load translation files
-            with open(nl_file, 'r', encoding='utf-8') as f:
+            with open(nl_file, encoding="utf-8") as f:
                 nl_data = json.load(f)
-            with open(en_file, 'r', encoding='utf-8') as f:
+            with open(en_file, encoding="utf-8") as f:
                 en_data = json.load(f)
             
             # Compare structure
@@ -132,7 +134,7 @@ class VPSIssueAnalyzer:
             login_response = self.session.post(
                 f"{self.base_url}/api/auth/login",
                 json={"username": "admin", "password": "admin123"},
-                headers={'Content-Type': 'application/json'}
+                headers={"Content-Type": "application/json"}
             )
             
             if login_response.status_code == 200:
@@ -211,7 +213,7 @@ class VPSIssueAnalyzer:
                 self.log_issue("Plants Component", "Plants.jsx not found", "HIGH")
                 return
             
-            with open(plants_file, 'r', encoding='utf-8') as f:
+            with open(plants_file, encoding="utf-8") as f:
                 content = f.read()
             
             # Check for potential input field issues
@@ -259,7 +261,7 @@ class VPSIssueAnalyzer:
                 self.log_issue("Settings Component", "Settings.jsx not found", "HIGH")
                 return
             
-            with open(settings_file, 'r', encoding='utf-8') as f:
+            with open(settings_file, encoding="utf-8") as f:
                 content = f.read()
             
             # Check for language switching functionality
@@ -367,28 +369,28 @@ class VPSIssueAnalyzer:
         print("VPS ISSUE ANALYSIS REPORT - ADDRESSING @HANSKMIEL CONCERNS")
         print("="*80)
         
-        high_issues = [i for i in self.issues_found if i['severity'] == 'HIGH']
-        medium_issues = [i for i in self.issues_found if i['severity'] == 'MEDIUM'] 
-        low_issues = [i for i in self.issues_found if i['severity'] == 'LOW']
+        high_issues = [i for i in self.issues_found if i["severity"] == "HIGH"]
+        medium_issues = [i for i in self.issues_found if i["severity"] == "MEDIUM"] 
+        low_issues = [i for i in self.issues_found if i["severity"] == "LOW"]
         
         print(f"🔴 High Priority Issues: {len(high_issues)}")
         print(f"🟡 Medium Priority Issues: {len(medium_issues)}")
         print(f"🔵 Low Priority Issues: {len(low_issues)}")
         print(f"🚧 Missing Features Identified: {len(self.missing_features)}")
         
-        print(f"\n🔴 HIGH PRIORITY ISSUES:")
+        print("\n🔴 HIGH PRIORITY ISSUES:")
         print("-" * 40)
         for issue in high_issues:
             print(f"   • [{issue['category']}] {issue['issue']}")
         
-        print(f"\n🟡 MEDIUM PRIORITY ISSUES:")
+        print("\n🟡 MEDIUM PRIORITY ISSUES:")
         print("-" * 40)
         for issue in medium_issues[:5]:  # Show first 5
             print(f"   • [{issue['category']}] {issue['issue']}")
         if len(medium_issues) > 5:
             print(f"   ... and {len(medium_issues) - 5} more")
         
-        print(f"\n🚧 MISSING FEATURES ANALYSIS:")
+        print("\n🚧 MISSING FEATURES ANALYSIS:")
         print("-" * 40)
         for feature in self.missing_features:
             priority_icon = "🔴" if feature["priority"] == "HIGH" else "🟡"
@@ -397,7 +399,7 @@ class VPSIssueAnalyzer:
             print(f"      Evidence: {feature['evidence']}")
             print()
         
-        print(f"\n📋 RECOMMENDED FIXES:")
+        print("\n📋 RECOMMENDED FIXES:")
         print("-" * 40)
         print("1. 🌍 Fix Language Switching:")
         print("   - Review LanguageProvider implementation")
@@ -423,29 +425,29 @@ class VPSIssueAnalyzer:
         
         # Save report
         report_data = {
-            'analysis_timestamp': '2025-09-25 09:30:00',
-            'vps_url': self.base_url,
-            'issues_found': self.issues_found,
-            'missing_features': self.missing_features,
-            'summary': {
-                'high_priority': len(high_issues),
-                'medium_priority': len(medium_issues),
-                'low_priority': len(low_issues),
-                'missing_features': len(self.missing_features)
+            "analysis_timestamp": "2025-09-25 09:30:00",
+            "vps_url": self.base_url,
+            "issues_found": self.issues_found,
+            "missing_features": self.missing_features,
+            "summary": {
+                "high_priority": len(high_issues),
+                "medium_priority": len(medium_issues),
+                "low_priority": len(low_issues),
+                "missing_features": len(self.missing_features)
             }
         }
         
-        with open('vps_issue_analysis_report.json', 'w') as f:
+        with open("vps_issue_analysis_report.json", "w") as f:
             json.dump(report_data, f, indent=2)
         
-        print(f"📄 Detailed report saved to: vps_issue_analysis_report.json")
+        print("📄 Detailed report saved to: vps_issue_analysis_report.json")
         
         return len(high_issues) == 0
     
     def run_analysis(self):
         """Run complete issue analysis"""
         print("🔍 Starting VPS Issue Analysis...")
-        print(f"🎯 Addressing @HANSKMIEL concerns about:")
+        print("🎯 Addressing @HANSKMIEL concerns about:")
         print("   • Language switching issues")
         print("   • Untested panels (Settings, etc.)")
         print("   • Missing translations")
@@ -461,9 +463,8 @@ class VPSIssueAnalyzer:
         self.check_common_ui_issues()
         
         # Generate report
-        success = self.generate_issue_report()
+        return self.generate_issue_report()
         
-        return success
 
 def main():
     analyzer = VPSIssueAnalyzer()

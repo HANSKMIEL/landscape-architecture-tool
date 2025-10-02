@@ -11,9 +11,10 @@ Based on the analysis in the comments, the issue is likely related to:
 3. Modal or form state management issues
 """
 
-import os
 import json
+import os
 from datetime import datetime
+
 
 def analyze_plants_component():
     """Analyze the Plants component for potential DOM re-rendering issues"""
@@ -23,7 +24,7 @@ def analyze_plants_component():
     if not os.path.exists(component_path):
         return {"error": "Plants.jsx component not found"}
     
-    with open(component_path, 'r') as f:
+    with open(component_path) as f:
         content = f.read()
     
     analysis = {
@@ -99,7 +100,7 @@ def analyze_plants_component():
 def create_optimized_input_handler():
     """Create an optimized input handler to prevent focus loss"""
     
-    fix_content = '''
+    return """
 // Optimized Input Handler Fix for Plants Component
 // This fix addresses potential DOM re-rendering issues causing focus loss
 
@@ -223,14 +224,13 @@ const OptimizedPlantForm = React.memo(({
 });
 
 export { useOptimizedFormHandler, MemoizedInput, OptimizedPlantForm };
-'''
+"""
     
-    return fix_content
 
 def create_focus_debugging_script():
     """Create a script to debug focus issues in real-time"""
     
-    debug_script = '''
+    return """
 // Focus Debugging Script for Input Field Investigation
 // Add this to the Plants component to debug focus loss issues
 
@@ -299,14 +299,13 @@ const useFocusDebugger = (formData, componentName = 'PlantForm') => {
 // const debugInfo = useFocusDebugger(formData, 'PlantForm');
 
 export { useFocusDebugger };
-'''
+"""
     
-    return debug_script
 
 def generate_fix_implementation():
     """Generate the actual fix implementation for the Plants component"""
     
-    fixes = {
+    return {
         "timestamp": datetime.now().isoformat(),
         "analysis_results": analyze_plants_component(),
         "optimized_input_handler": create_optimized_input_handler(),
@@ -328,7 +327,6 @@ def generate_fix_implementation():
         ]
     }
     
-    return fixes
 
 if __name__ == "__main__":
     print("🔍 Analyzing Plants component for DOM re-rendering issues...")
@@ -360,11 +358,11 @@ if __name__ == "__main__":
     print("- FocusDebugging.jsx: Focus debugging utilities")
     
     print("\n🎯 Key Findings:")
-    for issue in analysis_results['analysis_results']['potential_issues']:
+    for issue in analysis_results["analysis_results"]["potential_issues"]:
         print(f"  - {issue}")
     
     print("\n📋 Next Steps:")
-    for i, step in enumerate(analysis_results['implementation_steps'], 1):
+    for _i, step in enumerate(analysis_results["implementation_steps"], 1):
         print(f"  {step}")
     
     print("\n✨ Root Cause Likely Identified:")

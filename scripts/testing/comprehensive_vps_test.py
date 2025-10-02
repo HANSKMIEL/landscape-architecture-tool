@@ -4,12 +4,14 @@ Comprehensive VPS Testing Script
 Tests all user functions on the VPS deployment at http://72.60.176.200:8080
 """
 
-import requests
 import json
-import sys
-from bs4 import BeautifulSoup
 import re
+import sys
 import time
+
+import requests
+from bs4 import BeautifulSoup
+
 
 class VPSUserFunctionTester:
     def __init__(self, base_url="http://72.60.176.200:8080"):
@@ -36,39 +38,39 @@ class VPSUserFunctionTester:
                 self.log_test("Homepage Access", "FAIL", f"Status code: {response.status_code}")
                 return False
                 
-            soup = BeautifulSoup(response.text, 'html.parser')
+            soup = BeautifulSoup(response.text, "html.parser")
             
             # Test HTML lang attribute
-            html_tag = soup.find('html')
-            lang = html_tag.get('lang') if html_tag else None
-            if lang == 'en':
+            html_tag = soup.find("html")
+            lang = html_tag.get("lang") if html_tag else None
+            if lang == "en":
                 self.log_test("HTML Language", "PASS", f"Language set to: {lang}")
             else:
                 self.log_test("HTML Language", "WARN", f"Language: {lang}, expected 'en'")
                 
             # Test title
-            title = soup.find('title')
-            if title and 'devdeploy' in title.text:
+            title = soup.find("title")
+            if title and "devdeploy" in title.text:
                 self.log_test("Page Title", "PASS", f"Title: {title.text}")
             else:
                 self.log_test("Page Title", "FAIL", f"Title: {title.text if title else 'None'}")
                 
             # Test meta viewport
-            viewport = soup.find('meta', attrs={'name': 'viewport'})
+            viewport = soup.find("meta", attrs={"name": "viewport"})
             if viewport:
                 self.log_test("Viewport Meta", "PASS", f"Content: {viewport.get('content')}")
             else:
                 self.log_test("Viewport Meta", "FAIL", "Viewport meta tag missing")
                 
             # Test charset
-            charset = soup.find('meta', attrs={'charset': True})
-            if charset and charset.get('charset') == 'UTF-8':
+            charset = soup.find("meta", attrs={"charset": True})
+            if charset and charset.get("charset") == "UTF-8":
                 self.log_test("Character Encoding", "PASS", "UTF-8")
             else:
                 self.log_test("Character Encoding", "WARN", f"Charset: {charset.get('charset') if charset else 'None'}")
                 
             # Test favicon
-            favicon = soup.find('link', attrs={'rel': 'icon'})
+            favicon = soup.find("link", attrs={"rel": "icon"})
             if favicon:
                 self.log_test("Favicon", "PASS", f"Type: {favicon.get('type')}")
             else:
@@ -86,18 +88,17 @@ class VPSUserFunctionTester:
             response = self.session.get(f"{self.base_url}/health")
             if response.status_code == 200:
                 data = response.json()
-                if data.get('status') == 'healthy':
+                if data.get("status") == "healthy":
                     self.log_test("API Health", "PASS", f"Version: {data.get('version')}")
                     
                     # Test database connectivity
-                    if data.get('database', {}).get('status') == 'connected':
+                    if data.get("database", {}).get("status") == "connected":
                         self.log_test("Database Connection", "PASS", "Database connected")
                     else:
                         self.log_test("Database Connection", "FAIL", "Database not connected")
                         
                     return True
-                else:
-                    self.log_test("API Health", "FAIL", f"Status: {data.get('status')}")
+                self.log_test("API Health", "FAIL", f"Status: {data.get('status')}")
             else:
                 self.log_test("API Health", "FAIL", f"Status code: {response.status_code}")
         except Exception as e:
@@ -116,12 +117,12 @@ class VPSUserFunctionTester:
             response = self.session.post(
                 f"{self.base_url}/api/auth/login",
                 json=login_data,
-                headers={'Content-Type': 'application/json'}
+                headers={"Content-Type": "application/json"}
             )
             
             if response.status_code == 200:
                 data = response.json()
-                if data.get('message') == 'Login successful':
+                if data.get("message") == "Login successful":
                     self.log_test("Authentication Login", "PASS", f"User: {data.get('user', {}).get('username')}")
                     
                     # Test authenticated endpoint
@@ -129,8 +130,7 @@ class VPSUserFunctionTester:
                     if stats_response.status_code == 200:
                         self.log_test("Authenticated API Access", "PASS", "Dashboard stats accessible")
                         return True
-                    else:
-                        self.log_test("Authenticated API Access", "FAIL", f"Status: {stats_response.status_code}")
+                    self.log_test("Authenticated API Access", "FAIL", f"Status: {stats_response.status_code}")
                 else:
                     self.log_test("Authentication Login", "FAIL", f"Message: {data.get('message')}")
             else:
@@ -160,10 +160,7 @@ class VPSUserFunctionTester:
                     data = response.json()
                     if endpoint in data or f"{endpoint[:-1]}" in data:  # Handle singular/plural
                         items = data.get(endpoint, data.get(f"{endpoint[:-1]}", []))
-                        if isinstance(items, list):
-                            count = len(items)
-                        else:
-                            count = data.get('total', 'unknown')
+                        count = len(items) if isinstance(items, list) else data.get("total", "unknown")
                         self.log_test(f"{name} GET", "PASS", f"Retrieved {count} items")
                     else:
                         self.log_test(f"{name} GET", "PASS", "Data retrieved")
@@ -183,12 +180,11 @@ class VPSUserFunctionTester:
             response = self.session.get(f"{self.base_url}/api/import/status")
             if response.status_code == 200:
                 data = response.json()
-                supported_formats = data.get('supported_formats', [])
-                if 'xlsx' in supported_formats and 'csv' in supported_formats:
+                supported_formats = data.get("supported_formats", [])
+                if "xlsx" in supported_formats and "csv" in supported_formats:
                     self.log_test("Excel Import Status", "PASS", f"Formats: {', '.join(supported_formats)}")
                     return True
-                else:
-                    self.log_test("Excel Import Status", "WARN", f"Limited formats: {supported_formats}")
+                self.log_test("Excel Import Status", "WARN", f"Limited formats: {supported_formats}")
             else:
                 self.log_test("Excel Import Status", "FAIL", f"Status: {response.status_code}")
         except Exception as e:
@@ -204,8 +200,8 @@ class VPSUserFunctionTester:
                 data = response.json()
                 
                 # Check for Dutch project statuses
-                project_statuses = data.get('projects_by_status', {})
-                dutch_statuses = ['Afgerond', 'In uitvoering', 'Planning']
+                project_statuses = data.get("projects_by_status", {})
+                dutch_statuses = ["Afgerond", "In uitvoering", "Planning"]
                 found_dutch = any(status in project_statuses for status in dutch_statuses)
                 
                 if found_dutch:
@@ -230,14 +226,13 @@ class VPSUserFunctionTester:
             response = self.session.post(
                 f"{self.base_url}/api/auth/login",
                 json=invalid_login,
-                headers={'Content-Type': 'application/json'}
+                headers={"Content-Type": "application/json"}
             )
             
             if response.status_code == 401:
                 self.log_test("Input Validation", "PASS", "Invalid credentials properly rejected")
                 return True
-            else:
-                self.log_test("Input Validation", "WARN", f"Unexpected status: {response.status_code}")
+            self.log_test("Input Validation", "WARN", f"Unexpected status: {response.status_code}")
         except Exception as e:
             self.log_test("Input Validation", "FAIL", str(e))
         return False
@@ -254,7 +249,7 @@ class VPSUserFunctionTester:
         for endpoint in endpoints:
             try:
                 start_time = time.time()
-                response = self.session.get(f"{self.base_url}{endpoint}")
+                self.session.get(f"{self.base_url}{endpoint}")
                 end_time = time.time()
                 
                 response_time = (end_time - start_time) * 1000  # Convert to ms
@@ -276,9 +271,9 @@ class VPSUserFunctionTester:
     def generate_report(self):
         """Generate comprehensive test report"""
         total_tests = len(self.test_results)
-        passed_tests = len([r for r in self.test_results if r['status'] == 'PASS'])
-        failed_tests = len([r for r in self.test_results if r['status'] == 'FAIL'])
-        warning_tests = len([r for r in self.test_results if r['status'] == 'WARN'])
+        passed_tests = len([r for r in self.test_results if r["status"] == "PASS"])
+        failed_tests = len([r for r in self.test_results if r["status"] == "FAIL"])
+        warning_tests = len([r for r in self.test_results if r["status"] == "WARN"])
         
         print("\n" + "="*60)
         print("VPS COMPREHENSIVE TEST REPORT")
@@ -293,30 +288,30 @@ class VPSUserFunctionTester:
         if failed_tests > 0:
             print("\n❌ FAILED TESTS:")
             for result in self.test_results:
-                if result['status'] == 'FAIL':
+                if result["status"] == "FAIL":
                     print(f"  - {result['test']}: {result['details']}")
                     
         if warning_tests > 0:
             print("\n⚠️ WARNINGS:")
             for result in self.test_results:
-                if result['status'] == 'WARN':
+                if result["status"] == "WARN":
                     print(f"  - {result['test']}: {result['details']}")
         
         print("\n" + "="*60)
         
         # Save detailed report
-        with open('vps_test_report.json', 'w') as f:
+        with open("vps_test_report.json", "w") as f:
             json.dump({
-                'vps_url': self.base_url,
-                'timestamp': time.strftime('%Y-%m-%d %H:%M:%S'),
-                'summary': {
-                    'total': total_tests,
-                    'passed': passed_tests,
-                    'failed': failed_tests,
-                    'warnings': warning_tests,
-                    'success_rate': (passed_tests/total_tests)*100
+                "vps_url": self.base_url,
+                "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
+                "summary": {
+                    "total": total_tests,
+                    "passed": passed_tests,
+                    "failed": failed_tests,
+                    "warnings": warning_tests,
+                    "success_rate": (passed_tests/total_tests)*100
                 },
-                'detailed_results': self.test_results
+                "detailed_results": self.test_results
             }, f, indent=2)
             
         return failed_tests == 0

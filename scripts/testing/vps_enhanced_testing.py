@@ -9,19 +9,21 @@ Addresses specific issues mentioned by @HANSKMIEL:
 5. Features and functions that still need work
 """
 
-import requests
 import json
-import sys
-from bs4 import BeautifulSoup
 import re
-import time
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.common.keys import Keys
 import subprocess
+import sys
+import time
+
+import requests
+from bs4 import BeautifulSoup
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
+
 
 class VPSEnhancedTester:
     def __init__(self, base_url="http://72.60.176.200:8080"):
@@ -53,7 +55,7 @@ class VPSEnhancedTester:
             "test": test_name,
             "status": status,
             "details": details,
-            "timestamp": time.strftime('%Y-%m-%d %H:%M:%S')
+            "timestamp": time.strftime("%Y-%m-%d %H:%M:%S")
         }
         self.test_results.append(result)
         status_icon = "✅" if status == "PASS" else "❌" if status == "FAIL" else "⚠️"
@@ -64,7 +66,7 @@ class VPSEnhancedTester:
         self.issues_found.append({
             "category": category,
             "issue": issue,
-            "timestamp": time.strftime('%Y-%m-%d %H:%M:%S')
+            "timestamp": time.strftime("%Y-%m-%d %H:%M:%S")
         })
         print(f"🔍 ISSUE [{category}]: {issue}")
         
@@ -199,7 +201,7 @@ class VPSEnhancedTester:
         """Switch language to English"""
         try:
             # Try different methods to switch language
-            if language_element.tag_name.lower() == 'select':
+            if language_element.tag_name.lower() == "select":
                 # It's a select element
                 from selenium.webdriver.support.ui import Select
                 select = Select(language_element)
@@ -245,7 +247,7 @@ class VPSEnhancedTester:
     
     def compare_language_texts(self, dutch_texts, english_texts):
         """Compare Dutch and English texts to identify translation issues"""
-        print(f"\n📊 Language Comparison Results:")
+        print("\n📊 Language Comparison Results:")
         print(f"   Dutch texts found: {len(dutch_texts)} - {dutch_texts}")
         print(f"   English texts found: {len(english_texts)} - {english_texts}")
         
@@ -373,10 +375,9 @@ class VPSEnhancedTester:
             # Test panel-specific functionality
             if panel_name == "Settings":
                 return self.test_settings_panel()
-            elif panel_name == "Plants":
+            if panel_name == "Plants":
                 return self.test_plants_panel_input_fields()
-            else:
-                return self.test_generic_panel_functionality(panel_name)
+            return self.test_generic_panel_functionality(panel_name)
                 
         except Exception as e:
             self.log_issue(f"{panel_name} Panel", f"Error testing panel: {e}")
@@ -465,7 +466,7 @@ class VPSEnhancedTester:
                     issues_found.append(f"Lost focus after character {i+1} ('{char}')")
                 
                 # Check current value
-                current_value = input_field.get_attribute('value')
+                current_value = input_field.get_attribute("value")
                 expected_value = test_text[:i+1]
                 
                 if current_value != expected_value:
@@ -514,18 +515,14 @@ class VPSEnhancedTester:
         """Check for missing translations patterns"""
         # Common patterns that indicate missing translations
         missing_patterns = [
-            r'\b[a-z]+\.[a-z]+\b',  # dot notation like 'plants.title'
-            r'\{[^}]+\}',           # placeholder patterns like {name}
-            r'undefined',           # undefined values
-            r'null',                # null values
-            r'[A-Z_]{3,}',         # ALL_CAPS constants
+            r"\b[a-z]+\.[a-z]+\b",  # dot notation like 'plants.title'
+            r"\{[^}]+\}",           # placeholder patterns like {name}
+            r"undefined",           # undefined values
+            r"null",                # null values
+            r"[A-Z_]{3,}",         # ALL_CAPS constants
         ]
         
-        for pattern in missing_patterns:
-            if re.search(pattern, text):
-                return True
-        
-        return False
+        return any(re.search(pattern, text) for pattern in missing_patterns)
     
     def identify_missing_features(self):
         """Identify features and functions that still need work"""
@@ -557,9 +554,9 @@ class VPSEnhancedTester:
         missing_features = self.identify_missing_features()
         
         total_tests = len(self.test_results)
-        passed_tests = len([r for r in self.test_results if r['status'] == 'PASS'])
-        failed_tests = len([r for r in self.test_results if r['status'] == 'FAIL'])
-        warning_tests = len([r for r in self.test_results if r['status'] == 'WARN'])
+        passed_tests = len([r for r in self.test_results if r["status"] == "PASS"])
+        failed_tests = len([r for r in self.test_results if r["status"] == "FAIL"])
+        warning_tests = len([r for r in self.test_results if r["status"] == "WARN"])
         total_issues = len(self.issues_found)
         
         print("\n" + "="*80)
@@ -572,9 +569,9 @@ class VPSEnhancedTester:
         print(f"⚠️ Warnings: {warning_tests}")
         print(f"🔍 Issues Found: {total_issues}")
         
-        print(f"\n🌍 LANGUAGE SWITCHING ANALYSIS:")
+        print("\n🌍 LANGUAGE SWITCHING ANALYSIS:")
         print("-" * 40)
-        translation_issues = [i for i in self.issues_found if 'translation' in i['category'].lower()]
+        translation_issues = [i for i in self.issues_found if "translation" in i["category"].lower()]
         if translation_issues:
             print("❌ Language switching issues identified:")
             for issue in translation_issues[:5]:  # Show first 5
@@ -582,9 +579,9 @@ class VPSEnhancedTester:
         else:
             print("✅ No major language switching issues found")
         
-        print(f"\n🎛️ PANEL TESTING RESULTS:")
+        print("\n🎛️ PANEL TESTING RESULTS:")
         print("-" * 40)
-        panel_issues = [i for i in self.issues_found if 'panel' in i['category'].lower()]
+        panel_issues = [i for i in self.issues_found if "panel" in i["category"].lower()]
         if panel_issues:
             print("❌ Panel issues identified:")
             for issue in panel_issues:
@@ -592,9 +589,9 @@ class VPSEnhancedTester:
         else:
             print("✅ All tested panels appear functional")
         
-        print(f"\n📝 INPUT FIELD ANALYSIS:")
+        print("\n📝 INPUT FIELD ANALYSIS:")
         print("-" * 40)
-        input_issues = [i for i in self.issues_found if 'input' in i['category'].lower() or 'field' in i['category'].lower()]
+        input_issues = [i for i in self.issues_found if "input" in i["category"].lower() or "field" in i["category"].lower()]
         if input_issues:
             print("❌ Input field issues identified:")
             for issue in input_issues:
@@ -602,7 +599,7 @@ class VPSEnhancedTester:
         else:
             print("✅ No input field issues detected")
         
-        print(f"\n🚧 MISSING FEATURES & FUNCTIONS:")
+        print("\n🚧 MISSING FEATURES & FUNCTIONS:")
         print("-" * 40)
         if missing_features["incomplete_translations"]:
             print("🌍 Translation gaps:")
@@ -623,21 +620,21 @@ class VPSEnhancedTester:
         
         # Save detailed report
         report_data = {
-            'vps_url': self.base_url,
-            'timestamp': time.strftime('%Y-%m-%d %H:%M:%S'),
-            'summary': {
-                'total_tests': total_tests,
-                'passed': passed_tests,
-                'failed': failed_tests,
-                'warnings': warning_tests,
-                'issues_found': total_issues
+            "vps_url": self.base_url,
+            "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
+            "summary": {
+                "total_tests": total_tests,
+                "passed": passed_tests,
+                "failed": failed_tests,
+                "warnings": warning_tests,
+                "issues_found": total_issues
             },
-            'detailed_results': self.test_results,
-            'issues_found': self.issues_found,
-            'missing_features': missing_features
+            "detailed_results": self.test_results,
+            "issues_found": self.issues_found,
+            "missing_features": missing_features
         }
         
-        with open('vps_enhanced_test_report.json', 'w') as f:
+        with open("vps_enhanced_test_report.json", "w") as f:
             json.dump(report_data, f, indent=2)
         
         return total_issues == 0 and failed_tests == 0

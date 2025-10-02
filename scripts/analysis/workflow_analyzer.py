@@ -6,9 +6,11 @@ Analyzes deployment workflows and VPS automation
 
 import json
 import os
-import yaml
 from pathlib import Path
 from typing import Dict, List
+
+import yaml
+
 
 class WorkflowAnalyzer:
     def __init__(self):
@@ -22,10 +24,10 @@ class WorkflowAnalyzer:
             "workflow_summary": {}
         }
         
-    def analyze_workflow(self, workflow_file: Path) -> Dict:
+    def analyze_workflow(self, workflow_file: Path) -> dict:
         """Analyze a single workflow file"""
         try:
-            with open(workflow_file, 'r') as f:
+            with open(workflow_file) as f:
                 workflow_content = yaml.safe_load(f)
                 
             analysis = {
@@ -60,7 +62,7 @@ class WorkflowAnalyzer:
                     # Extract secrets
                     if "${{ secrets." in step_run:
                         import re
-                        secrets = re.findall(r'\$\{\{\s*secrets\.([A-Z_]+)\s*\}\}', step_run)
+                        secrets = re.findall(r"\$\{\{\s*secrets\.([A-Z_]+)\s*\}\}", step_run)
                         analysis["secrets_used"].extend(secrets)
                         
                 # Check for environment URLs
@@ -152,7 +154,7 @@ class WorkflowAnalyzer:
             report.append("ℹ️ No secrets found in workflow analysis")
             
         # Deployment Targets
-        report.append(f"\n🎯 DEPLOYMENT TARGETS")
+        report.append("\n🎯 DEPLOYMENT TARGETS")
         report.append("-" * 40)
         
         if self.analysis_results["deployment_targets"]:
@@ -162,11 +164,11 @@ class WorkflowAnalyzer:
             report.append("ℹ️ No deployment targets identified")
             
         # Automation Features
-        report.append(f"\n🤖 AUTOMATION ANALYSIS")
+        report.append("\n🤖 AUTOMATION ANALYSIS")
         report.append("-" * 40)
         
         # Count different types of automation
-        total_workflows = len([f for f in self.workflows_dir.glob("*.yml")]) + len([f for f in self.workflows_dir.glob("*.yaml")])
+        total_workflows = len(list(self.workflows_dir.glob("*.yml"))) + len(list(self.workflows_dir.glob("*.yaml")))
         deployment_count = len(self.analysis_results["deployment_workflows"])
         vps_count = len(self.analysis_results["vps_related_workflows"])
         
@@ -186,7 +188,7 @@ class WorkflowAnalyzer:
             
         return "\n".join(report)
         
-    def check_vps_connectivity(self, vps_url: str = "http://72.60.176.200:8080") -> Dict:
+    def check_vps_connectivity(self, vps_url: str = "http://72.60.176.200:8080") -> dict:
         """Check VPS connectivity and basic functionality"""
         import requests
         
@@ -231,7 +233,7 @@ class WorkflowAnalyzer:
         except requests.exceptions.ConnectionError:
             connectivity_report["connection_status"] = "refused"
         except Exception as e:
-            connectivity_report["connection_status"] = f"error: {str(e)}"
+            connectivity_report["connection_status"] = f"error: {e!s}"
             
         return connectivity_report
 
@@ -247,7 +249,7 @@ def main():
     print(report)
     
     # Test VPS connectivity
-    print(f"\n🌐 VPS CONNECTIVITY TEST")
+    print("\n🌐 VPS CONNECTIVITY TEST")
     print("-" * 40)
     
     connectivity = analyzer.check_vps_connectivity()
@@ -258,11 +260,11 @@ def main():
     print(f"💚 API Health: {connectivity['api_health']}")
     
     # Overall assessment
-    print(f"\n🎯 OVERALL DEPLOYMENT ANALYSIS")
+    print("\n🎯 OVERALL DEPLOYMENT ANALYSIS")
     print("-" * 40)
     
     workflow_count = len(analyzer.analysis_results["vps_related_workflows"])
-    secrets_count = len(analyzer.analysis_results["secrets_required"])
+    len(analyzer.analysis_results["secrets_required"])
     
     if workflow_count > 0 and connectivity["connection_status"] == "connected":
         print("✅ VPS DEPLOYMENT: FULLY OPERATIONAL")
@@ -284,7 +286,7 @@ def main():
     with open("workflow_analysis_results.json", "w") as f:
         json.dump(results, f, indent=2)
         
-    print(f"\n📁 Detailed analysis saved to: workflow_analysis_results.json")
+    print("\n📁 Detailed analysis saved to: workflow_analysis_results.json")
 
 if __name__ == "__main__":
     from datetime import datetime

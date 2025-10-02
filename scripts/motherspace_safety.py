@@ -254,12 +254,8 @@ class MotherSpaceSafetyManager:
         # Process labels - handle both string labels and label objects
         labels = issue_data.get("labels", [])
         if labels:
-            # Handle GitHub API label format (list of dicts with 'name' key)
-            if isinstance(labels[0], dict):
-                label_names = [label.get("name", "") for label in labels]
-            else:
-                # Handle simple string list
-                label_names = labels
+            # Handle GitHub API label format (list of dicts with 'name' key) or simple string list
+            label_names = [label.get("name", "") for label in labels] if isinstance(labels[0], dict) else labels
             labels_str = "|".join(sorted(label_names))
         else:
             labels_str = "no_labels"
@@ -267,11 +263,6 @@ class MotherSpaceSafetyManager:
         # Create final fingerprint
         fingerprint_data = f"{content_hash}|{labels_str}|{salt}"
         return hashlib.sha256(fingerprint_data.encode()).hexdigest()[:16]
-
-    def get_issue_fingerprint(self, issue_data: dict[str, Any]) -> str:
-        """Generate fingerprint for issue using the fingerprinting system."""
-        # Use embedded fingerprinter to avoid pytest dependency
-        return self._generate_fingerprint_embedded(issue_data)
 
     def find_existing_tracking_issue(self, fingerprint: str) -> dict[str, Any] | None:
         """Find existing tracking issue with the same fingerprint."""

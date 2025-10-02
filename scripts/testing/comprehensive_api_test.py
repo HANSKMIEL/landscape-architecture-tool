@@ -5,17 +5,19 @@ Tests all major API endpoints and functionality to verify production readiness
 """
 
 import json
-import requests
 import sys
 import time
 from datetime import datetime
 from typing import Dict, List, Tuple
 
+import requests
+
+
 class LandscapeArchitectureAPITester:
     def __init__(self, base_url: str = "http://localhost:5000"):
         self.base_url = base_url
         self.session = requests.Session()
-        self.session.headers.update({'Content-Type': 'application/json'})
+        self.session.headers.update({"Content-Type": "application/json"})
         self.auth_token = None
         self.test_results = []
         
@@ -40,14 +42,12 @@ class LandscapeArchitectureAPITester:
                 if "status" in data and data["status"] == "healthy":
                     self.log_test("Health Endpoint", "PASS", f"Response: {data}")
                     return True
-                else:
-                    self.log_test("Health Endpoint", "FAIL", f"Invalid response: {data}")
-                    return False
-            else:
-                self.log_test("Health Endpoint", "FAIL", f"Status: {response.status_code}")
+                self.log_test("Health Endpoint", "FAIL", f"Invalid response: {data}")
                 return False
+            self.log_test("Health Endpoint", "FAIL", f"Status: {response.status_code}")
+            return False
         except Exception as e:
-            self.log_test("Health Endpoint", "FAIL", f"Exception: {str(e)}")
+            self.log_test("Health Endpoint", "FAIL", f"Exception: {e!s}")
             return False
             
     def test_public_endpoints(self) -> bool:
@@ -68,7 +68,7 @@ class LandscapeArchitectureAPITester:
                     self.log_test(f"Public Endpoint {endpoint}", "FAIL", f"Status: {response.status_code}")
                     all_passed = False
             except Exception as e:
-                self.log_test(f"Public Endpoint {endpoint}", "FAIL", f"Exception: {str(e)}")
+                self.log_test(f"Public Endpoint {endpoint}", "FAIL", f"Exception: {e!s}")
                 all_passed = False
                 
         return all_passed
@@ -88,14 +88,12 @@ class LandscapeArchitectureAPITester:
                 if "user" in data:
                     self.log_test("Authentication Login", "PASS", f"User: {data['user']['username']}")
                     return True
-                else:
-                    self.log_test("Authentication Login", "FAIL", f"No user in response: {data}")
-                    return False
-            else:
-                self.log_test("Authentication Login", "FAIL", f"Status: {response.status_code}, Response: {response.text}")
+                self.log_test("Authentication Login", "FAIL", f"No user in response: {data}")
                 return False
+            self.log_test("Authentication Login", "FAIL", f"Status: {response.status_code}, Response: {response.text}")
+            return False
         except Exception as e:
-            self.log_test("Authentication Login", "FAIL", f"Exception: {str(e)}")
+            self.log_test("Authentication Login", "FAIL", f"Exception: {e!s}")
             return False
             
     def test_protected_endpoints(self) -> bool:
@@ -127,7 +125,7 @@ class LandscapeArchitectureAPITester:
                     self.log_test(f"Protected Endpoint {endpoint}", "FAIL", f"Status: {response.status_code}")
                     all_passed = False
             except Exception as e:
-                self.log_test(f"Protected Endpoint {endpoint}", "FAIL", f"Exception: {str(e)}")
+                self.log_test(f"Protected Endpoint {endpoint}", "FAIL", f"Exception: {e!s}")
                 all_passed = False
                 
         return all_passed
@@ -164,11 +162,10 @@ class LandscapeArchitectureAPITester:
                     self.log_test("CRUD Create Supplier", "WARN", f"Auth required (expected): {response.status_code}")
                     
                 return True
-            else:
-                self.log_test("CRUD Create Supplier", "FAIL", f"Status: {response.status_code}")
-                return False
+            self.log_test("CRUD Create Supplier", "FAIL", f"Status: {response.status_code}")
+            return False
         except Exception as e:
-            self.log_test("CRUD Create Supplier", "FAIL", f"Exception: {str(e)}")
+            self.log_test("CRUD Create Supplier", "FAIL", f"Exception: {e!s}")
             return False
             
     def test_database_functionality(self) -> bool:
@@ -181,14 +178,12 @@ class LandscapeArchitectureAPITester:
                 if isinstance(data, dict) and len(data) > 0:
                     self.log_test("Database Functionality", "PASS", f"Criteria options loaded: {list(data.keys())}")
                     return True
-                else:
-                    self.log_test("Database Functionality", "FAIL", f"Empty or invalid data: {data}")
-                    return False
-            else:
-                self.log_test("Database Functionality", "FAIL", f"Status: {response.status_code}")
+                self.log_test("Database Functionality", "FAIL", f"Empty or invalid data: {data}")
                 return False
+            self.log_test("Database Functionality", "FAIL", f"Status: {response.status_code}")
+            return False
         except Exception as e:
-            self.log_test("Database Functionality", "FAIL", f"Exception: {str(e)}")
+            self.log_test("Database Functionality", "FAIL", f"Exception: {e!s}")
             return False
             
     def test_frontend_integration(self) -> bool:
@@ -199,14 +194,13 @@ class LandscapeArchitectureAPITester:
             if response.status_code in [200, 404]:  # 404 is ok if no route handler for /
                 self.log_test("Frontend Integration", "PASS", f"Status: {response.status_code}")
                 return True
-            else:
-                self.log_test("Frontend Integration", "FAIL", f"Status: {response.status_code}")
-                return False
+            self.log_test("Frontend Integration", "FAIL", f"Status: {response.status_code}")
+            return False
         except Exception as e:
-            self.log_test("Frontend Integration", "FAIL", f"Exception: {str(e)}")
+            self.log_test("Frontend Integration", "FAIL", f"Exception: {e!s}")
             return False
             
-    def run_comprehensive_test(self) -> Dict:
+    def run_comprehensive_test(self) -> dict:
         """Run all tests and return results"""
         print("🧪 Starting Comprehensive API Testing...")
         print(f"📍 Testing against: {self.base_url}")
@@ -253,7 +247,7 @@ class LandscapeArchitectureAPITester:
         print(f"Failed Categories: {results_summary['failed_categories']}")
         print(f"Warnings: {results_summary['warnings']}")
         
-        success_rate = (results_summary['passed_categories'] / results_summary['total_categories']) * 100
+        success_rate = (results_summary["passed_categories"] / results_summary["total_categories"]) * 100
         print(f"Success Rate: {success_rate:.1f}%")
         
         if success_rate >= 80:
@@ -269,7 +263,7 @@ class LandscapeArchitectureAPITester:
             "detailed_results": self.test_results
         }
 
-def test_vps_deployment(vps_url: str = "http://72.60.176.200:8080") -> Dict:
+def test_vps_deployment(vps_url: str = "http://72.60.176.200:8080") -> dict:
     """Test the VPS deployment specifically"""
     print(f"\n🌐 TESTING VPS DEPLOYMENT: {vps_url}")
     print("="*60)
@@ -296,10 +290,7 @@ if __name__ == "__main__":
     print("="*80)
     
     # Check if we should test local or VPS
-    if len(sys.argv) > 1:
-        base_url = sys.argv[1]
-    else:
-        base_url = "http://localhost:5000"
+    base_url = sys.argv[1] if len(sys.argv) > 1 else "http://localhost:5000"
         
     if "72.60.176.200" in base_url or "vps" in base_url.lower():
         # Test VPS deployment
@@ -313,7 +304,7 @@ if __name__ == "__main__":
     with open("api_test_results.json", "w") as f:
         json.dump(results, f, indent=2)
         
-    print(f"\n📁 Detailed results saved to: api_test_results.json")
+    print("\n📁 Detailed results saved to: api_test_results.json")
     
     # Exit with appropriate code
     sys.exit(0 if results["success_rate"] >= 80 else 1)
