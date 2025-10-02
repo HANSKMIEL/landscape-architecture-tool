@@ -191,7 +191,7 @@ test_git_repository() {
             "test -d .git" ""
         
         run_test "On V1.00D branch" \
-            "[[ \$(git branch --show-current) == 'V1.00D' ]]" ""
+            "[[ $(git branch --show-current) == \"V1.00D\" ]]" ""
         
         echo -e "${CYAN}Current commit:${NC} $(git rev-parse --short HEAD)"
         echo -e "${CYAN}Current branch:${NC} $(git branch --show-current)"
