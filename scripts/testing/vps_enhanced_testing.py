@@ -679,7 +679,9 @@ class VPSEnhancedTester:
         print("\n📝 INPUT FIELD ANALYSIS:")
         print("-" * 40)
         input_issues = [
-            i for i in self.issues_found if "input" in i["category"].lower() or "field" in i["category"].lower()
+            i
+            for i in self.issues_found
+            if "input" in i["category"].lower() or "field" in i["category"].lower()
         ]
         if input_issues:
             print("❌ Input field issues identified:")
@@ -769,3 +771,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
