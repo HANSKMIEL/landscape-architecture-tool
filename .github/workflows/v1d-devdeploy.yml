@@ -245,6 +245,15 @@ jobs:
 
           echo ""
 
+          # Fix backend binding configuration
+          echo "🔧 Fixing backend binding to allow external access..."
+          if [ -f scripts/deployment/fix_backend_binding.sh ]; then
+              chmod +x scripts/deployment/fix_backend_binding.sh
+              bash scripts/deployment/fix_backend_binding.sh || echo "⚠️  Backend binding fix completed with warnings"
+          fi
+
+          echo ""
+
           # Find and restart services - try multiple possible service names
           echo "🔄 Restarting services..."
           for service in "landscape-backend-dev" "landscape-backend" "landscape-tool"; do
