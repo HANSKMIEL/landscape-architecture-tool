@@ -252,8 +252,8 @@ setup_frontend() {
     fi
     
     log "Installing frontend dependencies..."
-    npm ci --legacy-peer-deps 2>&1 | tee -a "$LOG_FILE"
-    
+    npm ci 2>&1 | tee -a "$LOG_FILE"
+    # If this fails due to peer dependency conflicts, update package.json and package-lock.json to resolve them.
     log "Building frontend..."
     npm run build 2>&1 | tee -a "$LOG_FILE"
     
