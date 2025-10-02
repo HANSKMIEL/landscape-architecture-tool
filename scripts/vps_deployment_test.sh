@@ -281,7 +281,7 @@ test_secrets_security() {
     if [ -f "/var/www/landscape-architecture-tool/.env" ]; then
         run_test ".env file exists" "test -f /var/www/landscape-architecture-tool/.env" ""
         
-        PERMS=$(stat -c "%a" "/var/www/landscape-architecture-tool/.env" 2>/dev/null || stat -f "%OLp" "/var/www/landscape-architecture-tool/.env" 2>/dev/null)
+        PERMS=$(stat -c "%a" "/var/www/landscape-architecture-tool/.env" 2>/dev/null)
         if [ "$PERMS" = "600" ] || [ "$PERMS" = "400" ]; then
             run_test ".env file has secure permissions ($PERMS)" "true" ""
         else
