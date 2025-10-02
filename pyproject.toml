@@ -24,12 +24,23 @@ classifiers = [
 [tool.black]
 line-length = 120
 target-version = ["py312"]
+extend-exclude = '''
+/(
+    archive
+    | \.git
+    | \.venv
+    | venv
+    | build
+    | dist
+)/
+'''
 
 [tool.isort]
 profile = "black"
 line_length = 120
 multi_line_output = 3
 include_trailing_comma = true
+skip_glob = ["archive/*", "*/archive/*", ".venv/*", "venv/*"]
 
 [tool.ruff]
 line-length = 120
