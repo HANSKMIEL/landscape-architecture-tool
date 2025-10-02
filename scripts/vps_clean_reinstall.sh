@@ -172,6 +172,28 @@ restore_configuration() {
             fi
         fi
     fi
+    
+    # Verify critical environment variables are set
+    if [ -f "$APP_DIR/.env" ]; then
+        log "Verifying environment configuration..."
+        
+        # Check for SECRET_KEY
+        if ! grep -q "^SECRET_KEY=" "$APP_DIR/.env" || grep -q "^SECRET_KEY=your-" "$APP_DIR/.env"; then
+            log "⚠️ WARNING: SECRET_KEY not properly configured in .env"
+            log "Please set a secure SECRET_KEY in $APP_DIR/.env"
+        fi
+        
+        # Check for DATABASE_URL
+        if grep -q "^DATABASE_URL=" "$APP_DIR/.env"; then
+            log "✅ DATABASE_URL configured"
+        else
+            log "⚠️ DATABASE_URL not found, using SQLite default"
+        fi
+        
+        log "✅ Configuration restoration complete"
+    else
+        log "⚠️ WARNING: No .env file found - application may not start properly"
+    fi
 }
 
 # Function to setup Python environment
@@ -342,6 +364,61 @@ verify_installation() {
         log "✅ Frontend build files exist"
     else
         log "⚠️ Frontend build files not found"
+    fi
+    
+    # Verify SSH and user configuration
+    log "Verifying SSH and user configuration..."
+    
+    # Check if running as root
+    if [ "$EUID" -eq 0 ]; then
+        log "✅ Running with root privileges"
+    else
+        log "⚠️ Not running as root - some operations may fail"
+    fi
+    
+    # Check SSH service
+    if systemctl is-active --quiet sshd || systemctl is-active --quiet ssh; then
+        log "✅ SSH service is running"
+    else
+        log "⚠️ SSH service is not running"
+    fi
+    
+    # Check if www-data user exists
+    if id -u www-data >/dev/null 2>&1; then
+        log "✅ www-data user exists"
+    else
+        log "⚠️ www-data user not found"
+    fi
+    
+    # Check SSH key authentication setup
+    if [ -d "/root/.ssh" ]; then
+        log "✅ /root/.ssh directory exists"
+        if [ -f "/root/.ssh/authorized_keys" ]; then
+            KEY_COUNT=$(grep -c "^ssh-" /root/.ssh/authorized_keys 2>/dev/null || echo "0")
+            log "✅ SSH authorized_keys file exists with $KEY_COUNT key(s)"
+        else
+            log "⚠️ No authorized_keys file found - SSH key authentication not configured"
+        fi
+    else
+        log "⚠️ /root/.ssh directory not found"
+    fi
+    
+    # Check secrets backup location
+    if [ -d "/root/.secrets" ]; then
+        log "✅ Secrets backup directory exists"
+        if [ -f "/root/.secrets/jwt_secret.txt" ]; then
+            log "✅ JWT secret backup found"
+        fi
+    fi
+    
+    # Verify .env file security
+    if [ -f "$APP_DIR/.env" ]; then
+        PERMS=$(stat -c "%a" "$APP_DIR/.env" 2>/dev/null || stat -f "%OLp" "$APP_DIR/.env" 2>/dev/null)
+        if [ "$PERMS" = "600" ] || [ "$PERMS" = "400" ]; then
+            log "✅ .env file has secure permissions ($PERMS)"
+        else
+            log "⚠️ .env file permissions should be 600 (currently: $PERMS)"
+        fi
     fi
     
     # Display service status

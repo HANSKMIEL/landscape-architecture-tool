@@ -233,6 +233,87 @@ test_ports() {
     fi
 }
 
+# Test 11: SSH and User Configuration
+test_ssh_and_users() {
+    echo -e "${BLUE}=== Test 11: SSH and User Configuration ===${NC}"
+    
+    # Test SSH service
+    if command -v systemctl >/dev/null 2>&1; then
+        if systemctl is-active --quiet sshd || systemctl is-active --quiet ssh; then
+            run_test "SSH service is running" "true" ""
+        else
+            run_test "SSH service is running" "false" ""
+        fi
+    else
+        echo -e "${YELLOW}⚠️ systemctl not available, skipping SSH service test${NC}"
+        TEST_RESULTS+=("⚠️ SSH service test skipped")
+    fi
+    
+    # Test www-data user exists
+    if id -u www-data >/dev/null 2>&1; then
+        run_test "www-data user exists" "true" ""
+    else
+        run_test "www-data user exists" "false" ""
+    fi
+    
+    # Test SSH key authentication setup
+    if [ -d "/root/.ssh" ]; then
+        run_test "/root/.ssh directory exists" "test -d /root/.ssh" ""
+        
+        if [ -f "/root/.ssh/authorized_keys" ]; then
+            KEY_COUNT=$(grep -c "^ssh-" /root/.ssh/authorized_keys 2>/dev/null || echo "0")
+            run_test "SSH authorized_keys configured ($KEY_COUNT keys)" "test -f /root/.ssh/authorized_keys" ""
+        else
+            echo -e "${YELLOW}⚠️ No authorized_keys file - SSH key auth not configured${NC}"
+            TEST_RESULTS+=("⚠️ SSH key authentication not configured")
+        fi
+    else
+        echo -e "${YELLOW}⚠️ /root/.ssh not found${NC}"
+        TEST_RESULTS+=("⚠️ /root/.ssh directory not found")
+    fi
+}
+
+# Test 12: Secrets and Configuration Security
+test_secrets_security() {
+    echo -e "${BLUE}=== Test 12: Secrets and Configuration Security ===${NC}"
+    
+    # Test .env file exists and has proper permissions
+    if [ -f "/var/www/landscape-architecture-tool/.env" ]; then
+        run_test ".env file exists" "test -f /var/www/landscape-architecture-tool/.env" ""
+        
+        PERMS=$(stat -c "%a" "/var/www/landscape-architecture-tool/.env" 2>/dev/null || stat -f "%OLp" "/var/www/landscape-architecture-tool/.env" 2>/dev/null)
+        if [ "$PERMS" = "600" ] || [ "$PERMS" = "400" ]; then
+            run_test ".env file has secure permissions ($PERMS)" "true" ""
+        else
+            run_test ".env file has secure permissions" "false" ""
+            echo -e "${YELLOW}⚠️ Current permissions: $PERMS (should be 600)${NC}"
+        fi
+        
+        # Check for critical secrets
+        if grep -q "^SECRET_KEY=" "/var/www/landscape-architecture-tool/.env" 2>/dev/null; then
+            if ! grep -q "^SECRET_KEY=your-" "/var/www/landscape-architecture-tool/.env"; then
+                run_test "SECRET_KEY is configured" "true" ""
+            else
+                run_test "SECRET_KEY is configured (not default)" "false" ""
+            fi
+        else
+            echo -e "${YELLOW}⚠️ SECRET_KEY not found in .env${NC}"
+            TEST_RESULTS+=("⚠️ SECRET_KEY not configured")
+        fi
+    else
+        echo -e "${YELLOW}⚠️ .env file not found${NC}"
+        TEST_RESULTS+=("⚠️ .env file not found")
+    fi
+    
+    # Check secrets backup directory
+    if [ -d "/root/.secrets" ]; then
+        run_test "Secrets backup directory exists" "test -d /root/.secrets" ""
+    else
+        echo -e "${YELLOW}⚠️ /root/.secrets directory not found${NC}"
+        TEST_RESULTS+=("⚠️ Secrets backup not configured")
+    fi
+}
+
 # Display summary
 display_summary() {
     echo -e "${BLUE}================================================================${NC}"
@@ -274,6 +355,8 @@ main() {
     test_git_repository
     test_logs
     test_ports
+    test_ssh_and_users
+    test_secrets_security
     
     display_summary
 }
