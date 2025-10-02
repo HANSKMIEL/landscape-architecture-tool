@@ -164,8 +164,7 @@ def create_app():
             storage_uri="memory://",
         )
         if app.config.get("TESTING"):
-            logger.debug(
-                "Rate limiting configured with in-memory storage for testing")
+            logger.debug("Rate limiting configured with in-memory storage for testing")
 
     limiter.init_app(app)
 
@@ -369,8 +368,7 @@ def create_app():
         project_id = request.args.get("project_id")
         project_id = int(project_id) if project_id else None
 
-        analytics = analytics_service.get_project_performance_metrics(
-            project_id)
+        analytics = analytics_service.get_project_performance_metrics(project_id)
         return jsonify(analytics)
 
     @app.route("/api/analytics/client-insights", methods=["GET"])
@@ -395,8 +393,7 @@ def create_app():
             end_date = datetime.now().isoformat()
             start_date = (datetime.now() - timedelta(days=365)).isoformat()
 
-        analytics = analytics_service.get_financial_reporting(
-            (start_date, end_date))
+        analytics = analytics_service.get_financial_reporting((start_date, end_date))
         return jsonify(analytics)
 
     @app.route("/api/analytics/recommendation-effectiveness", methods=["GET"])
@@ -434,11 +431,9 @@ def create_app():
                     )
                 )
 
-            query = query.filter(
-                Supplier.specialization.ilike(f"%{specialization}%"))
+            query = query.filter(Supplier.specialization.ilike(f"%{specialization}%"))
 
-            paginated = query.order_by(Supplier.name).paginate(
-                page=page, per_page=per_page, error_out=False)
+            paginated = query.order_by(Supplier.name).paginate(page=page, per_page=per_page, error_out=False)
 
             result = {
                 "suppliers": [supplier.to_dict() for supplier in paginated.items],
@@ -447,8 +442,7 @@ def create_app():
                 "current_page": page,
             }
         else:
-            result = supplier_service.get_all(
-                search=search, page=page, per_page=per_page)
+            result = supplier_service.get_all(search=search, page=page, per_page=per_page)
 
         return jsonify(result)
 
@@ -481,8 +475,7 @@ def create_app():
             return jsonify(supplier), 201
         except ValidationError as e:
             # Convert Pydantic errors to string format for consistency
-            error_messages = [error.get("msg", str(error))
-                              for error in e.errors()]
+            error_messages = [error.get("msg", str(error)) for error in e.errors()]
             return (
                 jsonify(
                     {
@@ -524,8 +517,7 @@ def create_app():
             return jsonify(supplier)
         except ValidationError as e:
             # Convert Pydantic errors to string format for consistency
-            error_messages = [error.get("msg", str(error))
-                              for error in e.errors()]
+            error_messages = [error.get("msg", str(error)) for error in e.errors()]
             return (
                 jsonify(
                     {
@@ -598,8 +590,7 @@ def create_app():
             return jsonify(product), 201
         except ValidationError as e:
             # Convert Pydantic errors to string format for consistency
-            error_messages = [error.get("msg", str(error))
-                              for error in e.errors()]
+            error_messages = [error.get("msg", str(error)) for error in e.errors()]
             return (
                 jsonify(
                     {
@@ -634,25 +625,20 @@ def create_app():
             return jsonify({"error": "Supplier not found"}), 404
 
         # Count products and plants
-        product_count = Product.query.filter_by(
-            supplier_id=supplier_id).count()
+        product_count = Product.query.filter_by(supplier_id=supplier_id).count()
         plant_count = Plant.query.filter_by(supplier_id=supplier_id).count()
 
         # Calculate inventory value (products only, since they have stock_quantity)
         products = Product.query.filter_by(supplier_id=supplier_id).all()
-        total_inventory_value = sum(
-            (product.price or 0) * (product.stock_quantity or 0) for product in products)
+        total_inventory_value = sum((product.price or 0) * (product.stock_quantity or 0) for product in products)
 
         # Calculate average prices
-        product_prices = [
-            product.price for product in products if product.price]
-        average_product_price = sum(
-            product_prices) / len(product_prices) if product_prices else 0
+        product_prices = [product.price for product in products if product.price]
+        average_product_price = sum(product_prices) / len(product_prices) if product_prices else 0
 
         plants = Plant.query.filter_by(supplier_id=supplier_id).all()
         plant_prices = [plant.price for plant in plants if plant.price]
-        average_plant_price = sum(plant_prices) / \
-            len(plant_prices) if plant_prices else 0
+        average_plant_price = sum(plant_prices) / len(plant_prices) if plant_prices else 0
 
         return jsonify(
             {
@@ -676,8 +662,7 @@ def create_app():
         """Get all unique supplier specializations"""
 
         specializations = (
-            db.session.query(distinct(Supplier.specialization)).filter(
-                Supplier.specialization.isnot(None)).all()
+            db.session.query(distinct(Supplier.specialization)).filter(Supplier.specialization.isnot(None)).all()
         )
 
         return jsonify({"specializations": [spec[0] for spec in specializations]})
@@ -704,8 +689,7 @@ def create_app():
 
         # Subquery for plant counts
         plant_counts = (
-            db.session.query(Plant.supplier_id, func.count(
-                Plant.id).label("plant_count"))
+            db.session.query(Plant.supplier_id, func.count(Plant.id).label("plant_count"))
             .group_by(Plant.supplier_id)
             .subquery()
         )
@@ -714,16 +698,13 @@ def create_app():
         top_suppliers = (
             db.session.query(
                 Supplier,
-                func.coalesce(product_counts.c.product_count,
-                              0).label("product_count"),
-                func.coalesce(plant_counts.c.plant_count,
-                              0).label("plant_count"),
+                func.coalesce(product_counts.c.product_count, 0).label("product_count"),
+                func.coalesce(plant_counts.c.plant_count, 0).label("plant_count"),
             )
             .outerjoin(product_counts, Supplier.id == product_counts.c.supplier_id)
             .outerjoin(plant_counts, Supplier.id == plant_counts.c.supplier_id)
             .order_by(
-                (func.coalesce(product_counts.c.product_count, 0) +
-                 func.coalesce(plant_counts.c.plant_count, 0)).desc()
+                (func.coalesce(product_counts.c.product_count, 0) + func.coalesce(plant_counts.c.plant_count, 0)).desc()
             )
             .limit(limit)
             .all()
@@ -817,11 +798,9 @@ def create_app():
                 supplier = supplier_service.create(validated_data)
                 imported_suppliers.append(supplier)
             except ValidationError as e:
-                errors.append(
-                    {"index": i, "data": supplier_data, "errors": e.errors()})
+                errors.append({"index": i, "data": supplier_data, "errors": e.errors()})
             except Exception as e:
-                errors.append(
-                    {"index": i, "data": supplier_data, "error": str(e)})
+                errors.append({"index": i, "data": supplier_data, "error": str(e)})
 
         response_data = {
             "imported": imported_suppliers,
@@ -858,8 +837,7 @@ def create_app():
         filters = []
         if search:
             filters.append(
-                Plant.name.contains(search) | Plant.common_name.contains(
-                    search) | Plant.category.contains(search)
+                Plant.name.contains(search) | Plant.common_name.contains(search) | Plant.category.contains(search)
             )
 
         if category:
@@ -875,8 +853,7 @@ def create_app():
             query = query.filter(and_(*filters))
 
         # Apply pagination
-        paginated = query.order_by(Plant.name).paginate(
-            page=page, per_page=per_page, error_out=False)
+        paginated = query.order_by(Plant.name).paginate(page=page, per_page=per_page, error_out=False)
 
         result = {
             "plants": [plant.to_dict() for plant in paginated.items],
@@ -898,8 +875,7 @@ def create_app():
             data = request.get_json()
             if data is None:
                 return (
-                    jsonify(
-                        {"error": "Invalid JSON or missing content-type header"}),
+                    jsonify({"error": "Invalid JSON or missing content-type header"}),
                     422,
                 )
         except Exception:
@@ -914,8 +890,7 @@ def create_app():
             return jsonify(plant), 201
         except ValidationError as e:
             # Convert Pydantic errors to string format for consistency
-            error_messages = [error.get("msg", str(error))
-                              for error in e.errors()]
+            error_messages = [error.get("msg", str(error)) for error in e.errors()]
             return (
                 jsonify(
                     {
@@ -958,8 +933,7 @@ def create_app():
             return jsonify(plant)
         except ValidationError as e:
             # Convert Pydantic errors to string format for consistency
-            error_messages = [error.get("msg", str(error))
-                              for error in e.errors()]
+            error_messages = [error.get("msg", str(error)) for error in e.errors()]
             return (
                 jsonify(
                     {
@@ -991,8 +965,7 @@ def create_app():
     def get_plant_categories():
         """Get unique plant categories"""
 
-        categories = db.session.query(distinct(Plant.category)).filter(
-            Plant.category.isnot(None)).all()
+        categories = db.session.query(distinct(Plant.category)).filter(Plant.category.isnot(None)).all()
 
         return jsonify({"categories": [cat[0] for cat in categories]})
 
@@ -1065,11 +1038,9 @@ def create_app():
                 plant = plant_service.create(validated_data)
                 imported_plants.append(plant)
             except ValidationError as e:
-                errors.append(
-                    {"index": i, "data": plant_data, "errors": e.errors()})
+                errors.append({"index": i, "data": plant_data, "errors": e.errors()})
             except Exception as e:
-                errors.append(
-                    {"index": i, "data": plant_data, "error": str(e)})
+                errors.append({"index": i, "data": plant_data, "error": str(e)})
 
         response_data = {
             "imported": imported_plants,
@@ -1091,8 +1062,7 @@ def create_app():
         search = request.args.get("search", "")
         page = request.args.get("page", 1, type=int)
         per_page = request.args.get("per_page", 50, type=int)
-        result = product_service.get_all(
-            search=search, page=page, per_page=per_page)
+        result = product_service.get_all(search=search, page=page, per_page=per_page)
         return jsonify(result)
 
     @app.route("/api/products", methods=["POST"])
@@ -1112,8 +1082,7 @@ def create_app():
             return jsonify(product), 201
         except ValidationError as e:
             # Convert Pydantic errors to string format for consistency
-            error_messages = [error.get("msg", str(error))
-                              for error in e.errors()]
+            error_messages = [error.get("msg", str(error)) for error in e.errors()]
             return (
                 jsonify(
                     {
@@ -1144,8 +1113,7 @@ def create_app():
             return jsonify(product)
         except ValidationError as e:
             # Convert Pydantic errors to string format for consistency
-            error_messages = [error.get("msg", str(error))
-                              for error in e.errors()]
+            error_messages = [error.get("msg", str(error)) for error in e.errors()]
             return (
                 jsonify(
                     {
@@ -1177,8 +1145,7 @@ def create_app():
         search = request.args.get("search", "")
         page = request.args.get("page", 1, type=int)
         per_page = request.args.get("per_page", 50, type=int)
-        result = client_service.get_all(
-            search=search, page=page, per_page=per_page)
+        result = client_service.get_all(search=search, page=page, per_page=per_page)
         return jsonify(result)
 
     @app.route("/api/clients", methods=["POST"])
@@ -1196,15 +1163,13 @@ def create_app():
 
             # Add registration date if not provided
             if "registration_date" not in validated_data:
-                validated_data["registration_date"] = datetime.now().strftime(
-                    "%Y-%m-%d")
+                validated_data["registration_date"] = datetime.now().strftime("%Y-%m-%d")
 
             client = client_service.create(validated_data)
             return jsonify(client), 201
         except ValidationError as e:
             # Convert Pydantic errors to string format for consistency
-            error_messages = [error.get("msg", str(error))
-                              for error in e.errors()]
+            error_messages = [error.get("msg", str(error)) for error in e.errors()]
             return (
                 jsonify(
                     {
@@ -1235,8 +1200,7 @@ def create_app():
             return jsonify(client)
         except ValidationError as e:
             # Convert Pydantic errors to string format for consistency
-            error_messages = [error.get("msg", str(error))
-                              for error in e.errors()]
+            error_messages = [error.get("msg", str(error)) for error in e.errors()]
             return (
                 jsonify(
                     {
@@ -1271,8 +1235,7 @@ def create_app():
         per_page = request.args.get("per_page", 50, type=int)
         client_id = int(client_id) if client_id else None
 
-        result = project_service.get_all(
-            search=search, client_id=client_id, page=page, per_page=per_page)
+        result = project_service.get_all(search=search, client_id=client_id, page=page, per_page=per_page)
         return jsonify(result)
 
     @app.route("/api/projects", methods=["POST"])
@@ -1292,8 +1255,7 @@ def create_app():
             return jsonify(project), 201
         except ValidationError as e:
             # Convert Pydantic errors to string format for consistency
-            error_messages = [error.get("msg", str(error))
-                              for error in e.errors()]
+            error_messages = [error.get("msg", str(error)) for error in e.errors()]
             return (
                 jsonify(
                     {
@@ -1324,8 +1286,7 @@ def create_app():
             return jsonify(project)
         except ValidationError as e:
             # Convert Pydantic errors to string format for consistency
-            error_messages = [error.get("msg", str(error))
-                              for error in e.errors()]
+            error_messages = [error.get("msg", str(error)) for error in e.errors()]
             return (
                 jsonify(
                     {
@@ -1380,8 +1341,7 @@ def main():
 
         logger.info("Starting Landscape Architecture Management System...")
         logger.info(f"Backend API will be available at: http://{host}:{port}")
-        logger.info(
-            f"API documentation available at: http://{host}:{port}/api/")
+        logger.info(f"API documentation available at: http://{host}:{port}/api/")
 
         with app.app_context():
             # Initialize database with error handling
@@ -1405,8 +1365,7 @@ def main():
             # For testing, disable reloader to avoid issues in CI
             debug_mode = flask_env == "development"
             use_reloader = flask_env == "development"
-            logger.info(
-                f"Starting Flask server on {host}:{port} (env: {flask_env})")
+            logger.info(f"Starting Flask server on {host}:{port} (env: {flask_env})")
             app.run(
                 host=host,
                 port=port,
@@ -1414,8 +1373,7 @@ def main():
                 use_reloader=use_reloader,
             )
         else:
-            logger.warning(
-                "Use a production WSGI server (like Gunicorn) instead of " "Flask dev server")
+            logger.warning("Use a production WSGI server (like Gunicorn) instead of " "Flask dev server")
             print("For production, use: gunicorn -c gunicorn.conf.py wsgi:application")
 
     except Exception as e:
