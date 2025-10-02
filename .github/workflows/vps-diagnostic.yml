@@ -1,0 +1,130 @@
+name: VPS Diagnostic Check
+
+on:
+  workflow_dispatch:
+    inputs:
+      check_type:
+        description: 'Type of diagnostic check'
+        required: false
+        default: 'full'
+        type: choice
+        options:
+          - full
+          - services
+          - quick
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose-vps:
+    name: Run VPS Diagnostic
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          ref: V1.00D
+
+      - name: Setup SSH Key
+        env:
+          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+        run: |
+          if [ -n "$VPS_SSH_KEY" ]; then
+            mkdir -p ~/.ssh
+            echo "$VPS_SSH_KEY" > ~/.ssh/vps_key
+            chmod 600 ~/.ssh/vps_key
+            echo "✅ SSH key configured"
+          else
+            echo "❌ VPS_SSH_KEY secret not available"
+            exit 1
+          fi
+
+      - name: Run Remote Diagnostic
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST != '' && secrets.VPS_HOST || '72.60.176.200' }}
+          VPS_USER: ${{ secrets.VPS_USER != '' && secrets.VPS_USER || 'root' }}
+        run: |
+          echo "🔍 Running diagnostic on VPS..."
+          echo "Host: $VPS_HOST"
+          echo "User: $VPS_USER"
+          echo ""
+
+          # SSH options for non-interactive execution
+          SSH_OPTS="-i ~/.ssh/vps_key -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=30"
+
+          # Execute remote diagnostic script
+          ssh $SSH_OPTS $VPS_USER@$VPS_HOST 'bash -s' < scripts/deployment/remote_vps_diagnostic.sh || {
+            echo "❌ SSH connection or diagnostic failed"
+            echo "Attempting basic connectivity test..."
+            ssh $SSH_OPTS -o ConnectTimeout=10 $VPS_USER@$VPS_HOST "echo 'SSH works but diagnostic failed'" || echo "❌ SSH connection completely failed"
+            exit 1
+          }
+
+      - name: Attempt Service Restart
+        if: success()
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST != '' && secrets.VPS_HOST || '72.60.176.200' }}
+          VPS_USER: ${{ secrets.VPS_USER != '' && secrets.VPS_USER || 'root' }}
+        run: |
+          echo "🔄 Attempting to restart services..."
+          
+          SSH_OPTS="-i ~/.ssh/vps_key -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
+
+          ssh $SSH_OPTS $VPS_USER@$VPS_HOST << 'EOF'
+          # Try to restart services
+          echo "Restarting landscape services..."
+          
+          for service in "landscape-backend-dev" "landscape-backend"; do
+              if systemctl list-unit-files | grep -q "$service"; then
+                  echo "Found service: $service"
+                  systemctl restart "$service" 2>&1 && echo "✅ $service restarted" || echo "❌ Failed to restart $service"
+                  systemctl status "$service" --no-pager | head -10
+              fi
+          done
+
+          # Restart nginx
+          if systemctl is-active --quiet nginx; then
+              echo "Reloading nginx..."
+              systemctl reload nginx && echo "✅ Nginx reloaded" || echo "❌ Failed to reload nginx"
+          else
+              echo "Starting nginx..."
+              systemctl start nginx && echo "✅ Nginx started" || echo "❌ Failed to start nginx"
+          fi
+
+          # Wait and verify
+          sleep 5
+          
+          echo ""
+          echo "Post-restart verification:"
+          curl -s http://localhost:8080 | grep -q "Landscape" && echo "✅ Frontend responding" || echo "❌ Frontend not responding"
+          curl -s http://localhost:5001/health | grep -q "healthy" && echo "✅ Backend health OK" || echo "❌ Backend health failed"
+          EOF
+
+      - name: Final Verification
+        if: always()
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST != '' && secrets.VPS_HOST || '72.60.176.200' }}
+        run: |
+          echo "🧪 Final external verification..."
+          sleep 5
+          
+          echo "Testing frontend (port 8080)..."
+          if curl -s -o /dev/null -w "%{http_code}" http://$VPS_HOST:8080 | grep -q "200"; then
+            echo "✅ Frontend accessible externally"
+          else
+            echo "❌ Frontend not accessible externally"
+          fi
+          
+          echo ""
+          echo "Testing backend (port 5001)..."
+          if curl -s http://$VPS_HOST:5001/health | grep -q "healthy"; then
+            echo "✅ Backend accessible externally"
+          else
+            echo "❌ Backend not accessible externally"
+          fi
+          
+          echo ""
+          echo "📊 Diagnostic complete. Check logs above for details."
