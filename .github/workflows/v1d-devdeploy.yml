@@ -148,16 +148,18 @@ jobs:
           echo "🔄 Starting V1.00D deployment audit and update..."
 
           # Function to find actual deployment directory
-          # CRITICAL: Check dev directory FIRST to avoid deploying to production!
+          # CRITICAL: ONLY use development directory - NEVER deploy V1.00D to production!
           find_deployment_dir() {
-              for dir in "/var/www/landscape-architecture-tool-dev" "/var/www/landscape-architecture-tool" "/opt/landscape-architecture-tool" "/home/landscape-architecture-tool"; do
-                  if [ -d "$dir" ]; then
-                      echo "$dir"
-                      return 0
-                  fi
-              done
-              echo ""
-              return 1
+              # HARDCODED to development directory only for safety
+              DEV_DIR="/var/www/landscape-architecture-tool-dev"
+              
+              if [ -d "$DEV_DIR" ]; then
+                  echo "$DEV_DIR"
+                  return 0
+              else
+                  echo "$DEV_DIR"  # Return dev dir even if it doesn't exist - we'll create it
+                  return 0
+              fi
           }
 
           # Find the actual deployment directory
@@ -174,14 +176,16 @@ jobs:
               cd "$DEPLOY_DIR"
           fi
 
-          # CRITICAL SAFETY CHECK: Prevent accidental production deployment
-          if [[ "$DEPLOY_DIR" == "/var/www/landscape-architecture-tool" ]] && [[ ! "$DEPLOY_DIR" =~ -dev ]]; then
-              echo "🚨 CRITICAL ERROR: Attempting to deploy V1.00D to PRODUCTION directory!"
-              echo "❌ Deployment directory: $DEPLOY_DIR"
-              echo "❌ This V1.00D workflow should ONLY deploy to development environment"
+          # CRITICAL SAFETY CHECK: Verify we're deploying to development ONLY
+          if [[ "$DEPLOY_DIR" != "/var/www/landscape-architecture-tool-dev" ]]; then
+              echo "🚨 CRITICAL ERROR: Deployment directory is not the development directory!"
+              echo "❌ Current directory: $DEPLOY_DIR"
+              echo "✅ Expected directory: /var/www/landscape-architecture-tool-dev"
               echo "🛡️ BLOCKING deployment to protect production (optura.nl)"
               exit 1
           fi
+          
+          echo "✅ Confirmed deployment to development directory: $DEPLOY_DIR"
 
           # Show current commit before update
           echo "📍 Current commit: $(git rev-parse HEAD)"
@@ -200,15 +204,11 @@ jobs:
           sed -i 's/<title>.*<\/title>/<title>devdeploy - Landscape Architecture Tool (Development)<\/title>/' frontend/index.html
 
           # Setup Python virtual environment if needed
-          if [ ! -d "venv" ] && [ ! -d "venv-dev" ]; then
-              echo "🐍 Creating Python virtual environment..."
-              python3 -m venv venv
-              VENV_PATH="venv"
-          elif [ -d "venv-dev" ]; then
-              VENV_PATH="venv-dev"
-          else
-              VENV_PATH="venv"
+          if [ ! -d "venv-dev" ]; then
+              echo "🐍 Creating development Python virtual environment..."
+              python3 -m venv venv-dev
           fi
+          VENV_PATH="venv-dev"
 
           # Update Python dependencies
           echo "📦 Updating Python dependencies..."
@@ -254,19 +254,20 @@ jobs:
 
           echo ""
 
-          # Find and restart services - try multiple possible service names
-          echo "🔄 Restarting services..."
-          for service in "landscape-backend-dev" "landscape-backend" "landscape-tool"; do
-              if systemctl is-active --quiet "$service" 2>/dev/null; then
-                  echo "🔄 Restarting $service..."
-                  systemctl restart "$service"
-                  break
-              elif systemctl list-unit-files | grep -q "$service"; then
-                  echo "🔄 Starting $service..."
-                  systemctl start "$service"
-                  break
-              fi
-          done
+          # Find and restart services - ONLY development service
+          echo "🔄 Restarting development backend service..."
+          
+          if systemctl is-active --quiet "landscape-backend-dev" 2>/dev/null; then
+              echo "🔄 Restarting landscape-backend-dev service..."
+              systemctl restart landscape-backend-dev
+          elif systemctl list-unit-files | grep -q "landscape-backend-dev"; then
+              echo "🔄 Starting landscape-backend-dev service..."
+              systemctl start landscape-backend-dev
+          else
+              echo "⚠️ landscape-backend-dev service not found - may need manual setup"
+              echo "   Expected service: landscape-backend-dev.service"
+              echo "   Backend should bind to: 0.0.0.0:5001"
+          fi
 
           # Reload nginx
           if ! systemctl reload nginx 2>reload_err.log; then
@@ -284,20 +285,20 @@ jobs:
           echo "🔍 Verifying deployment..."
           sleep 5
 
-          # Test frontend
+          # Test frontend on port 8080 (development)
           if curl -s http://127.0.0.1:8080/ | grep -q "devdeploy"; then
-              echo "✅ Frontend devdeploy title verified"
+              echo "✅ Frontend devdeploy title verified on port 8080"
           else
-              echo "❌ Frontend devdeploy title verification failed"
+              echo "❌ Frontend devdeploy title verification failed on port 8080"
           fi
 
-          # Test various API endpoints
+          # Test backend API on port 5001 (development)
           for endpoint in "/health" "/api/health" "/api/status"; do
-              if curl -s "http://127.0.0.1:8080$endpoint" | grep -q -E "(healthy|ok|success)"; then
-                  echo "✅ API endpoint $endpoint responded successfully"
+              if curl -s "http://127.0.0.1:5001$endpoint" | grep -q -E "(healthy|ok|success)"; then
+                  echo "✅ API endpoint $endpoint on port 5001 responded successfully"
                   break
               else
-                  echo "⚠️ API endpoint $endpoint check failed"
+                  echo "⚠️ API endpoint $endpoint on port 5001 check failed"
               fi
           done
 
@@ -305,8 +306,19 @@ jobs:
           echo "📊 Final deployment status:"
           echo "   Directory: $DEPLOY_DIR"
           echo "   Commit: $(git rev-parse HEAD)"
+          echo "   Branch: V1.00D"
           echo "   Frontend built: $([ -f frontend/dist/index.html ] && echo 'Yes' || echo 'No')"
-          echo "   Services: $(systemctl is-active landscape-backend-dev landscape-backend 2>/dev/null | head -1 || echo 'Unknown')"
+          echo "   Venv: $VENV_PATH"
+          echo "   Service: landscape-backend-dev"
+          echo "   Backend binding: 0.0.0.0:5001"
+          echo "   Frontend port: 8080"
+          
+          # Verify service status
+          if systemctl is-active --quiet landscape-backend-dev; then
+              echo "   Service status: ✅ Active"
+          else
+              echo "   Service status: ❌ Not running (check systemctl status landscape-backend-dev)"
+          fi
           EOF
 
           # Execute deployment on VPS using SSH key with enhanced error handling
@@ -349,24 +361,32 @@ jobs:
             curl -s http://$VPS_HOST:8080 | head -20
           fi
 
-          # Test 2: API health endpoints (try multiple)
-          echo "🧪 Test 2: API health endpoint verification..."
+          # Test 2: API health endpoints on backend port 5001
+          echo "🧪 Test 2: Backend API health endpoint verification (port 5001)..."
           API_WORKING=0
           for endpoint in "/health" "/api/health" "/api/status"; do
-            echo "   Testing $endpoint..."
-            if curl -s http://$VPS_HOST:8080$endpoint | grep -q -E "(healthy|ok|success)"; then
-              echo "✅ API endpoint $endpoint responded successfully"
+            echo "   Testing http://$VPS_HOST:5001$endpoint..."
+            if curl -s -m 10 http://$VPS_HOST:5001$endpoint 2>/dev/null | grep -q -E "(healthy|ok|success)"; then
+              echo "✅ Backend API endpoint $endpoint responded successfully"
               API_WORKING=1
               VERIFICATION_PASSED=$((VERIFICATION_PASSED + 1))
               break
             else
-              echo "⚠️ API endpoint $endpoint check failed"
-              echo "   Response: $(curl -s http://$VPS_HOST:8080$endpoint | head -5)"
+              echo "⚠️ Backend API endpoint $endpoint check failed"
+              RESPONSE=$(curl -s -m 5 http://$VPS_HOST:5001$endpoint 2>&1 | head -5)
+              echo "   Response: $RESPONSE"
             fi
           done
 
           if [ $API_WORKING -eq 0 ]; then
-            echo "❌ All API health checks failed"
+            echo "❌ All backend API health checks failed on port 5001"
+            echo "⚠️ Note: Backend should be accessible via nginx proxy on port 8080"
+            echo "   Testing nginx proxy to backend..."
+            if curl -s -m 10 http://$VPS_HOST:8080/health 2>/dev/null | grep -q -E "(healthy|ok|success)"; then
+              echo "✅ Backend accessible via nginx proxy on port 8080"
+              API_WORKING=1
+              VERIFICATION_PASSED=$((VERIFICATION_PASSED + 1))
+            fi
           fi
 
           # Test 3: Basic connectivity
