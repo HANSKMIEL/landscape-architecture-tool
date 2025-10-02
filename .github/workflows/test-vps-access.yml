@@ -1,0 +1,71 @@
+name: Test VPS External Access
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test-vps-access:
+    name: Test VPS Access from GitHub Actions
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Test VPS Accessibility
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST != '' && secrets.VPS_HOST || '72.60.176.200' }}
+        run: |
+          echo "🧪 Testing VPS External Access"
+          echo "=========================================="
+          echo "VPS Host: $VPS_HOST"
+          echo "Testing from IP: $(curl -s ifconfig.me)"
+          echo ""
+          
+          echo "Test 1: Port 8080 (Frontend)"
+          echo "----------------------------"
+          if timeout 10 curl -I http://$VPS_HOST:8080/ 2>&1; then
+              echo "✅ Port 8080 accessible"
+          else
+              echo "❌ Port 8080 NOT accessible"
+          fi
+          echo ""
+          
+          echo "Test 2: Port 5001 (Backend Health)"
+          echo "----------------------------"
+          HEALTH_RESPONSE=$(timeout 10 curl -s http://$VPS_HOST:5001/health 2>&1 || echo "failed")
+          if echo "$HEALTH_RESPONSE" | grep -q "healthy"; then
+              echo "✅ Backend health OK"
+              echo "Response: $HEALTH_RESPONSE"
+          else
+              echo "❌ Backend NOT accessible"
+              echo "Response: $HEALTH_RESPONSE"
+          fi
+          echo ""
+          
+          echo "Test 3: Frontend Content Check"
+          echo "----------------------------"
+          FRONTEND=$(timeout 10 curl -s http://$VPS_HOST:8080/ 2>&1 || echo "failed")
+          if echo "$FRONTEND" | grep -q "devdeploy"; then
+              echo "✅ Frontend accessible with devdeploy title"
+              echo "Title found: $(echo "$FRONTEND" | grep -o '<title>.*</title>' | head -1)"
+          else
+              echo "❌ Frontend NOT accessible or missing devdeploy title"
+              echo "Response (first 200 chars): ${FRONTEND:0:200}"
+          fi
+          echo ""
+          
+          echo "Test 4: TCP Port Check"
+          echo "----------------------------"
+          # Try TCP connection test
+          timeout 3 bash -c "cat < /dev/null > /dev/tcp/$VPS_HOST/8080" 2>&1 && echo "✅ Port 8080 TCP connection successful" || echo "❌ Port 8080 TCP connection failed"
+          timeout 3 bash -c "cat < /dev/null > /dev/tcp/$VPS_HOST/5001" 2>&1 && echo "✅ Port 5001 TCP connection successful" || echo "❌ Port 5001 TCP connection failed"
+          echo ""
+          
+          echo "=========================================="
+          echo "📊 Test Summary"
+          echo "=========================================="
+          echo "If all tests fail, the Hostinger firewall may not be properly attached to the VPS."
+          echo "If tests succeed from GitHub Actions but fail from other locations,"
+          echo "the firewall may be working but with IP-based restrictions."
