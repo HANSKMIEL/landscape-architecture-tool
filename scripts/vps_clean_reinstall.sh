@@ -413,7 +413,7 @@ verify_installation() {
     
     # Verify .env file security
     if [ -f "$APP_DIR/.env" ]; then
-        PERMS=$(stat -c "%a" "$APP_DIR/.env" 2>/dev/null || stat -f "%OLp" "$APP_DIR/.env" 2>/dev/null)
+        PERMS=$(stat -c "%a" "$APP_DIR/.env" 2>/dev/null)
         if [ "$PERMS" = "600" ] || [ "$PERMS" = "400" ]; then
             log "✅ .env file has secure permissions ($PERMS)"
         else
