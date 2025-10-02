@@ -236,6 +236,15 @@ jobs:
               cat chown_error.log
           fi
           rm -f chown_error.log
+          # Run firewall diagnostic and fix
+          echo "🔥 Checking and configuring firewall..."
+          if [ -f scripts/deployment/fix_firewall.sh ]; then
+              chmod +x scripts/deployment/fix_firewall.sh
+              bash scripts/deployment/fix_firewall.sh || echo "⚠️  Firewall configuration completed with warnings"
+          fi
+
+          echo ""
+
           # Find and restart services - try multiple possible service names
           echo "🔄 Restarting services..."
           for service in "landscape-backend-dev" "landscape-backend" "landscape-tool"; do
