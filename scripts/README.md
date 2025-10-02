@@ -1,67 +1,133 @@
-# 🛠️ Scripts Directory
+# Deployment Scripts
 
-This directory contains all automation scripts organized by category for easy maintenance and discovery.
+This directory contains scripts for deploying and configuring the Landscape Architecture Tool.
 
-## 📁 Directory Structure
+## Available Scripts
 
-### 🚀 Deployment (`deployment/`)
-Scripts for deploying the application to various environments.
+### `vps_clean_reinstall.sh` ⭐ NEW
 
-- `enhanced-deploy.sh` - Enhanced deployment with validation
-- `github-actions-deploy.sh` - GitHub Actions deployment script
-- `promote_v1d_to_v1.sh` - **Main promotion script** (V1.00D → V1.00)
-- `setup_github_pages.sh` - GitHub Pages deployment setup
+A comprehensive script for performing a clean reinstallation of the application on the VPS from the V1.00D branch.
 
-### 🔧 Maintenance (`maintenance/`)
-Scripts for ongoing maintenance and updates.
+#### Usage
 
-- `backup.sh` - Database and file backup utility
-- `clean-cache.sh` - Cache cleanup and optimization
-- `sync_packages.sh` - Package synchronization between versions
-- `update_application.sh` - Application update automation
-
-### 🧪 Testing (`testing/`)
-Scripts for automated testing and validation.
-
-- `automated_validation.py` - Comprehensive validation suite
-- `test_quality_assurance.py` - Quality assurance testing
-- `validate_after_merge.sh` - Post-merge validation
-- `validate_structure.sh` - Repository structure validation
-
-### 💻 Development (`development/`)
-Scripts for development workflow and tools.
-
-- `copilot_workflow.py` - GitHub Copilot integration
-- `manage_titles.sh` - **Title management** (dev/prod)
-- `update_dev_log.py` - Development log automation
-
-### 🔒 Security (`security/`)
-Scripts for security setup and management.
-
-- `secure_vps_setup.sh` - VPS security hardening
-- `setup-secrets.sh` - Secrets management
-- `setup-webhooks.sh` - Webhook configuration
-
-## 🎯 Quick Reference
-
-### Most Used Scripts
 ```bash
-# Promote development to production
-./scripts/deployment/promote_v1d_to_v1.sh
-
-# Switch between dev/prod titles
-./scripts/development/manage_titles.sh dev|prod
-
-# Run comprehensive validation
-./scripts/testing/automated_validation.py
-
-# Backup before changes
-./scripts/maintenance/backup.sh
+# SSH into VPS and run directly
+ssh root@72.60.176.200
+cd /tmp
+curl -O https://raw.githubusercontent.com/HANSKMIEL/landscape-architecture-tool/V1.00D/scripts/vps_clean_reinstall.sh
+chmod +x vps_clean_reinstall.sh
+sudo ./vps_clean_reinstall.sh
 ```
 
-### Script Execution
-All scripts are executable and include help documentation. Run any script with `-h` or `--help` for usage information.
+#### Features
+
+- **Automatic backup** before deletion (keeps last 5 backups)
+- **Complete cleanup** of old installation
+- **Fresh clone** from V1.00D branch
+- **Configuration preservation** (.env file restored)
+- **Full setup** of Python environment, dependencies, and frontend
+- **Service configuration** with systemd
+- **Comprehensive verification** of installation
+- **Detailed logging** to `/var/log/landscape-reinstall.log`
+- **Rollback support** if issues occur
+
+#### Documentation
+
+- Full guide: `docs/VPS_CLEAN_REINSTALL_GUIDE.md`
+- Quick reference: `docs/VPS_QUICK_REFERENCE.md`
 
 ---
-**Last Updated**: September 13, 2025  
-**Organization**: V1.00D Repository Restructure
+
+### `deploy_to_vps.sh`
+
+Automates deployment of latest changes to the VPS at 72.60.176.200:8080.
+
+#### Usage
+
+```bash
+./scripts/deploy_to_vps.sh
+```
+
+#### Features
+
+- SSH access verification
+- Manual deployment commands display
+- Automated deployment if SSH access available
+- Deployment verification
+
+---
+
+### `webhook_deploy.sh`
+
+Webhook-triggered deployment script designed to run on the VPS server.
+
+#### Usage
+
+```bash
+# On VPS
+/root/webhook_deploy.sh
+
+# Or set up cron job for automatic updates
+0 */4 * * * /root/webhook_deploy.sh >> /var/log/landscape-deploy.log 2>&1
+```
+
+#### Features
+
+- Pulls latest changes from V1.00D branch
+- Updates Python and Node.js dependencies
+- Rebuilds frontend
+- Restarts services
+- Logs all operations
+
+---
+
+### `update_v1_from_dev.sh`
+
+Promotes validated changes from V1.00D development to V1.00 production package.
+
+#### Usage
+
+```bash
+./scripts/update_v1_from_dev.sh
+```
+
+#### Features
+
+- Runs tests before promotion
+- Creates backups
+- Copies validated changes
+- Creates version tags
+
+---
+
+### `secure_vps_setup.sh`
+
+A script for securely setting up environment variables and security configurations on the VPS.
+
+#### Usage
+
+```bash
+# Run on the VPS as root
+sudo ./secure_vps_setup.sh
+```
+
+#### Features
+
+- Sets up environment variables for the backend
+- Generates a secure random JWT secret
+- Configures proper file permissions
+- Sets up SSH key authentication (optional)
+- Creates a backup of sensitive information
+
+#### Requirements
+
+- Root access on the VPS
+- OpenSSL installed for generating secure secrets
+
+## Deployment Best Practices
+
+1. **Use SSH key authentication** instead of passwords
+2. **Set proper file permissions** for sensitive files
+3. **Keep environment variables secure** and separate from code
+4. **Regularly rotate secrets** and credentials
+5. **Implement proper backup procedures** for configuration files
