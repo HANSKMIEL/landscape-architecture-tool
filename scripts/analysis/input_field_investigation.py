@@ -148,7 +148,9 @@ class InputFieldInvestigator:
                     except NoSuchElementException:
                         continue
                         
-                except Exception:
+                except Exception as e:
+                    # Log and continue to next strategy
+                    print(f"Strategy {strategy_name} failed: {e}")
                     continue
             
             self.log_issue("Navigation", "Failed to navigate to Plants section with any strategy")

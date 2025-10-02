@@ -136,7 +136,8 @@ class VPSEnhancedTester:
                 try:
                     language_element = self.driver.find_element(By.XPATH, selector)
                     break
-                except:
+                except Exception:
+                    # Selector not found, try next
                     continue
             
             if not language_element:
@@ -209,13 +210,13 @@ class VPSEnhancedTester:
                 # Try to select English
                 try:
                     select.select_by_visible_text("🇬🇧 English")
-                except:
+                except Exception:
                     try:
                         select.select_by_visible_text("English")
-                    except:
+                    except Exception:
                         try:
                             select.select_by_value("en")
-                        except:
+                        except Exception:
                             self.log_issue("Language Switching", "Could not find English option in language selector")
                             return False
             else:
@@ -235,7 +236,8 @@ class VPSEnhancedTester:
                         english_option = self.driver.find_element(By.XPATH, option_xpath)
                         english_option.click()
                         break
-                    except:
+                    except Exception:
+                        # Option not found, try next xpath
                         continue
             
             self.log_test("Language Switch Action", "PASS", "Attempted to switch to English")
@@ -354,7 +356,8 @@ class VPSEnhancedTester:
                 try:
                     panel_link = self.driver.find_element(By.XPATH, selector)
                     break
-                except:
+                except Exception:
+                    # Selector not found, try next
                     continue
             
             if not panel_link:

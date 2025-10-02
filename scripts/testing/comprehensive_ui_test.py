@@ -178,11 +178,11 @@ class ComprehensiveUITester:
             try:
                 select.select_by_value(target_lang)
                 selection_success = True
-            except:
+            except Exception:
                 try:
                     select.select_by_visible_text(target_name)
                     selection_success = True
-                except:
+                except Exception:
                     # Try finding option by partial text
                     options = select.options
                     for option in options:
@@ -370,7 +370,8 @@ class ComprehensiveUITester:
                 try:
                     elements = self.driver.find_elements(By.XPATH, element_xpath)
                     sections_found += len(elements)
-                except:
+                except Exception:
+                    # Element not found, try next xpath
                     continue
             
             if sections_found > 0:
@@ -418,7 +419,8 @@ class ComprehensiveUITester:
             try:
                 cancel_button = self.driver.find_element(By.XPATH, "//button[contains(text(), 'Cancel') or contains(text(), 'Annuleren')]")
                 cancel_button.click()
-            except:
+            except Exception:
+                # Fallback to ESC key if cancel button not found
                 self.driver.send_keys(Keys.ESCAPE)
             
             return True

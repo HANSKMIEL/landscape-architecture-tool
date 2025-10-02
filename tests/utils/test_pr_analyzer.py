@@ -17,7 +17,11 @@ from tests.fixtures.auth_fixtures import authenticated_test_user, setup_test_aut
 project_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(project_root))
 
-from src.utils.pr_analyzer import PRAnalyzer, PRInfo, create_validation_report
+from src.utils.pr_analyzer import (  # noqa: E402
+    PRAnalyzer,
+    PRInfo,
+    create_validation_report,
+)
 
 
 class TestPRInfo:

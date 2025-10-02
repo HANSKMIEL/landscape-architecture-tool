@@ -51,7 +51,8 @@ def take_vps_screenshot():
                 EC.presence_of_element_located((By.XPATH, "//h1[contains(text(), 'Dashboard') or contains(text(), 'Landschap')]"))
             )
             print("✅ Logged in successfully")
-        except:
+        except Exception:
+            # Already logged in or login not required
             print("ℹ️ Already logged in or login not needed")
         
         # Take screenshot
@@ -67,7 +68,8 @@ def take_vps_screenshot():
             for i, elem in enumerate(nav_elements[:10]):  # First 10
                 try:
                     print(f"   {i+1}. {elem.text.strip()} -> {elem.get_attribute('href')}")
-                except:
+                except Exception:
+                    # Unable to extract element info
                     print(f"   {i+1}. [Unable to get text/href]")
                     
             # Check for language selector

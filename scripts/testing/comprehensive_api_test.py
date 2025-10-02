@@ -263,8 +263,10 @@ class LandscapeArchitectureAPITester:
             "detailed_results": self.test_results
         }
 
-def test_vps_deployment(vps_url: str = "http://72.60.176.200:8080") -> dict:
+def test_vps_deployment(vps_url: str | None = None) -> dict:
     """Test the VPS deployment specifically"""
+    if vps_url is None:
+        vps_url = "http://72.60.176.200:8080"
     print(f"\n🌐 TESTING VPS DEPLOYMENT: {vps_url}")
     print("="*60)
     

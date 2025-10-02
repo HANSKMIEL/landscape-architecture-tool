@@ -108,6 +108,7 @@ def investigate_ui_navigation():
             # Try to find password field
             password_field = driver.find_element(By.XPATH, "//input[@type='password']")
             password_field.clear()
+            # Test credentials (not production password)
             password_field.send_keys("admin123")
             results["findings"]["password_field"] = "Successfully entered password"
             

@@ -225,7 +225,7 @@ class WorkflowAnalyzer:
                         connectivity_report["api_health"] = "unhealthy"
                 else:
                     connectivity_report["api_health"] = f"error_{health_response.status_code}"
-            except:
+            except Exception:
                 connectivity_report["api_health"] = "unreachable"
                 
         except requests.exceptions.Timeout:
