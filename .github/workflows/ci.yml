@@ -151,12 +151,18 @@ jobs:
       - name: Lint with enhanced security and quality checks
         timeout-minutes: 5
         run: |
-          set -euxo pipefail
+          set -uxo pipefail  # Removed -e flag to allow Ruff warnings without failing
           echo "🔍 Running comprehensive code quality checks..."
           
-          # Python linting with enhanced security checks
+          # Python linting with enhanced security checks (non-blocking for warnings)
           echo "🐍 Python security and quality analysis..."
-          ruff check . --output-format=github || echo "⚠️ Ruff found ${?} issues (non-blocking)"
+          set +e  # Temporarily disable exit-on-error for Ruff
+          ruff check . --output-format=github
+          RUFF_EXIT=$?
+          set -e  # Re-enable exit-on-error
+          echo "⚠️ Ruff found ${RUFF_EXIT} issues (non-blocking, reported as annotations)"
+          
+          # Formatting checks (blocking)
           black --check . --diff
           isort --check-only . --diff
           
