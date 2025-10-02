@@ -1,0 +1,46 @@
+name: VPS Network Diagnostic
+
+on:
+  workflow_dispatch:
+
+jobs:
+  network-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Test VPS Connectivity from GitHub Actions
+        run: |
+          echo "🔍 Testing VPS connectivity from GitHub Actions..."
+          echo ""
+          
+          echo "1️⃣ Testing SSH port 22:"
+          if timeout 10 bash -c 'cat < /dev/null > /dev/tcp/72.60.176.200/22'; then
+            echo "✅ Port 22 (SSH) is reachable"
+          else
+            echo "❌ Port 22 (SSH) is not reachable"
+          fi
+          
+          echo ""
+          echo "2️⃣ Testing HTTP port 8080:"
+          if timeout 10 bash -c 'cat < /dev/null > /dev/tcp/72.60.176.200/8080'; then
+            echo "✅ Port 8080 (Frontend) is reachable"
+            curl -I http://72.60.176.200:8080/ || echo "HTTP request failed"
+          else
+            echo "❌ Port 8080 (Frontend) is not reachable"
+          fi
+          
+          echo ""
+          echo "3️⃣ Testing API port 5001:"
+          if timeout 10 bash -c 'cat < /dev/null > /dev/tcp/72.60.176.200/5001'; then
+            echo "✅ Port 5001 (Backend) is reachable"
+            curl http://72.60.176.200:5001/health || echo "API request failed"
+          else
+            echo "❌ Port 5001 (Backend) is not reachable"
+          fi
+          
+          echo ""
+          echo "4️⃣ GitHub Actions source IP:"
+          curl -s https://httpbin.org/ip | jq -r '.origin'
+          
+          echo ""
+          echo "5️⃣ Testing hostname resolution:"
+          nslookup srv1001041.hstgr.cloud || echo "DNS lookup failed"
