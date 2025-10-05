@@ -20,6 +20,9 @@ This directory contains comprehensive documentation for the Landscape Architectu
 - **[Production Configuration](deployment/PRODUCTION.md)** - Production environment settings
 - **[Hosting Architecture](deployment/HOSTING_ARCHITECTURE.md)** - Infrastructure and hosting details
 - **[Dependency Updates](deployment/DEPENDENCY_UPDATE_PROCEDURES.md)** - How to update dependencies
+- **[Deployment Overview](deployment/DEPLOYMENT.md)** - General deployment documentation
+- **[VPS Deployment Fix](deployment/VPS_DEPLOYMENT_FIX.md)** - VPS deployment troubleshooting
+- **[Deployment README](deployment/README_DEPLOYMENT.md)** - Deployment quick reference
 
 ### 🔧 Pipeline & CI/CD
 **Location**: `pipeline/`
@@ -40,6 +43,10 @@ This directory contains comprehensive documentation for the Landscape Architectu
 - **[Screenshots](analysis/SCREENSHOTS.md)** - Visual documentation and UI analysis
 - **[Phase 3 Completion](analysis/PHASE_3_COMPLETION_REPORT.md)** - Phase 3 completion analysis
 - **[Project Summary](analysis/PROJECT_COMPLETION_SUMMARY.md)** - Overall project completion status
+- **[Final Status Report](analysis/FINAL_STATUS_REPORT.md)** - Final project status
+- **[Fixes Applied](analysis/FIXES_APPLIED.md)** - Summary of fixes applied
+- **[V1.00 Implementation Complete](analysis/V1_00_IMPLEMENTATION_COMPLETE.md)** - V1.00 completion report
+- **[Version Comparison](analysis/version-comparison-20250912_115155.md)** - Version comparison analysis
 
 ### 📖 Guides & Integrations
 **Location**: `guides/`
@@ -49,6 +56,7 @@ This directory contains comprehensive documentation for the Landscape Architectu
 - **[Recommendation Engine](guides/RECOMMENDATION_ENGINE_ANALYSIS.md)** - AI recommendation system
 - **[Cache Usage](guides/CACHE_USAGE.md)** - Caching strategies and implementation
 - **[Unified Improvements](guides/UNIFIED_IMPROVEMENTS.md)** - Consolidated improvement suggestions
+- **[GitHub Pages Setup](guides/GITHUB_PAGES_SETUP.md)** - GitHub Pages deployment guide
 
 ### 📋 Project Management
 **Location**: `project-management/`

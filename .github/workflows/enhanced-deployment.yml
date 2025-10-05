@@ -260,33 +260,33 @@ jobs:
 
       - name: API endpoint tests
         run: |
-          python -c "
-import requests
-import sys
-
-def test_api_endpoints():
-    base_url = '${{ env.STAGING_URL }}'
-    
-    # Test health endpoint
-    response = requests.get(f'{base_url}/health')
-    assert response.status_code == 200, f'Health check failed: {response.status_code}'
-    print('✅ Health endpoint working')
-    
-    # Test dashboard stats
-    response = requests.get(f'{base_url}/api/dashboard/stats')
-    assert response.status_code == 200, f'Dashboard stats failed: {response.status_code}'
-    print('✅ Dashboard stats working')
-    
-    # Test authentication
-    auth_data = {'username': 'admin', 'password': 'admin123'}
-    response = requests.post(f'{base_url}/api/auth/login', json=auth_data)
-    assert response.status_code == 200, f'Authentication failed: {response.status_code}'
-    print('✅ Authentication working')
-    
-    print('✅ All API tests passed')
-
-test_api_endpoints()
-"
+          python -c '
+          import requests
+          import sys
+          
+          def test_api_endpoints():
+              base_url = "${{ env.STAGING_URL }}"
+              
+              # Test health endpoint
+              response = requests.get(f"{base_url}/health")
+              assert response.status_code == 200, f"Health check failed: {response.status_code}"
+              print("✅ Health endpoint working")
+              
+              # Test dashboard stats
+              response = requests.get(f"{base_url}/api/dashboard/stats")
+              assert response.status_code == 200, f"Dashboard stats failed: {response.status_code}"
+              print("✅ Dashboard stats working")
+              
+              # Test authentication
+              auth_data = {"username": "admin", "password": "admin123"}
+              response = requests.post(f"{base_url}/api/auth/login", json=auth_data)
+              assert response.status_code == 200, f"Authentication failed: {response.status_code}"
+              print("✅ Authentication working")
+              
+              print("✅ All API tests passed")
+          
+          test_api_endpoints()
+          '
 
       - name: Frontend tests
         run: |
@@ -441,12 +441,12 @@ test_api_endpoints()
               repo: context.repo.repo,
               body: `## 🚀 Deployment Status
 
-${{ steps.status.outputs.message }}
+            ${{ steps.status.outputs.message }}
 
-**Environments:**
-- **Staging**: ${{ env.STAGING_URL }}
-- **Production**: ${{ env.PRODUCTION_URL }}
+            **Environments:**
+            - **Staging**: ${{ env.STAGING_URL }}
+            - **Production**: ${{ env.PRODUCTION_URL }}
 
-**Commit**: \`${{ needs.validate-environment.outputs.git-sha }}\`
-**Workflow**: [View Run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})`
+            **Commit**: \`${{ needs.validate-environment.outputs.git-sha }}\`
+            **Workflow**: [View Run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})`
             })

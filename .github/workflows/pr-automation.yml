@@ -101,13 +101,13 @@ jobs:
                 issue_number: pr.number,
                 body: `⚠️ **Large PR Warning**
                 
-This PR contains ${totalChanges} changes across ${fileCount} files. Consider breaking it down into smaller, more focused PRs for easier review.
+              This PR contains ${totalChanges} changes across ${fileCount} files. Consider breaking it down into smaller, more focused PRs for easier review.
 
-**Tips for better PRs:**
-- Keep PRs focused on a single feature or fix
-- Aim for less than 200 lines of changes when possible
-- Split refactoring from feature work
-- Add clear descriptions and test cases`
+              **Tips for better PRs:**
+              - Keep PRs focused on a single feature or fix
+              - Aim for less than 200 lines of changes when possible
+              - Split refactoring from feature work
+              - Add clear descriptions and test cases`
               });
             }
 
