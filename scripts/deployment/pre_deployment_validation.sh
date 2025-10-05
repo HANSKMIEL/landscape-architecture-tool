@@ -244,19 +244,13 @@ echo -e "${BLUE}11. VPS Connection Test${NC}"
 if [ -n "$VPS_SSH_KEY" ] && [ -n "$GITHUB_ACTIONS" ]; then
     print_info "Testing SSH connection to $VPS_HOST..."
     
-    # Setup SSH key
-    mkdir -p ~/.ssh
-    echo "$VPS_SSH_KEY" > ~/.ssh/vps_test_key
-    chmod 600 ~/.ssh/vps_test_key
-    
-    if timeout 30 ssh -i ~/.ssh/vps_test_key -o StrictHostKeyChecking=no -o ConnectTimeout=10 \
+    # Test SSH connection using process substitution for the key
+    if timeout 30 ssh -i <(echo "$VPS_SSH_KEY") -o StrictHostKeyChecking=no -o ConnectTimeout=10 \
         $VPS_USER@$VPS_HOST "echo 'SSH connection successful'" 2>&1; then
         print_status "VPS connection test passed"
     else
         print_error "VPS connection test failed"
     fi
-    
-    rm -f ~/.ssh/vps_test_key
 else
     print_info "Skipping VPS connection test (no SSH key or not in GitHub Actions)"
 fi
