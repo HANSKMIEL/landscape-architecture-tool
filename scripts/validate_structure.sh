@@ -2,7 +2,8 @@
 # Repository Structure Validation Script
 # Validates the V1.00+ repository organization and structure
 
-set -e
+# Don't exit on error - we want to see all issues
+set +e
 
 echo "🔍 Validating V1.00+ repository structure..."
 
