@@ -8,40 +8,54 @@ This document lists all GitHub secrets required for the Landscape Architecture T
 
 These secrets are required for automated deployment to the VPS development environment:
 
-#### `HOSTINGER_SSH_KEY`
+#### `VPS_SSH_KEY` (Primary) / `HOSTINGER_SSH_KEY` (Legacy)
 
 - **Type**: SSH Private Key
 - **Description**: Private SSH key for authenticating to the VPS server
 - **Format**: Multi-line SSH private key (begins with `-----BEGIN OPENSSH PRIVATE KEY-----`)
+- **Primary Name**: `VPS_SSH_KEY` (used by most workflows)
+- **Legacy Name**: `HOSTINGER_SSH_KEY` (being migrated)
 - **Used by**:
+  - `.github/workflows/v1d-devdeploy.yml` (primary deployment)
   - `.github/workflows/enhanced-deployment.yml`
-  - `.github/workflows/devdeploy-v1d.yml`
-  - `.github/workflows/vps-deploy-v1d.yml`
+  - `.github/workflows/manual-deploy.yml`
+  - All VPS diagnostic and management workflows
 - **Setup**:
 
   ```bash
   # Generate key pair (if not exists)
-  ssh-keygen -t ed25519 -C "github-actions@landscape-tool"
+  ssh-keygen -t ed25519 -C "github-actions@landscape-tool" -f vps_deploy_key
 
   # Add public key to VPS ~/.ssh/authorized_keys
-  # Add private key to GitHub Secrets as HOSTINGER_SSH_KEY
+  ssh-copy-id -i vps_deploy_key.pub root@72.60.176.200
+
+  # Add private key to GitHub Secrets as VPS_SSH_KEY
+  # Settings → Secrets and variables → Actions → New repository secret
+  # Name: VPS_SSH_KEY
+  # Value: Contents of vps_deploy_key (entire file including headers)
   ```
 
-#### `HOSTINGER_USERNAME`
+#### `VPS_USER` (Primary) / `HOSTINGER_USERNAME` (Legacy)
 
 - **Type**: String
 - **Description**: SSH username for VPS server access
-- **Example**: `u123456789` or `root`
-- **Used by**: All deployment workflows
+- **Example**: `root` (current), or `u123456789`
+- **Primary Name**: `VPS_USER` (used by most workflows)
+- **Legacy Name**: `HOSTINGER_USERNAME` (being migrated)
+- **Used by**: All deployment workflows with fallback to `root`
 - **Setup**: VPS username provided by hosting provider
+- **Current Value**: `root` (used as default fallback)
 
-#### `HOSTINGER_HOST`
+#### `VPS_HOST` (Primary) / `HOSTINGER_HOST` (Legacy)
 
 - **Type**: String (IP address or hostname)
 - **Description**: VPS server hostname or IP address
-- **Example**: `72.60.176.200` or `vps.example.com`
-- **Used by**: All deployment workflows
+- **Example**: `72.60.176.200` (current development server)
+- **Primary Name**: `VPS_HOST` (used by most workflows)
+- **Legacy Name**: `HOSTINGER_HOST` (being migrated)
+- **Used by**: All deployment workflows with fallback to `72.60.176.200`
 - **Current Value**: `72.60.176.200` (development server)
+- **Setup**: VPS IP address or hostname from hosting provider
 
 ### Optional Secrets
 
