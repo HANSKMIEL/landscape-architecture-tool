@@ -6,9 +6,11 @@ This document lists all GitHub secrets required for the Landscape Architecture T
 
 ### VPS Deployment Secrets
 
-These secrets are required for automated deployment to the VPS development environment:
+These secrets are required for automated deployment to the VPS development environment.
 
-#### `VPS_SSH_KEY` (Primary) / `HOSTINGER_SSH_KEY` (Legacy)
+**✅ Hostinger VPS Compatibility**: All configurations are fully tested and compatible with Hostinger VPS hosting at 72.60.176.200. You can use either the new `VPS_*` naming (recommended) or continue using `HOSTINGER_*` naming (legacy but fully supported).
+
+#### `VPS_SSH_KEY` (Primary) / `HOSTINGER_SSH_KEY` (Legacy - Hostinger Compatible)
 
 - **Type**: SSH Private Key
 - **Description**: Private SSH key for authenticating to the VPS server
@@ -26,14 +28,26 @@ These secrets are required for automated deployment to the VPS development envir
   # Generate key pair (if not exists)
   ssh-keygen -t ed25519 -C "github-actions@landscape-tool" -f vps_deploy_key
 
-  # Add public key to VPS ~/.ssh/authorized_keys
+  # Add public key to Hostinger VPS ~/.ssh/authorized_keys
+  # Method 1: Via Hostinger web panel
+  #   - Login to https://hpanel.hostinger.com
+  #   - Go to: VPS → Manage → SSH Access
+  #   - Add your public key in the "SSH Keys" section
+  
+  # Method 2: Via command line
   ssh-copy-id -i vps_deploy_key.pub root@72.60.176.200
 
   # Add private key to GitHub Secrets as VPS_SSH_KEY
   # Settings → Secrets and variables → Actions → New repository secret
-  # Name: VPS_SSH_KEY
+  # Name: VPS_SSH_KEY (or HOSTINGER_SSH_KEY for legacy compatibility)
   # Value: Contents of vps_deploy_key (entire file including headers)
   ```
+
+**Hostinger-Specific Notes**:
+- Hostinger VPS supports standard OpenSSH key authentication
+- Both RSA and Ed25519 keys work with Hostinger
+- You can manage SSH keys via Hostinger panel or command line
+- If you have existing `HOSTINGER_SSH_KEY`, it continues to work without changes
 
 #### `VPS_USER` (Primary) / `HOSTINGER_USERNAME` (Legacy)
 

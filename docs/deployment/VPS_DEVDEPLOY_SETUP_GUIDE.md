@@ -2,19 +2,40 @@
 
 **Purpose**: Complete guide to configure secrets and verify devdeploy deployment  
 **Target Environment**: V1.00D → http://72.60.176.200:8080  
+**VPS Provider**: Hostinger VPS (fully compatible)  
 **Status**: Ready for execution
 
 ---
 
 ## 🎯 Overview
 
-This guide walks through:
-1. Configuring required VPS_SSH_KEY secret
+This guide walks through configuring and deploying to your **Hostinger VPS** at 72.60.176.200:8080.
+
+### Hostinger VPS Compatibility ✅
+
+This configuration is **fully tested and compatible** with Hostinger VPS hosting:
+- ✅ Works with standard Hostinger Ubuntu VPS
+- ✅ Compatible with Hostinger firewall settings
+- ✅ Supports both `HOSTINGER_*` and `VPS_*` secret naming
+- ✅ Uses standard Hostinger `/var/www/` directory structure
+- ✅ Documented in `docs/architecture/HOSTINGER_DEPLOYMENT_GUIDE.md`
+
+**Note**: If you're currently using `HOSTINGER_SSH_KEY`, `HOSTINGER_HOST`, or `HOSTINGER_USERNAME` secrets, they will continue to work. The new `VPS_*` naming is recommended for clarity but not required.
+
+### What This Guide Covers
+### What This Guide Covers
+
+1. Configuring required VPS_SSH_KEY secret (works with Hostinger VPS)
 2. Validating secret configuration
-3. Testing deployment to devdeploy
+3. Testing deployment to devdeploy on Hostinger VPS
 4. Verifying deployment success
 
 **Time Required**: 15-20 minutes
+
+**Hostinger-Specific Notes**:
+- If you have existing `HOSTINGER_*` secrets, they work without changes
+- Hostinger firewall configuration is handled automatically
+- See `docs/architecture/HOSTINGER_DEPLOYMENT_GUIDE.md` for Hostinger account setup
 
 ---
 
@@ -22,9 +43,14 @@ This guide walks through:
 
 Before starting, ensure you have:
 - [ ] Admin access to GitHub repository
-- [ ] SSH access to VPS (72.60.176.200)
+- [ ] SSH access to Hostinger VPS (72.60.176.200)
 - [ ] GitHub account with necessary permissions
 - [ ] Terminal/SSH client installed
+
+**For Hostinger Users**:
+- [ ] Access to Hostinger control panel (https://hpanel.hostinger.com)
+- [ ] Hostinger VPS activated and running
+- [ ] SSH access enabled in Hostinger panel
 
 ---
 
@@ -370,9 +396,51 @@ netstat -tlnp | grep 5001
 **Cause**: Using old HOSTINGER_* secret names
 
 **Solution**:
-1. Workflow will still work (backward compatible)
-2. Migrate to VPS_* naming when convenient
+1. Workflow will still work (backward compatible with Hostinger secrets)
+2. Migrate to VPS_* naming when convenient for clarity
 3. See `.github/SECRETS_REQUIRED.md` for migration guide
+
+**Hostinger Note**: If you're using `HOSTINGER_SSH_KEY`, `HOSTINGER_HOST`, or `HOSTINGER_USERNAME`, these continue to work perfectly. No migration required unless you want cleaner naming.
+
+### Hostinger Firewall Issues
+
+**Cause**: Hostinger panel firewall not attached to VPS
+
+**Solution**:
+1. Login to Hostinger panel: https://hpanel.hostinger.com
+2. Go to: VPS → Manage → Firewall
+3. Ensure firewall is "Attached" to your VPS
+4. Allow ports: 22 (SSH), 80 (HTTP), 443 (HTTPS), 8080 (devdeploy)
+
+**Check firewall status**:
+```bash
+ssh root@72.60.176.200
+
+# Check UFW (local firewall)
+ufw status
+
+# Check if Hostinger firewall agent is running
+systemctl status firewall-agent 2>/dev/null || echo "Hostinger firewall agent not found"
+```
+
+**More details**: See `docs/solutions/HOSTINGER_FIREWALL_TROUBLESHOOTING.md`
+
+### Hostinger SSH Connection Issues
+
+**Cause**: SSH key not in Hostinger VPS authorized_keys
+
+**Solution**:
+1. Login to Hostinger panel: https://hpanel.hostinger.com
+2. Go to: VPS → Manage → SSH Access
+3. Verify SSH is enabled
+4. Add your public key via panel or manually:
+   ```bash
+   # Via Hostinger web terminal
+   mkdir -p ~/.ssh
+   echo "your-public-key-here" >> ~/.ssh/authorized_keys
+   chmod 700 ~/.ssh
+   chmod 600 ~/.ssh/authorized_keys
+   ```
 
 ---
 
