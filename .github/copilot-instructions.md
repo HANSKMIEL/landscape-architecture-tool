@@ -18,6 +18,54 @@
 - **Title**: "devdeploy - Landscape Architecture Tool (Development)"
 - **Complete isolation** from production environment
 
+## 🔐 DEPLOYMENT SECRETS CONFIGURATION
+
+**CRITICAL**: Deployment requires properly configured VPS secrets.
+
+### Required Secrets (in GitHub Settings → Secrets and variables → Actions)
+
+1. **VPS_SSH_KEY** (Primary) - SSH private key for VPS authentication
+   - Format: OpenSSH private key (complete with headers)
+   - Used by: All VPS deployment workflows
+   
+2. **VPS_HOST** (Optional) - VPS hostname/IP
+   - Default: 72.60.176.200
+   - Override only if using different VPS
+   
+3. **VPS_USER** (Optional) - VPS SSH username
+   - Default: root
+   - Override only if using different user
+
+### Legacy Secret Names (Deprecated, but still supported)
+- HOSTINGER_SSH_KEY → Use VPS_SSH_KEY
+- HOSTINGER_HOST → Use VPS_HOST
+- HOSTINGER_USERNAME → Use VPS_USER
+
+**📚 Full Documentation**: See `.github/SECRETS_REQUIRED.md` for setup instructions.
+
+**🔍 Validation**: Run the `validate-secrets` workflow to check secret configuration.
+
+## 📦 DEPLOYMENT SCRIPTS ORGANIZATION
+
+Scripts have been consolidated and organized for clarity:
+
+### Active Deployment Scripts (in `scripts/deployment/`)
+- `promote_v1d_to_v1.sh` - Promote V1.00D to V1.00 (production)
+- `deploy_v1d_to_devdeploy.sh` - Deploy to devdeploy environment
+- `github-actions-deploy.sh` - GitHub Actions deployment
+- `enhanced-deploy.sh` - Zero-downtime deployment
+- `fix_firewall.sh` - VPS firewall configuration
+- `fix_backend_binding.sh` - Backend binding fix
+
+### Helper Scripts (in `scripts/`)
+- `deploy_helper.sh` - Interactive deployment helper
+- `webhook_deploy.sh` - VPS webhook handler
+- `vps_clean_reinstall.sh` - Complete VPS reinstallation
+
+### Archived Scripts (in `archive/deployment/legacy-scripts/`)
+- Redundant/superseded scripts preserved for reference
+- See `docs/deployment/DEPLOYMENT_SCRIPTS_GUIDE.md` for details
+
 **ALWAYS follow these instructions first.** Only search for additional information or run exploratory bash commands if the information provided here is incomplete or found to be in error.
 
 The Landscape Architecture Tool is a Python Flask backend with React/Vite frontend for managing landscape architecture projects, suppliers, plants, products, and clients.

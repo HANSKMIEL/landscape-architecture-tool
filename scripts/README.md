@@ -2,7 +2,35 @@
 
 This directory contains scripts for deploying and configuring the Landscape Architecture Tool.
 
-## Available Scripts
+**📚 Complete Guide**: See `docs/deployment/DEPLOYMENT_SCRIPTS_GUIDE.md` for comprehensive documentation.
+
+## Script Organization
+
+```
+scripts/
+├── deployment/           # Active deployment scripts (used by workflows)
+│   ├── promote_v1d_to_v1.sh         # V1.00D → V1.00 promotion
+│   ├── deploy_v1d_to_devdeploy.sh   # Deploy to devdeploy environment
+│   ├── github-actions-deploy.sh      # GitHub Actions deployment
+│   ├── enhanced-deploy.sh            # Zero-downtime deployment
+│   ├── fix_firewall.sh               # VPS firewall configuration
+│   ├── fix_backend_binding.sh        # Backend binding configuration
+│   └── devdeploy_diagnostic.sh       # Diagnostic tools
+├── deploy_helper.sh      # Manual deployment helper
+├── webhook_deploy.sh     # VPS webhook handler
+└── vps_clean_reinstall.sh # Complete VPS reinstallation
+
+archive/deployment/legacy-scripts/  # Archived scripts (superseded)
+├── deploy_to_vps.sh
+├── deploy_vps_automated.sh
+├── vps_deploy_v1d.sh
+├── vps_deployment_test.sh
+└── update_v1_from_dev.sh
+```
+
+## Quick Reference
+
+### Active Deployment Scripts
 
 ### `vps_clean_reinstall.sh` ⭐ NEW
 
