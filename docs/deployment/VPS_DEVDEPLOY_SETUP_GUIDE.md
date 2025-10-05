@@ -23,7 +23,6 @@ This configuration is **fully tested and compatible** with Hostinger VPS hosting
 **Note**: If you're currently using `HOSTINGER_SSH_KEY`, `HOSTINGER_HOST`, or `HOSTINGER_USERNAME` secrets, they will continue to work. The new `VPS_*` naming is recommended for clarity but not required.
 
 ### What This Guide Covers
-### What This Guide Covers
 
 1. Configuring required VPS_SSH_KEY secret (works with Hostinger VPS)
 2. Validating secret configuration
