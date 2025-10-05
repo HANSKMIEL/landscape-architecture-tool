@@ -1,0 +1,231 @@
+name: Emergency VPS Service Restart
+
+on:
+  workflow_dispatch:
+    inputs:
+      restart_type:
+        description: 'Type of restart'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - backend-only
+          - nginx-only
+          - diagnostic-only
+
+permissions:
+  contents: read
+
+jobs:
+  restart-services:
+    name: Restart VPS Services
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Setup SSH Key
+        env:
+          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+        run: |
+          if [ -z "$VPS_SSH_KEY" ]; then
+            echo "❌ VPS_SSH_KEY secret not configured"
+            exit 1
+          fi
+          mkdir -p ~/.ssh
+          echo "$VPS_SSH_KEY" > ~/.ssh/vps_key
+          chmod 600 ~/.ssh/vps_key
+          echo "✅ SSH key configured"
+
+      - name: Run VPS Operations
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST != '' && secrets.VPS_HOST || '72.60.176.200' }}
+          VPS_USER: ${{ secrets.VPS_USER != '' && secrets.VPS_USER || 'root' }}
+          RESTART_TYPE: ${{ inputs.restart_type }}
+        run: |
+          echo "🔧 Running VPS operations..."
+          echo "Host: $VPS_HOST"
+          echo "User: $VPS_USER"
+          echo "Type: $RESTART_TYPE"
+          echo ""
+
+          SSH_OPTS="-i ~/.ssh/vps_key -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=30"
+
+          # Execute operations based on restart type
+          ssh $SSH_OPTS $VPS_USER@$VPS_HOST << EOF
+          set -e
+          
+          echo "=========================================="
+          echo "🔍 VPS Operations - $RESTART_TYPE"
+          echo "=========================================="
+          echo ""
+
+          # Show current status
+          echo "📊 Current Status:"
+          echo "----------------------------"
+          
+          for service in landscape-backend-dev landscape-backend; do
+              if systemctl list-unit-files | grep -q "\$service.service"; then
+                  status=\$(systemctl is-active \$service 2>/dev/null || echo "inactive")
+                  echo "  \$service: \$status"
+                  if [ "\$status" != "active" ]; then
+                      echo "    Last 5 log lines:"
+                      journalctl -u \$service -n 5 --no-pager 2>/dev/null | sed 's/^/      /' || echo "      (no logs)"
+                  fi
+              fi
+          done
+          
+          nginx_status=\$(systemctl is-active nginx 2>/dev/null || echo "inactive")
+          echo "  nginx: \$nginx_status"
+          
+          echo ""
+          echo "🔌 Port Status:"
+          echo "----------------------------"
+          ss -tlnp 2>/dev/null | grep -E "(5001|8080)" || echo "  No services listening on ports 5001 or 8080"
+          
+          echo ""
+          
+          # Perform restart operations
+          if [ "$RESTART_TYPE" = "all" ] || [ "$RESTART_TYPE" = "backend-only" ]; then
+              echo "🔄 Restarting Backend Services:"
+              echo "----------------------------"
+              
+              BACKEND_RESTARTED=false
+              for service in landscape-backend-dev landscape-backend; do
+                  if systemctl list-unit-files | grep -q "\$service.service"; then
+                      echo "  Restarting \$service..."
+                      if systemctl restart \$service 2>&1; then
+                          echo "    ✅ \$service restarted successfully"
+                          BACKEND_RESTARTED=true
+                          sleep 2
+                          systemctl status \$service --no-pager | head -5 | sed 's/^/      /'
+                      else
+                          echo "    ❌ Failed to restart \$service"
+                          systemctl status \$service --no-pager | tail -10 | sed 's/^/      /'
+                      fi
+                      break
+                  fi
+              done
+              
+              if [ "\$BACKEND_RESTARTED" = "false" ]; then
+                  echo "  ⚠️  No backend service found to restart"
+                  echo "  Available services:"
+                  systemctl list-unit-files | grep landscape | sed 's/^/    /' || echo "    (none found)"
+              fi
+              echo ""
+          fi
+          
+          if [ "$RESTART_TYPE" = "all" ] || [ "$RESTART_TYPE" = "nginx-only" ]; then
+              echo "🔄 Restarting Nginx:"
+              echo "----------------------------"
+              if systemctl is-active --quiet nginx; then
+                  if systemctl reload nginx 2>&1; then
+                      echo "  ✅ Nginx reloaded successfully"
+                  else
+                      echo "  ⚠️  Nginx reload failed, trying restart..."
+                      systemctl restart nginx && echo "  ✅ Nginx restarted" || echo "  ❌ Nginx restart failed"
+                  fi
+              else
+                  echo "  Starting nginx..."
+                  systemctl start nginx && echo "  ✅ Nginx started" || echo "  ❌ Nginx start failed"
+              fi
+              echo ""
+          fi
+          
+          # Wait for services to stabilize
+          echo "⏱️  Waiting for services to stabilize..."
+          sleep 5
+          echo ""
+          
+          # Verify services are running
+          echo "🧪 Post-Operation Verification:"
+          echo "----------------------------"
+          
+          # Check services
+          for service in landscape-backend-dev landscape-backend nginx; do
+              if systemctl list-unit-files | grep -q "\$service"; then
+                  status=\$(systemctl is-active \$service 2>/dev/null || echo "inactive")
+                  if [ "\$status" = "active" ]; then
+                      echo "  ✅ \$service: \$status"
+                  else
+                      echo "  ❌ \$service: \$status"
+                  fi
+              fi
+          done
+          
+          echo ""
+          
+          # Check ports
+          echo "🔌 Port Verification:"
+          if ss -tln 2>/dev/null | grep -q ":5001"; then
+              echo "  ✅ Port 5001 (backend) is listening"
+          else
+              echo "  ❌ Port 5001 (backend) is NOT listening"
+          fi
+          
+          if ss -tln 2>/dev/null | grep -q ":8080"; then
+              echo "  ✅ Port 8080 (frontend/nginx) is listening"
+          else
+              echo "  ❌ Port 8080 (frontend/nginx) is NOT listening"
+          fi
+          
+          echo ""
+          
+          # Test local connectivity
+          echo "🌐 Local Connectivity Test:"
+          if curl -s -o /dev/null -w "%{http_code}" http://localhost:8080 2>/dev/null | grep -q "200"; then
+              echo "  ✅ Frontend accessible on localhost:8080"
+          else
+              response=\$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080 2>/dev/null || echo "failed")
+              echo "  ❌ Frontend not accessible (HTTP \$response)"
+          fi
+          
+          if curl -s http://localhost:5001/health 2>/dev/null | grep -q "healthy"; then
+              echo "  ✅ Backend health endpoint OK"
+          else
+              echo "  ❌ Backend health endpoint not responding"
+              echo "  Response: \$(curl -s http://localhost:5001/health 2>/dev/null | head -1 || echo '(no response)')"
+          fi
+          
+          echo ""
+          echo "=========================================="
+          echo "🏁 Operations Complete"
+          echo "=========================================="
+          EOF
+
+      - name: External Verification
+        if: always()
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST != '' && secrets.VPS_HOST || '72.60.176.200' }}
+        run: |
+          echo ""
+          echo "🌍 External Verification from GitHub Actions:"
+          echo "=========================================="
+          sleep 3
+          
+          echo "Testing http://$VPS_HOST:8080 (frontend)..."
+          FRONTEND_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://$VPS_HOST:8080 2>/dev/null || echo "failed")
+          if [ "$FRONTEND_CODE" = "200" ]; then
+              echo "✅ Frontend accessible externally (HTTP $FRONTEND_CODE)"
+          else
+              echo "❌ Frontend not accessible externally (HTTP $FRONTEND_CODE)"
+          fi
+          
+          echo ""
+          echo "Testing http://$VPS_HOST:5001/health (backend)..."
+          BACKEND_RESPONSE=$(curl -s http://$VPS_HOST:5001/health 2>/dev/null || echo "connection failed")
+          if echo "$BACKEND_RESPONSE" | grep -q "healthy"; then
+              echo "✅ Backend accessible externally"
+              echo "Response: $BACKEND_RESPONSE"
+          else
+              echo "❌ Backend not accessible externally"
+              echo "Response: $BACKEND_RESPONSE"
+          fi
+          
+          echo ""
+          echo "=========================================="
+          echo "📊 Summary:"
+          echo "  Frontend URL: http://$VPS_HOST:8080"
+          echo "  Backend URL: http://$VPS_HOST:5001"
+          echo "  Check logs above for detailed status"
+          echo "=========================================="

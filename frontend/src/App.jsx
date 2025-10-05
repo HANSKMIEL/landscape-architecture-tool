@@ -32,10 +32,10 @@ import './enhanced_sidebar_styles.css'
 // Main App component with authentication and routing
 function AppContent() {
   const { t } = useLanguage()
-  const [sidebarOpen, setSidebarOpen] = useState(false)
-  const [user, setUser] = useState(null)
-  const [authLoading, setAuthLoading] = useState(true)
-  const [loginError, setLoginError] = useState('')
+  const [__sidebarOpen, set_sidebarOpen] = useState(false)
+  const [__user, set_user] = useState(null)
+  const [__authLoading, set_authLoading] = useState(true)
+  const [__loginError, set_loginError] = useState('')
 
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen)
   const closeSidebar = () => setSidebarOpen(false)

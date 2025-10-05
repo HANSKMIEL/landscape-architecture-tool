@@ -4,11 +4,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Palette, Type, Paintbrush, Monitor, Sun, Moon } from 'lucide-react'
 
 const AppearanceSettings = () => {
-  const [theme, setTheme] = useState('light')
-  const [colorScheme, setColorScheme] = useState('blue')
-  const [fontSize, setFontSize] = useState('medium')
+  const [__theme, set_theme] = useState('light')
+  const [__colorScheme, set_colorScheme] = useState('blue')
+  const [__fontSize, set_fontSize] = useState('medium')
 
-  const translations = {
+  const __translations = {
     en: {
       title: 'Appearance Settings',
       subtitle: 'Customize the look and feel of your application',

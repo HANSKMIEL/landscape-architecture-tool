@@ -39,21 +39,21 @@ const Reports = () => {
   const { t } = useLanguage()
   
   // State management
-  const [analyticsData, setAnalyticsData] = useState({})
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState(null)
-  const [selectedReportType, setSelectedReportType] = useState('overview')
-  const [dateRange, setDateRange] = useState({
+  const [__analyticsData, set_analyticsData] = useState({})
+  const [__loading, set_loading] = useState(false)
+  const [__error, set_error] = useState(null)
+  const [__selectedReportType, set_selectedReportType] = useState('overview')
+  const [__dateRange, set_dateRange] = useState({
     start: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
     end: new Date().toISOString().split('T')[0]
   })
-  const [filters, setFilters] = useState({
+  const [__filters, set_filters] = useState({
     client: '',
     project: '',
     supplier: '',
     category: ''
   })
-  const [generatingReport, setGeneratingReport] = useState(false)
+  const [__generatingReport, set_generatingReport] = useState(false)
 
   // Report types
   const reportTypes = [
@@ -73,7 +73,7 @@ const Reports = () => {
       setLoading(true)
       setError(null)
       
-      const params = {
+      const __params = {
         start_date: dateRange.start,
         end_date: dateRange.end,
         ...filters
@@ -135,7 +135,7 @@ const Reports = () => {
     const clientData = await ApiService.getClients()
     const projectData = await ApiService.getProjects()
     
-    const clientProjects = {}
+    const __clientProjects = {}
     projectData.projects?.forEach(project => {
       if (project.client_id) {
         clientProjects[project.client_id] = (clientProjects[project.client_id] || 0) + 1
@@ -166,8 +166,8 @@ const Reports = () => {
     const projectData = await ApiService.getProjects()
     const projects = projectData.projects || []
 
-    const statusCounts = {}
-    const monthlyProjects = {}
+    const __statusCounts = {}
+    const __monthlyProjects = {}
     let totalBudget = 0
 
     projects.forEach(project => {
@@ -208,8 +208,8 @@ const Reports = () => {
     const plantData = await ApiService.getPlants()
     const plants = plantData.plants || []
 
-    const categoryCounts = {}
-    const supplierCounts = {}
+    const __categoryCounts = {}
+    const __supplierCounts = {}
 
     plants.forEach(plant => {
       // Category distribution
@@ -243,7 +243,7 @@ const Reports = () => {
     const projectData = await ApiService.getProjects()
     const projects = projectData.projects || []
 
-    const monthlyRevenue = {}
+    const __monthlyRevenue = {}
     let totalRevenue = 0
     let completedProjects = 0
 
@@ -302,7 +302,7 @@ const Reports = () => {
     try {
       setGeneratingReport(true)
       
-      const reportData = {
+      const __reportData = {
         type: selectedReportType,
         dateRange,
         filters,

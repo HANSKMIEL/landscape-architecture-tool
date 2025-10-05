@@ -14,21 +14,21 @@ import {
 } from 'lucide-react'
 
 const AISettings = () => {
-  const [openaiKey, setOpenaiKey] = useState('')
-  const [aiFeatures, setAiFeatures] = useState({
+  const [__openaiKey, set_openaiKey] = useState('')
+  const [__aiFeatures, set_aiFeatures] = useState({
     plantRecommendations: true,
     dataMapping: true,
     smartCorrection: true,
     languageDetection: true
   })
-  const [aiLevel, setAiLevel] = useState('balanced')
-  const [customPrompts, setCustomPrompts] = useState({
+  const [__aiLevel, set_aiLevel] = useState('balanced')
+  const [__customPrompts, set_customPrompts] = useState({
     plantRecommendation: '',
     dataMapping: '',
     errorCorrection: ''
   })
 
-  const translations = {
+  const __translations = {
     en: {
       title: 'AI Assistant Settings',
       subtitle: 'Configure intelligent automation and AI features',
@@ -127,8 +127,8 @@ const AISettings = () => {
 
   const { t } = useLanguage()
 
-  const [connectionStatus, setConnectionStatus] = useState('disconnected')
-  const [testingConnection, setTestingConnection] = useState(false)
+  const [__connectionStatus, set_connectionStatus] = useState('disconnected')
+  const [__testingConnection, set_testingConnection] = useState(false)
 
   const testAIConnection = async () => {
     if (!openaiKey.trim()) {
@@ -155,7 +155,7 @@ const AISettings = () => {
   }
 
   const saveSettings = () => {
-    const settings = {
+    const __settings = {
       openaiKey,
       aiFeatures,
       aiLevel,
@@ -206,7 +206,7 @@ const AISettings = () => {
     }
   }
 
-  const mockStats = {
+  const __mockStats = {
     tokensUsed: 15420,
     requestsMade: 87,
     successRate: 96.5

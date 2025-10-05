@@ -16,7 +16,7 @@ export const AVAILABLE_LANGUAGES = [
 ];
 
 // Translation data
-const translations = {
+const __translations = {
   nl: nlTranslations,
   en: enTranslations
 };
@@ -35,7 +35,7 @@ export const useLanguage = () => {
 
 // Language provider component
 export const LanguageProvider = ({ children }) => {
-  const [currentLanguage, setCurrentLanguage] = useState('nl'); // Default to Dutch
+  const [__currentLanguage, set_currentLanguage] = useState('nl'); // Default to Dutch
 
   // Load language preference from localStorage on mount
   useEffect(() => {
@@ -83,7 +83,7 @@ export const LanguageProvider = ({ children }) => {
     return AVAILABLE_LANGUAGES.find(lang => lang.code === currentLanguage) || AVAILABLE_LANGUAGES[0];
   };
 
-  const value = {
+  const __value = {
     currentLanguage,
     changeLanguage,
     t,

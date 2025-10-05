@@ -28,13 +28,13 @@ import ApiService from '../services/api'
 
 const AIAssistant = () => {
   const { t, language } = useLanguage()
-  const [activeTab, setActiveTab] = useState('chat')
-  const [messages, setMessages] = useState([])
-  const [inputMessage, setInputMessage] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
-  const [suggestions, setSuggestions] = useState([])
-  const [insights, setInsights] = useState([])
-  const [plantRecommendations, setPlantRecommendations] = useState([])
+  const [__activeTab, set_activeTab] = useState('chat')
+  const [__messages, set_messages] = useState([])
+  const [__inputMessage, set_inputMessage] = useState('')
+  const [__isLoading, set_isLoading] = useState(false)
+  const [__suggestions, set_suggestions] = useState([])
+  const [__insights, set_insights] = useState([])
+  const [__plantRecommendations, set_plantRecommendations] = useState([])
   const messagesEndRef = useRef(null)
 
   // Scroll to bottom of messages
@@ -48,7 +48,7 @@ const AIAssistant = () => {
 
   // Initialize with welcome message
   useEffect(() => {
-    const welcomeMessage = {
+    const __welcomeMessage = {
       id: Date.now(),
       type: 'assistant',
       content: language === 'nl' 
@@ -75,7 +75,7 @@ const AIAssistant = () => {
   const sendMessage = async () => {
     if (!inputMessage.trim() || isLoading) return
 
-    const userMessage = {
+    const __userMessage = {
       id: Date.now(),
       type: 'user',
       content: inputMessage,
@@ -106,7 +106,7 @@ const AIAssistant = () => {
 
       const data = await response.json()
       
-      const assistantMessage = {
+      const __assistantMessage = {
         id: Date.now() + 1,
         type: 'assistant',
         content: data.response || 'I apologize, but I couldn\'t process your request at the moment.',
@@ -117,7 +117,7 @@ const AIAssistant = () => {
 
     } catch (error) {
       console.error('AI chat error:', error)
-      const errorMessage = {
+      const __errorMessage = {
         id: Date.now() + 1,
         type: 'assistant',
         content: language === 'nl' 

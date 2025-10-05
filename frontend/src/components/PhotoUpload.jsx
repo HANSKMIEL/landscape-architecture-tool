@@ -12,15 +12,15 @@ const PhotoUpload = ({
   onUploadSuccess = () => {},
   allowedCategories = ['plant', 'material', 'property', 'project', 'example', 'inspiration', 'reference']
 }) => {
-  const [isDragging, setIsDragging] = useState(false);
-  const [isUploading, setIsUploading] = useState(false);
-  const [selectedFiles, setSelectedFiles] = useState([]);
-  const [uploadCategory, setUploadCategory] = useState(category);
-  const [uploadTitle, setUploadTitle] = useState('');
-  const [uploadDescription, setUploadDescription] = useState('');
+  const [__isDragging, set_isDragging] = useState(false);
+  const [__isUploading, set_isUploading] = useState(false);
+  const [__selectedFiles, set_selectedFiles] = useState([]);
+  const [__uploadCategory, set_uploadCategory] = useState(category);
+  const [__uploadTitle, set_uploadTitle] = useState('');
+  const [__uploadDescription, set_uploadDescription] = useState('');
   const { toast } = useToast();
 
-  const categoryIcons = {
+  const __categoryIcons = {
     plant: <Image className="w-4 h-4" />,
     material: <FileImage className="w-4 h-4" />,
     property: <Camera className="w-4 h-4" />,
@@ -30,7 +30,7 @@ const PhotoUpload = ({
     reference: <FileImage className="w-4 h-4" />
   };
 
-  const categoryLabels = {
+  const __categoryLabels = {
     plant: 'Plant Foto',
     material: 'Materiaal Foto',
     property: 'Eigendom Foto',

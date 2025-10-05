@@ -21,21 +21,21 @@ import { useLanguage } from '../i18n/LanguageProvider'
 
 const Suppliers = () => {
   const { t } = useLanguage()
-  const [suppliers, setSuppliers] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [searchTerm, setSearchTerm] = useState('')
-  const [totalSuppliers, setTotalSuppliers] = useState(0)
-  const [showAddModal, setShowAddModal] = useState(false)
-  const [showEditModal, setShowEditModal] = useState(false)
-  const [editingSupplier, setEditingSupplier] = useState(null)
-  const [error, setError] = useState(null)
-  const [retryCount, setRetryCount] = useState(0)
-  const [isRetrying, setIsRetrying] = useState(false)
-  const [submitLoading, setSubmitLoading] = useState(false)
-  const [deleteLoading, setDeleteLoading] = useState(null)
+  const [__suppliers, set_suppliers] = useState([])
+  const [__loading, set_loading] = useState(true)
+  const [__searchTerm, set_searchTerm] = useState('')
+  const [__totalSuppliers, set_totalSuppliers] = useState(0)
+  const [__showAddModal, set_showAddModal] = useState(false)
+  const [__showEditModal, set_showEditModal] = useState(false)
+  const [__editingSupplier, set_editingSupplier] = useState(null)
+  const [__error, set_error] = useState(null)
+  const [__retryCount, set_retryCount] = useState(0)
+  const [__isRetrying, set_isRetrying] = useState(false)
+  const [__submitLoading, set_submitLoading] = useState(false)
+  const [__deleteLoading, set_deleteLoading] = useState(null)
 
   // Form state
-  const [formData, setFormData] = useState({
+  const [__formData, set_formData] = useState({
     name: '',
     contact_person: '',
     email: '',

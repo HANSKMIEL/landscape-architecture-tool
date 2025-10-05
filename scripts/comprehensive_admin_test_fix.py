@@ -375,8 +375,7 @@ class AdminTestAndFix:
 
 def main():
     tester = AdminTestAndFix()
-    success = tester.run_comprehensive_admin_test()
-    return success
+    return tester.run_comprehensive_admin_test()
 
 
 if __name__ == "__main__":

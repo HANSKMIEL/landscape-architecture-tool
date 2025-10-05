@@ -99,7 +99,7 @@ async function decrypt(encryptedData, passphrase) {
 }
 
 async function encryptApiKeys(apiKeys, passphrase) {
-  const encrypted = {};
+  const __encrypted = {};
   for (let [k, v] of Object.entries(apiKeys)) {
     encrypted[k] = v ? await encrypt(v, passphrase) : "";
   }
@@ -109,7 +109,7 @@ async function encryptApiKeys(apiKeys, passphrase) {
 // Optionally, a decryptApiKeys function can be created similarly
 
 const APISettings = () => {
-  const [apiKeys, setApiKeys] = useState({
+  const [__apiKeys, set_apiKeys] = useState({
     vectorworks: '',
     n8n: '',
     hubspot: '',
@@ -117,13 +117,13 @@ const APISettings = () => {
     openweather: ''
   })
   
-  const [apiEndpoints, setApiEndpoints] = useState({
+  const [__apiEndpoints, set_apiEndpoints] = useState({
     n8n: 'https://your-n8n-instance.com',
     vectorworks: 'https://api.vectorworks.net',
     photogrammetry: 'https://api.photogrammetry-service.com'
   })
 
-  const [connectionStatus, setConnectionStatus] = useState({
+  const [__connectionStatus, set_connectionStatus] = useState({
     vectorworks: 'disconnected',
     n8n: 'disconnected',
     hubspot: 'disconnected',
@@ -131,7 +131,7 @@ const APISettings = () => {
     openweather: 'disconnected'
   })
 
-  const translations = {
+  const __translations = {
     en: {
       title: 'API Integrations',
       subtitle: 'Connect with external software and services',
@@ -255,7 +255,7 @@ const APISettings = () => {
       return;
     }
     const encryptedApiKeys = await encryptApiKeys(apiKeys, passphrase);
-    const settings = {
+    const __settings = {
       apiKeys: encryptedApiKeys,
       apiEndpoints,
       connectionStatus,

@@ -29,16 +29,16 @@ const ImportExport = () => {
   const fileInputRef = useRef(null)
   
   // State management
-  const [activeTab, setActiveTab] = useState('import')
-  const [selectedDataType, setSelectedDataType] = useState('clients')
-  const [importFile, setImportFile] = useState(null)
-  const [importProgress, setImportProgress] = useState(0)
-  const [importStatus, setImportStatus] = useState('idle') // idle, validating, importing, completed, error
-  const [importResults, setImportResults] = useState(null)
-  const [validationResults, setValidationResults] = useState(null)
-  const [exportProgress, setExportProgress] = useState(0)
-  const [exportStatus, setExportStatus] = useState('idle')
-  const [bulkOperations, setBulkOperations] = useState({
+  const [__activeTab, set_activeTab] = useState('import')
+  const [__selectedDataType, set_selectedDataType] = useState('clients')
+  const [__importFile, set_importFile] = useState(null)
+  const [__importProgress, set_importProgress] = useState(0)
+  const [__importStatus, set_importStatus] = useState('idle') // idle, validating, importing, completed, error
+  const [__importResults, set_importResults] = useState(null)
+  const [__validationResults, set_validationResults] = useState(null)
+  const [__exportProgress, set_exportProgress] = useState(0)
+  const [__exportStatus, set_exportStatus] = useState('idle')
+  const [__bulkOperations, set_bulkOperations] = useState({
     selectedItems: [],
     operation: '',
     inProgress: false
@@ -243,7 +243,7 @@ const ImportExport = () => {
 
   // Download template
   const downloadTemplate = useCallback(() => {
-    const templates = {
+    const __templates = {
       clients: [
         { name: 'Example Client', email: 'client@example.com', phone: '+31 6 12345678', address: 'Main Street 123', city: 'Amsterdam', postal_code: '1000 AB', country: 'Netherlands' }
       ],

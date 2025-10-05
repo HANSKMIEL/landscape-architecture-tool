@@ -23,22 +23,22 @@ import { useLanguage } from '../i18n/LanguageProvider'
 
 const Plants = () => {
   const { t } = useLanguage()
-  const [plants, setPlants] = useState([])
-  const [suppliers, setSuppliers] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
-  const [retryCount, setRetryCount] = useState(0)
-  const [isRetrying, setIsRetrying] = useState(false)
-  const [submitLoading, setSubmitLoading] = useState(false)
-  const [deleteLoading, setDeleteLoading] = useState(null)
-  const [searchTerm, setSearchTerm] = useState('')
-  const [showAddModal, setShowAddModal] = useState(false)
-  const [showEditModal, setShowEditModal] = useState(false)
-  const [editingPlant, setEditingPlant] = useState(null)
-  const [totalPlants, setTotalPlants] = useState(0)
+  const [__plants, set_plants] = useState([])
+  const [__suppliers, set_suppliers] = useState([])
+  const [__loading, set_loading] = useState(true)
+  const [__error, set_error] = useState(null)
+  const [__retryCount, set_retryCount] = useState(0)
+  const [__isRetrying, set_isRetrying] = useState(false)
+  const [__submitLoading, set_submitLoading] = useState(false)
+  const [__deleteLoading, set_deleteLoading] = useState(null)
+  const [__searchTerm, set_searchTerm] = useState('')
+  const [__showAddModal, set_showAddModal] = useState(false)
+  const [__showEditModal, set_showEditModal] = useState(false)
+  const [__editingPlant, set_editingPlant] = useState(null)
+  const [__totalPlants, set_totalPlants] = useState(0)
 
   // Form state
-  const [formData, setFormData] = useState({
+  const [__formData, set_formData] = useState({
     name: '',
     common_name: '',
     category: '',
@@ -138,7 +138,7 @@ const Plants = () => {
         setIsRetrying(true)
       }
       
-      const params = {}
+      const __params = {}
       if (searchTerm) {
         params.search = searchTerm
       }

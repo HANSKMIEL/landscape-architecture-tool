@@ -1,25 +1,26 @@
-import { Link, useLocation } from 'react-router-dom'
-import { useEffect } from 'react'
-import { useLanguage } from '../i18n/LanguageProvider'
 import {
-  LayoutDashboard,
-  Building2,
-  Package,
-  Leaf,
-  Users,
-  FolderOpen,
-  Lightbulb,
-  FileText,
-  Receipt,
-  Camera,
-  Calendar,
-  Settings,
-  X,
-  Shield,
-  Eye,
   Bot,
-  UserCog
+  Building2,
+  Calendar,
+  Camera,
+  Eye,
+  FileText,
+  FolderOpen,
+  LayoutDashboard,
+  Leaf,
+  Lightbulb,
+  Package,
+  Receipt,
+  Settings,
+  Shield,
+  UserCog,
+  Users,
+  X
 } from 'lucide-react'
+import { useEffect } from 'react'
+import { Link, useLocation } from 'react-router-dom'
+import { useLanguage } from '../i18n/LanguageProvider'
+import VersionDisplay from './VersionDisplay'
 
 const ResponsiveSidebar = ({ isOpen, onClose, user }) => {
   const location = useLocation()
@@ -275,9 +276,7 @@ const ResponsiveSidebar = ({ isOpen, onClose, user }) => {
             <p className="text-xs text-gray-500">
               © 2025 {currentLanguage === 'nl' ? 'Landschapsarchitectuur' : 'Landscape Architecture'}
             </p>
-            <p className="text-xs text-gray-400 mt-1">
-              v1.0.0
-            </p>
+            <VersionDisplay className="mt-1" />
           </div>
         </div>
       </aside>

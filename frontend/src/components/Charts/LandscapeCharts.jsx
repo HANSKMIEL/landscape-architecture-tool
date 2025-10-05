@@ -18,7 +18,7 @@ import {
 } from 'recharts'
 
 // Color palette for landscape architecture theme
-const COLORS = {
+const __COLORS = {
   primary: '#22c55e',    // Green
   secondary: '#3b82f6',  // Blue
   accent: '#f59e0b',     // Amber

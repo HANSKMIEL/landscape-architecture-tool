@@ -110,29 +110,26 @@ def register():
     """User registration endpoint"""
     try:
         data = request.get_json()
-        
+
         # Validate required fields
         if not data or not all(k in data for k in ("username", "email", "password")):
             return jsonify({"error": "Missing required fields: username, email, password"}), 400
-        
+
         # Validate input lengths
         if len(data["username"]) < 3:
             return jsonify({"error": "Username must be at least 3 characters"}), 400
         if len(data["password"]) < 6:
             return jsonify({"error": "Password must be at least 6 characters"}), 400
-        
+
         # Check if user already exists
-        existing_user = User.query.filter(
-            (User.username == data["username"]) | 
-            (User.email == data["email"])
-        ).first()
-        
+        existing_user = User.query.filter((User.username == data["username"]) | (User.email == data["email"])).first()
+
         if existing_user:
             if existing_user.username == data["username"]:
                 return jsonify({"error": "Username already exists"}), 409
-            elif existing_user.email == data["email"]:
+            if existing_user.email == data["email"]:
                 return jsonify({"error": "Email already exists"}), 409
-        
+
         # Create new user
         new_user = User(
             username=data["username"],
@@ -142,17 +139,14 @@ def register():
             first_name=data.get("first_name"),
             last_name=data.get("last_name"),
             phone=data.get("phone"),
-            company=data.get("company")
+            company=data.get("company"),
         )
-        
+
         db.session.add(new_user)
         db.session.commit()
-        
-        return jsonify({
-            "message": "User registered successfully",
-            "user": new_user.to_dict()
-        }), 201
-        
+
+        return jsonify({"message": "User registered successfully", "user": new_user.to_dict()}), 201
+
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": f"Registration failed: {e!s}"}), 500
@@ -198,10 +192,10 @@ def get_users():
     per_page = min(request.args.get("per_page", 20, type=int), 100)  # Max 100 per page
     search = request.args.get("search", "").strip()
     role_filter = request.args.get("role", "").strip()
-    
+
     # Start with base query
     query = User.query
-    
+
     # Apply search filter
     if search:
         search_term = f"%{search}%"
@@ -211,31 +205,29 @@ def get_users():
                 User.email.ilike(search_term),
                 User.first_name.ilike(search_term),
                 User.last_name.ilike(search_term),
-                User.company.ilike(search_term)
+                User.company.ilike(search_term),
             )
         )
-    
+
     # Apply role filter
     if role_filter and role_filter != "all":
         query = query.filter(User.role == role_filter)
-    
+
     # Order by creation date (newest first)
     query = query.order_by(User.created_at.desc())
-    
+
     # Paginate
-    pagination = query.paginate(
-        page=page, 
-        per_page=per_page,
-        error_out=False
+    pagination = query.paginate(page=page, per_page=per_page, error_out=False)
+
+    return jsonify(
+        {
+            "users": [user.to_dict() for user in pagination.items],
+            "page": page,
+            "pages": pagination.pages,
+            "per_page": per_page,
+            "total": pagination.total,
+        }
     )
-    
-    return jsonify({
-        "users": [user.to_dict() for user in pagination.items],
-        "page": page,
-        "pages": pagination.pages,
-        "per_page": per_page,
-        "total": pagination.total
-    })
 
 
 @user_bp.route("/users", methods=["POST"])
@@ -247,9 +239,7 @@ def create_user():
         schema = UserCreateSchema(**data)
 
         # Check if user already exists
-        existing_user = User.query.filter(
-            (User.username == schema.username) | (User.email == schema.email)
-        ).first()
+        existing_user = User.query.filter((User.username == schema.username) | (User.email == schema.email)).first()
 
         if existing_user:
             return jsonify({"error": "User with this username or email already exists"}), 409
@@ -263,11 +253,15 @@ def create_user():
             "last_name": schema.last_name or None,
             "phone": schema.phone or None,
             "company": schema.company or None,
-            "notes": schema.notes or None
+            "notes": schema.notes or None,
         }
-        
-        user = User(username=schema.username, email=schema.email, **{k: v for k, v in user_data.items() if k not in ["username", "email"]})
-        
+
+        user = User(
+            username=schema.username,
+            email=schema.email,
+            **{k: v for k, v in user_data.items() if k not in ["username", "email"]},
+        )
+
         # Set password (generate temp if not provided)
         if schema.password:
             user.set_password(schema.password)
@@ -349,19 +343,16 @@ def reset_user_password(user_id):
     """Reset user password (admin only)"""
     try:
         user = User.query.get_or_404(user_id)
-        
+
         # Generate temporary password
         temp_password = user.generate_temporary_password()
         user.set_password(temp_password)
         user.updated_at = datetime.utcnow()
-        
+
         db.session.commit()
-        
-        return jsonify({
-            "message": "Password reset successfully",
-            "temporary_password": temp_password
-        }), 200
-        
+
+        return jsonify({"message": "Password reset successfully", "temporary_password": temp_password}), 200
+
     except Exception:
         return jsonify({"error": "Failed to reset password"}), 500
 
@@ -372,16 +363,16 @@ def unlock_user_account(user_id):
     """Unlock user account (admin only)"""
     try:
         user = User.query.get_or_404(user_id)
-        
+
         # Clear lock status
         user.failed_login_attempts = 0
         user.locked_until = None
         user.updated_at = datetime.utcnow()
-        
+
         db.session.commit()
-        
+
         return jsonify({"message": "Account unlocked successfully"}), 200
-        
+
     except Exception:
         return jsonify({"error": "Failed to unlock account"}), 500
 
@@ -393,21 +384,21 @@ def bulk_import_users():
     try:
         if "file" not in request.files:
             return jsonify({"error": "No file provided"}), 400
-        
+
         file = request.files["file"]
         if file.filename == "" or not file.filename.endswith(".csv"):
             return jsonify({"error": "Please upload a CSV file"}), 400
-        
+
         # Read CSV content
         import csv
         import io
-        
+
         stream = io.StringIO(file.stream.read().decode("UTF8"), newline=None)
         csv_reader = csv.DictReader(stream)
-        
+
         created_users = []
         errors = []
-        
+
         for row_num, row in enumerate(csv_reader, start=1):
             try:
                 # Extract user data
@@ -415,20 +406,18 @@ def bulk_import_users():
                 email = row.get("email", "").strip()
                 password = row.get("password", "").strip()
                 role = row.get("role", "user").strip()
-                
+
                 if not username or not email:
                     errors.append(f"Row {row_num}: Username and email are required")
                     continue
-                
+
                 # Check if user already exists
-                existing_user = User.query.filter(
-                    (User.username == username) | (User.email == email)
-                ).first()
-                
+                existing_user = User.query.filter((User.username == username) | (User.email == email)).first()
+
                 if existing_user:
                     errors.append(f"Row {row_num}: User with username '{username}' or email '{email}' already exists")
                     continue
-                
+
                 # Create user
                 user_data = {
                     "username": username,
@@ -438,31 +427,40 @@ def bulk_import_users():
                     "last_name": row.get("last_name", "").strip() or None,
                     "phone": row.get("phone", "").strip() or None,
                     "company": row.get("company", "").strip() or None,
-                    "notes": row.get("notes", "").strip() or None
+                    "notes": row.get("notes", "").strip() or None,
                 }
-                
-                user = User(username=username, email=email, **{k: v for k, v in user_data.items() if k not in ["username", "email"]})
-                
+
+                user = User(
+                    username=username,
+                    email=email,
+                    **{k: v for k, v in user_data.items() if k not in ["username", "email"]},
+                )
+
                 if password:
                     user.set_password(password)
-                
+
                 db.session.add(user)
                 created_users.append(user_data)
-                
+
             except Exception as e:
                 errors.append(f"Row {row_num}: {e!s}")
-        
+
         # Commit all changes
         if created_users:
             db.session.commit()
-        
-        return jsonify({
-            "message": "Bulk import completed",
-            "total_created": len(created_users),
-            "total_errors": len(errors),
-            "errors": errors[:10]  # Limit to first 10 errors
-        }), 200
-        
+
+        return (
+            jsonify(
+                {
+                    "message": "Bulk import completed",
+                    "total_created": len(created_users),
+                    "total_errors": len(errors),
+                    "errors": errors[:10],  # Limit to first 10 errors
+                }
+            ),
+            200,
+        )
+
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": f"Import failed: {e!s}"}), 500

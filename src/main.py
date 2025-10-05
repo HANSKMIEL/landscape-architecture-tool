@@ -18,14 +18,6 @@ from flask_swagger_ui import get_swaggerui_blueprint
 from pydantic import ValidationError
 from sqlalchemy import and_, distinct, func, or_, text
 
-try:
-    import redis
-except ImportError:
-    redis = None
-
-# Add project root to Python path before importing local modules
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
 from src.config import get_config
 from src.models.landscape import Plant, Product, Supplier
 from src.models.user import db
@@ -61,11 +53,20 @@ from src.services import (
 from src.services.analytics import AnalyticsService
 from src.services.dashboard_service import DashboardService
 from src.utils.db_init import initialize_database, populate_sample_data
-
-# IMPORTANT: DependencyValidator is used in create_app() and health endpoint - do not remove (issue #326)
 from src.utils.dependency_validator import DependencyValidator
 from src.utils.error_handlers import handle_errors, register_error_handlers
 from src.utils.openapi_spec import generate_openapi_spec
+
+try:
+    import redis
+except ImportError:
+    redis = None
+
+# Add project root to Python path before importing local modules
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+
+# IMPORTANT: DependencyValidator is used in create_app() and health endpoint - do not remove (issue #326)
 
 # Define version for health endpoint
 __version__ = "2.0.0"
@@ -102,8 +103,14 @@ def create_app():
     config = get_config()
     app.config.from_object(config)
 
-    # Configure session
+    # Configure session with security flags
     app.permanent_session_lifetime = timedelta(hours=1)
+    # HTTPS only in production (not in debug/dev mode)
+    app.config["SESSION_COOKIE_SECURE"] = not app.debug
+    # JavaScript cannot access session cookie (XSS protection)
+    app.config["SESSION_COOKIE_HTTPONLY"] = True
+    # CSRF protection
+    app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
 
     # Validate critical dependencies - only when app is actually created
     # (not during module import for testing or introspection)
@@ -176,10 +183,12 @@ def create_app():
 
     # Register user authentication blueprint
     from src.routes.auth import auth_bp
+    from src.routes.security_docs import security_docs_bp
     from src.routes.user import data_access_required, login_required, user_bp
 
     app.register_blueprint(user_bp, url_prefix="/api")
     app.register_blueprint(auth_bp, url_prefix="/api")
+    app.register_blueprint(security_docs_bp)  # Admin-only security docs
 
     # Register performance monitoring blueprint
     app.register_blueprint(performance_bp)
@@ -204,7 +213,11 @@ def create_app():
     swaggerui_blueprint = get_swaggerui_blueprint(
         SWAGGER_URL,
         API_URL,
-        config={"app_name": "Landscape Architecture Tool API", "docExpansion": "list", "defaultModelsExpandDepth": 3},
+        config={
+            "app_name": "Landscape Architecture Tool API",
+            "docExpansion": "list",
+            "defaultModelsExpandDepth": 3,
+        },
     )
     app.register_blueprint(swaggerui_blueprint)
 
@@ -241,7 +254,10 @@ def create_app():
             "status": "healthy" if critical_ok else "unhealthy",
             "timestamp": datetime.now(UTC).isoformat(),
             "version": __version__,  # Added for test compatibility
-            "environment": os.environ.get("FLASK_ENV", "development"),  # Added for test compatibility
+            # Added for test compatibility
+            "environment": os.environ.get("FLASK_ENV", "development"),
+            # Current deployment branch
+            "branch": os.environ.get("GIT_BRANCH", None),
             "database_status": db_status,  # Added for test compatibility
             "dependencies": {
                 "critical": {
@@ -461,13 +477,23 @@ def create_app():
             # Convert Pydantic errors to string format for consistency
             error_messages = [error.get("msg", str(error)) for error in e.errors()]
             return (
-                jsonify({"error": "Validation failed", "validation_errors": error_messages}),
+                jsonify(
+                    {
+                        "error": "Validation failed",
+                        "validation_errors": error_messages,
+                    }
+                ),
                 422,
             )
         except ValueError as e:
             logger.error("Validation error occurred: %s", str(e))
             return (
-                jsonify({"error": "Validation failed", "validation_errors": [str(e)]}),
+                jsonify(
+                    {
+                        "error": "Validation failed",
+                        "validation_errors": [str(e)],
+                    }
+                ),
                 422,
             )
 
@@ -493,12 +519,22 @@ def create_app():
             # Convert Pydantic errors to string format for consistency
             error_messages = [error.get("msg", str(error)) for error in e.errors()]
             return (
-                jsonify({"error": "Validation failed", "validation_errors": error_messages}),
+                jsonify(
+                    {
+                        "error": "Validation failed",
+                        "validation_errors": error_messages,
+                    }
+                ),
                 422,
             )
         except ValueError as e:
             return (
-                jsonify({"error": "Validation failed", "validation_errors": [str(e)]}),
+                jsonify(
+                    {
+                        "error": "Validation failed",
+                        "validation_errors": [str(e)],
+                    }
+                ),
                 422,
             )
 
@@ -556,7 +592,12 @@ def create_app():
             # Convert Pydantic errors to string format for consistency
             error_messages = [error.get("msg", str(error)) for error in e.errors()]
             return (
-                jsonify({"error": "Validation failed", "validation_errors": error_messages}),
+                jsonify(
+                    {
+                        "error": "Validation failed",
+                        "validation_errors": error_messages,
+                    }
+                ),
                 422,
             )
 
@@ -638,7 +679,10 @@ def create_app():
 
         # Subquery for product counts
         product_counts = (
-            db.session.query(Product.supplier_id, func.count(Product.id).label("product_count"))
+            db.session.query(
+                Product.supplier_id,
+                func.count(Product.id).label("product_count"),
+            )
             .group_by(Product.supplier_id)
             .subquery()
         )
@@ -848,7 +892,12 @@ def create_app():
             # Convert Pydantic errors to string format for consistency
             error_messages = [error.get("msg", str(error)) for error in e.errors()]
             return (
-                jsonify({"error": "Validation failed", "validation_errors": error_messages}),
+                jsonify(
+                    {
+                        "error": "Validation failed",
+                        "validation_errors": error_messages,
+                    }
+                ),
                 422,
             )
 
@@ -886,7 +935,12 @@ def create_app():
             # Convert Pydantic errors to string format for consistency
             error_messages = [error.get("msg", str(error)) for error in e.errors()]
             return (
-                jsonify({"error": "Validation failed", "validation_errors": error_messages}),
+                jsonify(
+                    {
+                        "error": "Validation failed",
+                        "validation_errors": error_messages,
+                    }
+                ),
                 422,
             )
         except ValueError as e:
@@ -1030,7 +1084,12 @@ def create_app():
             # Convert Pydantic errors to string format for consistency
             error_messages = [error.get("msg", str(error)) for error in e.errors()]
             return (
-                jsonify({"error": "Validation failed", "validation_errors": error_messages}),
+                jsonify(
+                    {
+                        "error": "Validation failed",
+                        "validation_errors": error_messages,
+                    }
+                ),
                 422,
             )
 
@@ -1056,7 +1115,12 @@ def create_app():
             # Convert Pydantic errors to string format for consistency
             error_messages = [error.get("msg", str(error)) for error in e.errors()]
             return (
-                jsonify({"error": "Validation failed", "validation_errors": error_messages}),
+                jsonify(
+                    {
+                        "error": "Validation failed",
+                        "validation_errors": error_messages,
+                    }
+                ),
                 422,
             )
 
@@ -1107,7 +1171,12 @@ def create_app():
             # Convert Pydantic errors to string format for consistency
             error_messages = [error.get("msg", str(error)) for error in e.errors()]
             return (
-                jsonify({"error": "Validation failed", "validation_errors": error_messages}),
+                jsonify(
+                    {
+                        "error": "Validation failed",
+                        "validation_errors": error_messages,
+                    }
+                ),
                 422,
             )
 
@@ -1133,7 +1202,12 @@ def create_app():
             # Convert Pydantic errors to string format for consistency
             error_messages = [error.get("msg", str(error)) for error in e.errors()]
             return (
-                jsonify({"error": "Validation failed", "validation_errors": error_messages}),
+                jsonify(
+                    {
+                        "error": "Validation failed",
+                        "validation_errors": error_messages,
+                    }
+                ),
                 422,
             )
 
@@ -1183,7 +1257,12 @@ def create_app():
             # Convert Pydantic errors to string format for consistency
             error_messages = [error.get("msg", str(error)) for error in e.errors()]
             return (
-                jsonify({"error": "Validation failed", "validation_errors": error_messages}),
+                jsonify(
+                    {
+                        "error": "Validation failed",
+                        "validation_errors": error_messages,
+                    }
+                ),
                 422,
             )
 
@@ -1209,7 +1288,12 @@ def create_app():
             # Convert Pydantic errors to string format for consistency
             error_messages = [error.get("msg", str(error)) for error in e.errors()]
             return (
-                jsonify({"error": "Validation failed", "validation_errors": error_messages}),
+                jsonify(
+                    {
+                        "error": "Validation failed",
+                        "validation_errors": error_messages,
+                    }
+                ),
                 422,
             )
 
@@ -1250,7 +1334,8 @@ def main():
         # - 127.0.0.1 for development (secure)
         # - 0.0.0.0 only for testing or when explicitly enabled for production
         if flask_env == "testing" or os.environ.get("ALLOW_ALL_INTERFACES", "").lower() == "true":
-            host = "0.0.0.0"  # nosec B104 # Controlled by environment variable for containerized deployments
+            # nosec B104 # Controlled by environment variable for containerized deployments
+            host = "0.0.0.0"
         else:
             host = "127.0.0.1"
 
@@ -1281,7 +1366,12 @@ def main():
             debug_mode = flask_env == "development"
             use_reloader = flask_env == "development"
             logger.info(f"Starting Flask server on {host}:{port} (env: {flask_env})")
-            app.run(host=host, port=port, debug=debug_mode, use_reloader=use_reloader)
+            app.run(
+                host=host,
+                port=port,
+                debug=debug_mode,
+                use_reloader=use_reloader,
+            )
         else:
             logger.warning("Use a production WSGI server (like Gunicorn) instead of " "Flask dev server")
             print("For production, use: gunicorn -c gunicorn.conf.py wsgi:application")

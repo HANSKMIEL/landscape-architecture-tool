@@ -15,7 +15,7 @@ jobs:
   pr-analysis:
     name: PR Analysis & Labeling
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -28,17 +28,17 @@ jobs:
           script: |
             const pr = context.payload.pull_request;
             const labels = [];
-            
+
             // Get PR files and changes
             const files = await github.rest.pulls.listFiles({
               owner: context.repo.owner,
               repo: context.repo.repo,
               pull_number: pr.number
             });
-            
+
             const totalChanges = files.data.reduce((sum, file) => sum + file.changes, 0);
             const fileCount = files.data.length;
-            
+
             // Size labeling
             if (totalChanges < 50) {
               labels.push('size:small');
@@ -49,10 +49,10 @@ jobs:
             } else {
               labels.push('size:extra-large');
             }
-            
+
             // Component labeling based on files changed
             const changedFiles = files.data.map(f => f.filename);
-            
+
             if (changedFiles.some(f => f.startsWith('src/'))) {
               labels.push('component:backend');
             }
@@ -68,11 +68,11 @@ jobs:
             if (changedFiles.some(f => f.includes('doc') || f.includes('README'))) {
               labels.push('component:documentation');
             }
-            
+
             // Type labeling based on branch name and title
             const branchName = pr.head.ref.toLowerCase();
             const title = pr.title.toLowerCase();
-            
+
             if (branchName.includes('feat') || title.includes('feat')) {
               labels.push('type:feature');
             } else if (branchName.includes('fix') || title.includes('fix')) {
@@ -82,7 +82,7 @@ jobs:
             } else if (branchName.includes('chore') || title.includes('chore')) {
               labels.push('type:chore');
             }
-            
+
             // Apply labels
             if (labels.length > 0) {
               await github.rest.issues.addLabels({
@@ -92,22 +92,14 @@ jobs:
                 labels: labels
               });
             }
-            
+
             // Add size warning for large PRs
             if (totalChanges > 500) {
               await github.rest.issues.createComment({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 issue_number: pr.number,
-                body: `⚠️ **Large PR Warning**
-                
-This PR contains ${totalChanges} changes across ${fileCount} files. Consider breaking it down into smaller, more focused PRs for easier review.
-
-**Tips for better PRs:**
-- Keep PRs focused on a single feature or fix
-- Aim for less than 200 lines of changes when possible
-- Split refactoring from feature work
-- Add clear descriptions and test cases`
+                body: `⚠️ **Large PR Warning**\\n\\nThis PR contains ${totalChanges} changes across ${fileCount} files. Consider breaking it down into smaller, more focused PRs for easier review.\\n\\n**Tips for better PRs:**\\n- Keep PRs focused on a single feature or fix\\n- Aim for less than 200 lines of changes when possible\\n- Split refactoring from feature work\\n- Add clear descriptions and test cases`
               });
             }
 
@@ -115,7 +107,7 @@ This PR contains ${totalChanges} changes across ${fileCount} files. Consider bre
     name: Auto-merge Dependabot PRs
     runs-on: ubuntu-latest
     if: github.actor == 'dependabot[bot]'
-    
+
     steps:
       - name: Dependabot metadata
         id: metadata
@@ -135,7 +127,7 @@ This PR contains ${totalChanges} changes across ${fileCount} files. Consider bre
   pr-quality-gate:
     name: PR Quality Gate
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Check PR requirements
         uses: actions/github-script@v7
@@ -143,7 +135,7 @@ This PR contains ${totalChanges} changes across ${fileCount} files. Consider bre
           script: |
             const pr = context.payload.pull_request;
             const checks = [];
-            
+
             // Check PR title format
             const titlePattern = /^(feat|fix|docs|style|refactor|test|chore)(\(.+\))?: .+/;
             if (!titlePattern.test(pr.title)) {
@@ -151,21 +143,21 @@ This PR contains ${totalChanges} changes across ${fileCount} files. Consider bre
             } else {
               checks.push('✅ PR title follows conventional commit format');
             }
-            
+
             // Check PR description
             if (!pr.body || pr.body.length < 50) {
               checks.push('❌ PR description should be at least 50 characters');
             } else {
               checks.push('✅ PR has adequate description');
             }
-            
+
             // Check if PR is not a draft
             if (pr.draft) {
               checks.push('⏳ PR is in draft mode');
             } else {
               checks.push('✅ PR is ready for review');
             }
-            
+
             // Post quality gate results
             await github.rest.issues.createComment({
               owner: context.repo.owner,

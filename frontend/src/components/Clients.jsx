@@ -25,21 +25,21 @@ import { useLanguage } from '../i18n/LanguageProvider'
 const Clients = () => {
   const { t } = useLanguage()
   // State management
-  const [clients, setClients] = useState([])
-  const [projects, setProjects] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
-  const [showAddModal, setShowAddModal] = useState(false)
-  const [showEditModal, setShowEditModal] = useState(false)
-  const [showProjectsModal, setShowProjectsModal] = useState(false)
-  const [showImportModal, setShowImportModal] = useState(false)
-  const [editingClient, setEditingClient] = useState(null)
-  const [selectedClient, setSelectedClient] = useState(null)
-  const [searchTerm, setSearchTerm] = useState('')
-  const [totalClients, setTotalClients] = useState(0)
+  const [__clients, set_clients] = useState([])
+  const [__projects, set_projects] = useState([])
+  const [__loading, set_loading] = useState(true)
+  const [__error, set_error] = useState(null)
+  const [__showAddModal, set_showAddModal] = useState(false)
+  const [__showEditModal, set_showEditModal] = useState(false)
+  const [__showProjectsModal, set_showProjectsModal] = useState(false)
+  const [__showImportModal, set_showImportModal] = useState(false)
+  const [__editingClient, set_editingClient] = useState(null)
+  const [__selectedClient, set_selectedClient] = useState(null)
+  const [__searchTerm, set_searchTerm] = useState('')
+  const [__totalClients, set_totalClients] = useState(0)
 
   // Form state
-  const [formData, setFormData] = useState({
+  const [__formData, set_formData] = useState({
     name: '',
     contact_person: '',
     email: '',

@@ -112,10 +112,29 @@ git log -3 --oneline --decorate
 log "Stopping backend service..."
 systemctl stop landscape-backend 2>/dev/null || warning "Backend service was not running"
 
-# Kill any remaining gunicorn processes
-log "Cleaning up any remaining processes..."
+# Kill any remaining backend processes
+log "Cleaning up any remaining backend processes..."
 pkill -f gunicorn 2>/dev/null || true
 pkill -f "python.*main.py" 2>/dev/null || true
+
+# Kill any frontend processes that might be blocking port 8080
+log "Checking for processes blocking port 8080..."
+PROCESS_ON_8080=$(lsof -ti:8080 2>/dev/null || true)
+if [ -n "$PROCESS_ON_8080" ]; then
+    warning "Found process(es) on port 8080: $PROCESS_ON_8080"
+    log "Killing processes on port 8080..."
+    kill -9 $PROCESS_ON_8080 2>/dev/null || true
+    sleep 2
+    success "Port 8080 cleared"
+else
+    success "Port 8080 is already available"
+fi
+
+# Also kill any npm/node processes that might be running dev servers
+log "Cleaning up any remaining Node.js processes..."
+pkill -f "vite" 2>/dev/null || true
+pkill -f "npm.*dev" 2>/dev/null || true
+
 sleep 3
 
 # Activate Python environment and update dependencies
@@ -147,17 +166,41 @@ fi
 log "Rebuilding frontend with devdeploy branding..."
 cd frontend
 
-# Clear npm cache and build artifacts
+# Clear npm cache and build artifacts with force
 log "Clearing npm and build caches..."
-npm cache clean --force
-rm -rf node_modules/.cache 2>/dev/null || true
-rm -rf .next 2>/dev/null || true
-rm -rf dist 2>/dev/null || true
-rm -rf build 2>/dev/null || true
+npm cache clean --force 2>/dev/null || true
 
-# Install dependencies
-log "Installing frontend dependencies..."
-npm ci --legacy-peer-deps
+# Force remove node_modules and lock file completely to avoid ENOTEMPTY errors
+if [ -d "node_modules" ]; then
+    log "Removing existing node_modules..."
+    rm -rf node_modules 2>/dev/null || true
+    # If normal rm fails, try with sudo and force
+    if [ -d "node_modules" ]; then
+        chmod -R 755 node_modules 2>/dev/null || true
+        rm -rf node_modules 2>/dev/null || true
+    fi
+fi
+
+# Remove lock file to force fresh dependency resolution
+rm -f package-lock.json 2>/dev/null || true
+
+# Clear other build artifacts
+rm -rf node_modules/.cache .next dist build 2>/dev/null || true
+
+# Install dependencies fresh with clean slate
+log "Installing frontend dependencies (this may take a few minutes)..."
+npm install --legacy-peer-deps
+
+# Verify critical dependencies are installed
+log "Verifying critical dependencies..."
+if [ ! -d "node_modules/clsx" ]; then
+    error "Critical dependency 'clsx' not installed! Retrying..."
+    npm install clsx --save --legacy-peer-deps
+fi
+if [ ! -d "node_modules/recharts" ]; then
+    error "Critical dependency 'recharts' not installed! Retrying..."
+    npm install recharts --save --legacy-peer-deps
+fi
 
 # Set devdeploy environment
 log "Configuring devdeploy environment..."
@@ -165,8 +208,18 @@ export VITE_APP_TITLE="devdeploy - Landscape Architecture Tool (Development)"
 export VITE_APP_ENV="development"
 export VITE_API_URL="http://72.60.176.200:8080/api"
 
-# Build production version with devdeploy branding
-log "Building production frontend with devdeploy branding..."
+# Update index.html with devdeploy title BEFORE build
+log "Setting devdeploy branding in index.html..."
+sed -i 's|<title>.*</title>|<title>devdeploy - Landscape Architecture Tool (Development)</title>|g' index.html
+
+# Set GIT_BRANCH environment variable for backend
+CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+export GIT_BRANCH=$CURRENT_BRANCH
+echo "GIT_BRANCH=$CURRENT_BRANCH" >> ../.env 2>/dev/null || true
+
+# Build optimized bundle with devdeploy branding
+log "Building optimized frontend bundle with devdeploy branding..."
+log "Note: 'production' mode = optimized build, NOT production environment"
 npm run build
 
 # Verify build
@@ -180,6 +233,11 @@ if [ -d "dist" ] && [ -f "dist/index.html" ]; then
     else
         warning "DevDeploy branding not found in build - this may be normal"
     fi
+    
+    # Add cache-busting meta tag to force browser refresh
+    DEPLOY_TIMESTAMP=$(date +%s)
+    log "Adding cache-busting timestamp: $DEPLOY_TIMESTAMP"
+    sed -i "s|</head>|  <meta name=\"deploy-version\" content=\"$DEPLOY_TIMESTAMP\">\n  </head>|" dist/index.html
 else
     error "Frontend build failed!"
     exit 1
@@ -193,6 +251,13 @@ log "Checking nginx configuration..."
 if [ -f "/etc/nginx/sites-available/landscape" ]; then
     info "Nginx configuration found"
     nginx -t && success "Nginx configuration is valid" || error "Nginx configuration has errors"
+    
+    # Clear nginx cache if it exists
+    if [ -d "/var/cache/nginx" ]; then
+        log "Clearing nginx cache..."
+        rm -rf /var/cache/nginx/* 2>/dev/null || true
+        success "Nginx cache cleared"
+    fi
 fi
 
 # Reload systemd and start backend
@@ -224,6 +289,19 @@ fi
 # Reload nginx
 log "Reloading nginx..."
 systemctl reload nginx || warning "Nginx reload failed"
+
+# Add cache-busting information
+echo ""
+log "═══════════════════════════════════════════════════════════"
+log "Cache-Busting Information"
+log "═══════════════════════════════════════════════════════════"
+success "✓ Hashed filenames enabled for automatic cache invalidation"
+success "✓ Deploy timestamp added to HTML: $DEPLOY_TIMESTAMP"
+success "✓ Nginx cache cleared"
+info "→ If changes not visible, perform hard refresh:"
+info "  • Windows/Linux: Ctrl+Shift+R"
+info "  • macOS: Cmd+Shift+R"
+info "  • Or clear browser cache manually"
 
 # Health checks
 echo ""

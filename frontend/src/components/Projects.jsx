@@ -23,18 +23,18 @@ import { useLanguage } from '../i18n/LanguageProvider'
 
 const Projects = () => {
   const { t } = useLanguage()
-  const [projects, setProjects] = useState([])
-  const [clients, setClients] = useState([])
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState(null)
-  const [selectedProject, setSelectedProject] = useState(null)
-  const [showAddModal, setShowAddModal] = useState(false)
-  const [showEditModal, setShowEditModal] = useState(false)
-  const [editingProject, setEditingProject] = useState(null)
-  const [searchTerm, setSearchTerm] = useState('')
+  const [__projects, set_projects] = useState([])
+  const [__clients, set_clients] = useState([])
+  const [__loading, set_loading] = useState(false)
+  const [__error, set_error] = useState(null)
+  const [__selectedProject, set_selectedProject] = useState(null)
+  const [__showAddModal, set_showAddModal] = useState(false)
+  const [__showEditModal, set_showEditModal] = useState(false)
+  const [__editingProject, set_editingProject] = useState(null)
+  const [__searchTerm, set_searchTerm] = useState('')
 
   // Form state
-  const [formData, setFormData] = useState({
+  const [__formData, set_formData] = useState({
     name: '',
     description: '',
     client_id: '',
@@ -61,7 +61,7 @@ const Projects = () => {
       setLoading(true)
       setError(null)
       
-      const params = {}
+      const __params = {}
       if (searchTerm) {
         params.search = searchTerm
       }

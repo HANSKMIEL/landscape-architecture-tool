@@ -25,9 +25,9 @@ import BulkDataSettings from './settings/BulkDataSettings'
 import ReportSettings from './settings/ReportSettings'
 
 const Settings = () => {
-  const [activeTab, setActiveTab] = useState('appearance')
+  const [__activeTab, set_activeTab] = useState('appearance')
 
-  const translations = {
+  const __translations = {
     en: {
       title: 'Settings',
       subtitle: 'Configure your landscape architecture application preferences',

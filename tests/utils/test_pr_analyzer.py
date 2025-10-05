@@ -3,21 +3,16 @@
 Tests for the PR Analyzer module
 """
 
-import json
 import sys
-from datetime import datetime, timezone
-from pathlib import Path
 from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 
-from tests.fixtures.auth_fixtures import authenticated_test_user, setup_test_authentication
-
-# Add project root to Python path
-project_root = Path(__file__).parent.parent.parent
-sys.path.insert(0, str(project_root))
-
-from src.utils.pr_analyzer import PRAnalyzer, PRInfo, create_validation_report
+from src.utils.pr_analyzer import (  # noqa: E402
+    PRAnalyzer,
+    PRInfo,
+    create_validation_report,
+)
 
 
 class TestPRInfo:

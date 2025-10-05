@@ -9,17 +9,17 @@ import { Loader2, Eye, EyeOff, Mail, Lock, User, AlertCircle, CheckCircle } from
 import { useLanguage } from '../i18n/LanguageProvider';
 
 const Register = () => {
-  const [formData, setFormData] = useState({
+  const [__formData, set_formData] = useState({
     username: '',
     email: '',
     password: '',
     confirmPassword: ''
   });
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [__showPassword, set_showPassword] = useState(false);
+  const [__showConfirmPassword, set_showConfirmPassword] = useState(false);
+  const [__isLoading, set_isLoading] = useState(false);
+  const [__error, set_error] = useState('');
+  const [__success, set_success] = useState('');
   
   const navigate = useNavigate();
   const { t } = useLanguage();

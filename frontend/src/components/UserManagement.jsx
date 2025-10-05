@@ -30,20 +30,20 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
 
 const UserManagement = () => {
-  const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
-  const [searchTerm, setSearchTerm] = useState('');
-  const [roleFilter, setRoleFilter] = useState('all');
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [showCreateUser, setShowCreateUser] = useState(false);
-  const [showBulkImport, setShowBulkImport] = useState(false);
-  const [editingUser, setEditingUser] = useState(null);
+  const [__users, set_users] = useState([]);
+  const [__loading, set_loading] = useState(true);
+  const [__error, set_error] = useState('');
+  const [__success, set_success] = useState('');
+  const [__searchTerm, set_searchTerm] = useState('');
+  const [__roleFilter, set_roleFilter] = useState('all');
+  const [__currentPage, set_currentPage] = useState(1);
+  const [__totalPages, set_totalPages] = useState(1);
+  const [__showCreateUser, set_showCreateUser] = useState(false);
+  const [__showBulkImport, set_showBulkImport] = useState(false);
+  const [__editingUser, set_editingUser] = useState(null);
 
   // Create user form state
-  const [createUserForm, setCreateUserForm] = useState({
+  const [__createUserForm, set_createUserForm] = useState({
     username: '',
     email: '',
     password: '',
@@ -56,9 +56,9 @@ const UserManagement = () => {
   });
 
   // Bulk import state
-  const [bulkImportFile, setBulkImportFile] = useState(null);
-  const [bulkImportLoading, setBulkImportLoading] = useState(false);
-  const [bulkImportResults, setBulkImportResults] = useState(null);
+  const [__bulkImportFile, set_bulkImportFile] = useState(null);
+  const [__bulkImportLoading, set_bulkImportLoading] = useState(false);
+  const [__bulkImportResults, set_bulkImportResults] = useState(null);
 
   const roles = [
     { value: 'client', label: 'Client', color: 'bg-blue-100 text-blue-800' },
