@@ -2,13 +2,13 @@
 
 ## Overview
 
-The V1.00D DevDeploy workflow (`.github/workflows/v1-devdeploy.yml`) provides automated deployment to the VPS DevDeploy environment when changes are pushed to the V1.00D branch.
+The V1.00D DevDeploy workflow (`.github/workflows/v1-devdeploy.yml`) provides automated deployment to the VPS DevDeploy environment when changes are pushed to the v1.00D branch.
 
 ## Workflow Triggers
 
 The workflow is triggered by:
 
-1. **Automatic**: Push events to the `V1.00D` branch (e.g., when PRs are merged)
+1. **Automatic**: Push events to the `v1.00D` branch (e.g., when PRs are merged)
 2. **Manual**: Via GitHub Actions UI (`workflow_dispatch`)
 
 ## Workflow Jobs
@@ -18,7 +18,7 @@ The workflow is triggered by:
 **Purpose**: Validates the deployment configuration and optionally runs tests before deployment.
 
 **Steps**:
-- Checkout V1.00D branch
+- Checkout v1.00D branch
 - Validate deployment files exist (src/, main.py, requirements.txt)
 - Setup Python 3.12
 - Run quick validation tests (unless skipped)
@@ -34,7 +34,7 @@ The workflow is triggered by:
 - URL: `http://72.60.176.200:8080`
 
 **Steps**:
-1. Checkout V1.00D branch
+1. Checkout v1.00D branch
 2. Build frontend (React/Vite)
 3. Setup SSH authentication
 4. Test SSH connection with detailed error messages
@@ -152,7 +152,7 @@ To manually trigger the workflow:
 1. Go to GitHub repository → Actions tab
 2. Select "V1.00D DevDeploy Deployment" workflow
 3. Click "Run workflow"
-4. Select branch: `V1.00D`
+4. Select branch: `v1.00D`
 5. (Optional) Check "Skip pre-deployment tests" to skip testing
 6. Click "Run workflow"
 
@@ -187,7 +187,7 @@ To manually trigger the workflow:
 ## Workflow History
 
 - **Created**: In response to issue about missing V1.00D DevDeploy workflow
-- **Purpose**: Automate deployment to VPS when V1.00D branch is updated
+- **Purpose**: Automate deployment to VPS when v1.00D branch is updated
 - **Status**: Active
 
 ## Notes

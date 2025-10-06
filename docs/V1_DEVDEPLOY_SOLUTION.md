@@ -2,9 +2,9 @@
 
 ## Issue Summary
 
-**Problem**: The repository had no automatic deployment workflow for the V1.00D branch, causing confusion when trying to deploy to the VPS DevDeploy environment. The issue reported SSH authentication failures for a workflow that didn't exist.
+**Problem**: The repository had no automatic deployment workflow for the v1.00D branch, causing confusion when trying to deploy to the VPS DevDeploy environment. The issue reported SSH authentication failures for a workflow that didn't exist.
 
-**Root Cause**: The V1.00D branch only had CI/CD testing (`v1-development.yml`) but no deployment workflow to actually deploy changes to the VPS.
+**Root Cause**: The v1.00D branch only had CI/CD testing (`v1-development.yml`) but no deployment workflow to actually deploy changes to the VPS.
 
 ## Solution Implemented
 
@@ -13,7 +13,7 @@
 **File**: `.github/workflows/v1-devdeploy.yml`
 
 A complete automated deployment workflow that:
-- Triggers automatically when code is pushed to V1.00D branch
+- Triggers automatically when code is pushed to v1.00D branch
 - Can be manually triggered via GitHub Actions UI
 - Validates deployment configuration before deploying
 - Builds the frontend (React/Vite)
@@ -79,14 +79,14 @@ Ensure these secrets are configured in your repository settings:
 ### Step 3: Test the Workflow
 
 **Option A: Automatic Deployment**
-- Push any change to the V1.00D branch
+- Push any change to the v1.00D branch
 - The workflow will trigger automatically
 
 **Option B: Manual Deployment**
 1. Go to GitHub repository → Actions tab
 2. Select "V1.00D DevDeploy Deployment"
 3. Click "Run workflow"
-4. Select branch: V1.00D
+4. Select branch: v1.00D
 5. Click "Run workflow"
 
 ### Step 4: Monitor Deployment
