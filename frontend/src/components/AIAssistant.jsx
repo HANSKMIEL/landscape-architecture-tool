@@ -5,13 +5,13 @@ import { Input as _Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { 
-  Bot, 
-  Send, 
-  Loader2, 
-  Lightbulb, 
-  Leaf, 
-  TrendingUp, 
+import {
+  Bot,
+  Send,
+  Loader2,
+  Lightbulb,
+  Leaf,
+  TrendingUp,
   MessageSquare,
   Sparkles,
   Brain,
@@ -51,7 +51,7 @@ const AIAssistant = () => {
     const __welcomeMessage = {
       id: Date.now(),
       type: 'assistant',
-      content: language === 'nl' 
+      content: language === 'nl'
         ? 'Hallo! Ik ben je AI-assistent voor landschapsarchitectuur. Ik kan je helpen met plantaanbevelingen, projectinzichten, en data-analyse. Hoe kan ik je vandaag helpen?'
         : 'Hello! I\'m your landscape architecture AI assistant. I can help you with plant recommendations, project insights, and data analysis. How can I help you today?',
       timestamp: new Date()
@@ -105,7 +105,7 @@ const AIAssistant = () => {
       }
 
       const data = await response.json()
-      
+
       const __assistantMessage = {
         id: Date.now() + 1,
         type: 'assistant',
@@ -120,7 +120,7 @@ const AIAssistant = () => {
       const __errorMessage = {
         id: Date.now() + 1,
         type: 'assistant',
-        content: language === 'nl' 
+        content: language === 'nl'
           ? 'Sorry, ik kan je vraag momenteel niet verwerken. Probeer het later opnieuw.'
           : 'Sorry, I can\'t process your question right now. Please try again later.',
         timestamp: new Date(),
@@ -137,7 +137,7 @@ const AIAssistant = () => {
     try {
       // Get dashboard stats for context
       const stats = await ApiService.getDashboardStats()
-      
+
       const insightPrompts = [
         {
           type: 'performance',
@@ -161,7 +161,7 @@ const AIAssistant = () => {
 
       const generatedInsights = insightPrompts.map(insight => ({
         ...insight,
-        content: language === 'nl' 
+        content: language === 'nl'
           ? `Gebaseerd op je huidige data van ${stats.total_projects} projecten en ${stats.total_clients} klanten, raad ik aan om te focussen op het verbeteren van client retentie en het uitbreiden van je plantencatalogus.`
           : `Based on your current data of ${stats.total_projects} projects and ${stats.total_clients} clients, I recommend focusing on improving client retention and expanding your plant catalog.`,
         id: Date.now() + Math.random()
@@ -178,13 +178,13 @@ const AIAssistant = () => {
   const generatePlantRecommendations = async () => {
     try {
       const plants = await ApiService.getPlants()
-      
+
       const recommendations = [
         {
           id: 1,
           type: 'native',
           title: language === 'nl' ? 'Inheemse Planten' : 'Native Plants',
-          description: language === 'nl' 
+          description: language === 'nl'
             ? 'Bevorder biodiversiteit met inheemse plantensoorten'
             : 'Promote biodiversity with native plant species',
           plants: plants.plants?.filter(p => p.native).slice(0, 3) || [],
@@ -195,7 +195,7 @@ const AIAssistant = () => {
           id: 2,
           type: 'drought_resistant',
           title: language === 'nl' ? 'Droogtebestendige Planten' : 'Drought Resistant Plants',
-          description: language === 'nl' 
+          description: language === 'nl'
             ? 'Waterbesparende opties voor duurzame tuinen'
             : 'Water-saving options for sustainable gardens',
           plants: plants.plants?.filter(p => p.water_needs === 'low').slice(0, 3) || [],
@@ -206,7 +206,7 @@ const AIAssistant = () => {
           id: 3,
           type: 'seasonal',
           title: language === 'nl' ? 'Seizoensgebonden Keuzes' : 'Seasonal Choices',
-          description: language === 'nl' 
+          description: language === 'nl'
             ? 'Perfecte planten voor het huidige seizoen'
             : 'Perfect plants for the current season',
           plants: plants.plants?.slice(0, 3) || [],
@@ -297,13 +297,12 @@ const AIAssistant = () => {
                     className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
                   >
                     <div
-                      className={`max-w-[80%] p-3 rounded-lg ${
-                        message.type === 'user'
+                      className={`max-w-[80%] p-3 rounded-lg ${message.type === 'user'
                           ? 'bg-green-600 text-white'
                           : message.isError
-                          ? 'bg-red-50 text-red-800 border border-red-200'
-                          : 'bg-gray-100 text-gray-800'
-                      }`}
+                            ? 'bg-red-50 text-red-800 border border-red-200'
+                            : 'bg-gray-100 text-gray-800'
+                        }`}
                     >
                       <div className="flex items-start space-x-2">
                         {message.type === 'assistant' && (
@@ -417,7 +416,7 @@ const AIAssistant = () => {
                     {t('aiAssistant.positive', 'Positive')}
                   </Badge>
                 </div>
-                
+
                 <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
                   <div className="flex items-center space-x-2">
                     <CheckCircle className="h-4 w-4 text-green-600" />

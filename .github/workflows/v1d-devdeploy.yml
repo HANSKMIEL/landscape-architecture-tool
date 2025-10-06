@@ -167,13 +167,18 @@ jobs:
           if [ -z "$DEPLOY_DIR" ]; then
               echo "❌ No deployment directory found. Creating new deployment..."
               DEPLOY_DIR="/var/www/landscape-architecture-tool-dev"
-              mkdir -p "$DEPLOY_DIR"
-              cd "$DEPLOY_DIR"
+          else
+              echo "✅ Using deployment directory: $DEPLOY_DIR"
+          fi
+
+          # Ensure the directory exists before attempting to change into it
+          mkdir -p "$DEPLOY_DIR"
+          cd "$DEPLOY_DIR"
+
+          if [ ! -d .git ]; then
+              echo "📥 Initializing repository contents..."
               git clone https://github.com/HANSKMIEL/landscape-architecture-tool.git .
               git checkout V1.00D
-          else
-              echo "✅ Found deployment directory: $DEPLOY_DIR"
-              cd "$DEPLOY_DIR"
           fi
 
           # CRITICAL SAFETY CHECK: Verify we're deploying to development ONLY

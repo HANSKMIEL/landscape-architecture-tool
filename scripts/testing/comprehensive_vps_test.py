@@ -185,25 +185,44 @@ class VPSUserFunctionTester:
     def test_language_and_localization(self):
         """Test language settings and localization"""
         try:
-            # Test dashboard stats for Dutch content
             response = self.session.get(f"{self.base_url}/api/dashboard/stats")
-            if response.status_code == 200:
-                data = response.json()
+            if response.status_code != 200:
+                self.log_test("Language/Localization", "FAIL", f"Status: {response.status_code}")
+                return False
 
-                # Check for Dutch project statuses
-                project_statuses = data.get("projects_by_status", {})
-                dutch_statuses = ["Afgerond", "In uitvoering", "Planning"]
-                found_dutch = any(status in project_statuses for status in dutch_statuses)
+            data = response.json()
 
-                if found_dutch:
-                    self.log_test("Dutch Localization", "PASS", f"Statuses: {list(project_statuses.keys())}")
-                else:
-                    self.log_test("Dutch Localization", "WARN", f"Statuses: {list(project_statuses.keys())}")
-
+            # The API currently returns project_status_distribution populated with
+            # English keys, while older builds exposed projects_by_status in Dutch.
+            project_statuses = data.get("project_status_distribution") or data.get("projects_by_status") or {}
+            if not project_statuses:
+                self.log_test("Dutch Localization", "WARN", "No project status distribution found")
                 return True
+
+            dutch_statuses = {"Afgerond", "In uitvoering", "Planning"}
+            english_statuses = {"Completed", "In Progress", "Planning", "On Hold"}
+
+            status_keys = set(project_statuses.keys())
+
+            if status_keys & dutch_statuses:
+                self.log_test("Dutch Localization", "PASS", f"Statuses: {sorted(status_keys)}")
+            elif status_keys & english_statuses:
+                self.log_test(
+                    "Dutch Localization",
+                    "WARN",
+                    f"English-only statuses detected: {sorted(status_keys)}",
+                )
+            else:
+                self.log_test(
+                    "Dutch Localization",
+                    "WARN",
+                    f"Unexpected status labels: {sorted(status_keys)}",
+                )
+
+            return True
         except Exception as e:
             self.log_test("Language/Localization", "FAIL", str(e))
-        return False
+            return False
 
     def test_user_input_validation(self):
         """Test input validation and placeholders"""

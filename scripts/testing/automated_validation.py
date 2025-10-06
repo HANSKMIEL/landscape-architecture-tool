@@ -57,6 +57,25 @@ class AutomatedValidator:
         self.npm_executable = "npm.cmd" if self.is_windows else "npm"
         self.base_env = os.environ.copy()
         self.base_env.setdefault("PYTHONIOENCODING", "utf-8")
+        self.skip_pr_analysis = self.base_env.get("VALIDATOR_SKIP_PR_ANALYSIS", "").lower() in {
+            "1",
+            "true",
+            "yes",
+            "on",
+        }
+        self.force_pr_analysis = self.base_env.get("VALIDATOR_FORCE_PR_ANALYSIS", "").lower() in {
+            "1",
+            "true",
+            "yes",
+            "on",
+        }
+        ci_flag = self.base_env.get("CI", "").lower()
+        self.is_ci = ci_flag in {"1", "true", "yes", "github"}
+        self.github_token = (
+            self.base_env.get("GITHUB_TOKEN")
+            or self.base_env.get("GH_TOKEN")
+            or self.base_env.get("VALIDATION_GITHUB_TOKEN")
+        )
 
     def run_command(self, cmd, timeout=60, capture_output=True, cwd=None, env=None):
         """Run a command and capture its output"""
@@ -612,8 +631,36 @@ print('Database initialized')
 
         safe_print("📊 Adding dynamic PR analysis...")
 
+        if self.skip_pr_analysis:
+            self.results["pr_analysis"] = {
+                "dynamic_analysis": False,
+                "note": "Dynamic PR analysis skipped via VALIDATOR_SKIP_PR_ANALYSIS",
+            }
+            self.results["recommendations"].append(
+                "Dynamic PR insights skipped intentionally. Unset VALIDATOR_SKIP_PR_ANALYSIS to re-enable."
+            )
+            return
+
+        if not self.is_ci and not self.force_pr_analysis:
+            self.results["pr_analysis"] = {
+                "dynamic_analysis": False,
+                "note": "Dynamic PR analysis disabled during local runs. Set VALIDATOR_FORCE_PR_ANALYSIS=1 to override.",
+            }
+            return
+
+        if not self.github_token:
+            self.results["pr_analysis"] = {
+                "dynamic_analysis": False,
+                "note": "Skipping dynamic PR analysis - no GitHub token configured",
+                "action": "Set GITHUB_TOKEN (or GH_TOKEN) for live PR metrics.",
+            }
+            self.results["recommendations"].append(
+                "Configure a GitHub token (GITHUB_TOKEN or GH_TOKEN) to re-enable dynamic PR analysis."
+            )
+            return
+
         try:
-            analyzer = PRAnalyzer()
+            analyzer = PRAnalyzer(github_token=self.github_token)
             pr_counts = analyzer.generate_pr_counts()
 
             self.results["pr_analysis"] = {
@@ -651,6 +698,9 @@ print('Database initialized')
                 "error": f"Failed to fetch dynamic PR data: {e!s}",
                 "fallback": "Would normally show real-time PR counts instead of hardcoded values",
             }
+            self.results["recommendations"].append(
+                "Dynamic PR analysis unavailable. Check GitHub token permissions and network connectivity."
+            )
 
     def generate_summary(self):
         """Generate summary and recommendations"""

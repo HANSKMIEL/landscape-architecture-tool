@@ -138,6 +138,9 @@ set -e
 
 echo "🔄 Updating V1.00D development deployment..."
 
+# Ensure the development directory exists before navigating
+mkdir -p /var/www/landscape-architecture-tool-dev
+
 # Navigate to development directory
 cd /var/www/landscape-architecture-tool-dev
 
