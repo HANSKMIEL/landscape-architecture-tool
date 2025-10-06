@@ -74,12 +74,12 @@ jobs:
           echo "📦 Installing dependencies for V1.00D..."
 
           # Install Python dependencies
-          pip install --upgrade pip
-          pip install -r requirements.txt
+          pip install --upgrade --no-cache-dir pip
+          pip install --no-cache-dir -r requirements.txt
 
           # Install frontend dependencies
           cd frontend
-          npm ci --legacy-peer-deps
+          npm ci --legacy-peer-deps --no-progress --prefer-online
 
           echo "✅ Dependencies installed"
 
@@ -209,22 +209,26 @@ jobs:
           sed -i 's/<title>.*<\/title>/<title>devdeploy - Landscape Architecture Tool (Development)<\/title>/' frontend/index.html
 
           # Setup Python virtual environment if needed
-          if [ ! -d "venv-dev" ]; then
-              echo "🐍 Creating development Python virtual environment..."
-              python3 -m venv venv-dev
-          fi
           VENV_PATH="venv-dev"
+          if [ ! -f "$VENV_PATH/bin/activate" ]; then
+              echo "🐍 Creating development Python virtual environment..."
+              rm -rf "$VENV_PATH"
+              if ! python3 -m venv "$VENV_PATH"; then
+                  echo "❌ Failed to create development virtual environment. Ensure python3-venv is installed."
+                  exit 1
+              fi
+          fi
 
           # Update Python dependencies
           echo "📦 Updating Python dependencies..."
           source "$VENV_PATH/bin/activate"
-          pip install --upgrade pip
-          pip install -r requirements.txt
+          pip install --upgrade --no-cache-dir pip
+          pip install --no-cache-dir -r requirements.txt
 
           # Update and build frontend
           echo "🏗️ Building frontend..."
           cd frontend
-          npm ci --legacy-peer-deps
+          npm ci --legacy-peer-deps --no-progress --prefer-online
           npm run build
 
           # Verify devdeploy title in build

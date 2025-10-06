@@ -70,7 +70,7 @@ build_frontend() {
     cd frontend
     
     # Install dependencies
-    if ! npm ci --legacy-peer-deps; then
+    if ! npm ci --legacy-peer-deps --no-progress --prefer-online; then
         log "${RED}❌ Frontend dependency installation failed${NC}"
         exit 1
     fi
@@ -151,13 +151,25 @@ git reset --hard origin/V1.00D
 # Ensure devdeploy title is set in source
 sed -i 's/<title>.*<\/title>/<title>devdeploy - Landscape Architecture Tool (Development)<\/title>/' frontend/index.html
 
+# Setup Python virtual environment if needed
+VENV_PATH="venv-dev"
+if [ ! -f "$VENV_PATH/bin/activate" ]; then
+    echo "🐍 Creating development Python virtual environment..."
+    rm -rf "$VENV_PATH"
+    if ! python3 -m venv "$VENV_PATH"; then
+        echo "❌ Failed to create development virtual environment. Ensure python3-venv is installed." >&2
+        exit 1
+    fi
+fi
+
 # Update Python dependencies
-source venv-dev/bin/activate
-pip install -r requirements.txt
+source "$VENV_PATH/bin/activate"
+pip install --upgrade --no-cache-dir pip
+pip install --no-cache-dir -r requirements.txt
 
 # Update and build frontend
 cd frontend
-npm ci --legacy-peer-deps
+npm ci --legacy-peer-deps --no-progress --prefer-online
 npm run build
 
 # Ensure devdeploy title in build output
