@@ -4,15 +4,15 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
-import { 
-  FolderOpen, 
-  Plus, 
-  Users, 
-  MapPin, 
-  Calendar, 
-  Loader2, 
-  Edit, 
-  Trash2, 
+import {
+  FolderOpen,
+  Plus,
+  Users,
+  MapPin,
+  Calendar,
+  Loader2,
+  Edit,
+  Trash2,
   Search,
   X,
   DollarSign
@@ -23,18 +23,18 @@ import { useLanguage } from '../i18n/LanguageProvider'
 
 const Projects = () => {
   const { t } = useLanguage()
-  const [__projects, set_projects] = useState([])
-  const [__clients, set_clients] = useState([])
-  const [__loading, set_loading] = useState(false)
-  const [__error, set_error] = useState(null)
-  const [__selectedProject, set_selectedProject] = useState(null)
-  const [__showAddModal, set_showAddModal] = useState(false)
-  const [__showEditModal, set_showEditModal] = useState(false)
-  const [__editingProject, set_editingProject] = useState(null)
-  const [__searchTerm, set_searchTerm] = useState('')
+  const [projects, setProjects] = useState([])
+  const [clients, setClients] = useState([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(null)
+  const [selectedProject, setSelectedProject] = useState(null)
+  const [showAddModal, setShowAddModal] = useState(false)
+  const [showEditModal, setShowEditModal] = useState(false)
+  const [editingProject, setEditingProject] = useState(null)
+  const [searchTerm, setSearchTerm] = useState('')
 
   // Form state
-  const [__formData, set_formData] = useState({
+  const [formData, setFormData] = useState({
     name: '',
     description: '',
     client_id: '',
@@ -60,18 +60,18 @@ const Projects = () => {
     try {
       setLoading(true)
       setError(null)
-      
-      const __params = {}
+
+      const params = {}
       if (searchTerm) {
         params.search = searchTerm
       }
-      
+
       const data = await ApiService.getProjects(params)
-      
+
       // Defensive programming: ensure projects is always an array
       const projectsArray = Array.isArray(data?.projects) ? data.projects :
-                           Array.isArray(data) ? data : []
-      
+        Array.isArray(data) ? data : []
+
       setProjects(projectsArray)
     } catch (err) {
       console.error('Error fetching projects:', err)
@@ -220,9 +220,9 @@ const Projects = () => {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <Button 
-              onClick={() => setSelectedProject(null)} 
-              variant="outline" 
+            <Button
+              onClick={() => setSelectedProject(null)}
+              variant="outline"
               className="mb-4"
             >
               ← {t('projects.backToProjects', 'Back to Projects')}
@@ -232,8 +232,8 @@ const Projects = () => {
           </div>
         </div>
 
-        <ProjectPlantManagement 
-          projectId={selectedProject.id} 
+        <ProjectPlantManagement
+          projectId={selectedProject.id}
         />
       </div>
     )
@@ -247,8 +247,14 @@ const Projects = () => {
           <h2 className="text-xl font-bold">
             {isEdit ? t('projects.editProject', 'Edit Project') : t('projects.addProject', 'Add Project')}
           </h2>
-          <Button variant="ghost" size="sm" onClick={onCancel}>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onCancel}
+            aria-label={t('projects.closeForm', 'Close form')}
+          >
             <X className="h-4 w-4" />
+            <span className="sr-only">{t('projects.closeForm', 'Close form')}</span>
           </Button>
         </div>
 
@@ -452,7 +458,7 @@ const Projects = () => {
             {t('projects.subtitle', 'Manage your landscape architecture projects and their progress')}
           </p>
         </div>
-        <Button 
+        <Button
           className="flex items-center space-x-2"
           onClick={() => setShowAddModal(true)}
         >
@@ -489,7 +495,7 @@ const Projects = () => {
                 {t('projects.noProjects', 'No projects found')}
               </h2>
               <p className="text-gray-500 mb-6">
-                {searchTerm 
+                {searchTerm
                   ? t('projects.noSearchResults', 'No projects match your search criteria')
                   : t('projects.createFirst', 'Create your first project to get started')
                 }
@@ -517,27 +523,27 @@ const Projects = () => {
                 <p className="text-gray-600 text-sm line-clamp-2">
                   {project.description}
                 </p>
-                
+
                 <div className="space-y-2 text-sm">
                   <div className="flex items-center text-gray-600">
                     <Users className="h-4 w-4 mr-2" />
                     <span>{getClientName(project.client_id)}</span>
                   </div>
-                  
+
                   {project.location && (
                     <div className="flex items-center text-gray-600">
                       <MapPin className="h-4 w-4 mr-2" />
                       <span>{project.location}</span>
                     </div>
                   )}
-                  
+
                   {project.start_date && (
                     <div className="flex items-center text-gray-600">
                       <Calendar className="h-4 w-4 mr-2" />
                       <span>{new Date(project.start_date).toLocaleDateString()}</span>
                     </div>
                   )}
-                  
+
                   {project.budget && (
                     <div className="flex items-center text-green-600 font-semibold">
                       <DollarSign className="h-4 w-4 mr-2" />
@@ -547,8 +553,8 @@ const Projects = () => {
                 </div>
 
                 <div className="flex space-x-2 pt-2">
-                  <Button 
-                    onClick={() => setSelectedProject(project)} 
+                  <Button
+                    onClick={() => setSelectedProject(project)}
                     className="flex-1"
                     variant="outline"
                   >
@@ -558,16 +564,20 @@ const Projects = () => {
                     onClick={() => openEditModal(project)}
                     variant="outline"
                     size="sm"
+                    aria-label={t('projects.editProject', 'Edit project')}
                   >
                     <Edit className="h-4 w-4" />
+                    <span className="sr-only">{t('projects.editProject', 'Edit project')}</span>
                   </Button>
                   <Button
                     onClick={() => handleDeleteProject(project.id, project.name)}
                     variant="outline"
                     size="sm"
                     className="text-red-600 hover:text-red-700"
+                    aria-label={t('projects.deleteProject', 'Delete project')}
                   >
                     <Trash2 className="h-4 w-4" />
+                    <span className="sr-only">{t('projects.deleteProject', 'Delete project')}</span>
                   </Button>
                 </div>
               </CardContent>

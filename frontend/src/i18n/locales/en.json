@@ -69,6 +69,7 @@
     "deleteSuccess": "Plant successfully deleted!",
     "deleteError": "Error deleting plant: ",
     "deleteConfirm": "Are you sure you want to delete \"{name}\"?",
+    "closeForm": "Close form",
     "basicInfo": "Basic Information",
     "sizeInfo": "Size Information",
     "growingConditions": "Growing Conditions",
@@ -104,7 +105,7 @@
     "native": "Native Plant",
     "plantingSeason": "Planting Season",
     "plantingSeasonPlaceholder": "e.g., Spring/Fall",
-    "maintenance": "Maintenance",
+    "maintenanceLabel": "Maintenance Level",
     "selectMaintenance": "Select maintenance level",
     "availability": "Availability",
     "availabilityPlaceholder": "e.g., In stock",
@@ -142,7 +143,7 @@
       "medium": "Medium",
       "high": "High"
     },
-    "maintenance": {
+    "maintenanceLevels": {
       "low": "Low",
       "medium": "Medium",
       "high": "High"
@@ -212,11 +213,13 @@
   },
   "projects": {
     "title": "Projects",
+    "subtitle": "Manage your landscape architecture projects and their progress",
     "add": "Add Project",
     "addProject": "Add Project",
     "edit": "Edit Project",
     "editProject": "Edit Project",
     "delete": "Delete Project",
+    "closeForm": "Close form",
     "name": "Name",
     "client": "Client",
     "startDate": "Start Date",
@@ -227,6 +230,14 @@
     "area": "Area",
     "save": "Save",
     "cancel": "Cancel",
+    "managePlants": "Manage Plants",
+    "addSuccess": "Project successfully added!",
+    "addError": "Error adding project: ",
+    "updateSuccess": "Project successfully updated!",
+    "updateError": "Error updating project: ",
+    "deleteSuccess": "Project successfully deleted!",
+    "deleteError": "Error deleting project: ",
+    "deleteConfirm": "Are you sure you want to delete \"{name}\"?",
     "confirmDelete": "Are you sure you want to delete this project?",
     "statusOptions": {
       "planning": "Planning",
@@ -260,7 +271,6 @@
       "dataType": "Data type",
       "preview": "Preview",
       "mapping": "Column mapping",
-      "import": "Import",
       "aiAssistant": "AI Assistant",
       "suggestions": "Suggestions"
     },
@@ -350,27 +360,6 @@
     "consultation": "Consultation",
     "convertToInvoice": "Convert to Invoice"
   },
-  "photos": {
-    "title": "Photos",
-    "upload": "Upload Photos",
-    "categories": {
-      "plants": "Plants",
-      "materials": "Materials",
-      "properties": "Properties",
-      "projects": "Projects",
-      "examples": "Examples",
-      "inspiration": "Inspiration",
-      "reference": "Reference"
-    },
-    "dragDrop": "Drag files here or click to select",
-    "title": "Title",
-    "description": "Description",
-    "category": "Category",
-    "upload": "Upload",
-    "processing": "Processing...",
-    "success": "Successfully uploaded",
-    "error": "Upload error"
-  },
   "auth": {
     "login": "Login",
     "logout": "Logout",
@@ -409,6 +398,7 @@
     "unknown": "Unknown",
     "comingSoon": "Coming Soon",
     "tryAgain": "Try Again",
+    "retry": "Retry",
     "refresh": "Refresh",
     "total": "total",
     "actions": "Actions",

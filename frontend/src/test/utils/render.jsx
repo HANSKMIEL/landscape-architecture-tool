@@ -44,7 +44,7 @@ export const renderWithRouter = (ui, { route = '/', ...options } = {}) => {
 // Render with language context
 export const renderWithLanguage = (ui, { language = 'en', ...options } = {}) => {
   const LanguageWrapper = ({ children }) => (
-    <LanguageProvider>
+    <LanguageProvider initialLanguage={language}>
       <BrowserRouter>
         {children}
         <Toaster />

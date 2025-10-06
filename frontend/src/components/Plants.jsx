@@ -4,14 +4,14 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
-import { 
-  Leaf, 
-  Plus, 
-  Upload, 
-  Edit, 
-  Trash2, 
-  Search, 
-  X, 
+import {
+  Leaf,
+  Plus,
+  Upload,
+  Edit,
+  Trash2,
+  Search,
+  X,
   Loader2,
   Sun,
   Droplets,
@@ -23,22 +23,22 @@ import { useLanguage } from '../i18n/LanguageProvider'
 
 const Plants = () => {
   const { t } = useLanguage()
-  const [__plants, set_plants] = useState([])
-  const [__suppliers, set_suppliers] = useState([])
-  const [__loading, set_loading] = useState(true)
-  const [__error, set_error] = useState(null)
-  const [__retryCount, set_retryCount] = useState(0)
-  const [__isRetrying, set_isRetrying] = useState(false)
-  const [__submitLoading, set_submitLoading] = useState(false)
-  const [__deleteLoading, set_deleteLoading] = useState(null)
-  const [__searchTerm, set_searchTerm] = useState('')
-  const [__showAddModal, set_showAddModal] = useState(false)
-  const [__showEditModal, set_showEditModal] = useState(false)
-  const [__editingPlant, set_editingPlant] = useState(null)
-  const [__totalPlants, set_totalPlants] = useState(0)
+  const [plants, setPlants] = useState([])
+  const [suppliers, setSuppliers] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+  const [retryCount, setRetryCount] = useState(0)
+  const [isRetrying, setIsRetrying] = useState(false)
+  const [submitLoading, setSubmitLoading] = useState(false)
+  const [deleteLoading, setDeleteLoading] = useState(null)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [showAddModal, setShowAddModal] = useState(false)
+  const [showEditModal, setShowEditModal] = useState(false)
+  const [editingPlant, setEditingPlant] = useState(null)
+  const [totalPlants, setTotalPlants] = useState(0)
 
   // Form state
-  const [__formData, set_formData] = useState({
+  const [formData, setFormData] = useState({
     name: '',
     common_name: '',
     category: '',
@@ -101,17 +101,17 @@ const Plants = () => {
 
   // Maintenance options
   const maintenanceOptions = [
-    { value: 'low', label: t('plants.maintenance.low', 'Low') },
-    { value: 'medium', label: t('plants.maintenance.medium', 'Medium') },
-    { value: 'high', label: t('plants.maintenance.high', 'High') }
+    { value: 'low', label: t('plants.maintenanceLevels.low', 'Low') },
+    { value: 'medium', label: t('plants.maintenanceLevels.medium', 'Medium') },
+    { value: 'high', label: t('plants.maintenanceLevels.high', 'High') }
   ]
 
   // Enhanced error handling with retry logic
   const handleApiError = (error, context = '') => {
     console.error(`Error in ${context}:`, error)
-    
+
     let errorMessage = 'An unexpected error occurred'
-    
+
     if (error.response?.data?.error) {
       errorMessage = error.response.data.error
     } else if (error.message) {
@@ -123,7 +123,7 @@ const Plants = () => {
         errorMessage = error.message
       }
     }
-    
+
     return errorMessage
   }
 
@@ -137,18 +137,18 @@ const Plants = () => {
       } else {
         setIsRetrying(true)
       }
-      
-      const __params = {}
+
+      const params = {}
       if (searchTerm) {
         params.search = searchTerm
       }
-      
+
       const data = await ApiService.getPlants(params)
-      
+
       // Defensive programming: ensure plants is always an array
-      const plantsArray = Array.isArray(data?.plants) ? data.plants : 
-                         Array.isArray(data) ? data : []
-      
+      const plantsArray = Array.isArray(data?.plants) ? data.plants :
+        Array.isArray(data) ? data : []
+
       setPlants(plantsArray)
       setTotalPlants(data?.total || data?.pagination?.total || plantsArray.length)
       setError(null)
@@ -187,7 +187,7 @@ const Plants = () => {
   // Handle form input changes - Optimized to prevent focus loss
   const handleInputChange = useCallback((e) => {
     const { name, value, type, checked } = e.target
-    
+
     // Use functional update to prevent stale closures and DOM re-rendering
     setFormData(prevData => ({
       ...prevData,
@@ -355,8 +355,14 @@ const Plants = () => {
           <h2 className="text-xl font-bold">
             {isEdit ? t('plants.editPlant', 'Edit Plant') : t('plants.addPlant', 'Add Plant')}
           </h2>
-          <Button variant="ghost" size="sm" onClick={onCancel}>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onCancel}
+            aria-label={t('plants.closeForm', 'Close form')}
+          >
             <X className="h-4 w-4" />
+            <span className="sr-only">{t('plants.closeForm', 'Close form')}</span>
           </Button>
         </div>
 
@@ -625,7 +631,7 @@ const Plants = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium mb-1">
-                  {t('plants.maintenance', 'Maintenance Level')}
+                  {t('plants.maintenanceLabel', 'Maintenance Level')}
                 </label>
                 <select
                   name="maintenance"
@@ -794,14 +800,14 @@ const Plants = () => {
           </p>
         </div>
         <div className="flex space-x-2">
-          <Button 
+          <Button
             variant="outline"
             className="flex items-center space-x-2"
           >
             <Upload className="h-4 w-4" />
             <span>{t('plants.importExcel', 'Import Excel/CSV')}</span>
           </Button>
-          <Button 
+          <Button
             className="flex items-center space-x-2"
             onClick={() => setShowAddModal(true)}
           >
@@ -844,7 +850,7 @@ const Plants = () => {
                 {t('plants.noPlants', 'No plants found')}
               </h2>
               <p className="text-gray-500 mb-6">
-                {searchTerm 
+                {searchTerm
                   ? t('plants.noSearchResults', 'No plants match your search criteria')
                   : t('plants.createFirst', 'Add your first plant to get started')
                 }
@@ -878,16 +884,20 @@ const Plants = () => {
                       onClick={() => openEditModal(plant)}
                       variant="outline"
                       size="sm"
+                      aria-label={t('plants.editPlant', 'Edit plant')}
                     >
                       <Edit className="h-4 w-4" />
+                      <span className="sr-only">{t('plants.editPlant', 'Edit plant')}</span>
                     </Button>
                     <Button
                       onClick={() => handleDeletePlant(plant.id, plant.name)}
                       variant="outline"
                       size="sm"
                       className="text-red-600 hover:text-red-700"
+                      aria-label={t('plants.deletePlant', 'Delete plant')}
                     >
                       <Trash2 className="h-4 w-4" />
+                      <span className="sr-only">{t('plants.deletePlant', 'Delete plant')}</span>
                     </Button>
                   </div>
                 </div>

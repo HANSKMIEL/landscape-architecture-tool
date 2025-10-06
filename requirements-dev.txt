@@ -133,6 +133,8 @@ flask-limiter==3.12
     # via -r requirements.in
 flask-migrate==4.1.0
     # via -r requirements.in
+flask-swagger-ui==4.11.1
+    # via -r requirements.in
 flask-sqlalchemy==3.1.1
     # via
     #   -r requirements.in
