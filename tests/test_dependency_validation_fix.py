@@ -47,7 +47,7 @@ class TestDependencyValidationFix:
     def test_module_import_isolation(self):
         """Test module import in a subprocess to ensure clean isolation"""
         # Use subprocess to test clean import without validation
-        current_dir = self.PROJECT_ROOT
+        current_dir = str(self.PROJECT_ROOT).replace("\\", "\\\\")
         result = subprocess.run(
             [
                 sys.executable,
@@ -81,7 +81,7 @@ except Exception as e:
 
     def test_app_creation_in_subprocess(self):
         """Test app creation in subprocess to verify validation runs"""
-        current_dir = str(project_root)
+        current_dir = str(project_root).replace("\\", "\\\\")
         result = subprocess.run(
             [
                 sys.executable,
