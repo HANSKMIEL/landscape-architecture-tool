@@ -157,15 +157,22 @@ if [ -n "$VPS_SSH_KEY" ]; then
     echo "$VPS_SSH_KEY" > "$TEMP_KEY"
     chmod 600 "$TEMP_KEY"
     
-    # Test SSH connection
-    if ssh -i "$TEMP_KEY" -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o BatchMode=yes "$VPS_USER@$VPS_HOST" "echo 'Connection successful'" &>/dev/null; then
-        check_status "SSH connection to VPS" 0 "Successfully connected to $VPS_USER@$VPS_HOST"
+    # Setup temporary known_hosts file for host verification
+    TEMP_KNOWN_HOSTS=$(mktemp)
+    # Fetch VPS host key and add to known_hosts
+    if ssh-keyscan -H "$VPS_HOST" > "$TEMP_KNOWN_HOSTS" 2>/dev/null; then
+        # Test SSH connection using temporary known_hosts file
+        if ssh -i "$TEMP_KEY" -o UserKnownHostsFile="$TEMP_KNOWN_HOSTS" -o ConnectTimeout=10 -o BatchMode=yes "$VPS_USER@$VPS_HOST" "echo 'Connection successful'" &>/dev/null; then
+            check_status "SSH connection to VPS" 0 "Successfully connected to $VPS_USER@$VPS_HOST"
+        else
+            check_status "SSH connection to VPS" 1 "Cannot connect to $VPS_USER@$VPS_HOST (check firewall, SSH key, and VPS status)"
+        fi
     else
-        check_status "SSH connection to VPS" 1 "Cannot connect to $VPS_USER@$VPS_HOST (check firewall, SSH key, and VPS status)"
+        check_status "SSH connection to VPS" 1 "Failed to fetch VPS host key with ssh-keyscan"
     fi
     
     # Cleanup
-    rm -f "$TEMP_KEY"
+    rm -f "$TEMP_KEY" "$TEMP_KNOWN_HOSTS"
 else
     check_status "SSH connection to VPS" 1 "Cannot test - VPS_SSH_KEY not set"
 fi
