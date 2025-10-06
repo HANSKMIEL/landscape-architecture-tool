@@ -49,9 +49,7 @@ echo -e "${BLUE}Repository Secrets:${NC}"
 echo "-------------------------------------------"
 
 # List secrets (gh doesn't show values for security)
-SECRETS=$(gh secret list 2>&1)
-
-if [ $? -eq 0 ]; then
+if SECRETS=$(gh secret list 2>&1); then
     echo "$SECRETS"
     echo ""
     
