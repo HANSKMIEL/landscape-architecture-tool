@@ -8,11 +8,12 @@
 # 1. Generate SSH key
 ssh-keygen -t rsa -b 4096 -C "github-actions@landscape-tool" -f ~/.ssh/landscape_deploy
 
-# 2. Add public key to VPS
+# 2. Add public key to VPS (root login is enabled on this VPS)
 ssh root@72.60.176.200
 mkdir -p ~/.ssh && chmod 700 ~/.ssh
 echo "YOUR_PUBLIC_KEY" >> ~/.ssh/authorized_keys
 chmod 600 ~/.ssh/authorized_keys
+exit
 
 # 3. Add private key to GitHub
 # Go to: Settings → Secrets → Actions → New secret

@@ -44,6 +44,8 @@ This directory contains comprehensive documentation for deploying the Landscape 
    echo "YOUR_PUBLIC_KEY" >> ~/.ssh/authorized_keys
    chmod 600 ~/.ssh/authorized_keys
    ```
+   
+   **Note**: The VPS has `PermitRootLogin yes` configured, which allows root user SSH key authentication.
 
 3. **Add Private Key to GitHub**
    - Go to: Repository → Settings → Secrets and variables → Actions

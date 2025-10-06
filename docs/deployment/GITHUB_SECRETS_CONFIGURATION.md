@@ -61,6 +61,8 @@ This creates two files:
 
 ### Step 2: Add Public Key to VPS
 
+**Important**: Your VPS at 72.60.176.200 has SSH configured with `PermitRootLogin yes`, which allows root user login via SSH keys. This is the expected configuration for the deployment workflow.
+
 Connect to your VPS and add the public key:
 
 ```bash
@@ -82,16 +84,28 @@ chmod 600 ~/.ssh/authorized_keys
 sudo nano /etc/ssh/sshd_config
 ```
 
-Ensure these settings in `/etc/ssh/sshd_config`:
+The VPS SSH configuration should have these settings (verify with `cat /etc/ssh/sshd_config`):
 ```
+# Public key authentication (default: yes, can be commented)
 PubkeyAuthentication yes
+
+# Authorized keys file location (default)
 AuthorizedKeysFile .ssh/authorized_keys
-PasswordAuthentication yes  # Keep enabled for backup access
+
+# Root login via SSH key (required for deployment)
+PermitRootLogin yes
+
+# Password authentication (default: yes, can be commented)
+# PasswordAuthentication yes
 ```
 
-Restart SSH service:
+**Note**: The VPS has `PermitRootLogin yes` configured, which allows root login via SSH keys. This is required for the deployment workflow to function properly.
+
+If you need to restart SSH service after changes:
 ```bash
 sudo systemctl restart sshd
+# Or on some systems:
+sudo systemctl restart ssh
 ```
 
 ### Step 3: Test SSH Key Authentication

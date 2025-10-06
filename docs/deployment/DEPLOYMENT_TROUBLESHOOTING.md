@@ -65,18 +65,26 @@ sudo ufw allow from 140.82.112.0/20 to any port 22
 sudo ufw allow from 143.55.64.0/20 to any port 22
 ```
 
-**Solution D: Verify SSH Service**
+**Solution D: Verify SSH Service and Configuration**
 ```bash
 # On VPS - check SSH is running
 sudo systemctl status sshd
+# Or on some systems:
+sudo systemctl status ssh
 
 # Restart if needed
 sudo systemctl restart sshd
 
 # Check SSH configuration
-sudo nano /etc/ssh/sshd_config
-# Ensure: PubkeyAuthentication yes
+cat /etc/ssh/sshd_config | grep -E "PermitRootLogin|PubkeyAuthentication|PasswordAuthentication"
 ```
+
+Your VPS should have:
+- `PermitRootLogin yes` (allows root login via SSH key)
+- `PubkeyAuthentication yes` (enabled by default, may be commented)
+- Password authentication enabled (default, may be commented)
+
+**Note**: The VPS at 72.60.176.200 has `PermitRootLogin yes` configured, which is correct for deployment.
 
 ### 2. Deployment Workflow Fails at "Setup SSH Key" Step
 
