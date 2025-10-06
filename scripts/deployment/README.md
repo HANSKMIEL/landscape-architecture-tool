@@ -41,6 +41,52 @@ export VPS_PASSWORD='your_password'
 
 ### 🔧 Supporting Scripts
 
+#### `validate_deployment_prerequisites.sh` ⭐ NEW
+**Purpose**: Comprehensive pre-deployment validation  
+**Features**:
+- ✅ Validates GitHub secrets and SSH keys
+- ✅ Checks Node.js 20.x and Python 3.12
+- ✅ Tests SSH connectivity to VPS
+- ✅ Verifies dependency files
+- ✅ Provides troubleshooting guidance
+
+**Usage**:
+```bash
+# Set environment variables
+export VPS_SSH_KEY="$(cat ~/.ssh/landscape_deploy)"
+export VPS_HOST="72.60.176.200"
+export VPS_USER="root"
+
+# Run validation
+./scripts/deployment/validate_deployment_prerequisites.sh
+```
+
+#### `check_github_secrets.sh` ⭐ NEW
+**Purpose**: Interactive GitHub secrets verification  
+**Features**:
+- ✅ Lists configured secrets via GitHub CLI
+- ✅ Checks for required VPS_SSH_KEY
+- ✅ Interactive setup wizard
+- ✅ Documentation links
+
+**Usage**:
+```bash
+# Requires GitHub CLI (gh) authenticated
+./scripts/deployment/check_github_secrets.sh
+```
+
+#### `fix_firewall.sh`
+**Purpose**: Configure VPS firewall for deployment  
+**Features**: Opens required ports (22, 8080, 5001)
+
+#### `fix_backend_binding.sh`
+**Purpose**: Ensure backend binds to 0.0.0.0  
+**Features**: External access configuration
+
+#### `devdeploy_diagnostic.sh`
+**Purpose**: Comprehensive development environment diagnostics  
+**Features**: Service status, logs, configuration
+
 #### `enhanced-deploy.sh`
 **Purpose**: Enhanced deployment with comprehensive validation  
 **Features**: Multi-environment support, rollback capabilities
@@ -156,9 +202,24 @@ All deployment scripts create detailed logs:
 
 ## 🔗 Related Documentation
 
+- **⭐ NEW**: [GitHub Secrets Configuration](../../docs/deployment/GITHUB_SECRETS_CONFIGURATION.md)
+- **⭐ NEW**: [Deployment Troubleshooting Guide](../../docs/deployment/DEPLOYMENT_TROUBLESHOOTING.md)
+- **⭐ NEW**: [Quick Reference Card](../../docs/deployment/QUICK_REFERENCE.md)
+- **⭐ NEW**: [Deployment Documentation Hub](../../docs/deployment/README.md)
 - [Deployment Isolation Guide](../../docs/deployment/DEPLOYMENT_ISOLATION_GUIDE.md)
 - [Development Guide](../../docs/development/DEVELOPMENT_GUIDE.md)
 - [Main Scripts README](../README.md)
+
+## 🆕 What's New
+
+### Recent Enhancements (2024)
+- ✅ Added pre-deployment validation script
+- ✅ Added GitHub secrets verification helper
+- ✅ Created comprehensive secrets setup guide
+- ✅ Added troubleshooting documentation
+- ✅ Enhanced workflow with SSH connectivity tests
+- ✅ Improved error messages and documentation links
+- ✅ Added quick reference card for common tasks
 
 ---
 **Last Updated**: September 13, 2025  

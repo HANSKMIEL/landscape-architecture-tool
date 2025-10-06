@@ -48,6 +48,33 @@ jobs:
           python-version: "3.12"
           cache: "pip"
 
+      - name: Setup SSH Key for VPS Access
+        run: |
+          echo "🔑 Setting up SSH key for VPS deployment..."
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          
+          # Verify SSH key secret is available
+          if [ -z "${{ secrets.VPS_SSH_KEY }}" ]; then
+            echo "❌ ERROR: VPS_SSH_KEY secret is not configured!"
+            echo "⚠️  Please add VPS_SSH_KEY to repository secrets"
+            echo "📖 See: docs/deployment/GITHUB_SECRETS_CONFIGURATION.md"
+            exit 1
+          fi
+          
+          # Save SSH key to file
+          echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/vps_key
+          chmod 600 ~/.ssh/vps_key
+          
+          # Verify key format
+          if ! grep -q "BEGIN.*PRIVATE KEY" ~/.ssh/vps_key; then
+            echo "❌ ERROR: VPS_SSH_KEY doesn't appear to be a valid SSH private key"
+            echo "⚠️  Key should start with '-----BEGIN OPENSSH PRIVATE KEY-----'"
+            exit 1
+          fi
+          
+          echo "✅ SSH key configured successfully"
+
       - name: Validate V1.00D Branch
         run: |
           echo "🔍 Validating V1.00D deployment readiness..."
@@ -69,19 +96,64 @@ jobs:
 
           echo "✅ V1.00D branch validation complete"
 
-      - name: Install Dependencies
+      - name: Run Pre-Deployment Validation
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST != '' && secrets.VPS_HOST || '72.60.176.200' }}
+          VPS_USER: ${{ secrets.VPS_USER != '' && secrets.VPS_USER || 'root' }}
+          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
         run: |
-          echo "📦 Installing dependencies for V1.00D..."
+          echo "🔍 Running comprehensive pre-deployment validation..."
+          
+          # Make validation script executable
+          chmod +x scripts/deployment/validate_deployment_prerequisites.sh
+          
+          # Run validation script
+          if scripts/deployment/validate_deployment_prerequisites.sh; then
+            echo "✅ All pre-deployment checks passed"
+          else
+            echo "⚠️ Some validation checks failed - review above"
+            echo "📖 For help, see: docs/deployment/GITHUB_SECRETS_CONFIGURATION.md"
+            # Don't fail the workflow here - let user decide with force_deploy option
+          fi
 
-          # Install Python dependencies
+      - name: Install Backend Dependencies
+        run: |
+          echo "📦 Installing Python dependencies..."
+          
+          # Upgrade pip first
           pip install --upgrade --no-cache-dir pip
-          pip install --no-cache-dir -r requirements.txt
+          
+          # Install requirements
+          if [ -f "requirements.txt" ]; then
+            pip install --no-cache-dir -r requirements.txt
+            echo "✅ Python dependencies installed from requirements.txt"
+          else
+            echo "❌ ERROR: requirements.txt not found"
+            exit 1
+          fi
 
-          # Install frontend dependencies
+      - name: Install Frontend Dependencies
+        run: |
+          echo "📦 Installing Node.js dependencies..."
+          
           cd frontend
-          npm ci --legacy-peer-deps --no-progress --prefer-online
-
-          echo "✅ Dependencies installed"
+          
+          # Verify package files exist
+          if [ ! -f "package.json" ]; then
+            echo "❌ ERROR: package.json not found"
+            exit 1
+          fi
+          
+          if [ ! -f "package-lock.json" ]; then
+            echo "⚠️ WARNING: package-lock.json not found - npm ci requires this"
+            echo "Running npm install instead..."
+            npm install --legacy-peer-deps --no-progress
+          else
+            # Use npm ci for consistent builds
+            npm ci --legacy-peer-deps --no-progress --prefer-online
+          fi
+          
+          echo "✅ Node.js dependencies installed"
 
       - name: Build Frontend for DevDeploy
         run: |
@@ -134,11 +206,34 @@ jobs:
           VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
         run: |
           echo "🚀 Deploying V1.00D to devdeploy environment..."
+          echo "   VPS Host: $VPS_HOST"
+          echo "   VPS User: $VPS_USER"
+          echo ""
 
-          # Setup SSH key authentication
-          mkdir -p ~/.ssh
-          echo "$VPS_SSH_KEY" > ~/.ssh/vps_key
-          chmod 600 ~/.ssh/vps_key
+          # Verify SSH key is available (already done in Setup SSH Key step)
+          if [ ! -f ~/.ssh/vps_key ]; then
+            echo "❌ ERROR: SSH key not found at ~/.ssh/vps_key"
+            echo "⚠️  This should have been created in the 'Setup SSH Key' step"
+            exit 1
+          fi
+
+          # Test SSH connectivity before deployment
+          echo "🔍 Testing SSH connectivity to VPS..."
+          # Add VPS host key to known_hosts to enable host key verification
+          ssh-keyscan -H "$VPS_HOST" >> ~/.ssh/known_hosts 2>/dev/null
+          if ssh -i ~/.ssh/vps_key -o ConnectTimeout=30 -o BatchMode=yes "$VPS_USER@$VPS_HOST" "echo 'SSH connection test successful'"; then
+            echo "✅ SSH connection verified"
+          else
+            echo "❌ ERROR: Cannot establish SSH connection to VPS"
+            echo "⚠️  Possible issues:"
+            echo "   • Firewall blocking GitHub Actions IPs (port 22)"
+            echo "   • SSH key not added to VPS authorized_keys"
+            echo "   • VPS is down or unreachable"
+            echo "   • Wrong VPS_HOST or VPS_USER"
+            echo ""
+            echo "📖 Troubleshooting guide: docs/deployment/GITHUB_SECRETS_CONFIGURATION.md"
+            exit 1
+          fi
 
           # Create enhanced deployment script with better error handling and VPS discovery
           cat > deploy_v1d_to_devdeploy.sh << 'EOF'
