@@ -11,6 +11,7 @@ if everything is working after changes.
 
 import contextlib
 import json
+import os
 import re
 import subprocess
 import sys
@@ -22,17 +23,28 @@ from pathlib import Path
 # Note: Using sys.path for self-contained script execution
 # Production code should use PYTHONPATH=. as per repository guidelines
 try:
-    sys.path.insert(0, str(Path(__file__).parent.parent))
+    REPO_ROOT = Path(__file__).resolve().parents[2]
+    sys.path.insert(0, str(REPO_ROOT))
     from src.utils.pr_analyzer import PRAnalyzer
 
     DYNAMIC_PR_ANALYSIS_AVAILABLE = True
 except ImportError:
     DYNAMIC_PR_ANALYSIS_AVAILABLE = False
+    REPO_ROOT = Path(__file__).resolve().parents[2]
+
+
+def safe_print(message: object = "") -> None:
+    text = str(message)
+    try:
+        print(text)
+    except UnicodeEncodeError:
+        fallback = text.encode("ascii", "replace").decode()
+        print(fallback)
 
 
 class AutomatedValidator:
     def __init__(self):
-        self.repo_root = Path(__file__).parent.parent
+        self.repo_root = REPO_ROOT
         self.results = {
             "timestamp": datetime.now().isoformat(),
             "overall_status": "unknown",
@@ -40,18 +52,31 @@ class AutomatedValidator:
             "summary": {},
             "recommendations": [],
         }
+        self.is_windows = os.name == "nt"
+        self.python_executable = sys.executable
+        self.npm_executable = "npm.cmd" if self.is_windows else "npm"
+        self.base_env = os.environ.copy()
+        self.base_env.setdefault("PYTHONIOENCODING", "utf-8")
 
-    def run_command(self, cmd, timeout=60, capture_output=True):
+    def run_command(self, cmd, timeout=60, capture_output=True, cwd=None, env=None):
         """Run a command and capture its output"""
         try:
+            use_shell = isinstance(cmd, str)
+            resolved_cwd = Path(cwd) if cwd else self.repo_root
+            resolved_env = self.base_env.copy()
+            if env:
+                resolved_env.update(env)
             result = subprocess.run(
                 cmd,
                 check=False,
-                shell=True,
+                shell=use_shell,
                 capture_output=capture_output,
                 text=True,
+                encoding="utf-8",
+                errors="replace",
                 timeout=timeout,
-                cwd=self.repo_root,
+                cwd=str(resolved_cwd),
+                env=resolved_env,
             )
             return {
                 "success": result.returncode == 0,
@@ -71,7 +96,7 @@ class AutomatedValidator:
 
     def validate_git_status(self):
         """Check git status and recent changes"""
-        print("🔍 Validating git status...")
+        safe_print("🔍 Validating git status...")
 
         # Check for uncommitted changes
         result = self.run_command("git status --porcelain")
@@ -92,13 +117,17 @@ class AutomatedValidator:
 
     def validate_dependencies(self):
         """Check dependency installation and conflicts"""
-        print("📦 Validating dependencies...")
+        safe_print("📦 Validating dependencies...")
 
         # Check Python dependencies
-        pip_check = self.run_command("pip check", timeout=30)
+        pip_check = self.run_command([self.python_executable, "-m", "pip", "check"], timeout=60)
 
         # Check frontend dependencies
-        npm_check = self.run_command("cd frontend && npm ls --depth=0", timeout=30)
+        npm_check = self.run_command(
+            [self.npm_executable, "ls", "--depth=0"],
+            timeout=60,
+            cwd=self.repo_root / "frontend",
+        )
 
         status = "healthy" if pip_check["success"] and npm_check["success"] else "warning"
 
@@ -114,15 +143,85 @@ class AutomatedValidator:
 
     def validate_code_quality(self):
         """Run linting and code quality checks"""
-        print("🧹 Validating code quality...")
+        safe_print("🧹 Validating code quality...")
 
-        # Run linting
-        lint_result = self.run_command("make lint", timeout=60)
+        # Run linting with granular tracking that mirrors Makefile behaviour
+        lint_steps_config = [
+            {
+                "label": "black --check",
+                "cmd": [self.python_executable, "-m", "black", "--check", "src/", "tests/"],
+                "timeout": 90,
+                "critical": False,
+            },
+            {
+                "label": "isort --check-only",
+                "cmd": [self.python_executable, "-m", "isort", "--check-only", "src/", "tests/"],
+                "timeout": 90,
+                "critical": False,
+            },
+            {
+                "label": "flake8",
+                "cmd": [
+                    self.python_executable,
+                    "-m",
+                    "flake8",
+                    "src/",
+                    "tests/",
+                    "--max-line-length=120",
+                    "--extend-ignore=E203,W503,F403,C901,W291,E402",
+                    "--max-complexity=25",
+                ],
+                "timeout": 90,
+                "critical": False,
+            },
+            {
+                "label": "npm run lint",
+                "cmd": [self.npm_executable, "run", "lint"],
+                "timeout": 120,
+                "cwd": self.repo_root / "frontend",
+                "critical": False,
+            },
+        ]
 
-        # Run additional quality checks
-        ruff_result = self.run_command("ruff check . --output-format=json", timeout=30)
+        lint_step_results = []
+        for step in lint_steps_config:
+            result = self.run_command(
+                step["cmd"],
+                timeout=step.get("timeout", 90),
+                cwd=step.get("cwd"),
+            )
+            lint_step_results.append({"config": step, "result": result})
 
-        status = "healthy" if lint_result["success"] else "error"
+        critical_failures = [
+            step
+            for step in lint_step_results
+            if step["config"].get("critical", False) and not step["result"]["success"]
+        ]
+        non_blocking_failures = [
+            step
+            for step in lint_step_results
+            if not step["config"].get("critical", False) and not step["result"]["success"]
+        ]
+
+        lint_stdout = "\n".join(
+            filter(None, (step["result"].get("stdout", "") for step in lint_step_results))
+        )
+        lint_stderr = "\n".join(
+            filter(None, (step["result"].get("stderr", "") for step in lint_step_results))
+        )
+
+        if critical_failures:
+            lint_status = "error"
+        elif non_blocking_failures:
+            lint_status = "warning"
+        else:
+            lint_status = "healthy"
+
+        # Run additional quality checks (critical)
+        ruff_result = self.run_command(
+            [self.python_executable, "-m", "ruff", "check", ".", "--output-format=json"],
+            timeout=60,
+        )
 
         quality_issues = []
         if ruff_result["success"] and ruff_result["stdout"]:
@@ -132,33 +231,79 @@ class AutomatedValidator:
             except (json.JSONDecodeError, ValueError):
                 pass
 
+        if not ruff_result["success"]:
+            lint_status = "error"
+
+        overall_status = lint_status
+
+        lint_failures_summary = [
+            {
+                "label": step["config"]["label"],
+                "critical": step["config"].get("critical", False),
+                "returncode": step["result"]["returncode"],
+                "stdout": step["result"].get("stdout", ""),
+                "stderr": step["result"].get("stderr", ""),
+            }
+            for step in lint_step_results
+            if not step["result"]["success"]
+        ]
+
         self.results["validation_steps"]["code_quality"] = {
-            "status": status,
-            "linting_passed": lint_result["success"],
+            "status": overall_status,
+            "lint_status": lint_status,
+            "linting_passed": lint_status == "healthy",
+            "lint_failures": lint_failures_summary,
             "quality_issues_count": len(quality_issues),
-            "quality_issues": quality_issues[:10],  # First 10 issues
+            "quality_issues": quality_issues[:10],
+            "lint_stdout": lint_stdout,
+            "lint_stderr": lint_stderr,
+            "ruff_passed": ruff_result["success"],
         }
+
+        if non_blocking_failures and overall_status != "error":
+            self.results["recommendations"].append(
+                f"{len(non_blocking_failures)} non-blocking lint checks reported issues. Review lint output for details."
+            )
+
+        if not ruff_result["success"]:
+            self.results["recommendations"].append("Ruff reported blocking issues. Run 'ruff check .' for details.")
 
         if len(quality_issues) > 0:
             self.results["recommendations"].append(
                 f"Found {len(quality_issues)} code quality issues. Run 'ruff check .' for details."
             )
 
-        return status == "healthy"
+        return overall_status != "error"
 
     def validate_tests(self):
         """Run test suite and check for failures with enhanced reliability"""
-        print("🧪 Validating test suite...")
+        safe_print("🧪 Validating test suite...")
 
         # Run backend tests with enhanced configuration for stability
+        backend_env = {"PYTHONPATH": str(self.repo_root), "FLASK_ENV": "testing"}
+        backend_cmd = [
+            self.python_executable,
+            "-m",
+            "pytest",
+            "tests/",
+            "--tb=short",
+            "--maxfail=10",
+            "-q",
+            "--durations=0",
+            "--timeout=60",
+        ]
         backend_test = self.run_command(
-            "PYTHONPATH=. FLASK_ENV=testing python -m pytest tests/ "
-            "--tb=short --maxfail=10 -q --durations=0 --timeout=60",
-            timeout=300,  # Increased timeout for stability
+            backend_cmd,
+            timeout=300,
+            env=backend_env,
         )
 
         # Run frontend tests with proper command (same as CI)
-        frontend_test = self.run_command("cd frontend && npm run test:coverage", timeout=90)
+        frontend_test = self.run_command(
+            [self.npm_executable, "run", "test:coverage"],
+            timeout=90,
+            cwd=self.repo_root / "frontend",
+        )
 
         # Enhanced result parsing with retry logic
         backend_passed = backend_test["success"]
@@ -166,28 +311,39 @@ class AutomatedValidator:
 
         # If backend tests failed, try one more time to handle transient issues
         if not backend_passed and "timeout" not in backend_test.get("stderr", "").lower():
-            print("🔄 Retrying backend tests due to potential transient failure...")
-            backend_retry = self.run_command(
-                "PYTHONPATH=. FLASK_ENV=testing python -m pytest tests/ " "--tb=short --maxfail=5 -v --timeout=60",
-                timeout=300,
-            )
+            safe_print("🔄 Retrying backend tests due to potential transient failure...")
+            backend_retry_cmd = [
+                self.python_executable,
+                "-m",
+                "pytest",
+                "tests/",
+                "--tb=short",
+                "--maxfail=5",
+                "-v",
+                "--timeout=60",
+            ]
+            backend_retry = self.run_command(backend_retry_cmd, timeout=300, env=backend_env)
             if backend_retry["success"]:
                 backend_passed = True
                 backend_test = backend_retry
-                print("✅ Backend tests passed on retry")
+                safe_print("✅ Backend tests passed on retry")
             else:
-                print("❌ Backend tests failed on retry as well")
+                safe_print("❌ Backend tests failed on retry as well")
 
         # If frontend tests failed, try one more time
         if not frontend_passed and "timeout" not in frontend_test.get("stderr", "").lower():
-            print("🔄 Retrying frontend tests due to potential transient failure...")
-            frontend_retry = self.run_command("cd frontend && npm run test:coverage", timeout=90)
+            safe_print("🔄 Retrying frontend tests due to potential transient failure...")
+            frontend_retry = self.run_command(
+                [self.npm_executable, "run", "test:coverage"],
+                timeout=90,
+                cwd=self.repo_root / "frontend",
+            )
             if frontend_retry["success"]:
                 frontend_passed = True
                 frontend_test = frontend_retry
-                print("✅ Frontend tests passed on retry")
+                safe_print("✅ Frontend tests passed on retry")
             else:
-                print("❌ Frontend tests failed on retry as well")
+                safe_print("❌ Frontend tests failed on retry as well")
 
         # Extract test counts from output
         backend_summary = self._parse_test_output(backend_test["stdout"])
@@ -223,21 +379,29 @@ class AutomatedValidator:
 
     def validate_application_health(self):
         """Check if the application can start and basic endpoints work"""
-        print("🏥 Validating application health...")
+        safe_print("🏥 Validating application health...")
 
         try:
             # Test Flask app creation
             app_test = self.run_command(
-                'PYTHONPATH=. python -c "from src.main import create_app; '
-                "app = create_app(); print('✅ App created successfully')\"",
+                [
+                    self.python_executable,
+                    "-c",
+                    "from src.main import create_app; app = create_app(); print('✅ App created successfully')",
+                ],
                 timeout=30,
+                env={"PYTHONPATH": str(self.repo_root)},
             )
 
             # Test basic imports
             import_test = self.run_command(
-                'PYTHONPATH=. python -c "from src.models.landscape import Plant, Supplier; '
-                "print('✅ Models imported successfully')\"",
+                [
+                    self.python_executable,
+                    "-c",
+                    "from src.models.landscape import Plant, Supplier; print('✅ Models imported successfully')",
+                ],
                 timeout=10,
+                env={"PYTHONPATH": str(self.repo_root)},
             )
 
             app_healthy = app_test["success"]
@@ -269,7 +433,7 @@ class AutomatedValidator:
 
     def validate_database_setup(self):
         """Check database configuration and connectivity"""
-        print("🗄️ Validating database setup...")
+        safe_print("🗄️ Validating database setup...")
 
         try:
             # Test database initialization - create a simple script
@@ -292,7 +456,11 @@ print('Database initialized')
                 script_path = f.name
 
             try:
-                db_test = self.run_command(f"PYTHONPATH=. python {script_path}", timeout=30)
+                db_test = self.run_command(
+                    [self.python_executable, script_path],
+                    timeout=30,
+                    env={"PYTHONPATH": str(self.repo_root)},
+                )
             finally:
                 # Clean up temporary file
                 import os
@@ -442,7 +610,7 @@ print('Database initialized')
             }
             return
 
-        print("📊 Adding dynamic PR analysis...")
+        safe_print("📊 Adding dynamic PR analysis...")
 
         try:
             analyzer = PRAnalyzer()
@@ -519,52 +687,52 @@ print('Database initialized')
         with open(report_file, "w") as f:
             json.dump(self.results, f, indent=2)
 
-        print(f"📊 Full report saved to: {report_file}")
+        safe_print(f"📊 Full report saved to: {report_file}")
         return report_file
 
     def print_summary(self):
         """Print a concise summary to console"""
-        print("\n" + "=" * 50)
-        print("🔍 AUTOMATED VALIDATION SUMMARY")
-        print("=" * 50)
+        safe_print("\n" + "=" * 50)
+        safe_print("🔍 AUTOMATED VALIDATION SUMMARY")
+        safe_print("=" * 50)
 
         summary = self.results["summary"]
-        print(f"Overall Status: {self.results['overall_status'].upper()}")
+        safe_print(f"Overall Status: {self.results['overall_status'].upper()}")
         health_pct = summary["health_percentage"]
         healthy_steps = summary["healthy_steps"]
         total_steps = summary["total_steps"]
-        print(f"Health Score: {health_pct}% ({healthy_steps}/{total_steps} checks passed)")
+        safe_print(f"Health Score: {health_pct}% ({healthy_steps}/{total_steps} checks passed)")
 
-        print("\nValidation Steps:")
+        safe_print("\nValidation Steps:")
         for step_name, step_data in self.results["validation_steps"].items():
             status_icon = {"healthy": "✅", "warning": "⚠️", "error": "❌"}.get(step_data["status"], "❓")
-            print(f"  {status_icon} {step_name}: {step_data['status']}")
+            safe_print(f"  {status_icon} {step_name}: {step_data['status']}")
 
         # Show PR analysis if available
         if "pr_analysis" in self.results:
             pr_data = self.results["pr_analysis"]
-            print("\n📊 Pull Request Analysis:")
+            safe_print("\n📊 Pull Request Analysis:")
             if pr_data.get("dynamic_analysis"):
                 dependabot = pr_data["dependabot_summary"]
-                print(f"  📈 Total Open PRs: {pr_data['total_open_prs']}")
-                print(f"  🤖 Dependabot PRs: {dependabot['total_dependabot_prs']}")
-                print(f"    🟢 Safe Auto-merge: {dependabot['safe_auto_merge_count']}")
-                print(f"    🟡 Manual Review: {dependabot['manual_review_count']}")
-                print(f"    🔴 Major Updates: {dependabot['major_updates_count']}")
-                print("  ✨ Dynamic analysis replaces hardcoded values!")
+                safe_print(f"  📈 Total Open PRs: {pr_data['total_open_prs']}")
+                safe_print(f"  🤖 Dependabot PRs: {dependabot['total_dependabot_prs']}")
+                safe_print(f"    🟢 Safe Auto-merge: {dependabot['safe_auto_merge_count']}")
+                safe_print(f"    🟡 Manual Review: {dependabot['manual_review_count']}")
+                safe_print(f"    🔴 Major Updates: {dependabot['major_updates_count']}")
+                safe_print("  ✨ Dynamic analysis replaces hardcoded values!")
             else:
-                print("  ⚠️ Dynamic PR analysis unavailable")
+                safe_print("  ⚠️ Dynamic PR analysis unavailable")
                 if "error" in pr_data:
-                    print(f"      {pr_data['error']}")
+                    safe_print(f"      {pr_data['error']}")
 
-        print("\nRecommendations:")
+        safe_print("\nRecommendations:")
         for i, rec in enumerate(self.results["recommendations"][:5], 1):
-            print(f"  {i}. {rec}")
+            safe_print(f"  {i}. {rec}")
 
         if len(self.results["recommendations"]) > 5:
-            print(f"  ... and {len(self.results['recommendations']) - 5} more recommendations")
+            safe_print(f"  ... and {len(self.results['recommendations']) - 5} more recommendations")
 
-        print("=" * 50)
+        safe_print("=" * 50)
 
     def finalize_validation(self):
         """Generate final results and output for validation runs"""
@@ -576,8 +744,8 @@ print('Database initialized')
 
     def run_full_validation(self):
         """Run the complete validation suite"""
-        print("🚀 Starting Automated Validation...")
-        print("This will comprehensively test the entire pipeline.\n")
+        safe_print("🚀 Starting Automated Validation...")
+        safe_print("This will comprehensively test the entire pipeline.\n")
 
         start_time = time.time()
 
@@ -595,7 +763,7 @@ print('Database initialized')
             try:
                 step_func()
             except Exception as e:
-                print(f"❌ {step_name} validation failed with exception: {e}")
+                safe_print(f"❌ {step_name} validation failed with exception: {e}")
                 self.results["validation_steps"][step_name.lower().replace(" ", "_")] = {
                     "status": "error",
                     "error": str(e),
@@ -603,7 +771,7 @@ print('Database initialized')
 
         # Generate final results
         duration = time.time() - start_time
-        print(f"\n⏱️ Validation completed in {duration:.1f} seconds")
+        safe_print(f"\n⏱️ Validation completed in {duration:.1f} seconds")
 
         report_file = self.finalize_validation()
 
@@ -623,16 +791,16 @@ def main():
     # Check command line arguments
     if len(sys.argv) > 1:
         if sys.argv[1] == "--quick":
-            print("🏃‍♂️ Running quick validation (skipping tests)...")
+            safe_print("🏃‍♂️ Running quick validation (skipping tests)...")
             validator.validate_git_status()
             validator.validate_dependencies()
             validator.validate_code_quality()
             validator.validate_application_health()
         elif sys.argv[1] == "--tests-only":
-            print("🧪 Running test validation only...")
+            safe_print("🧪 Running test validation only...")
             validator.validate_tests()
         else:
-            print("Usage: python automated_validation.py [--quick|--tests-only]")
+            safe_print("Usage: python automated_validation.py [--quick|--tests-only]")
             return
 
         # For partial runs, still generate results with PR analysis
