@@ -219,7 +219,9 @@ jobs:
 
           # Test SSH connectivity before deployment
           echo "🔍 Testing SSH connectivity to VPS..."
-          if ssh -i ~/.ssh/vps_key -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=30 -o BatchMode=yes "$VPS_USER@$VPS_HOST" "echo 'SSH connection test successful'"; then
+          # Add VPS host key to known_hosts to enable host key verification
+          ssh-keyscan -H "$VPS_HOST" >> ~/.ssh/known_hosts 2>/dev/null
+          if ssh -i ~/.ssh/vps_key -o ConnectTimeout=30 -o BatchMode=yes "$VPS_USER@$VPS_HOST" "echo 'SSH connection test successful'"; then
             echo "✅ SSH connection verified"
           else
             echo "❌ ERROR: Cannot establish SSH connection to VPS"
