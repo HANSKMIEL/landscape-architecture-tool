@@ -1,9 +1,9 @@
 name: V1.00D DevDeploy Deployment
 
-# Automatically deploy to VPS when PRs are merged to v1.00D branch
+# Automatically deploy to VPS when PRs are merged to V1.00D branch
 on:
   push:
-    branches: [v1.00D]
+    branches: [V1.00D]
   workflow_dispatch:
     inputs:
       skip_tests:
@@ -26,10 +26,10 @@ jobs:
     timeout-minutes: 10
     
     steps:
-      - name: Checkout v1.00D
+      - name: Checkout V1.00D
         uses: actions/checkout@v4
         with:
-          ref: v1.00D
+          ref: V1.00D
       
       - name: Validate deployment configuration
         run: |
@@ -70,10 +70,10 @@ jobs:
       url: http://72.60.176.200:8080
     
     steps:
-      - name: Checkout v1.00D branch
+      - name: Checkout V1.00D branch
         uses: actions/checkout@v4
         with:
-          ref: v1.00D
+          ref: V1.00D
       
       - name: Setup Node.js for frontend build
         uses: actions/setup-node@v4
