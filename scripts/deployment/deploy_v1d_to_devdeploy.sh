@@ -157,8 +157,30 @@ if [ ! -f "$VENV_PATH/bin/activate" ]; then
     echo "🐍 Creating development Python virtual environment..."
     rm -rf "$VENV_PATH"
     if ! python3 -m venv "$VENV_PATH"; then
-        echo "❌ Failed to create development virtual environment. Ensure python3-venv is installed." >&2
-        exit 1
+        echo "⚠️ python3-venv not available. Attempting automatic installation..." >&2
+        if command -v apt-get >/dev/null 2>&1; then
+            if [ "$(id -u)" -ne 0 ]; then
+                SUDO="sudo"
+            else
+                SUDO=""
+            fi
+            export DEBIAN_FRONTEND=noninteractive
+            $SUDO apt-get update -y
+            if ! $SUDO apt-get install -y python3-venv; then
+                if ! $SUDO apt-get install -y python3.12-venv; then
+                    echo "❌ Failed to install python3 virtual environment tooling." >&2
+                    exit 1
+                fi
+            fi
+            unset DEBIAN_FRONTEND
+            if ! python3 -m venv "$VENV_PATH"; then
+                echo "❌ Failed to create development virtual environment even after installing python3-venv." >&2
+                exit 1
+            fi
+        else
+            echo "❌ Failed to create development virtual environment and apt-get is unavailable to install python3-venv." >&2
+            exit 1
+        fi
     fi
 fi
 
