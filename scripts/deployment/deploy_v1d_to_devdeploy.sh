@@ -189,6 +189,32 @@ source "$VENV_PATH/bin/activate"
 pip install --upgrade --no-cache-dir pip
 pip install --no-cache-dir -r requirements.txt
 
+# Ensure Node.js and npm are available
+if ! command -v npm >/dev/null 2>&1; then
+    echo "⚠️ npm not found. Installing Node.js 20..."
+    if command -v apt-get >/dev/null 2>&1; then
+        if [ "$(id -u)" -ne 0 ]; then
+            SUDO="sudo"
+        else
+            SUDO=""
+        fi
+        export DEBIAN_FRONTEND=noninteractive
+        $SUDO apt-get update -y
+        $SUDO apt-get install -y curl ca-certificates gnupg
+        if ! curl -fsSL https://deb.nodesource.com/setup_20.x | $SUDO bash -; then
+            echo "⚠️ Nodesource setup failed, attempting default Node.js install..."
+        fi
+        if ! $SUDO apt-get install -y nodejs npm; then
+            echo "❌ Failed to install Node.js/npm."
+            exit 1
+        fi
+        unset DEBIAN_FRONTEND
+    else
+        echo "❌ npm is not available and apt-get cannot be used to install it."
+        exit 1
+    fi
+fi
+
 # Update and build frontend
 cd frontend
 npm ci --legacy-peer-deps --no-progress --prefer-online
