@@ -42,6 +42,29 @@ class Config:
     # Logging
     LOG_LEVEL = os.environ.get("LOG_LEVEL", "INFO")
 
+    # Authentication & Encryption
+    JWT_SECRET_KEY = os.environ.get("JWT_SECRET_KEY")
+    ENCRYPTION_KEY = os.environ.get("ENCRYPTION_KEY")
+
+    # External API Keys
+    OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
+    VECTORWORKS_API_KEY = os.environ.get("VECTORWORKS_API_KEY")
+    WEATHER_API_KEY = os.environ.get("WEATHER_API_KEY")
+    PLANT_DATABASE_API_KEY = os.environ.get("PLANT_DATABASE_API_KEY")
+
+    # Email Configuration
+    MAIL_USERNAME = os.environ.get("MAIL_USERNAME")
+    MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD")
+
+    # AWS Configuration
+    AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
+    AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
+    AWS_S3_BUCKET = os.environ.get("AWS_S3_BUCKET")
+
+    # Monitoring & Analytics
+    SENTRY_DSN = os.environ.get("SENTRY_DSN")
+    GOOGLE_ANALYTICS_ID = os.environ.get("GOOGLE_ANALYTICS_ID")
+
     # N8n Integration Configuration
     N8N_BASE_URL = os.environ.get("N8N_BASE_URL", "http://localhost:5678")
     N8N_WEBHOOK_SECRET = os.environ.get("N8N_WEBHOOK_SECRET")
