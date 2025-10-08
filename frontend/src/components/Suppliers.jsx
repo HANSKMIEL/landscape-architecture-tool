@@ -21,21 +21,19 @@ import { useLanguage } from '../i18n/LanguageProvider'
 
 const Suppliers = () => {
   const { t } = useLanguage()
-  const [__suppliers, set_suppliers] = useState([])
-  const [__loading, set_loading] = useState(true)
-  const [__searchTerm, set_searchTerm] = useState('')
-  const [__totalSuppliers, set_totalSuppliers] = useState(0)
-  const [__showAddModal, set_showAddModal] = useState(false)
-  const [__showEditModal, set_showEditModal] = useState(false)
-  const [__editingSupplier, set_editingSupplier] = useState(null)
-  const [__error, set_error] = useState(null)
-  const [__retryCount, set_retryCount] = useState(0)
-  const [__isRetrying, set_isRetrying] = useState(false)
-  const [__submitLoading, set_submitLoading] = useState(false)
-  const [__deleteLoading, set_deleteLoading] = useState(null)
+  const [suppliers, setSuppliers] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [totalSuppliers, setTotalSuppliers] = useState(0)
+  const [showAddModal, setShowAddModal] = useState(false)
+  const [showEditModal, setShowEditModal] = useState(false)
+  const [editingSupplier, setEditingSupplier] = useState(null)
+  const [error, setError] = useState(null)
+  const [submitLoading, setSubmitLoading] = useState(false)
+  const [deleteLoading, setDeleteLoading] = useState(null)
 
   // Form state
-  const [__formData, set_formData] = useState({
+  const [formData, setFormData] = useState({
     name: '',
     contact_person: '',
     email: '',
@@ -70,39 +68,23 @@ const Suppliers = () => {
     return errorMessage
   }
 
-  const loadSuppliers = useCallback(async (isRetry = false) => {
+  const loadSuppliers = useCallback(async () => {
     try {
       setLoading(true)
-      if (!isRetry) {
-        setError(null)
-        setRetryCount(0)
-      } else {
-        setIsRetrying(true)
-      }
-      
+      setError(null)
+
       const params = searchTerm ? { search: searchTerm } : {}
       const data = await apiService.getSuppliers(params)
       setSuppliers(data.suppliers || [])
       setTotalSuppliers(data.total || 0)
-      setError(null)
-      setRetryCount(0)
     } catch (error) {
       const errorMessage = handleApiError(error, 'loading suppliers')
       setError(errorMessage)
-      
-      if (!isRetry) {
-        toast.error(`${t('suppliers.error', 'Error loading suppliers')}: ${errorMessage}`)
-      }
+      toast.error(`${t('suppliers.error', 'Error loading suppliers')}: ${errorMessage}`)
     } finally {
       setLoading(false)
-      setIsRetrying(false)
     }
   }, [searchTerm, t])
-
-  const handleRetry = () => {
-    setRetryCount(prev => prev + 1)
-    loadSuppliers(true)
-  }
 
   useEffect(() => {
     loadSuppliers()
@@ -146,9 +128,9 @@ const Suppliers = () => {
       setShowAddModal(false)
       resetForm()
       toast.success(t('suppliers.addSuccess', 'Supplier successfully added!'))
-    } catch (err) {
-      const errorMessage = handleApiError(err, 'adding supplier')
-      toast.error(t('suppliers.addError', 'Error adding supplier: ') + errorMessage)
+    } catch (error) {
+      const errorMessage = handleApiError(error, 'adding supplier')
+      toast.error(`${t('suppliers.addError', 'Error adding supplier:')} ${errorMessage}`)
     } finally {
       setSubmitLoading(false)
     }
@@ -166,9 +148,9 @@ const Suppliers = () => {
       setEditingSupplier(null)
       resetForm()
       toast.success(t('suppliers.updateSuccess', 'Supplier successfully updated!'))
-    } catch (err) {
-      const errorMessage = handleApiError(err, 'updating supplier')
-      toast.error(t('suppliers.updateError', 'Error updating supplier: ') + errorMessage)
+    } catch (error) {
+      const errorMessage = handleApiError(error, 'updating supplier')
+      toast.error(`${t('suppliers.updateError', 'Error updating supplier:')} ${errorMessage}`)
     } finally {
       setSubmitLoading(false)
     }
@@ -176,7 +158,12 @@ const Suppliers = () => {
 
   // Handle delete supplier with enhanced error handling and loading state
   const handleDeleteSupplier = async (supplierId, supplierName) => {
-    if (!confirm(t('suppliers.deleteConfirm', 'Are you sure you want to delete "{name}"?').replace('{name}', supplierName))) {
+    const confirmationMessage = t(
+      'suppliers.deleteConfirm',
+      'Are you sure you want to delete "{name}"?'
+    ).replace('{name}', supplierName)
+
+    if (!window.confirm(confirmationMessage)) {
       return
     }
 
@@ -214,7 +201,7 @@ const Suppliers = () => {
   }
 
   // Supplier Form Component
-  const SupplierForm = ({ isEdit = false, onSubmit, onCancel }) => (
+  const SupplierForm = ({ isEdit = false, onSubmit, onCancel, isSubmitting = false }) => (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         <div className="flex justify-between items-center mb-4">
@@ -370,11 +357,18 @@ const Suppliers = () => {
           </div>
 
           <div className="flex justify-end space-x-2 pt-4">
-            <Button type="button" variant="outline" onClick={onCancel}>
+            <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
               {t('common.cancel', 'Cancel')}
             </Button>
-            <Button type="submit">
-              {t('common.save', 'Save')}
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? (
+                <span className="flex items-center gap-2">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  {t('common.saving', 'Saving...')}
+                </span>
+              ) : (
+                t('common.save', 'Save')
+              )}
             </Button>
           </div>
         </form>
@@ -514,8 +508,13 @@ const Suppliers = () => {
                       variant="outline"
                       size="sm"
                       className="text-red-600 hover:text-red-700"
+                      disabled={deleteLoading === supplier.id}
                     >
-                      <Trash2 className="h-4 w-4" />
+                      {deleteLoading === supplier.id ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Trash2 className="h-4 w-4" />
+                      )}
                     </Button>
                   </div>
                 </div>
@@ -603,8 +602,10 @@ const Suppliers = () => {
           onSubmit={handleAddSupplier}
           onCancel={() => {
             setShowAddModal(false)
+            setSubmitLoading(false)
             resetForm()
           }}
+          isSubmitting={submitLoading}
         />
       )}
 
@@ -616,8 +617,10 @@ const Suppliers = () => {
           onCancel={() => {
             setShowEditModal(false)
             setEditingSupplier(null)
+            setSubmitLoading(false)
             resetForm()
           }}
+          isSubmitting={submitLoading}
         />
       )}
     </div>
