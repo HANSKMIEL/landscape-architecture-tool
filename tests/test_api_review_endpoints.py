@@ -501,7 +501,7 @@ class TestAPIIntegrationScenarios:
         response = client.get(f"/api/projects/{sample_project.id}/plant-order-list")
         assert response.status_code == 200
 
-    def test_reporting_workflow(self, client, app_context, sample_project):
+    def test_reporting_workflow(self, client, app_context, sample_project, authenticated_test_user):
         """Test complete reporting workflow"""
         # Authentication handled by authenticated_test_user fixture
         # 1. Business summary
@@ -525,21 +525,29 @@ class TestAPIIntegrationScenarios:
 class TestAPIAuthenticationAndAuthorization:
     """Test authentication and authorization for API endpoints"""
 
-    def test_endpoints_accessible_without_auth(self, client, app_context):
-        """Test that API endpoints are accessible (no auth implemented yet)"""
-        # Test key endpoints are accessible
-        endpoints = [
-            "/api/plant-recommendations/criteria-options",
-            "/api/reports/business-summary",
-            "/api/reports/plant-usage",
-            "/api/reports/supplier-performance",
-        ]
+    def test_endpoints_access_control(self, client, app_context):
+        """Validate unauthenticated access patterns for public vs protected endpoints"""
+        expected_status_by_endpoint = {
+            "/api/plant-recommendations/criteria-options": 200,
+            "/api/reports/plant-usage": 200,
+            "/api/reports/supplier-performance": 200,
+            # Business summary is protected via @login_required and should reject anonymous calls
+            "/api/reports/business-summary": 401,
+        }
 
-        for endpoint in endpoints:
+        for endpoint, expected_status in expected_status_by_endpoint.items():
             response = client.get(endpoint)
-            assert response.status_code == 200, f"Endpoint {endpoint} should be accessible"
+            assert (
+                response.status_code == expected_status
+            ), f"Endpoint {endpoint} returned {response.status_code}, expected {expected_status}"
 
-    def test_post_endpoints_validation(self, client, app_context):
+    def test_post_endpoints_validation(
+        self,
+        client,
+        app_context,
+        authenticated_test_user,
+        sample_project,
+    ):
         """Test POST endpoints have proper validation"""
         # Authentication handled by authenticated_test_user fixture
         # Test plant recommendations requires valid JSON
@@ -547,7 +555,7 @@ class TestAPIAuthenticationAndAuthorization:
         assert response.status_code == 400
 
         # Test project plants requires valid data
-        response = client.post("/api/projects/1/plants")
+        response = client.post(f"/api/projects/{sample_project.id}/plants")
         assert response.status_code == 400
 
 
