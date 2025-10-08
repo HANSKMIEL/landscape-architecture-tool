@@ -136,19 +136,6 @@ const ResponsiveSidebar = ({ isOpen, onClose, user }) => {
     }
   }
 
-  const getRoleColor = (role) => {
-    switch (role) {
-      case 'admin':
-        return 'text-red-600 bg-red-100'
-      case 'employee':
-        return 'text-blue-600 bg-blue-100'
-      case 'client':
-        return 'text-green-600 bg-green-100'
-      default:
-        return 'text-gray-600 bg-gray-100'
-    }
-  }
-
   const getRoleDisplay = (role) => {
     return t(`auth.roles.${role}`, role);
   }

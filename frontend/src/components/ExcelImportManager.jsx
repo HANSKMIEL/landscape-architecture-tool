@@ -3,14 +3,14 @@ import { Upload, Download, FileSpreadsheet, AlertCircle, CheckCircle, X, Info } 
 import apiService from '../services/api';
 
 const ExcelImportManager = () => {
-  const [__selectedFile, set_selectedFile] = useState(null);
-  const [__importType, set_importType] = useState('suppliers');
-  const [__updateExisting, set_updateExisting] = useState(false);
-  const [__validationResult, set_validationResult] = useState(null);
-  const [__importResult, set_importResult] = useState(null);
-  const [__loading, set_loading] = useState(false);
-  const [__status, set_status] = useState(null);
-  const [__error, set_error] = useState(null);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [importType, setImportType] = useState('suppliers');
+  const [updateExisting, setUpdateExisting] = useState(false);
+  const [validationResult, setValidationResult] = useState(null);
+  const [importResult, setImportResult] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [status, setStatus] = useState(null);
+  const [error, setError] = useState(null);
 
   const importTypes = [
     { value: 'suppliers', label: 'Leveranciers', icon: '🏢' },

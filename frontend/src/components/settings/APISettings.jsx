@@ -1,425 +1,418 @@
-import { useLanguage } from "../../i18n/LanguageProvider";
-import React, { useState } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { 
-  Link, 
-  Settings as SettingsIcon, 
-  CheckCircle, 
-  AlertCircle,
-  ExternalLink,
-  Zap,
-  Globe,
-  Camera,
-  Gamepad2,
-  Users,
-  Database
-} from 'lucide-react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { AlertCircle, Camera, CheckCircle, ExternalLink, Gamepad2, Globe, Zap } from 'lucide-react';
+import { useLanguage } from '../../i18n/LanguageProvider';
 
-// --- Simple AES encryption helpers using Web Crypto API ---
-
-// Converts a string to ArrayBuffer
-function str2ab(str) {
-  const buf = new ArrayBuffer(str.length * 2);
-  const bufView = new Uint16Array(buf);
-  for (let i = 0, strLen = str.length; i < strLen; i++) {
-    bufView[i] = str.charCodeAt(i);
-  }
-  return buf;
-}
-
-// Converts ArrayBuffer to string
-function ab2str(buf) {
-  return String.fromCharCode.apply(null, new Uint16Array(buf));
-}
-
-// Derive a crypto key from passphrase
-async function getKeyMaterial(passphrase) {
-  const enc = new TextEncoder();
-  return window.crypto.subtle.importKey(
-    "raw",
-    enc.encode(passphrase),
-    "PBKDF2",
-    false,
-    ["deriveBits", "deriveKey"]
-  );
-}
-
-async function getKey(passphrase, salt) {
-  const keyMaterial = await getKeyMaterial(passphrase);
-  return window.crypto.subtle.deriveKey(
-    {
-      "name": "PBKDF2",
-      salt: salt,
-      "iterations": 100000,
-      "hash": "SHA-256"
+const translationDefaults = {
+  title: 'API Integrations',
+  subtitle: 'Connect with external software and services',
+  overview: {
+    statusTitle: 'Status',
+    activeLabel: 'Active Integrations',
+    pendingLabel: 'Pending Setup'
+  },
+  integrations: {
+    vectorworks: {
+      name: 'Vectorworks',
+      description: 'CAD design automation and file synchronization'
     },
-    keyMaterial,
-    { "name": "AES-GCM", "length": 256 },
-    true,
-    ["encrypt", "decrypt"]
-  );
-}
+    n8n: {
+      name: 'N8N Workflow Automation',
+      description: 'Automate client onboarding and project workflows'
+    },
+    hubspot: {
+      name: 'HubSpot CRM',
+      description: 'Customer relationship management integration'
+    },
+    mailchimp: {
+      name: 'Mailchimp',
+      description: 'Email marketing and client communication'
+    },
+    openweather: {
+      name: 'OpenWeather API',
+      description: 'Weather data for plant recommendations'
+    }
+  },
+  fields: {
+    apiKeyLabel: 'API Key',
+    apiKeyPlaceholder: 'Enter API key...',
+    endpointLabel: 'Endpoint URL',
+    endpointPlaceholder: 'Enter endpoint URL...'
+  },
+  actions: {
+    testConnection: 'Test Connection',
+    save: 'Save Settings',
+    reset: 'Reset Defaults',
+    saveSuccess: 'API settings saved!',
+    saveError: 'Unable to save API settings. Please try again.',
+    resetSuccess: 'API settings reset to defaults!'
+  },
+  status: {
+    label: 'Connection Status',
+    connected: 'Connected',
+    disconnected: 'Not Connected',
+    testing: 'Testing...',
+    error: 'Connection Error'
+  },
+  future: {
+    sectionTitle: 'Future Integrations',
+    description: 'Planned integrations for advanced workflows',
+    comingSoon: 'Coming Soon',
+    categories: {
+      ai: 'AI/ML',
+      visualization: 'Visualization'
+    },
+    photogrammetry: {
+      name: 'Photogrammetry Service',
+      description: 'Automated 3D model generation from photos'
+    },
+    unreal: {
+      name: 'Unreal Engine',
+      description: 'Advanced 3D visualization and VR experiences'
+    }
+  },
+  documentation: 'View Documentation'
+};
 
-async function encrypt(text, passphrase) {
-  const enc = new TextEncoder();
-  const salt = window.crypto.getRandomValues(new Uint8Array(16));
-  const iv = window.crypto.getRandomValues(new Uint8Array(12));
-  const key = await getKey(passphrase, salt);
-  const ciphertext = await window.crypto.subtle.encrypt(
-    { name: "AES-GCM", iv: iv },
-    key,
-    enc.encode(text)
-  );
-  return btoa(
-    JSON.stringify({
-      ciphertext: Array.from(new Uint8Array(ciphertext)),
-      iv: Array.from(iv),
-      salt: Array.from(salt)
-    })
-  );
-}
+const getTranslationDefault = (path) =>
+  path.split('.').reduce((acc, segment) => (acc && acc[segment] !== undefined ? acc[segment] : undefined), translationDefaults);
 
-async function decrypt(encryptedData, passphrase) {
-  try {
-    const obj = JSON.parse(atob(encryptedData));
-    const iv = new Uint8Array(obj.iv);
-    const salt = new Uint8Array(obj.salt);
-    const ciphertext = new Uint8Array(obj.ciphertext);
-    const key = await getKey(passphrase, salt);
-    const decrypted = await window.crypto.subtle.decrypt(
-      { name: "AES-GCM", iv: iv },
-      key,
-      ciphertext
-    );
-    const dec = new TextDecoder();
-    return dec.decode(decrypted);
-  } catch(e) {
-    return null;
-  }
-}
+const DEFAULT_API_KEYS = {
+  vectorworks: '',
+  n8n: '',
+  hubspot: '',
+  mailchimp: '',
+  openweather: ''
+};
 
-async function encryptApiKeys(apiKeys, passphrase) {
-  const __encrypted = {};
-  for (let [k, v] of Object.entries(apiKeys)) {
-    encrypted[k] = v ? await encrypt(v, passphrase) : "";
-  }
-  return encrypted;
-}
+const DEFAULT_ENDPOINTS = {
+  n8n: 'https://your-n8n-instance.com',
+  vectorworks: 'https://api.vectorworks.net',
+  photogrammetry: 'https://api.photogrammetry-service.com'
+};
 
-// Optionally, a decryptApiKeys function can be created similarly
+const DEFAULT_CONNECTION_STATUS = {
+  vectorworks: 'disconnected',
+  n8n: 'disconnected',
+  hubspot: 'disconnected',
+  mailchimp: 'disconnected',
+  openweather: 'disconnected'
+};
 
 const APISettings = () => {
-  const [__apiKeys, set_apiKeys] = useState({
-    vectorworks: '',
-    n8n: '',
-    hubspot: '',
-    mailchimp: '',
-    openweather: ''
-  })
-  
-  const [__apiEndpoints, set_apiEndpoints] = useState({
-    n8n: 'https://your-n8n-instance.com',
-    vectorworks: 'https://api.vectorworks.net',
-    photogrammetry: 'https://api.photogrammetry-service.com'
-  })
+  const { t } = useLanguage();
 
-  const [__connectionStatus, set_connectionStatus] = useState({
-    vectorworks: 'disconnected',
-    n8n: 'disconnected',
-    hubspot: 'disconnected',
-    mailchimp: 'disconnected',
-    openweather: 'disconnected'
-  })
+  const [apiKeys, setApiKeys] = useState(DEFAULT_API_KEYS);
+  const [apiEndpoints, setApiEndpoints] = useState(DEFAULT_ENDPOINTS);
+  const [connectionStatus, setConnectionStatus] = useState(DEFAULT_CONNECTION_STATUS);
 
-  const __translations = {
-    en: {
-      title: 'API Integrations',
-      subtitle: 'Connect with external software and services',
-      cadSection: 'CAD Software Integration',
-      cadDesc: 'Connect with Vectorworks and other CAD applications',
-      automationSection: 'Workflow Automation',
-      automationDesc: 'Configure N8N and automated processes',
-      crmSection: 'CRM & Marketing',
-      crmDesc: 'Integrate with customer relationship management systems',
-      servicesSection: 'External Services',
-      servicesDesc: 'Connect with weather, location, and other services',
-      futureSection: 'Future Integrations',
-      futureDesc: 'Planned integrations for advanced workflows',
-      vectorworks: 'Vectorworks',
-      vectorworksDesc: 'CAD design automation and file synchronization',
-      n8n: 'N8N Workflow Automation',
-      n8nDesc: 'Automate client onboarding and project workflows',
-      hubspot: 'HubSpot CRM',
-      hubspotDesc: 'Customer relationship management integration',
-      mailchimp: 'Mailchimp',
-      mailchimpDesc: 'Email marketing and client communication',
-      openweather: 'OpenWeather API',
-      openweatherDesc: 'Weather data for plant recommendations',
-      photogrammetry: 'Photogrammetry Service',
-      photogrammetryDesc: 'Automated 3D model generation from photos',
-      unreal: 'Unreal Engine',
-      unrealDesc: 'Advanced 3D visualization and VR experiences',
-      apiKey: 'API Key',
-      apiKeyPlaceholder: 'Enter API key...',
-      endpoint: 'Endpoint URL',
-      endpointPlaceholder: 'Enter endpoint URL...',
-      testConnection: 'Test Connection',
-      saveSettings: 'Save Settings',
-      resetDefaults: 'Reset Defaults',
-      connectionStatus: 'Connection Status',
-      connected: 'Connected',
-      disconnected: 'Not Connected',
-      testing: 'Testing...',
-      error: 'Connection Error',
-      configure: 'Configure',
-      comingSoon: 'Coming Soon',
-      documentation: 'View Documentation',
-      status: 'Status',
-      activeIntegrations: 'Active Integrations',
-      pendingSetup: 'Pending Setup'
-    },
-    nl: {
-      title: 'API Integraties',
-      subtitle: 'Verbind met externe software en diensten',
-      cadSection: 'CAD Software Integratie',
-      cadDesc: 'Verbind met Vectorworks en andere CAD-applicaties',
-      automationSection: 'Workflow Automatisering',
-      automationDesc: 'Configureer N8N en geautomatiseerde processen',
-      crmSection: 'CRM & Marketing',
-      crmDesc: 'Integreer met klantrelatiebeheersystemen',
-      servicesSection: 'Externe Diensten',
-      servicesDesc: 'Verbind met weer-, locatie- en andere diensten',
-      futureSection: 'Toekomstige Integraties',
-      futureDesc: 'Geplande integraties voor geavanceerde workflows',
-      vectorworks: 'Vectorworks',
-      vectorworksDesc: 'CAD ontwerpautomatisering en bestandssynchronisatie',
-      n8n: 'N8N Workflow Automatisering',
-      n8nDesc: 'Automatiseer klant onboarding en projectworkflows',
-      hubspot: 'HubSpot CRM',
-      hubspotDesc: 'Klantrelatiebeheersysteem integratie',
-      mailchimp: 'Mailchimp',
-      mailchimpDesc: 'E-mailmarketing en klantcommunicatie',
-      openweather: 'OpenWeather API',
-      openweatherDesc: 'Weergegevens voor plantaanbevelingen',
-      photogrammetry: 'Fotogrammetrie Service',
-      photogrammetryDesc: 'Geautomatiseerde 3D-modelgeneratie uit foto\'s',
-      unreal: 'Unreal Engine',
-      unrealDesc: 'Geavanceerde 3D-visualisatie en VR-ervaringen',
-      apiKey: 'API Sleutel',
-      apiKeyPlaceholder: 'Voer API sleutel in...',
-      endpoint: 'Endpoint URL',
-      endpointPlaceholder: 'Voer endpoint URL in...',
-      testConnection: 'Test Verbinding',
-      saveSettings: 'Instellingen Opslaan',
-      resetDefaults: 'Standaardwaarden Herstellen',
-      connectionStatus: 'Verbindingsstatus',
-      connected: 'Verbonden',
-      disconnected: 'Niet Verbonden',
-      testing: 'Testen...',
-      error: 'Verbindingsfout',
-      configure: 'Configureren',
-      comingSoon: 'Binnenkort',
-      documentation: 'Bekijk Documentatie',
-      status: 'Status',
-      activeIntegrations: 'Actieve Integraties',
-      pendingSetup: 'Setup Vereist'
-    }
-  }
-
-  const { t, currentLanguage } = useLanguage()
-  const currentTranslations = translations[currentLanguage] || translations.nl
-
-  const testConnection = async (service) => {
-    setConnectionStatus(prev => ({ ...prev, [service]: 'testing' }))
-    
+  useEffect(() => {
     try {
-      // Simulate API test - in real implementation, this would test the actual API
-      await new Promise(resolve => setTimeout(resolve, 2000))
-      
-      // Mock response based on whether API key is provided
-      if (apiKeys[service] && apiKeys[service].trim()) {
-        setConnectionStatus(prev => ({ ...prev, [service]: 'connected' }))
-      } else {
-        setConnectionStatus(prev => ({ ...prev, [service]: 'error' }))
+      const storedSettings = localStorage.getItem('apiSettings');
+      if (!storedSettings) {
+        return;
+      }
+
+      const parsedSettings = JSON.parse(storedSettings);
+      if (parsedSettings.apiKeys) {
+        setApiKeys((prev) => ({ ...prev, ...parsedSettings.apiKeys }));
+      }
+      if (parsedSettings.apiEndpoints) {
+        setApiEndpoints((prev) => ({ ...prev, ...parsedSettings.apiEndpoints }));
+      }
+      if (parsedSettings.connectionStatus) {
+        setConnectionStatus((prev) => ({ ...prev, ...parsedSettings.connectionStatus }));
       }
     } catch (error) {
-      setConnectionStatus(prev => ({ ...prev, [service]: 'error' }))
+      console.error('Failed to load API settings from storage:', error);
     }
-  }
+  }, []);
 
-  const saveSettings = async () => {
-    // Prompt user for passphrase for encrypting keys
-    let passphrase = window.prompt(currentLanguage === 'nl' ? "Voer wachtwoord voor encryptie van API sleutels in:" : "Enter passphrase to encrypt API keys:");
-    if (!passphrase || passphrase.length < 5) {
-      alert(currentLanguage === 'nl' ? "Wachtwoord te kort. Instellingen niet opgeslagen." : "Passphrase too short. Settings not saved.");
-      return;
+  const translate = useCallback(
+    (key) => t(`settings.apiSettings.${key}`, getTranslationDefault(key) ?? key),
+    [t]
+  );
+
+  const uiText = useMemo(
+    () => ({
+      title: translate('title'),
+      subtitle: translate('subtitle'),
+      statusTitle: translate('overview.statusTitle'),
+      activeLabel: translate('overview.activeLabel'),
+      pendingLabel: translate('overview.pendingLabel'),
+      apiKeyLabel: translate('fields.apiKeyLabel'),
+      apiKeyPlaceholder: translate('fields.apiKeyPlaceholder'),
+      endpointLabel: translate('fields.endpointLabel'),
+      endpointPlaceholder: translate('fields.endpointPlaceholder'),
+      documentation: translate('documentation'),
+      testConnection: translate('actions.testConnection'),
+      save: translate('actions.save'),
+      reset: translate('actions.reset'),
+      saveSuccess: translate('actions.saveSuccess'),
+      saveError: translate('actions.saveError'),
+      resetSuccess: translate('actions.resetSuccess'),
+      statusLabel: translate('status.label'),
+      statusConnected: translate('status.connected'),
+      statusDisconnected: translate('status.disconnected'),
+      statusTesting: translate('status.testing'),
+      statusError: translate('status.error'),
+      futureTitle: translate('future.sectionTitle'),
+      futureDescription: translate('future.description'),
+      comingSoon: translate('future.comingSoon'),
+      futureCategories: {
+        ai: translate('future.categories.ai'),
+        visualization: translate('future.categories.visualization')
+      },
+      integrations: {
+        vectorworks: {
+          name: translate('integrations.vectorworks.name'),
+          description: translate('integrations.vectorworks.description')
+        },
+        n8n: {
+          name: translate('integrations.n8n.name'),
+          description: translate('integrations.n8n.description')
+        },
+        hubspot: {
+          name: translate('integrations.hubspot.name'),
+          description: translate('integrations.hubspot.description')
+        },
+        mailchimp: {
+          name: translate('integrations.mailchimp.name'),
+          description: translate('integrations.mailchimp.description')
+        },
+        openweather: {
+          name: translate('integrations.openweather.name'),
+          description: translate('integrations.openweather.description')
+        }
+      },
+      futureIntegrations: {
+        photogrammetry: {
+          name: translate('future.photogrammetry.name'),
+          description: translate('future.photogrammetry.description')
+        },
+        unreal: {
+          name: translate('future.unreal.name'),
+          description: translate('future.unreal.description')
+        }
+      }
+    }),
+    [translate]
+  );
+
+  const integrationList = useMemo(
+    () => [
+      {
+        key: 'vectorworks',
+        icon: '🏗️',
+        name: uiText.integrations.vectorworks.name,
+        description: uiText.integrations.vectorworks.description,
+        supportsEndpoint: true
+      },
+      {
+        key: 'n8n',
+        icon: '⚡',
+        name: uiText.integrations.n8n.name,
+        description: uiText.integrations.n8n.description,
+        supportsEndpoint: true
+      },
+      {
+        key: 'hubspot',
+        icon: '👥',
+        name: uiText.integrations.hubspot.name,
+        description: uiText.integrations.hubspot.description,
+        supportsEndpoint: false
+      },
+      {
+        key: 'mailchimp',
+        icon: '📧',
+        name: uiText.integrations.mailchimp.name,
+        description: uiText.integrations.mailchimp.description,
+        supportsEndpoint: false
+      },
+      {
+        key: 'openweather',
+        icon: '🌤️',
+        name: uiText.integrations.openweather.name,
+        description: uiText.integrations.openweather.description,
+        supportsEndpoint: false
+      }
+    ],
+    [uiText.integrations]
+  );
+
+  const futureIntegrationList = useMemo(
+    () => [
+      {
+        key: 'photogrammetry',
+        icon: <Camera className="h-5 w-5" />,
+        name: uiText.futureIntegrations.photogrammetry.name,
+        description: uiText.futureIntegrations.photogrammetry.description,
+        category: uiText.futureCategories.ai
+      },
+      {
+        key: 'unreal',
+        icon: <Gamepad2 className="h-5 w-5" />,
+        name: uiText.futureIntegrations.unreal.name,
+        description: uiText.futureIntegrations.unreal.description,
+        category: uiText.futureCategories.visualization
+      }
+    ],
+    [uiText.futureCategories.ai, uiText.futureCategories.visualization, uiText.futureIntegrations]
+  );
+
+  const statusIcon = useCallback((status) => {
+    if (status === 'connected') {
+      return <CheckCircle className="h-4 w-4 text-green-600" />;
     }
-    const encryptedApiKeys = await encryptApiKeys(apiKeys, passphrase);
-    const __settings = {
-      apiKeys: encryptedApiKeys,
+    if (status === 'testing') {
+      return <div className="h-4 w-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />;
+    }
+    if (status === 'error') {
+      return <AlertCircle className="h-4 w-4 text-red-600" />;
+    }
+    return <AlertCircle className="h-4 w-4 text-gray-400" />;
+  }, []);
+
+  const statusLabel = useCallback(
+    (status) => {
+      if (status === 'connected') {
+        return uiText.statusConnected;
+      }
+      if (status === 'testing') {
+        return uiText.statusTesting;
+      }
+      if (status === 'error') {
+        return uiText.statusError;
+      }
+      return uiText.statusDisconnected;
+    },
+    [uiText.statusConnected, uiText.statusDisconnected, uiText.statusError, uiText.statusTesting]
+  );
+
+  const statusClass = useCallback((status) => {
+    if (status === 'connected') {
+      return 'text-green-600';
+    }
+    if (status === 'testing') {
+      return 'text-blue-600';
+    }
+    if (status === 'error') {
+      return 'text-red-600';
+    }
+    return 'text-gray-400';
+  }, []);
+
+  const integrationsConnected = useMemo(
+    () => Object.values(connectionStatus).filter((status) => status === 'connected').length,
+    [connectionStatus]
+  );
+
+  const handleKeyChange = useCallback((integrationKey) => (event) => {
+    const { value } = event.target;
+    setApiKeys((prev) => ({
+      ...prev,
+      [integrationKey]: value
+    }));
+  }, []);
+
+  const handleEndpointChange = useCallback((integrationKey) => (event) => {
+    const { value } = event.target;
+    setApiEndpoints((prev) => ({
+      ...prev,
+      [integrationKey]: value
+    }));
+  }, []);
+
+  const testConnection = useCallback(
+    async (integrationKey) => {
+      setConnectionStatus((prev) => ({
+        ...prev,
+        [integrationKey]: 'testing'
+      }));
+
+      try {
+        await new Promise((resolve) => {
+          setTimeout(resolve, 2000);
+        });
+
+        setConnectionStatus((prev) => ({
+          ...prev,
+          [integrationKey]: apiKeys[integrationKey]?.trim() ? 'connected' : 'error'
+        }));
+      } catch (error) {
+        console.error('API connection test failed:', error);
+        setConnectionStatus((prev) => ({
+          ...prev,
+          [integrationKey]: 'error'
+        }));
+      }
+    },
+    [apiKeys]
+  );
+
+  const saveSettings = useCallback(() => {
+    const settingsToSave = {
+      apiKeys,
       apiEndpoints,
       connectionStatus,
       timestamp: new Date().toISOString()
+    };
+
+    try {
+      localStorage.setItem('apiSettings', JSON.stringify(settingsToSave));
+      window.alert(uiText.saveSuccess);
+    } catch (error) {
+      console.error('Failed to save API settings:', error);
+      window.alert(uiText.saveError);
     }
-    localStorage.setItem('apiSettings', JSON.stringify(settings))
-    alert(currentLanguage === 'nl' ? 'API instellingen opgeslagen!' : 'API settings saved!')
-  }
+  }, [apiEndpoints, apiKeys, connectionStatus, uiText.saveError, uiText.saveSuccess]);
 
-  const resetDefaults = () => {
-    setApiKeys({
-      vectorworks: '',
-      n8n: '',
-      hubspot: '',
-      mailchimp: '',
-      openweather: ''
-    })
-    setApiEndpoints({
-      n8n: 'https://your-n8n-instance.com',
-      vectorworks: 'https://api.vectorworks.net',
-      photogrammetry: 'https://api.photogrammetry-service.com'
-    })
-    setConnectionStatus({
-      vectorworks: 'disconnected',
-      n8n: 'disconnected',
-      hubspot: 'disconnected',
-      mailchimp: 'disconnected',
-      openweather: 'disconnected'
-    })
-    localStorage.removeItem('apiSettings')
-  }
+  const resetDefaults = useCallback(() => {
+    setApiKeys(DEFAULT_API_KEYS);
+    setApiEndpoints(DEFAULT_ENDPOINTS);
+    setConnectionStatus(DEFAULT_CONNECTION_STATUS);
 
-  const getStatusIcon = (status) => {
-    switch (status) {
-      case 'connected':
-        return <CheckCircle className="h-4 w-4 text-green-600" />
-      case 'testing':
-        return <div className="h-4 w-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
-      case 'error':
-        return <AlertCircle className="h-4 w-4 text-red-600" />
-      default:
-        return <AlertCircle className="h-4 w-4 text-gray-400" />
+    try {
+      localStorage.removeItem('apiSettings');
+    } catch (error) {
+      console.error('Failed to clear API settings from storage:', error);
     }
-  }
 
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'connected':
-        return 'text-green-600'
-      case 'testing':
-        return 'text-blue-600'
-      case 'error':
-        return 'text-red-600'
-      default:
-        return 'text-gray-400'
-    }
-  }
-
-  const getStatusText = (status) => {
-    switch (status) {
-      case 'connected':
-        return currentTranslations.connected
-      case 'testing':
-        return currentTranslations.testing
-      case 'error':
-        return currentTranslations.error
-      default:
-        return currentTranslations.disconnected
-    }
-  }
-
-  const currentIntegrations = [
-    {
-      name: currentTranslations.vectorworks,
-      description: currentTranslations.vectorworksDesc,
-      icon: '🏗️',
-      status: connectionStatus.vectorworks,
-      enabled: true,
-      keyField: 'vectorworks'
-    },
-    {
-      name: currentTranslations.n8n,
-      description: currentTranslations.n8nDesc,
-      icon: '⚡',
-      status: connectionStatus.n8n,
-      enabled: true,
-      keyField: 'n8n'
-    },
-    {
-      name: currentTranslations.hubspot,
-      description: currentTranslations.hubspotDesc,
-      icon: '👥',
-      status: connectionStatus.hubspot,
-      enabled: true,
-      keyField: 'hubspot'
-    },
-    {
-      name: currentTranslations.mailchimp,
-      description: currentTranslations.mailchimpDesc,
-      icon: '📧',
-      status: connectionStatus.mailchimp,
-      enabled: true,
-      keyField: 'mailchimp'
-    },
-    {
-      name: currentTranslations.openweather,
-      description: currentTranslations.openweatherDesc,
-      icon: '🌤️',
-      status: connectionStatus.openweather,
-      enabled: true,
-      keyField: 'openweather'
-    }
-  ]
-
-  const futureIntegrations = [
-    {
-      name: currentTranslations.photogrammetry,
-      description: currentTranslations.photogrammetryDesc,
-      icon: <Camera className="h-5 w-5" />,
-      category: 'AI/ML'
-    },
-    {
-      name: currentTranslations.unreal,
-      description: currentTranslations.unrealDesc,
-      icon: <Gamepad2 className="h-5 w-5" />,
-      category: 'Visualization'
-    }
-  ]
-
-  const connectedCount = Object.values(connectionStatus).filter(status => status === 'connected').length
+    window.alert(uiText.resetSuccess);
+  }, [uiText.resetSuccess]);
 
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl font-semibold text-gray-900">{currentTranslations.title}</h2>
-        <p className="text-gray-600">{currentTranslations.subtitle}</p>
+        <h2 className="text-xl font-semibold text-gray-900">{uiText.title}</h2>
+        <p className="text-gray-600">{uiText.subtitle}</p>
       </div>
 
-      {/* Integration Overview */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Globe className="h-5 w-5 text-blue-600" />
-            {currentTranslations.status}
+            {uiText.statusTitle}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="text-center">
-              <div className="text-3xl font-bold text-green-600">{connectedCount}</div>
-              <div className="text-sm text-gray-600">{currentTranslations.activeIntegrations}</div>
+              <div className="text-3xl font-bold text-green-600">{integrationsConnected}</div>
+              <div className="text-sm text-gray-600">{uiText.activeLabel}</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl font-bold text-orange-600">{currentIntegrations.length - connectedCount}</div>
-              <div className="text-sm text-gray-600">{currentTranslations.pendingSetup}</div>
+              <div className="text-3xl font-bold text-orange-600">{integrationList.length - integrationsConnected}</div>
+              <div className="text-sm text-gray-600">{uiText.pendingLabel}</div>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Current Integrations */}
       <div className="space-y-4">
-        {currentIntegrations.map((integration, index) => (
-          <Card key={index}>
+        {integrationList.map((integration) => (
+          <Card key={integration.key}>
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -430,82 +423,71 @@ const APISettings = () => {
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  {getStatusIcon(integration.status)}
-                  <span className={`text-sm font-medium ${getStatusColor(integration.status)}`}>
-                    {getStatusText(integration.status)}
+                  {statusIcon(connectionStatus[integration.key])}
+                  <span className={`text-sm font-medium ${statusClass(connectionStatus[integration.key])}`}>
+                    {statusLabel(connectionStatus[integration.key])}
                   </span>
                 </div>
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {/* API Key Input */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  {currentTranslations.apiKey}
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">{uiText.apiKeyLabel}</label>
                 <div className="flex gap-2">
                   <input
                     type="password"
-                    value={apiKeys[integration.keyField]}
-                    onChange={(e) => setApiKeys(prev => ({
-                      ...prev,
-                      [integration.keyField]: e.target.value
-                    }))}
-                    placeholder={currentTranslations.apiKeyPlaceholder}
+                    value={apiKeys[integration.key]}
+                    onChange={handleKeyChange(integration.key)}
+                    placeholder={uiText.apiKeyPlaceholder}
                     className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
-                  <button
-                    onClick={() => testConnection(integration.keyField)}
-                    disabled={connectionStatus[integration.keyField] === 'testing'}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  <Button
+                    onClick={() => testConnection(integration.key)}
+                    disabled={connectionStatus[integration.key] === 'testing'}
+                    className="px-4"
                   >
-                    {currentTranslations.testConnection}
-                  </button>
+                    {uiText.testConnection}
+                  </Button>
                 </div>
               </div>
 
-              {/* Endpoint Configuration for services that need it */}
-              {(integration.keyField === 'n8n' || integration.keyField === 'vectorworks') && (
+              {integration.supportsEndpoint && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    {currentTranslations.endpoint}
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">{uiText.endpointLabel}</label>
                   <input
                     type="url"
-                    value={apiEndpoints[integration.keyField] || ''}
-                    onChange={(e) => setApiEndpoints(prev => ({
-                      ...prev,
-                      [integration.keyField]: e.target.value
-                    }))}
-                    placeholder={currentTranslations.endpointPlaceholder}
+                    value={apiEndpoints[integration.key] || ''}
+                    onChange={handleEndpointChange(integration.key)}
+                    placeholder={uiText.endpointPlaceholder}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
               )}
 
-              {/* Documentation Link */}
               <div className="flex items-center gap-2 text-sm text-blue-600">
                 <ExternalLink className="h-4 w-4" />
-                <a href="#" className="hover:underline">{currentTranslations.documentation}</a>
+                <a href="#" className="hover:underline">{uiText.documentation}</a>
               </div>
             </CardContent>
           </Card>
         ))}
       </div>
 
-      {/* Future Integrations */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Zap className="h-5 w-5 text-orange-600" />
-            {currentTranslations.futureSection}
+            {uiText.futureTitle}
           </CardTitle>
-          <p className="text-sm text-gray-600">{currentTranslations.futureDesc}</p>
+          <p className="text-sm text-gray-600">{uiText.futureDescription}</p>
         </CardHeader>
         <CardContent>
           <div className="grid gap-4">
-            {futureIntegrations.map((integration, index) => (
-              <div key={index} className="flex items-center justify-between p-4 border border-gray-200 bg-gray-50 rounded-lg">
+            {futureIntegrationList.map((integration) => (
+              <div
+                key={integration.key}
+                className="flex items-center justify-between p-4 border border-gray-200 bg-gray-50 rounded-lg"
+              >
                 <div className="flex items-center gap-3">
                   <div className="text-gray-500">{integration.icon}</div>
                   <div>
@@ -518,7 +500,7 @@ const APISettings = () => {
                     {integration.category}
                   </div>
                   <div className="px-3 py-1 bg-orange-100 text-orange-600 text-sm font-medium rounded-full">
-                    {currentTranslations.comingSoon}
+                    {uiText.comingSoon}
                   </div>
                 </div>
               </div>
@@ -527,23 +509,16 @@ const APISettings = () => {
         </CardContent>
       </Card>
 
-      {/* Action Buttons */}
       <div className="flex gap-4">
-        <button
-          onClick={saveSettings}
-          className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors font-medium"
-        >
-          {currentTranslations.saveSettings}
-        </button>
-        <button
-          onClick={resetDefaults}
-          className="px-6 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors font-medium"
-        >
-          {currentTranslations.resetDefaults}
-        </button>
+        <Button onClick={saveSettings} className="px-6">
+          {uiText.save}
+        </Button>
+        <Button onClick={resetDefaults} variant="outline" className="px-6">
+          {uiText.reset}
+        </Button>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default APISettings
+export default APISettings;

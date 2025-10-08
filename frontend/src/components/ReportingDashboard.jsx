@@ -1,5 +1,5 @@
 import { useLanguage } from "../i18n/LanguageProvider";
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -28,94 +28,107 @@ import {
   FileText
 } from 'lucide-react';
 
+const translationDefaults = {
+  title: 'Advanced Reporting Dashboard',
+  subtitle: 'Comprehensive business intelligence and analytics',
+  overview: 'Overview',
+  plantAnalytics: 'Plant Analytics',
+  projectPerformance: 'Project Performance',
+  clientInsights: 'Client Insights',
+  financialReports: 'Financial Reports',
+  refresh: 'Refresh Data',
+  export: 'Export Report',
+  loading: 'Loading analytics...',
+  error: 'Error loading data',
+  noData: 'No data available for the selected period',
+  mostUsedPlants: 'Most Used Plants',
+  categoryDistribution: 'Plant Category Distribution',
+  projectStatusDistribution: 'Project Status Distribution',
+  budgetAnalysis: 'Budget Analysis',
+  revenueTracking: 'Revenue Tracking',
+  clientPerformance: 'Top Clients',
+  projectTimeline: 'Project Timeline Analysis',
+  month: 'Month',
+  projects: 'Projects',
+  revenue: 'Revenue',
+  budget: 'Budget',
+  count: 'Count',
+  totalBudget: 'Total Budget',
+  avgBudget: 'Average Budget',
+  projectCount: 'Total Projects',
+  topClients: 'Top Clients by Project Count',
+  activeClients: 'Active Clients',
+  durationDays: 'Duration (days)',
+  totalValue: 'Total Value',
+  projectTypeProfitability: 'Project Type Profitability'
+};
+
 const ReportingDashboard = () => {
-  const [__analyticsData, set_analyticsData] = useState({});
-  const [__loading, set_loading] = useState(false);
-  const [__dateRange, set_dateRange] = useState({ 
-    start: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], 
-    end: new Date().toISOString().split('T')[0] 
-  });
-
-  const __translations = {
-    en: {
-      title: 'Advanced Reporting Dashboard',
-      subtitle: 'Comprehensive business intelligence and analytics',
-      overview: 'Overview',
-      plantAnalytics: 'Plant Analytics',
-      projectPerformance: 'Project Performance',
-      clientInsights: 'Client Insights',
-      financialReports: 'Financial Reports',
-      refresh: 'Refresh Data',
-      export: 'Export Report',
-      loading: 'Loading analytics...',
-      error: 'Error loading data',
-      noData: 'No data available for the selected period',
-      mostUsedPlants: 'Most Used Plants',
-      categoryDistribution: 'Plant Category Distribution',
-      projectStatusDistribution: 'Project Status Distribution',
-      budgetAnalysis: 'Budget Analysis',
-      revenueTracking: 'Revenue Tracking',
-      clientPerformance: 'Top Clients',
-      projectTimeline: 'Project Timeline Analysis',
-      month: 'Month',
-      projects: 'Projects',
-      revenue: 'Revenue',
-      budget: 'Budget',
-      count: 'Count',
-      totalBudget: 'Total Budget',
-      avgBudget: 'Average Budget',
-      projectCount: 'Total Projects',
-      topClients: 'Top Clients by Project Count'
-    },
-    nl: {
-      title: 'Geavanceerd Rapportage Dashboard',
-      subtitle: 'Uitgebreide business intelligence en analytics',
-      overview: 'Overzicht',
-      plantAnalytics: 'Plant Analytics',
-      projectPerformance: 'Project Prestaties',
-      clientInsights: 'Klant Inzichten',
-      financialReports: 'Financiële Rapporten',
-      refresh: 'Vernieuw Data',
-      export: 'Export Rapport',
-      loading: 'Analytics laden...',
-      error: 'Fout bij laden data',
-      noData: 'Geen data beschikbaar voor de geselecteerde periode',
-      mostUsedPlants: 'Meest Gebruikte Planten',
-      categoryDistribution: 'Plant Categorie Verdeling',
-      projectStatusDistribution: 'Project Status Verdeling',
-      budgetAnalysis: 'Budget Analyse',
-      revenueTracking: 'Omzet Tracking',
-      clientPerformance: 'Top Klanten',
-      projectTimeline: 'Project Tijdlijn Analyse',
-      month: 'Maand',
-      projects: 'Projecten',
-      revenue: 'Omzet',
-      budget: 'Budget',
-      count: 'Aantal',
-      totalBudget: 'Totaal Budget',
-      avgBudget: 'Gemiddeld Budget',
-      projectCount: 'Totaal Projecten',
-      topClients: 'Top Klanten op Project Aantal'
-    }
-  };
-
   const { t } = useLanguage();
+
+  const translate = useCallback(
+    (key) => t(`reportingDashboard.${key}`, translationDefaults[key] ?? key),
+    [t]
+  );
+
+  const uiText = useMemo(
+    () => ({
+      title: translate('title'),
+      subtitle: translate('subtitle'),
+      overview: translate('overview'),
+      plantAnalytics: translate('plantAnalytics'),
+      projectPerformance: translate('projectPerformance'),
+      clientInsights: translate('clientInsights'),
+      financialReports: translate('financialReports'),
+      refresh: translate('refresh'),
+      export: translate('export'),
+      loading: translate('loading'),
+      error: translate('error'),
+      noData: translate('noData'),
+      mostUsedPlants: translate('mostUsedPlants'),
+      categoryDistribution: translate('categoryDistribution'),
+      projectStatusDistribution: translate('projectStatusDistribution'),
+      budgetAnalysis: translate('budgetAnalysis'),
+      revenueTracking: translate('revenueTracking'),
+      clientPerformance: translate('clientPerformance'),
+      projectTimeline: translate('projectTimeline'),
+      month: translate('month'),
+      projects: translate('projects'),
+      revenue: translate('revenue'),
+      budget: translate('budget'),
+      count: translate('count'),
+      totalBudget: translate('totalBudget'),
+      avgBudget: translate('avgBudget'),
+      projectCount: translate('projectCount'),
+      topClients: translate('topClients'),
+      activeClients: translate('activeClients'),
+      durationDays: translate('durationDays'),
+      totalValue: translate('totalValue'),
+      projectTypeProfitability: translate('projectTypeProfitability')
+    }),
+    [translate]
+  );
+
+  const [analyticsData, setAnalyticsData] = useState({});
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [dateRange, setDateRange] = useState({
+    start: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+    end: new Date().toISOString().split('T')[0]
+  });
 
   // Color palette for charts
   const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff7300', '#00ff00', '#ff00ff'];
 
-  useEffect(() => {
-    loadAnalyticsData();
-  }, [dateRange]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  const loadAnalyticsData = async () => {
+  const loadAnalyticsData = useCallback(async () => {
     setLoading(true);
+    setError('');
     try {
       const [plantUsage, projectPerformance, clientInsights, financial] = await Promise.all([
-        fetch(`/api/analytics/plant-usage?start_date=${dateRange.start}&end_date=${dateRange.end}`).then(r => r.json()),
-        fetch('/api/analytics/project-performance').then(r => r.json()),
-        fetch('/api/analytics/client-insights').then(r => r.json()),
-        fetch(`/api/analytics/financial?start_date=${dateRange.start}&end_date=${dateRange.end}`).then(r => r.json())
+        fetch(`/api/analytics/plant-usage?start_date=${dateRange.start}&end_date=${dateRange.end}`).then((response) => response.json()),
+        fetch('/api/analytics/project-performance').then((response) => response.json()),
+        fetch('/api/analytics/client-insights').then((response) => response.json()),
+        fetch(`/api/analytics/financial?start_date=${dateRange.start}&end_date=${dateRange.end}`).then((response) => response.json())
       ]);
 
       setAnalyticsData({
@@ -124,13 +137,18 @@ const ReportingDashboard = () => {
         clientInsights,
         financial
       });
-    } catch (error) {
-      console.error('Error loading analytics:', error);
-      setAnalyticsData({ error: error.message });
+    } catch (err) {
+      console.error('Error loading analytics:', err);
+      setAnalyticsData({});
+      setError(err?.message ?? uiText.error);
     } finally {
       setLoading(false);
     }
-  };
+  }, [dateRange.end, dateRange.start, uiText.error]);
+
+  useEffect(() => {
+    loadAnalyticsData();
+  }, [loadAnalyticsData]);
 
   const exportToPDF = async () => {
     try {
@@ -158,7 +176,7 @@ const ReportingDashboard = () => {
     return (
       <div className="flex items-center justify-center h-64">
         <RefreshCw className="h-8 w-8 animate-spin" />
-        <span className="ml-2">{t.loading}</span>
+        <span className="ml-2">{uiText.loading}</span>
       </div>
     );
   }
@@ -168,8 +186,8 @@ const ReportingDashboard = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">{t.title}</h1>
-          <p className="text-gray-600">{t.subtitle}</p>
+          <h1 className="text-2xl font-bold text-gray-900">{uiText.title}</h1>
+          <p className="text-gray-600">{uiText.subtitle}</p>
         </div>
         <div className="flex space-x-2">
           <input
@@ -186,37 +204,43 @@ const ReportingDashboard = () => {
           />
           <Button onClick={loadAnalyticsData} variant="outline">
             <RefreshCw className="h-4 w-4 mr-2" />
-            {t.refresh}
+            {uiText.refresh}
           </Button>
           <Button onClick={exportToPDF}>
             <Download className="h-4 w-4 mr-2" />
-            {t.export}
+            {uiText.export}
           </Button>
         </div>
       </div>
+
+      {error ? (
+        <div className="rounded-md border border-red-200 bg-red-50 p-4 text-red-800">
+          {error || uiText.error}
+        </div>
+      ) : null}
 
       {/* Dashboard Tabs */}
       <Tabs defaultValue="overview" className="space-y-6">
         <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="overview" className="flex items-center space-x-2">
             <BarChart3 className="h-4 w-4" />
-            <span>{t.overview}</span>
+            <span>{uiText.overview}</span>
           </TabsTrigger>
           <TabsTrigger value="plants" className="flex items-center space-x-2">
             <TrendingUp className="h-4 w-4" />
-            <span>{t.plantAnalytics}</span>
+            <span>{uiText.plantAnalytics}</span>
           </TabsTrigger>
           <TabsTrigger value="projects" className="flex items-center space-x-2">
             <FileText className="h-4 w-4" />
-            <span>{t.projectPerformance}</span>
+            <span>{uiText.projectPerformance}</span>
           </TabsTrigger>
           <TabsTrigger value="clients" className="flex items-center space-x-2">
             <Users className="h-4 w-4" />
-            <span>{t.clientInsights}</span>
+            <span>{uiText.clientInsights}</span>
           </TabsTrigger>
           <TabsTrigger value="financial" className="flex items-center space-x-2">
             <DollarSign className="h-4 w-4" />
-            <span>{t.financialReports}</span>
+            <span>{uiText.financialReports}</span>
           </TabsTrigger>
         </TabsList>
 
@@ -225,18 +249,18 @@ const ReportingDashboard = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">{t.totalBudget}</CardTitle>
+                <CardTitle className="text-sm font-medium">{uiText.totalBudget}</CardTitle>
                 <DollarSign className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
-                  €{analyticsData.financial?.revenue_summary?.total_revenue?.toLocaleString() || '0'}
+                  €{Number(analyticsData.financial?.revenue_summary?.total_revenue ?? 0).toLocaleString()}
                 </div>
               </CardContent>
             </Card>
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">{t.projectCount}</CardTitle>
+                <CardTitle className="text-sm font-medium">{uiText.projectCount}</CardTitle>
                 <FileText className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
@@ -247,7 +271,7 @@ const ReportingDashboard = () => {
             </Card>
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">{t.avgBudget}</CardTitle>
+                <CardTitle className="text-sm font-medium">{uiText.avgBudget}</CardTitle>
                 <TrendingUp className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
@@ -258,7 +282,7 @@ const ReportingDashboard = () => {
             </Card>
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Active Clients</CardTitle>
+                <CardTitle className="text-sm font-medium">{uiText.activeClients}</CardTitle>
                 <Users className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
@@ -273,7 +297,7 @@ const ReportingDashboard = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Card>
               <CardHeader>
-                <CardTitle>{t.projectStatusDistribution}</CardTitle>
+                <CardTitle>{uiText.projectStatusDistribution}</CardTitle>
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={300}>
@@ -303,7 +327,7 @@ const ReportingDashboard = () => {
 
             <Card>
               <CardHeader>
-                <CardTitle>{t.revenueTracking}</CardTitle>
+                <CardTitle>{uiText.revenueTracking}</CardTitle>
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={300}>
@@ -311,7 +335,7 @@ const ReportingDashboard = () => {
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="month" />
                     <YAxis />
-                    <Tooltip formatter={(value) => [`€${value?.toLocaleString()}`, t.revenue]} />
+                    <Tooltip formatter={(value) => [`€${Number(value ?? 0).toLocaleString()}`, uiText.revenue]} />
                     <Legend />
                     <Line type="monotone" dataKey="revenue" stroke="#8884d8" strokeWidth={2} />
                   </LineChart>
@@ -326,7 +350,7 @@ const ReportingDashboard = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Card>
               <CardHeader>
-                <CardTitle>{t.mostUsedPlants}</CardTitle>
+                <CardTitle>{uiText.mostUsedPlants}</CardTitle>
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={300}>
@@ -336,7 +360,7 @@ const ReportingDashboard = () => {
                     <YAxis />
                     <Tooltip />
                     <Legend />
-                    <Bar dataKey="project_count" fill="#82ca9d" name={t.projects} />
+                    <Bar dataKey="project_count" fill="#82ca9d" name={uiText.projects} />
                   </BarChart>
                 </ResponsiveContainer>
               </CardContent>
@@ -344,7 +368,7 @@ const ReportingDashboard = () => {
 
             <Card>
               <CardHeader>
-                <CardTitle>{t.categoryDistribution}</CardTitle>
+                <CardTitle>{uiText.categoryDistribution}</CardTitle>
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={300}>
@@ -376,17 +400,17 @@ const ReportingDashboard = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Card>
               <CardHeader>
-                <CardTitle>{t.budgetAnalysis}</CardTitle>
+                <CardTitle>{uiText.budgetAnalysis}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <p className="text-sm text-gray-600">{t.totalBudget}</p>
+                      <p className="text-sm text-gray-600">{uiText.totalBudget}</p>
                       <p className="text-xl font-bold">€{analyticsData.projectPerformance?.budget_analysis?.total_budget?.toLocaleString() || '0'}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-600">{t.avgBudget}</p>
+                      <p className="text-sm text-gray-600">{uiText.avgBudget}</p>
                       <p className="text-xl font-bold">€{Math.round(analyticsData.projectPerformance?.budget_analysis?.avg_budget || 0).toLocaleString()}</p>
                     </div>
                   </div>
@@ -396,7 +420,7 @@ const ReportingDashboard = () => {
 
             <Card>
               <CardHeader>
-                <CardTitle>{t.projectTimeline}</CardTitle>
+                <CardTitle>{uiText.projectTimeline}</CardTitle>
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={300}>
@@ -406,7 +430,7 @@ const ReportingDashboard = () => {
                     <YAxis />
                     <Tooltip />
                     <Legend />
-                    <Bar dataKey="duration_days" fill="#ff7300" name="Duration (days)" />
+                    <Bar dataKey="duration_days" fill="#ff7300" name={uiText.durationDays} />
                   </BarChart>
                 </ResponsiveContainer>
               </CardContent>
@@ -418,7 +442,7 @@ const ReportingDashboard = () => {
         <TabsContent value="clients" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>{t.topClients}</CardTitle>
+              <CardTitle>{uiText.topClients}</CardTitle>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={400}>
@@ -427,12 +451,12 @@ const ReportingDashboard = () => {
                   <XAxis dataKey="name" angle={-45} textAnchor="end" height={100} />
                   <YAxis />
                   <Tooltip formatter={(value, name) => [
-                    name === 'project_count' ? value : `€${value?.toLocaleString()}`, 
-                    name === 'project_count' ? t.projects : 'Total Value'
+                    name === 'project_count' ? value : `€${Number(value ?? 0).toLocaleString()}`, 
+                    name === 'project_count' ? uiText.projects : uiText.totalValue
                   ]} />
                   <Legend />
-                  <Bar dataKey="project_count" fill="#8884d8" name={t.projects} />
-                  <Bar dataKey="total_value" fill="#82ca9d" name="Total Value" />
+                  <Bar dataKey="project_count" fill="#8884d8" name={uiText.projects} />
+                  <Bar dataKey="total_value" fill="#82ca9d" name={uiText.totalValue} />
                 </BarChart>
               </ResponsiveContainer>
             </CardContent>
@@ -444,7 +468,7 @@ const ReportingDashboard = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Card>
               <CardHeader>
-                <CardTitle>{t.revenueTracking}</CardTitle>
+                <CardTitle>{uiText.revenueTracking}</CardTitle>
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={300}>
@@ -452,7 +476,7 @@ const ReportingDashboard = () => {
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="month" />
                     <YAxis />
-                    <Tooltip formatter={(value) => [`€${value?.toLocaleString()}`, t.revenue]} />
+                    <Tooltip formatter={(value) => [`€${Number(value ?? 0).toLocaleString()}`, uiText.revenue]} />
                     <Legend />
                     <Line type="monotone" dataKey="revenue" stroke="#8884d8" strokeWidth={2} />
                   </LineChart>
@@ -462,7 +486,7 @@ const ReportingDashboard = () => {
 
             <Card>
               <CardHeader>
-                <CardTitle>Project Type Profitability</CardTitle>
+                <CardTitle>{uiText.projectTypeProfitability}</CardTitle>
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={300}>
@@ -470,9 +494,9 @@ const ReportingDashboard = () => {
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="project_type" />
                     <YAxis />
-                    <Tooltip formatter={(value) => [`€${value?.toLocaleString()}`, t.revenue]} />
+                    <Tooltip formatter={(value) => [`€${Number(value ?? 0).toLocaleString()}`, uiText.revenue]} />
                     <Legend />
-                    <Bar dataKey="revenue" fill="#82ca9d" name={t.revenue} />
+                    <Bar dataKey="revenue" fill="#82ca9d" name={uiText.revenue} />
                   </BarChart>
                 </ResponsiveContainer>
               </CardContent>

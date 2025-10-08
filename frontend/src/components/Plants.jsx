@@ -27,10 +27,7 @@ const Plants = () => {
   const [suppliers, setSuppliers] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
-  const [retryCount, setRetryCount] = useState(0)
-  const [isRetrying, setIsRetrying] = useState(false)
   const [submitLoading, setSubmitLoading] = useState(false)
-  const [deleteLoading, setDeleteLoading] = useState(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [showAddModal, setShowAddModal] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
@@ -128,15 +125,10 @@ const Plants = () => {
   }
 
   // Fetch plants data with enhanced error handling
-  const fetchPlants = useCallback(async (isRetry = false) => {
+  const fetchPlants = useCallback(async () => {
     try {
       setLoading(true)
-      if (!isRetry) {
-        setError(null)
-        setRetryCount(0)
-      } else {
-        setIsRetrying(true)
-      }
+      setError(null)
 
       const params = {}
       if (searchTerm) {
@@ -152,7 +144,6 @@ const Plants = () => {
       setPlants(plantsArray)
       setTotalPlants(data?.total || data?.pagination?.total || plantsArray.length)
       setError(null)
-      setRetryCount(0)
     } catch (err) {
       const errorMessage = handleApiError(err, 'fetching plants')
       setError(errorMessage)
@@ -160,14 +151,8 @@ const Plants = () => {
       setPlants([])
     } finally {
       setLoading(false)
-      setIsRetrying(false)
     }
   }, [searchTerm])
-
-  const handleRetry = () => {
-    setRetryCount(prev => prev + 1)
-    fetchPlants(true)
-  }
 
   // Fetch suppliers for dropdown
   const fetchSuppliers = async () => {
@@ -348,7 +333,7 @@ const Plants = () => {
   }
 
   // Plant Form Component - Memoized to prevent unnecessary re-renders
-  const PlantForm = React.memo(({ isEdit = false, onSubmit, onCancel }) => (
+  const PlantFormContent = ({ isEdit = false, onSubmit, onCancel }) => (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
         <div className="flex justify-between items-center mb-4">
@@ -742,7 +727,11 @@ const Plants = () => {
         </form>
       </div>
     </div>
-  ))
+  )
+
+  PlantFormContent.displayName = 'PlantForm'
+
+  const PlantForm = React.memo(PlantFormContent)
 
   // Loading component
   const LoadingSpinner = () => (

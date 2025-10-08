@@ -4,7 +4,7 @@ import * as RechartsPrimitive from "recharts"
 import { cn } from "@/lib/utils"
 
 // Format: { THEME_NAME: CSS_SELECTOR }
-const __THEMES = {
+const THEMES = {
   light: "",
   dark: ".dark"
 }
@@ -63,7 +63,7 @@ const ChartStyle = ({
   return (
     <style
       dangerouslySetInnerHTML={{
-        __html: Object.entries(THEMES)
+  __html: Object.entries(THEMES)
           .map(([theme, prefix]) => `
 ${prefix} [data-chart=${id}] {
 ${colorConfig

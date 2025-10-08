@@ -6,33 +6,30 @@ import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Alert, AlertDescription } from './ui/alert';
 import { Loader2, Eye, EyeOff, Mail, Lock, User, AlertCircle, CheckCircle, LogIn } from 'lucide-react';
-import { useLanguage } from '../i18n/LanguageProvider';
 
 const Login = ({ onLogin }) => {
-  const [__formData, set_formData] = useState({
+  const [formData, setFormData] = useState({
     username: '',
     password: ''
   });
-  const [__showPassword, set_showPassword] = useState(false);
-  const [__isLoading, set_isLoading] = useState(false);
-  const [__error, set_error] = useState('');
-  const [__errorType, set_errorType] = useState(''); // 'network', 'auth', 'validation', 'server'
-  const [__retryCount, set_retryCount] = useState(0);
-  const [__success, set_success] = useState('');
-  const [__showForgotPassword, set_showForgotPassword] = useState(false);
-  const [__forgotPasswordEmail, set_forgotPasswordEmail] = useState('');
-  const [__forgotPasswordLoading, set_forgotPasswordLoading] = useState(false);
-  const [__forgotPasswordSuccess, set_forgotPasswordSuccess] = useState(false);
-  const [__isRetrying, set_isRetrying] = useState(false);
-  const [__focusedField, set_focusedField] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [errorType, setErrorType] = useState(''); // 'network', 'auth', 'validation', 'server'
+  const [retryCount, setRetryCount] = useState(0);
+  const [success, setSuccess] = useState('');
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [forgotPasswordEmail, setForgotPasswordEmail] = useState('');
+  const [forgotPasswordLoading, setForgotPasswordLoading] = useState(false);
+  const [forgotPasswordSuccess, setForgotPasswordSuccess] = useState(false);
+  const [isRetrying, setIsRetrying] = useState(false);
   
   const navigate = useNavigate();
   const location = useLocation();
-  const { t: _t } = useLanguage();
 
   // Error analytics logging
   const logError = (errorType, errorMessage, context = {}) => {
-    const __errorData = {
+    const errorData = {
       timestamp: new Date().toISOString(),
       type: errorType,
       message: errorMessage,
@@ -147,7 +144,7 @@ const Login = ({ onLogin }) => {
     // Small delay for better UX
     await new Promise(resolve => setTimeout(resolve, 500));
     
-    const __syntheticEvent = {
+    const syntheticEvent = {
       preventDefault: () => {},
       target: { checkValidity: () => true }
     };
@@ -445,8 +442,6 @@ const Login = ({ onLogin }) => {
                   required
                   value={formData.username}
                   onChange={handleInputChange}
-                  onFocus={() => setFocusedField('username')}
-                  onBlur={() => setFocusedField('')}
                   className={`block w-full pl-10 pr-3 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:border-transparent transition-colors ${
                     errorType === 'validation' || errorType === 'auth' 
                       ? 'border-red-300 focus:ring-red-500' 
@@ -478,8 +473,6 @@ const Login = ({ onLogin }) => {
                   required
                   value={formData.password}
                   onChange={handleInputChange}
-                  onFocus={() => setFocusedField('password')}
-                  onBlur={() => setFocusedField('')}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' && formData.username && formData.password) {
                       handleSubmit(e);

@@ -32,12 +32,12 @@ import './enhanced_sidebar_styles.css'
 // Main App component with authentication and routing
 function AppContent() {
   const { t } = useLanguage()
-  const [__sidebarOpen, set_sidebarOpen] = useState(false)
-  const [__user, set_user] = useState(null)
-  const [__authLoading, set_authLoading] = useState(true)
-  const [__loginError, set_loginError] = useState('')
+  const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [user, setUser] = useState(null)
+  const [authLoading, setAuthLoading] = useState(true)
+  const [loginError, setLoginError] = useState('')
 
-  const toggleSidebar = () => setSidebarOpen(!sidebarOpen)
+  const toggleSidebar = () => setSidebarOpen((prev) => !prev)
   const closeSidebar = () => setSidebarOpen(false)
 
   // Check authentication status on app load
@@ -122,7 +122,7 @@ function AppContent() {
   return (
     <ErrorBoundary>
       <Router>
-        <AuthenticatedApp 
+        <AuthenticatedApp
           user={user}
           authLoading={authLoading}
           loginError={loginError}

@@ -15,7 +15,7 @@ const PhotoManager = ({
   showTabs = true
 }) => {
   const { t } = useLanguage();
-  const [__refreshKey, set_refreshKey] = useState(0);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   const handleUploadSuccess = () => {
     // Trigger refresh of photo gallery

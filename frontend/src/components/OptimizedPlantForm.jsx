@@ -2,11 +2,11 @@
 // Optimized Input Handler Fix for Plants Component
 // This fix addresses potential DOM re-rendering issues causing focus loss
 
-import React, { useState, useCallback, useMemo, useRef } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 
 // Fixed input handler with proper memoization
 const useOptimizedFormHandler = (initialFormData) => {
-  const [__formData, set_formData] = useState(initialFormData);
+  const [formData, setFormData] = useState(initialFormData);
   const formRef = useRef(null);
   
   // Memoized input change handler to prevent re-creation
@@ -56,10 +56,11 @@ const MemoizedInput = React.memo(({
     />
   );
 });
+MemoizedInput.displayName = 'MemoizedInput';
 
 // Fixed Form Component with proper memoization
 const OptimizedPlantForm = React.memo(({ 
-  isEdit = false, 
+  isEdit: _isEdit = false, 
   onSubmit, 
   onCancel, 
   initialData = {} 
@@ -120,5 +121,6 @@ const OptimizedPlantForm = React.memo(({
     </div>
   );
 });
+OptimizedPlantForm.displayName = 'OptimizedPlantForm';
 
 export { useOptimizedFormHandler, MemoizedInput, OptimizedPlantForm };

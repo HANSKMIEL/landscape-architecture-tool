@@ -9,7 +9,7 @@ const Header = ({
   onLogout 
 }) => {
   const { t } = useLanguage();
-  const [__showUserMenu, set_showUserMenu] = useState(false);
+  const [showUserMenu, setShowUserMenu] = useState(false);
   const userMenuRef = useRef(null);
 
   // Close user menu when clicking outside
@@ -29,12 +29,12 @@ const Header = ({
   };
 
   const getRoleColor = (role) => {
-    const __colors = {
+    const roleColors = {
       admin: 'bg-red-600',
       employee: 'bg-blue-600',
       client: 'bg-green-600'
     };
-    return colors[role] || 'bg-gray-600';
+    return roleColors[role] || 'bg-gray-600';
   };
 
   return (

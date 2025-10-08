@@ -27,12 +27,12 @@ const PhotoGallery = ({
   columns = 4,
   onPhotoUpdate = () => {}
 }) => {
-  const [__photos, set_photos] = useState([]);
-  const [__loading, set_loading] = useState(true);
+  const [photos, setPhotos] = useState([]);
+  const [loading, setLoading] = useState(true);
   // Note: useToast hook would need to be imported from your toast library
   // const { toast } = useToast();
 
-  const __categoryLabels = {
+  const categoryLabels = {
     plant: 'Plant',
     material: 'Materiaal',
     property: 'Eigendom',
@@ -147,7 +147,7 @@ const PhotoGallery = ({
         <CardContent className="p-6">
           <div className="flex items-center justify-center">
             <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-            <span className="ml-2">Foto's laden...</span>
+            <span className="ml-2">Foto’s laden...</span>
           </div>
         </CardContent>
       </Card>
@@ -160,7 +160,7 @@ const PhotoGallery = ({
         <h3 className="text-lg font-semibold">{title}</h3>
         {photos.length > 0 && (
           <span className="text-sm text-gray-500">
-            {photos.length} foto{photos.length > 1 ? "'s" : ''}
+            {photos.length} foto{photos.length > 1 ? '’s' : ''}
           </span>
         )}
       </div>
@@ -169,7 +169,7 @@ const PhotoGallery = ({
         <Card>
           <CardContent className="p-6 text-center">
             <Camera className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-            <p className="text-gray-500 mb-2">Nog geen foto's geüpload</p>
+            <p className="text-gray-500 mb-2">Nog geen foto’s geüpload</p>
             {showUpload && (
               <p className="text-sm text-gray-400">
                 Upload je eerste foto om te beginnen

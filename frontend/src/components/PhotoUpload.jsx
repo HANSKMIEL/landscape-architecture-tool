@@ -1,6 +1,8 @@
 import React, { useState, useCallback } from 'react';
 import { Upload, X, Camera, Image, FileImage, MessageSquare } from 'lucide-react';
+import { toast } from 'sonner';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
+import { Button } from './ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Input } from './ui/input';
 import { Textarea } from './ui/textarea';
@@ -12,15 +14,14 @@ const PhotoUpload = ({
   onUploadSuccess = () => {},
   allowedCategories = ['plant', 'material', 'property', 'project', 'example', 'inspiration', 'reference']
 }) => {
-  const [__isDragging, set_isDragging] = useState(false);
-  const [__isUploading, set_isUploading] = useState(false);
-  const [__selectedFiles, set_selectedFiles] = useState([]);
-  const [__uploadCategory, set_uploadCategory] = useState(category);
-  const [__uploadTitle, set_uploadTitle] = useState('');
-  const [__uploadDescription, set_uploadDescription] = useState('');
-  const { toast } = useToast();
+  const [isDragging, setIsDragging] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [selectedFiles, setSelectedFiles] = useState([]);
+  const [uploadCategory, setUploadCategory] = useState(category);
+  const [uploadTitle, setUploadTitle] = useState('');
+  const [uploadDescription, setUploadDescription] = useState('');
 
-  const __categoryIcons = {
+  const categoryIcons = {
     plant: <Image className="w-4 h-4" />,
     material: <FileImage className="w-4 h-4" />,
     property: <Camera className="w-4 h-4" />,
@@ -30,7 +31,7 @@ const PhotoUpload = ({
     reference: <FileImage className="w-4 h-4" />
   };
 
-  const __categoryLabels = {
+  const categoryLabels = {
     plant: 'Plant Foto',
     material: 'Materiaal Foto',
     property: 'Eigendom Foto',
@@ -64,9 +65,9 @@ const PhotoUpload = ({
         variant: "destructive"
       });
     }
-    
+
     setSelectedFiles(prev => [...prev, ...imageFiles]);
-  }, [toast]);
+  }, []);
 
   const handleFileSelect = (e) => {
     const files = Array.from(e.target.files);
@@ -126,7 +127,7 @@ const PhotoUpload = ({
       if (successCount > 0) {
         toast({
           title: "Upload voltooid",
-          description: `${successCount} foto${successCount > 1 ? "'s" : ''} succesvol geüpload${errorCount > 0 ? `, ${errorCount} mislukt` : ''}.`
+          description: `${successCount} foto${successCount > 1 ? '’s' : ''} succesvol geüpload${errorCount > 0 ? `, ${errorCount} mislukt` : ''}.`
         });
         setSelectedFiles([]);
         setUploadTitle('');
@@ -135,7 +136,7 @@ const PhotoUpload = ({
       } else {
         toast({
           title: "Upload mislukt",
-          description: "Geen foto's konden worden geüpload.",
+          description: "Geen foto’s konden worden geüpload.",
           variant: "destructive"
         });
       }
@@ -222,7 +223,7 @@ const PhotoUpload = ({
         >
           <Upload className="mx-auto h-12 w-12 text-gray-400 mb-4" />
           <p className="text-lg font-medium text-gray-700 mb-2">
-            Sleep foto's hierheen of klik om te selecteren
+            Sleep foto’s hierheen of klik om te selecteren
           </p>
           <p className="text-sm text-gray-500 mb-4">
             PNG, JPG, JPEG, GIF, WEBP tot 10MB
@@ -285,7 +286,7 @@ const PhotoUpload = ({
             ) : (
               <>
                 <Upload className="w-4 h-4 mr-2" />
-                {selectedFiles.length} foto{selectedFiles.length > 1 ? "'s" : ''} uploaden
+                {selectedFiles.length} foto{selectedFiles.length > 1 ? '’s' : ''} uploaden
               </>
             )}
           </Button>

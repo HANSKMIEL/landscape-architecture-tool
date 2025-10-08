@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react'
+import React, { useState, useRef, useEffect, useCallback } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input as _Input } from '@/components/ui/input'
@@ -28,27 +28,119 @@ import ApiService from '../services/api'
 
 const AIAssistant = () => {
   const { t, language } = useLanguage()
-  const [__activeTab, set_activeTab] = useState('chat')
-  const [__messages, set_messages] = useState([])
-  const [__inputMessage, set_inputMessage] = useState('')
-  const [__isLoading, set_isLoading] = useState(false)
-  const [__suggestions, set_suggestions] = useState([])
-  const [__insights, set_insights] = useState([])
-  const [__plantRecommendations, set_plantRecommendations] = useState([])
+  const [activeTab, setActiveTab] = useState('chat')
+  const [messages, setMessages] = useState([])
+  const [inputMessage, setInputMessage] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
+  const [insights, setInsights] = useState([])
+  const [plantRecommendations, setPlantRecommendations] = useState([])
   const messagesEndRef = useRef(null)
 
   // Scroll to bottom of messages
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
-  }
+  const scrollToBottom = useCallback(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [])
 
   useEffect(() => {
     scrollToBottom()
-  }, [messages])
+  }, [messages, scrollToBottom])
+
+  const generateInsights = useCallback(async () => {
+    try {
+      const stats = await ApiService.getDashboardStats()
+
+      const insightPrompts = [
+        {
+          type: 'performance',
+          icon: TrendingUp,
+          title: language === 'nl' ? 'Prestatie Analyse' : 'Performance Analysis',
+          prompt: `Based on ${stats.total_projects} projects and ${stats.total_clients} clients, what are key performance insights?`,
+        },
+        {
+          type: 'growth',
+          icon: BarChart3,
+          title: language === 'nl' ? 'Groei Mogelijkheden' : 'Growth Opportunities',
+          prompt: 'With current project portfolio, what growth opportunities exist?',
+        },
+        {
+          type: 'efficiency',
+          icon: Zap,
+          title: language === 'nl' ? 'Efficiëntie Tips' : 'Efficiency Tips',
+          prompt: 'How can landscape architecture workflow be optimized?',
+        },
+      ]
+
+      const generatedInsights = insightPrompts.map((insight) => ({
+        ...insight,
+        content:
+          language === 'nl'
+            ? `Gebaseerd op je huidige data van ${stats.total_projects} projecten en ${stats.total_clients} klanten, raad ik aan om te focussen op het verbeteren van client retentie en het uitbreiden van je plantencatalogus.`
+            : `Based on your current data of ${stats.total_projects} projects and ${stats.total_clients} clients, I recommend focusing on improving client retention and expanding your plant catalog.`,
+        id: Date.now() + Math.random(),
+      }))
+
+      setInsights(generatedInsights)
+    } catch (error) {
+      console.error('Error generating insights:', error)
+    }
+  }, [language])
+
+  const generatePlantRecommendations = useCallback(async () => {
+    try {
+      const plants = await ApiService.getPlants()
+
+      const recommendations = [
+        {
+          id: 1,
+          type: 'native',
+          title: language === 'nl' ? 'Inheemse Planten' : 'Native Plants',
+          description:
+            language === 'nl'
+              ? 'Bevorder biodiversiteit met inheemse plantensoorten'
+              : 'Promote biodiversity with native plant species',
+          plants: plants.plants?.filter((p) => p.native).slice(0, 3) || [],
+          icon: Leaf,
+          color: 'text-green-600',
+        },
+        {
+          id: 2,
+          type: 'drought_resistant',
+          title: language === 'nl' ? 'Droogtebestendige Planten' : 'Drought Resistant Plants',
+          description:
+            language === 'nl'
+              ? 'Waterbesparende opties voor duurzame tuinen'
+              : 'Water-saving options for sustainable gardens',
+          plants: plants.plants?.filter((p) => p.water_needs === 'low').slice(0, 3) || [],
+          icon: Target,
+          color: 'text-blue-600',
+        },
+        {
+          id: 3,
+          type: 'seasonal',
+          title: language === 'nl' ? 'Seizoensgebonden Keuzes' : 'Seasonal Choices',
+          description:
+            language === 'nl'
+              ? 'Perfecte planten voor het huidige seizoen'
+              : 'Perfect plants for the current season',
+          plants: plants.plants?.slice(0, 3) || [],
+          icon: Sparkles,
+          color: 'text-purple-600',
+        },
+      ]
+
+      setPlantRecommendations(recommendations)
+    } catch (error) {
+      console.error('Error generating plant recommendations:', error)
+    }
+  }, [language])
+
+  const loadInitialData = useCallback(async () => {
+    await Promise.all([generateInsights(), generatePlantRecommendations()])
+  }, [generateInsights, generatePlantRecommendations])
 
   // Initialize with welcome message
   useEffect(() => {
-    const __welcomeMessage = {
+    const welcomeMessage = {
       id: Date.now(),
       type: 'assistant',
       content: language === 'nl'
@@ -57,32 +149,21 @@ const AIAssistant = () => {
       timestamp: new Date()
     }
     setMessages([welcomeMessage])
-    loadInitialData, [loadInitialData]()
-  }, [language])
-
-  // Load initial data for insights
-  const loadInitialData = async () => {
-    try {
-      // Generate initial insights
-      await generateInsights()
-      await generatePlantRecommendations()
-    } catch (error) {
-      console.error('Error loading initial data:', error)
-    }
-  }
+    loadInitialData()
+  }, [language, loadInitialData])
 
   // Send message to AI
   const sendMessage = async () => {
     if (!inputMessage.trim() || isLoading) return
 
-    const __userMessage = {
+    const userMessage = {
       id: Date.now(),
       type: 'user',
       content: inputMessage,
       timestamp: new Date()
     }
 
-    setMessages(prev => [...prev, userMessage])
+    setMessages((prev) => [...prev, userMessage])
     setInputMessage('')
     setIsLoading(true)
 
@@ -106,18 +187,18 @@ const AIAssistant = () => {
 
       const data = await response.json()
 
-      const __assistantMessage = {
+      const assistantMessage = {
         id: Date.now() + 1,
         type: 'assistant',
         content: data.response || 'I apologize, but I couldn\'t process your request at the moment.',
         timestamp: new Date()
       }
 
-      setMessages(prev => [...prev, assistantMessage])
+      setMessages((prev) => [...prev, assistantMessage])
 
     } catch (error) {
       console.error('AI chat error:', error)
-      const __errorMessage = {
+      const errorMessage = {
         id: Date.now() + 1,
         type: 'assistant',
         content: language === 'nl'
@@ -126,99 +207,9 @@ const AIAssistant = () => {
         timestamp: new Date(),
         isError: true
       }
-      setMessages(prev => [...prev, errorMessage])
+      setMessages((prev) => [...prev, errorMessage])
     } finally {
       setIsLoading(false)
-    }
-  }
-
-  // Generate business insights
-  const generateInsights = async () => {
-    try {
-      // Get dashboard stats for context
-      const stats = await ApiService.getDashboardStats()
-
-      const insightPrompts = [
-        {
-          type: 'performance',
-          icon: TrendingUp,
-          title: language === 'nl' ? 'Prestatie Analyse' : 'Performance Analysis',
-          prompt: `Based on ${stats.total_projects} projects and ${stats.total_clients} clients, what are key performance insights?`
-        },
-        {
-          type: 'growth',
-          icon: BarChart3,
-          title: language === 'nl' ? 'Groei Mogelijkheden' : 'Growth Opportunities',
-          prompt: `With current project portfolio, what growth opportunities exist?`
-        },
-        {
-          type: 'efficiency',
-          icon: Zap,
-          title: language === 'nl' ? 'Efficiëntie Tips' : 'Efficiency Tips',
-          prompt: `How can landscape architecture workflow be optimized?`
-        }
-      ]
-
-      const generatedInsights = insightPrompts.map(insight => ({
-        ...insight,
-        content: language === 'nl'
-          ? `Gebaseerd op je huidige data van ${stats.total_projects} projecten en ${stats.total_clients} klanten, raad ik aan om te focussen op het verbeteren van client retentie en het uitbreiden van je plantencatalogus.`
-          : `Based on your current data of ${stats.total_projects} projects and ${stats.total_clients} clients, I recommend focusing on improving client retention and expanding your plant catalog.`,
-        id: Date.now() + Math.random()
-      }))
-
-      setInsights(generatedInsights)
-
-    } catch (error) {
-      console.error('Error generating insights:', error)
-    }
-  }
-
-  // Generate plant recommendations
-  const generatePlantRecommendations = async () => {
-    try {
-      const plants = await ApiService.getPlants()
-
-      const recommendations = [
-        {
-          id: 1,
-          type: 'native',
-          title: language === 'nl' ? 'Inheemse Planten' : 'Native Plants',
-          description: language === 'nl'
-            ? 'Bevorder biodiversiteit met inheemse plantensoorten'
-            : 'Promote biodiversity with native plant species',
-          plants: plants.plants?.filter(p => p.native).slice(0, 3) || [],
-          icon: Leaf,
-          color: 'text-green-600'
-        },
-        {
-          id: 2,
-          type: 'drought_resistant',
-          title: language === 'nl' ? 'Droogtebestendige Planten' : 'Drought Resistant Plants',
-          description: language === 'nl'
-            ? 'Waterbesparende opties voor duurzame tuinen'
-            : 'Water-saving options for sustainable gardens',
-          plants: plants.plants?.filter(p => p.water_needs === 'low').slice(0, 3) || [],
-          icon: Target,
-          color: 'text-blue-600'
-        },
-        {
-          id: 3,
-          type: 'seasonal',
-          title: language === 'nl' ? 'Seizoensgebonden Keuzes' : 'Seasonal Choices',
-          description: language === 'nl'
-            ? 'Perfecte planten voor het huidige seizoen'
-            : 'Perfect plants for the current season',
-          plants: plants.plants?.slice(0, 3) || [],
-          icon: Sparkles,
-          color: 'text-purple-600'
-        }
-      ]
-
-      setPlantRecommendations(recommendations)
-
-    } catch (error) {
-      console.error('Error generating plant recommendations:', error)
     }
   }
 

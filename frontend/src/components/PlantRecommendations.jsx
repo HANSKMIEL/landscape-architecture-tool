@@ -9,12 +9,12 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Separator } from '@/components/ui/separator'
-import { 
-  Lightbulb, 
-  Sparkles, 
-  Search, 
-  Star, 
-  Heart, 
+import {
+  Lightbulb,
+  Sparkles,
+  Search,
+  Star,
+  Heart,
   Download,
   AlertTriangle,
   CheckCircle,
@@ -25,9 +25,56 @@ import {
   Palette
 } from 'lucide-react'
 
+const translationDefaults = {
+  title: 'Plant Recommendations',
+  subtitle: 'Get AI-powered plant recommendations for your projects',
+  getRecommendations: 'Get Recommendations',
+  searchCriteria: 'Search Criteria',
+  results: 'Recommendations',
+  feedback: 'Feedback',
+  environmental: 'Environmental Conditions',
+  designPrefs: 'Design Preferences',
+  maintenance: 'Maintenance & Budget',
+  specialRequirements: 'Special Requirements',
+  projectContext: 'Project Context',
+  hardinessZone: 'Hardiness Zone',
+  sunExposure: 'Sun Exposure',
+  soilType: 'Soil Type',
+  soilPh: 'Soil pH',
+  moistureLevel: 'Moisture Level',
+  desiredHeight: 'Desired Height (meters)',
+  desiredWidth: 'Desired Width (meters)',
+  colorPreferences: 'Color Preferences',
+  bloomSeason: 'Bloom Season',
+  maintenanceLevel: 'Maintenance Level',
+  budgetRange: 'Budget Range',
+  nativePreference: 'Prefer native plants',
+  wildlifeFriendly: 'Wildlife friendly',
+  deerResistant: 'Deer resistant required',
+  pollinatorFriendly: 'Pollinator friendly required',
+  containerPlanting: 'Container planting',
+  screeningPurpose: 'For screening',
+  hedgingPurpose: 'For hedging',
+  groundcoverPurpose: 'For groundcover',
+  slopePlanting: 'Slope planting',
+  score: 'Match Score',
+  matchReasons: 'Why This Plant',
+  warnings: 'Considerations',
+  exportResults: 'Export Results',
+  provideFeedback: 'Provide Feedback',
+  helpful: 'Was this helpful?',
+  selectedPlants: 'Which plants did you select?',
+  additionalComments: 'Additional comments',
+  submitFeedback: 'Submit Feedback',
+  noResults: 'No plant recommendations found. Try adjusting your criteria.',
+  searchError: 'Error getting recommendations. Please try again.',
+  loadingResults: 'Finding the perfect plants for you...',
+  feedbackSubmitted: 'Thank you for your feedback!'
+}
+
 const PlantRecommendations = () => {
-  const [__criteriaOptions, set_criteriaOptions] = useState(null)
-  const [__searchCriteria, set_searchCriteria] = useState({
+  const [criteriaOptions, setCriteriaOptions] = useState(null)
+  const [searchCriteria, setSearchCriteria] = useState({
     hardiness_zone: '',
     sun_exposure: '',
     soil_type: '',
@@ -51,130 +98,15 @@ const PlantRecommendations = () => {
     groundcover_purpose: false,
     slope_planting: false,
   })
-  const [__recommendations, set_recommendations] = useState([])
-  const [__loading, set_loading] = useState(false)
-  const [__error, set_error] = useState(null)
-  const [__requestId, set_requestId] = useState(null)
-  const [__selectedPlants, set_selectedPlants] = useState([])
-  const [__showFeedback, set_showFeedback] = useState(false)
-
-  const __translations = {
-    en: {
-      title: 'Plant Recommendations',
-      subtitle: 'Get AI-powered plant recommendations for your projects',
-      getRecommendations: 'Get Recommendations',
-      searchCriteria: 'Search Criteria',
-      results: 'Recommendations',
-      feedback: 'Feedback',
-      
-      // Criteria sections
-      environmental: 'Environmental Conditions',
-      designPrefs: 'Design Preferences',
-      maintenance: 'Maintenance & Budget',
-      specialRequirements: 'Special Requirements',
-      projectContext: 'Project Context',
-      
-      // Form fields
-      hardinessZone: 'Hardiness Zone',
-      sunExposure: 'Sun Exposure',
-      soilType: 'Soil Type',
-      soilPh: 'Soil pH',
-      moistureLevel: 'Moisture Level',
-      desiredHeight: 'Desired Height (meters)',
-      desiredWidth: 'Desired Width (meters)',
-      colorPreferences: 'Color Preferences',
-      bloomSeason: 'Bloom Season',
-      maintenanceLevel: 'Maintenance Level',
-      budgetRange: 'Budget Range',
-      
-      // Special requirements
-      nativePreference: 'Prefer native plants',
-      wildlifeFriendly: 'Wildlife friendly',
-      deerResistant: 'Deer resistant required',
-      pollinatorFriendly: 'Pollinator friendly required',
-      
-      // Project context
-      containerPlanting: 'Container planting',
-      screeningPurpose: 'For screening',
-      hedgingPurpose: 'For hedging',
-      groundcoverPurpose: 'For groundcover',
-      slopePlanting: 'Slope planting',
-      
-      // Results
-      score: 'Match Score',
-      matchReasons: 'Why This Plant',
-      warnings: 'Considerations',
-      exportResults: 'Export Results',
-      provideFeedback: 'Provide Feedback',
-      
-      // Feedback
-      helpful: 'Was this helpful?',
-      selectedPlants: 'Which plants did you select?',
-      additionalComments: 'Additional comments',
-      submitFeedback: 'Submit Feedback',
-      
-      // Messages
-      noResults: 'No plant recommendations found. Try adjusting your criteria.',
-      searchError: 'Error getting recommendations. Please try again.',
-      loadingResults: 'Finding the perfect plants for you...',
-      feedbackSubmitted: 'Thank you for your feedback!',
-    },
-    nl: {
-      title: 'Plant Aanbevelingen',
-      subtitle: 'Krijg AI-gestuurde plantaanbevelingen voor uw projecten',
-      getRecommendations: 'Aanbevelingen Krijgen',
-      searchCriteria: 'Zoek Criteria',
-      results: 'Aanbevelingen',
-      feedback: 'Feedback',
-      
-      environmental: 'Omgevingsomstandigheden',
-      designPrefs: 'Ontwerp Voorkeuren',
-      maintenance: 'Onderhoud & Budget',
-      specialRequirements: 'Speciale Eisen',
-      projectContext: 'Project Context',
-      
-      hardinessZone: 'Winterhardheidszone',
-      sunExposure: 'Zonblootstelling',
-      soilType: 'Grondsoort',
-      soilPh: 'Grond pH',
-      moistureLevel: 'Vochtniveau',
-      desiredHeight: 'Gewenste Hoogte (meters)',
-      desiredWidth: 'Gewenste Breedte (meters)',
-      colorPreferences: 'Kleur Voorkeuren',
-      bloomSeason: 'Bloeiseizoen',
-      maintenanceLevel: 'Onderhoudsniveau',
-      budgetRange: 'Budget Bereik',
-      
-      nativePreference: 'Voorkeur voor inheemse planten',
-      wildlifeFriendly: 'Diervriendelijk',
-      deerResistant: 'Hertenbestendig vereist',
-      pollinatorFriendly: 'Bestuivervriendelijk vereist',
-      
-      containerPlanting: 'Container beplanting',
-      screeningPurpose: 'Voor afscherming',
-      hedgingPurpose: 'Voor hagen',
-      groundcoverPurpose: 'Voor bodembedekking',
-      slopePlanting: 'Helling beplanting',
-      
-      score: 'Match Score',
-      matchReasons: 'Waarom Deze Plant',
-      warnings: 'Overwegingen',
-      exportResults: 'Resultaten Exporteren',
-      provideFeedback: 'Feedback Geven',
-      
-      helpful: 'Was dit nuttig?',
-      selectedPlants: 'Welke planten heeft u geselecteerd?',
-      additionalComments: 'Aanvullende opmerkingen',
-      submitFeedback: 'Feedback Versturen',
-      
-      noResults: 'Geen plantaanbevelingen gevonden. Pas uw criteria aan.',
-      searchError: 'Fout bij het krijgen van aanbevelingen. Probeer opnieuw.',
-      loadingResults: 'De perfecte planten voor u vinden...',
-      feedbackSubmitted: 'Bedankt voor uw feedback!',
-    }
-  }
+  const [recommendations, setRecommendations] = useState([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(null)
+  const [requestId, setRequestId] = useState(null)
+  const [selectedPlants, setSelectedPlants] = useState([])
+  const [showFeedback, setShowFeedback] = useState(false)
 
   const { t } = useLanguage()
+  const translate = (key) => t(`plantRecommendations.${key}`, translationDefaults[key] ?? key)
 
   // Load criteria options on component mount
   useEffect(() => {
@@ -228,10 +160,10 @@ const PlantRecommendations = () => {
         setRecommendations(data.recommendations)
         setRequestId(data.request_id)
       } else {
-        setError(t.searchError)
+        setError(translate('searchError'))
       }
     } catch (error) {
-      setError(t.searchError)
+      setError(translate('searchError'))
       console.error('Error getting recommendations:', error)
     } finally {
       setLoading(false)
@@ -308,7 +240,7 @@ const PlantRecommendations = () => {
       <CardHeader>
         <CardTitle className="flex items-center space-x-2">
           <Search className="h-5 w-5" />
-          <span>{t.searchCriteria}</span>
+          <span>{translate('searchCriteria')}</span>
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -316,11 +248,11 @@ const PlantRecommendations = () => {
         <div>
           <h3 className="font-semibold mb-3 flex items-center space-x-2">
             <Sun className="h-4 w-4" />
-            <span>{t.environmental}</span>
+            <span>{translate('environmental')}</span>
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <div>
-              <Label>{t.hardinessZone}</Label>
+              <Label>{translate('hardinessZone')}</Label>
               <Select value={searchCriteria.hardiness_zone} onValueChange={(value) => handleCriteriaChange('hardiness_zone', value)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select zone" />
@@ -334,7 +266,7 @@ const PlantRecommendations = () => {
             </div>
             
             <div>
-              <Label>{t.sunExposure}</Label>
+              <Label>{translate('sunExposure')}</Label>
               <Select value={searchCriteria.sun_exposure} onValueChange={(value) => handleCriteriaChange('sun_exposure', value)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select exposure" />
@@ -348,7 +280,7 @@ const PlantRecommendations = () => {
             </div>
             
             <div>
-              <Label>{t.soilType}</Label>
+              <Label>{translate('soilType')}</Label>
               <Select value={searchCriteria.soil_type} onValueChange={(value) => handleCriteriaChange('soil_type', value)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select soil type" />
@@ -362,7 +294,7 @@ const PlantRecommendations = () => {
             </div>
             
             <div>
-              <Label>{t.soilPh}</Label>
+              <Label>{translate('soilPh')}</Label>
               <Input 
                 type="number" 
                 step="0.1" 
@@ -375,7 +307,7 @@ const PlantRecommendations = () => {
             </div>
             
             <div>
-              <Label>{t.moistureLevel}</Label>
+              <Label>{translate('moistureLevel')}</Label>
               <Select value={searchCriteria.moisture_level} onValueChange={(value) => handleCriteriaChange('moisture_level', value)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select moisture" />
@@ -396,11 +328,11 @@ const PlantRecommendations = () => {
         <div>
           <h3 className="font-semibold mb-3 flex items-center space-x-2">
             <Palette className="h-4 w-4" />
-            <span>{t.designPrefs}</span>
+            <span>{translate('designPrefs')}</span>
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label>{t.desiredHeight}</Label>
+              <Label>{translate('desiredHeight')}</Label>
               <div className="flex space-x-2">
                 <Input 
                   type="number" 
@@ -420,7 +352,7 @@ const PlantRecommendations = () => {
             </div>
             
             <div>
-              <Label>{t.desiredWidth}</Label>
+              <Label>{translate('desiredWidth')}</Label>
               <div className="flex space-x-2">
                 <Input 
                   type="number" 
@@ -440,7 +372,7 @@ const PlantRecommendations = () => {
             </div>
             
             <div>
-              <Label>{t.bloomSeason}</Label>
+              <Label>{translate('bloomSeason')}</Label>
               <Select value={searchCriteria.bloom_season} onValueChange={(value) => handleCriteriaChange('bloom_season', value)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select season" />
@@ -454,7 +386,7 @@ const PlantRecommendations = () => {
             </div>
             
             <div>
-              <Label>{t.colorPreferences}</Label>
+              <Label>{translate('colorPreferences')}</Label>
               <div className="flex flex-wrap gap-2 mt-2">
                 {criteriaOptions?.bloom_colors?.slice(0, 8).map(color => (
                   <Badge 
@@ -477,11 +409,11 @@ const PlantRecommendations = () => {
         <div>
           <h3 className="font-semibold mb-3 flex items-center space-x-2">
             <TreePine className="h-4 w-4" />
-            <span>{t.maintenance}</span>
+            <span>{translate('maintenance')}</span>
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label>{t.maintenanceLevel}</Label>
+              <Label>{translate('maintenanceLevel')}</Label>
               <Select value={searchCriteria.maintenance_level} onValueChange={(value) => handleCriteriaChange('maintenance_level', value)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select level" />
@@ -495,7 +427,7 @@ const PlantRecommendations = () => {
             </div>
             
             <div>
-              <Label>{t.budgetRange}</Label>
+              <Label>{translate('budgetRange')}</Label>
               <Select value={searchCriteria.budget_range} onValueChange={(value) => handleCriteriaChange('budget_range', value)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select range" />
@@ -516,14 +448,14 @@ const PlantRecommendations = () => {
         <div>
           <h3 className="font-semibold mb-3 flex items-center space-x-2">
             <Leaf className="h-4 w-4" />
-            <span>{t.specialRequirements}</span>
+            <span>{translate('specialRequirements')}</span>
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {[
-              { key: 'native_preference', label: t.nativePreference },
-              { key: 'wildlife_friendly', label: t.wildlifeFriendly },
-              { key: 'deer_resistant_required', label: t.deerResistant },
-              { key: 'pollinator_friendly_required', label: t.pollinatorFriendly },
+              { key: 'native_preference', label: translate('nativePreference') },
+              { key: 'wildlife_friendly', label: translate('wildlifeFriendly') },
+              { key: 'deer_resistant_required', label: translate('deerResistant') },
+              { key: 'pollinator_friendly_required', label: translate('pollinatorFriendly') },
             ].map(requirement => (
               <div key={requirement.key} className="flex items-center space-x-2">
                 <Checkbox
@@ -542,15 +474,15 @@ const PlantRecommendations = () => {
         <div>
           <h3 className="font-semibold mb-3 flex items-center space-x-2">
             <Droplets className="h-4 w-4" />
-            <span>{t.projectContext}</span>
+            <span>{translate('projectContext')}</span>
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {[
-              { key: 'container_planting', label: t.containerPlanting },
-              { key: 'screening_purpose', label: t.screeningPurpose },
-              { key: 'hedging_purpose', label: t.hedgingPurpose },
-              { key: 'groundcover_purpose', label: t.groundcoverPurpose },
-              { key: 'slope_planting', label: t.slopePlanting },
+              { key: 'container_planting', label: translate('containerPlanting') },
+              { key: 'screening_purpose', label: translate('screeningPurpose') },
+              { key: 'hedging_purpose', label: translate('hedgingPurpose') },
+              { key: 'groundcover_purpose', label: translate('groundcoverPurpose') },
+              { key: 'slope_planting', label: translate('slopePlanting') },
             ].map(context => (
               <div key={context.key} className="flex items-center space-x-2">
                 <Checkbox
@@ -570,7 +502,7 @@ const PlantRecommendations = () => {
             className="flex items-center space-x-2"
           >
             <Sparkles className="h-4 w-4" />
-            <span>{loading ? t.loadingResults : t.getRecommendations}</span>
+            <span>{loading ? translate('loadingResults') : translate('getRecommendations')}</span>
           </Button>
         </div>
       </CardContent>
@@ -584,7 +516,7 @@ const PlantRecommendations = () => {
           <CardContent className="p-12">
             <div className="text-center">
               <Sparkles className="h-16 w-16 text-blue-500 mx-auto mb-4 animate-spin" />
-              <p className="text-gray-600">{t.loadingResults}</p>
+              <p className="text-gray-600">{translate('loadingResults')}</p>
             </div>
           </CardContent>
         </Card>
@@ -610,7 +542,7 @@ const PlantRecommendations = () => {
           <CardContent className="p-12">
             <div className="text-center">
               <Lightbulb className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-600">{t.noResults}</p>
+              <p className="text-gray-600">{translate('noResults')}</p>
             </div>
           </CardContent>
         </Card>
@@ -621,16 +553,16 @@ const PlantRecommendations = () => {
       <div className="space-y-4">
         <div className="flex justify-between items-center">
           <h3 className="text-lg font-semibold">
-            {recommendations.length} {t.results}
+            {recommendations.length} {translate('results')}
           </h3>
           <div className="flex space-x-2">
             <Button variant="outline" onClick={handleExport}>
               <Download className="h-4 w-4 mr-2" />
-              {t.exportResults}
+              {translate('exportResults')}
             </Button>
             <Button variant="outline" onClick={() => setShowFeedback(true)}>
               <Heart className="h-4 w-4 mr-2" />
-              {t.provideFeedback}
+              {translate('provideFeedback')}
             </Button>
           </div>
         </div>
@@ -652,7 +584,7 @@ const PlantRecommendations = () => {
                     <div className="flex items-center space-x-1">
                       <Star className="h-4 w-4 text-yellow-500 fill-current" />
                       <span className="font-medium">{(rec.score * 100).toFixed(0)}%</span>
-                      <span className="text-sm text-gray-500">{t.score}</span>
+                      <span className="text-sm text-gray-500">{translate('score')}</span>
                     </div>
                     
                     {rec.plant.price && (
@@ -676,7 +608,7 @@ const PlantRecommendations = () => {
                 <div>
                   <h5 className="font-medium text-green-700 mb-2 flex items-center space-x-1">
                     <CheckCircle className="h-4 w-4" />
-                    <span>{t.matchReasons}</span>
+                    <span>{translate('matchReasons')}</span>
                   </h5>
                   <ul className="text-sm space-y-1">
                     {rec.match_reasons.map((reason, i) => (
@@ -689,7 +621,7 @@ const PlantRecommendations = () => {
                   <div>
                     <h5 className="font-medium text-yellow-700 mb-2 flex items-center space-x-1">
                       <AlertTriangle className="h-4 w-4" />
-                      <span>{t.warnings}</span>
+                      <span>{translate('warnings')}</span>
                     </h5>
                     <ul className="text-sm space-y-1">
                       {rec.warnings.map((warning, i) => (
@@ -732,15 +664,15 @@ const PlantRecommendations = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">{t.title}</h1>
-          <p className="text-gray-600">{t.subtitle}</p>
+          <h1 className="text-2xl font-bold text-gray-900">{translate('title')}</h1>
+          <p className="text-gray-600">{translate('subtitle')}</p>
         </div>
       </div>
 
       <Tabs defaultValue="search" className="w-full">
         <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="search">{t.searchCriteria}</TabsTrigger>
-          <TabsTrigger value="results">{t.results}</TabsTrigger>
+          <TabsTrigger value="search">{translate('searchCriteria')}</TabsTrigger>
+          <TabsTrigger value="results">{translate('results')}</TabsTrigger>
         </TabsList>
         
         <TabsContent value="search" className="space-y-4">
@@ -757,17 +689,17 @@ const PlantRecommendations = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <Card className="max-w-md w-full m-4">
             <CardHeader>
-              <CardTitle>{t.provideFeedback}</CardTitle>
+              <CardTitle>{translate('provideFeedback')}</CardTitle>
             </CardHeader>
             <CardContent>
               {/* Feedback form implementation */}
               <div className="space-y-4">
                 <div>
-                  <Label>{t.helpful}</Label>
+                  <Label>{translate('helpful')}</Label>
                   {/* Rating component */}
                 </div>
                 <div>
-                  <Label>{t.additionalComments}</Label>
+                  <Label>{translate('additionalComments')}</Label>
                   <textarea className="w-full p-2 border rounded" rows="3" />
                 </div>
                 <div className="flex justify-end space-x-2">
@@ -775,7 +707,7 @@ const PlantRecommendations = () => {
                     Cancel
                   </Button>
                   <Button onClick={() => setShowFeedback(false)}>
-                    {t.submitFeedback}
+                    {translate('submitFeedback')}
                   </Button>
                 </div>
               </div>

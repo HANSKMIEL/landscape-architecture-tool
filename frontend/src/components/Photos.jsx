@@ -10,9 +10,7 @@ import {
   Image as ImageIcon,
   MapPin,
   Calendar,
-  Tag,
-  Download,
-  Trash2
+  Tag
 } from 'lucide-react'
 import PhotoUpload from './PhotoUpload'
 import PhotoGallery from './PhotoGallery'
@@ -21,12 +19,12 @@ import toast from 'react-hot-toast'
 
 const Photos = ({ user }) => {
   const { t } = useLanguage()
-  const [__photos, set_photos] = useState([])
-  const [__loading, set_loading] = useState(true)
-  const [__viewMode, set_viewMode] = useState('grid') // 'grid' or 'list'
-  const [__selectedCategory, set_selectedCategory] = useState('all')
-  const [__searchTerm, set_searchTerm] = useState('')
-  const [__showUpload, set_showUpload] = useState(false)
+  const [photos, setPhotos] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [viewMode, setViewMode] = useState('grid') // 'grid' or 'list'
+  const [selectedCategory, setSelectedCategory] = useState('all')
+  const [searchTerm, setSearchTerm] = useState('')
+  const [showUpload, setShowUpload] = useState(false)
 
   // Photo categories for organization
   const categories = [
@@ -243,7 +241,7 @@ const Photos = ({ user }) => {
               }
               {searchTerm && (
                 <span className="text-sm text-gray-500">
-                  - {t('photos.searchResults', 'Search results for')}: "{searchTerm}"
+                  - {t('photos.searchResults', 'Search results for')}: “{searchTerm}”
                 </span>
               )}
             </CardTitle>
