@@ -209,6 +209,21 @@ if ! command -v npm >/dev/null 2>&1; then
             exit 1
         fi
         unset DEBIAN_FRONTEND
+        
+        # Refresh PATH and verify npm is now available
+        hash -r 2>/dev/null || true
+        export PATH="/usr/bin:/usr/local/bin:$PATH"
+        
+        # Verify npm is now available
+        if ! command -v npm >/dev/null 2>&1; then
+            echo "❌ npm still not found after installation. Checking installation..."
+            which npm || echo "npm not in PATH"
+            ls -la /usr/bin/npm* || echo "npm binary not found in /usr/bin"
+            ls -la /usr/local/bin/npm* || echo "npm binary not found in /usr/local/bin"
+            exit 1
+        fi
+        
+        echo "✅ npm successfully installed and verified: $(npm --version)"
     else
         echo "❌ npm is not available and apt-get cannot be used to install it."
         exit 1
