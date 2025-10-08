@@ -1,5 +1,6 @@
 // Jest provides describe, it, expect, beforeEach as globals
 import { screen, waitFor } from '@testing-library/react'
+import { vi } from 'vitest'
 import { axe, toHaveNoViolations } from 'jest-axe'
 import { render } from '../../test/utils/render.jsx'
 import { setupUser, waitForLoadingToFinish, expectErrorMessage } from '../../test/utils/testHelpers'
@@ -9,9 +10,45 @@ expect.extend(toHaveNoViolations)
 
 describe('Dashboard Component', () => {
   let user
+  let originalLocation
 
   beforeEach(() => {
     user = setupUser()
+    if (originalLocation) {
+      window.location.href = originalLocation.href
+    }
+  })
+
+  beforeAll(() => {
+    originalLocation = window.location
+
+    let hrefValue = originalLocation.href
+    Object.defineProperty(window, 'location', {
+      configurable: true,
+      value: {
+        ...originalLocation,
+        get href() {
+          return hrefValue
+        },
+        set href(value) {
+          hrefValue = value
+        },
+        assign: vi.fn((value) => {
+          hrefValue = value
+        }),
+        replace: vi.fn((value) => {
+          hrefValue = value
+        }),
+        reload: vi.fn(),
+      },
+    })
+  })
+
+  afterAll(() => {
+    Object.defineProperty(window, 'location', {
+      configurable: true,
+      value: originalLocation,
+    })
   })
 
   describe('Rendering and Loading States', () => {
@@ -24,11 +61,14 @@ describe('Dashboard Component', () => {
       expect(screen.getByText(/overzicht van uw landschapsarchitectuur projecten/i)).toBeInTheDocument()
     })
 
-    it('shows loading state initially', () => {
+    it('shows loading state initially', async () => {
       render(<Dashboard />)
       
       // Check for loading skeleton elements
       expect(document.querySelector('.animate-pulse')).toBeInTheDocument()
+
+      // Allow asynchronous updates to complete to avoid act warnings
+      await waitForLoadingToFinish()
     })
 
     it('displays dashboard data after loading', async () => {
@@ -63,6 +103,16 @@ describe('Dashboard Component', () => {
   })
 
   describe('Error Handling', () => {
+    let consoleErrorSpy
+
+    beforeEach(() => {
+      consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    })
+
+    afterEach(() => {
+      consoleErrorSpy?.mockRestore()
+    })
+
     it('handles API error for dashboard stats', async () => {
       // Mock API error for stats endpoint only
       global.fetch.mockImplementation((url) => {
@@ -243,21 +293,19 @@ describe('Dashboard Component', () => {
     })
 
     it('navigates when clicking quick action buttons', async () => {
-      const originalLocation = window.location.href
-
       render(<Dashboard />)
       
       await waitForLoadingToFinish()
       
-      const addSupplierButton = screen.getByText('Leverancier toevoegen')
-      await user.click(addSupplierButton)
-      
-      // In a real test environment with actual routing, we'd check navigation
-      // For now, we just verify the button is clickable
-      expect(addSupplierButton).toBeInTheDocument()
-      
-      // Restore original location
-      window.location.href = originalLocation
+  const addSupplierButton = screen.getByText('Leverancier toevoegen')
+  await user.click(addSupplierButton)
+
+  // Ensure navigation intent updates the mocked location
+  expect(window.location.href).toBe('/suppliers')
+
+  // In a real test environment with actual routing, we'd check navigation
+  // For now, we just verify the button is clickable and navigation was requested
+  expect(addSupplierButton).toBeInTheDocument()
     })
   })
 
@@ -328,6 +376,16 @@ describe('Dashboard Component', () => {
   })
 
   describe('Data Refresh and Updates', () => {
+    let consoleErrorSpy
+
+    beforeEach(() => {
+      consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    })
+
+    afterEach(() => {
+      consoleErrorSpy?.mockRestore()
+    })
+
     it('refreshes data when retry is clicked after network recovery', async () => {
       let callCount = 0
       
