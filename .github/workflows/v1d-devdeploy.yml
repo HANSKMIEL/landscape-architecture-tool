@@ -342,7 +342,7 @@ jobs:
           pip install --upgrade --no-cache-dir pip
           pip install --no-cache-dir -r requirements.txt
 
-          # Ensure Node.js and npm are available
+          # Ensure Node.js and npm are available (with PATH refresh after install)
           if ! command -v npm >/dev/null 2>&1; then
               echo "⚠️ npm not found. Installing Node.js 20..."
               if command -v apt-get >/dev/null 2>&1; then
