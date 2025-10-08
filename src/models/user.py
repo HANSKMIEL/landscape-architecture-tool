@@ -121,9 +121,17 @@ class User(db.Model):
 
         return user_level >= required_level
 
+    def has_role(self, role):
+        """Return True if user matches the provided role."""
+        return self.role == role
+
     def can_manage_data(self):
         """Check if user can manage data (user level and above)"""
         return self.has_permission("user")
+
+    def can_access_admin(self):
+        """Return True when user has admin-level privileges."""
+        return self.has_permission("admin")
 
     @property
     def full_name(self):
@@ -168,6 +176,27 @@ class User(db.Model):
 
     def __repr__(self):
         return f"<User {self.username}>"
+
+    @staticmethod
+    def create_admin_user(username="admin", email="admin@landscape.com", password=None):
+        """Create a default admin user instance with a secure password."""
+        if password is None:
+            import os
+            import secrets
+            import string
+
+            password = os.getenv("DEFAULT_ADMIN_PASSWORD")
+            if not password:
+                alphabet = string.ascii_letters + string.digits + "!@#$%^&*"
+                password = "".join(secrets.choice(alphabet) for _ in range(16))
+
+                if os.getenv("FLASK_ENV", "production") != "production":
+                    print(f"IMPORTANT: Generated admin password: {password}")
+                    print("Please store this password securely and set DEFAULT_ADMIN_PASSWORD in your environment.")
+
+        user = User(username=username, email=email, role="admin")
+        user.set_password(password)
+        return user
 
 
 class UserSession(db.Model):

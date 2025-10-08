@@ -1,14 +1,15 @@
-"""
-Tests for User model
-"""
+"""Tests for User model."""
+
+import pytest
 
 from src.models.user import User, db
 
 
+@pytest.mark.usefixtures("app_context")
 class TestUserModel:
     """Test User model functionality"""
 
-    def test_user_creation(self, app_context):
+    def test_user_creation(self):
         """Test basic user creation"""
         user = User(username="testuser", email="test@example.com", role="employee")
         user.set_password("testpass123")
@@ -21,14 +22,14 @@ class TestUserModel:
         assert user.role == "employee"
         assert user.password_hash is not None
 
-    def test_user_repr(self, app_context):
+    def test_user_repr(self):
         """Test user string representation"""
         user = User(username="testuser", email="test@example.com", role="employee")
         user.set_password("testpass123")
         expected = "<User testuser>"
         assert repr(user) == expected
 
-    def test_password_hashing(self, app_context):
+    def test_password_hashing(self):
         """Test password hashing and verification"""
         user = User(username="testuser", email="test@example.com", role="employee")
         test_password = "mysecretpassword"  # noqa: S105
@@ -44,7 +45,7 @@ class TestUserModel:
         # Should reject incorrect password
         assert user.check_password("wrongpassword") is False
 
-    def test_user_roles(self, app_context):
+    def test_user_roles(self):
         """Test user role functionality"""
         admin_user = User(username="admin", email="admin@test.com", role="admin")
         employee_user = User(username="employee", email="employee@test.com", role="employee")
@@ -66,7 +67,7 @@ class TestUserModel:
         assert employee_user.can_manage_data() is True
         assert client_user.can_manage_data() is False
 
-    def test_create_admin_user(self, app_context):
+    def test_create_admin_user(self):
         """Test admin user creation utility"""
         # Authentication handled by authenticated_test_user fixture
         admin_user = User.create_admin_user(password="admin123")  # noqa: S106 - test credential
@@ -76,7 +77,7 @@ class TestUserModel:
         assert admin_user.role == "admin"
         assert admin_user.check_password("admin123") is True
 
-    def test_create_admin_user_custom(self, app_context):
+    def test_create_admin_user_custom(self):
         """Test admin user creation with custom parameters"""
         # Authentication handled by authenticated_test_user fixture
         test_password = "custompass123"  # noqa: S105
@@ -87,7 +88,7 @@ class TestUserModel:
         assert admin_user.role == "admin"
         assert admin_user.check_password(test_password) is True
 
-    def test_user_to_dict(self, app_context):
+    def test_user_to_dict(self):
         """Test user dictionary conversion"""
         user = User(username="testuser", email="test@example.com", role="employee")
         user.set_password("testpass123")
