@@ -4,6 +4,7 @@ Enhanced test stability and robustness utilities
 
 import functools
 import logging
+import os
 import sys
 import time
 import traceback
@@ -12,6 +13,7 @@ from contextlib import contextmanager
 from typing import Any
 
 import pytest
+from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 
 from tests.fixtures.auth_fixtures import authenticated_test_user, setup_test_authentication
@@ -100,7 +102,7 @@ def validate_test_environment() -> dict[str, bool]:
             from src.models.user import db
 
             # Simple query to test database connection
-            db.session.execute("SELECT 1")
+            db.session.execute(text("SELECT 1"))
             validations["database"] = True
         else:
             # Skip database validation if no app context
@@ -110,12 +112,13 @@ def validate_test_environment() -> dict[str, bool]:
         logger.error(f"Database validation failed: {e}")
         validations["database"] = False
 
-    # Check required environment variables
-    import os
-
-    required_env_vars = ["FLASK_ENV"]
-    for var in required_env_vars:
-        validations[f"env_var_{var}"] = var in os.environ
+    # Check required environment variables and set safe defaults when missing
+    required_env_vars: dict[str, str] = {"FLASK_ENV": "testing"}
+    for var, default in required_env_vars.items():
+        if var not in os.environ:
+            os.environ[var] = default
+            logger.info("Setting default %s=%s for test environment", var, default)
+        validations[f"env_var_{var}"] = True
 
     # Check imports
     try:

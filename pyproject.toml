@@ -137,6 +137,11 @@ ignore = [
   "RUF001", # ambiguous unicode - acceptable for emoji usage in output
 ]
 
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = ["F401", "F811"]
+"tests/fixtures/**/*.py" = ["F401", "F811"]
+"scripts/**/*.py" = ["S105", "S112", "PT028"]
+
 [tool.ruff.lint.mccabe]
 max-complexity = 15
 

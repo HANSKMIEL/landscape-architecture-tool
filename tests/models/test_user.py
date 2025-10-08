@@ -69,7 +69,7 @@ class TestUserModel:
     def test_create_admin_user(self, app_context):
         """Test admin user creation utility"""
         # Authentication handled by authenticated_test_user fixture
-        admin_user = User.create_admin_user(password="admin123")
+        admin_user = User.create_admin_user(password="admin123")  # noqa: S106 - test credential
 
         assert admin_user.username == "admin"
         assert admin_user.email == "admin@landscape.com"

@@ -15,6 +15,8 @@ from tests.fixtures.test_stability import (
     validate_test_environment,
 )
 
+pytest_plugins = ["tests.fixtures.auth_fixtures"]
+
 # Configure logging for tests
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -42,6 +44,9 @@ def _make_engine(url: str):
 def test_session_setup():
     """Session-level setup with comprehensive validation and monitoring."""
     start_time = time.time()
+
+    # Ensure required test environment defaults exist to avoid spurious exits on local runs
+    os.environ.setdefault("FLASK_ENV", "testing")
 
     # Validate test environment
     validations = validate_test_environment()

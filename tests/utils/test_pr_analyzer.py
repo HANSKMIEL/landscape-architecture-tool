@@ -8,7 +8,7 @@ from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 
-from src.utils.pr_analyzer import (  # noqa: E402
+from src.utils.pr_analyzer import (
     PRAnalyzer,
     PRInfo,
     create_validation_report,
