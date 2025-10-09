@@ -22,14 +22,24 @@ class DevLogManager:
         "config_changed": "CONFIG_CHANGED",
     }
 
-    def __init__(self, log_file="dev_log.md"):
+    def __init__(self, log_file="dev_log.md", project_root=None):
         """Initialize the dev log manager
 
         Args:
-            log_file (str): Path to the development log file
+            log_file (str | Path): Path to the development log file
+            project_root (str | Path | None): Optional override for the project root
         """
-        self.project_root = Path(__file__).parent.parent
-        self.log_file = self.project_root / log_file
+
+        if project_root is None:
+            project_root = Path(__file__).resolve().parents[2]
+
+        self.project_root = Path(project_root)
+
+        log_path = Path(log_file)
+        if not log_path.is_absolute():
+            log_path = self.project_root / log_path
+
+        self.log_file = log_path
 
     def create_log_header(self):
         """Create the header for a new development log file"""
@@ -94,7 +104,7 @@ Each entry follows this format:
 
             # Create log file if it doesn't exist
             if not self.log_file.exists():
-                with open(self.log_file, "w") as f:
+                with open(self.log_file, "w", encoding="utf-8") as f:
                     f.write(self.create_log_header())
                 print(f"Created new development log: {self.log_file}")
 
@@ -102,18 +112,21 @@ Each entry follows this format:
             entry = self.format_log_entry(action, description, author, impact)
 
             # Read existing content
-            with open(self.log_file) as f:
+            with open(self.log_file, encoding="utf-8") as f:
                 content = f.read()
 
             # Insert new entry after the header (before first existing entry)
-            header_end = content.find("---\n\n") + 5
-            if header_end == 4:  # Header not found, append to end
-                updated_content = content + entry
-            else:
+            header_marker = "\n---\n\n"
+            header_end = content.find(header_marker)
+
+            if header_end != -1:
+                header_end += len(header_marker)
                 updated_content = content[:header_end] + entry + content[header_end:]
+            else:
+                updated_content = content + entry
 
             # Write updated content
-            with open(self.log_file, "w") as f:
+            with open(self.log_file, "w", encoding="utf-8") as f:
                 f.write(updated_content)
 
             print(f"Successfully added {action} entry to development log")
@@ -135,7 +148,7 @@ Each entry follows this format:
                 print("Development log file does not exist yet.")
                 return
 
-            with open(self.log_file) as f:
+            with open(self.log_file, encoding="utf-8") as f:
                 content = f.read()
 
             # Extract entries (looking for ## [timestamp] patterns)
@@ -174,7 +187,7 @@ Each entry follows this format:
             if not self.log_file.exists():
                 return {"total_entries": 0, "actions": {}}
 
-            with open(self.log_file) as f:
+            with open(self.log_file, encoding="utf-8") as f:
                 content = f.read()
 
             # Count entries by action type

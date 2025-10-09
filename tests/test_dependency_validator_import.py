@@ -252,12 +252,13 @@ print("SUCCESS: Multiple imports work without conflict")
         except SyntaxError:
             pytest.fail("DependencyValidator import statement has syntax error")
 
-        # Test the actual import works
-        exec(import_statement)
+        # Test the actual import works using an isolated namespace
+        namespace = {"__builtins__": __builtins__}
+        exec(import_statement, namespace)
 
         # Verify the class is now available
-        assert "DependencyValidator" in locals()
-        validator = locals()["DependencyValidator"]()
+        assert "DependencyValidator" in namespace
+        validator = namespace["DependencyValidator"]()
         assert validator is not None
 
 

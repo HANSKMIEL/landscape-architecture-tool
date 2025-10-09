@@ -1,62 +1,98 @@
 #!/usr/bin/env python3
-"""
-Development Log Update Script
-Updates the development log with new entries, features, and progress tracking.
-"""
+"""Command-line entry point for maintaining the development log."""
 
 import argparse
-import datetime
-import os
 import sys
 from pathlib import Path
 
+try:
+    from scripts.development.update_dev_log import DevLogManager
+except ModuleNotFoundError:  # Script executed directly, ensure package import works
+    CURRENT_DIR = Path(__file__).resolve().parent
+    PROJECT_ROOT = CURRENT_DIR.parent
+    if str(PROJECT_ROOT) not in sys.path:
+        sys.path.insert(0, str(PROJECT_ROOT))
+    from scripts.development.update_dev_log import DevLogManager
 
-def main():
-    """Main function to handle command line arguments."""
+
+def build_parser() -> argparse.ArgumentParser:
+    """Construct the argument parser used by the CLI."""
+
     parser = argparse.ArgumentParser(
-        description="Update development log with new entries",
+        description="Update development log for Landscape Architecture Tool",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  python scripts/update_dev_log.py --action "feature_added" --description "Added user authentication"
-  python scripts/update_dev_log.py --action "bugfix" --description "Fixed login issue" --category "authentication"
-  python scripts/update_dev_log.py --action "test_improvement" --description "Enhanced test coverage"
+  python scripts/update_dev_log.py --action feature_added --description "Added user auth" --author "dev"
+  python scripts/update_dev_log.py --list --count 5
+  python scripts/update_dev_log.py --stats
         """,
     )
 
-    parser.add_argument("--action", required=True, help="Action performed (e.g., feature_added, bugfix, improvement)")
-
-    parser.add_argument("--description", required=True, help="Description of the change or action")
-
     parser.add_argument(
-        "--category",
-        default="general",
-        choices=["feature", "bugfix", "improvement", "documentation", "testing", "deployment", "general"],
-        help="Category of the change (default: general)",
+        "--action",
+        choices=list(DevLogManager.VALID_ACTIONS.keys()),
+        help="Type of development action to record",
     )
+    parser.add_argument("--description", help="Description of the change")
+    parser.add_argument("--author", help="Name of the author for the entry")
+    parser.add_argument("--impact", help="Optional impact summary for the change")
+    parser.add_argument(
+        "--log-file",
+        default="dev_log.md",
+        help="Path to dev log file (default: dev_log.md)",
+    )
+    parser.add_argument("--list", action="store_true", help="List recent entries")
+    parser.add_argument(
+        "--count",
+        type=int,
+        default=10,
+        help="Number of entries to list (default: 10)",
+    )
+    parser.add_argument("--stats", action="store_true", help="Display development log statistics")
 
-    parser.add_argument("--author", default="System", help="Author of the change (default: System)")
+    return parser
 
-    # Handle --help and other argparse behavior
-    if len(sys.argv) == 1:
-        parser.print_help()
-        sys.exit(1)
 
-    try:
-        args = parser.parse_args()
+def main() -> None:
+    """Main function handling CLI invocation."""
 
-        # Check for missing required arguments
+    parser = build_parser()
+    args = parser.parse_args()
+
+    manager = DevLogManager(log_file=args.log_file)
+
+    exit_code = 0
+
+    if args.list:
+        manager.list_entries(limit=args.count)
+    elif args.stats:
+        stats = manager.get_stats()
+        print("\nDevelopment Log Statistics:")
+        print(f"Total entries: {stats['total_entries']}")
+        if stats["actions"]:
+            print("\nActions by type:")
+            for action, count in sorted(stats["actions"].items()):
+                print(f"  {action}: {count}")
+    elif args.action is not None:
+        missing = []
         if not args.description:
-            print("Missing required arguments: --description is required")
-            sys.exit(1)
+            missing.append("--description")
+        if not args.author:
+            missing.append("--author")
 
-        print(f"✅ Development log updated: {args.action} - {args.description}")
-        sys.exit(0)
-    except SystemExit:
-        raise
-    except Exception as e:
-        print(f"❌ Error updating development log: {e}")
-        sys.exit(1)
+        if missing:
+            print("Missing required arguments: " + ", ".join(missing))
+            exit_code = 1
+        else:
+            success = manager.add_entry(args.action, args.description, args.author, args.impact)
+            if not success:
+                exit_code = 1
+    else:
+        parser.print_help()
+        exit_code = 1
+
+    sys.exit(exit_code)
 
 
 if __name__ == "__main__":

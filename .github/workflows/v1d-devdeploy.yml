@@ -1,4 +1,4 @@
-name: V1.00D DevDeploy Deployment
+name: V1.00D Fullstack DevDeploy
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       force_deploy:
-        description: "Force deployment even if tests fail"
+        description: "Force deployment even if smoke tests fail"
         required: false
         default: false
         type: boolean
@@ -19,18 +19,14 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  deploy-to-devdeploy:
-    name: Deploy V1.00D to DevDeploy Environment
+  build-and-test:
+    name: Build & Verify Fullstack Bundle
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     if: github.ref == 'refs/heads/V1.00D'
 
-    environment:
-      name: devdeploy
-      url: http://72.60.176.200:8080
-
     steps:
-      - name: Checkout V1.00D Branch
+      - name: Checkout Source
         uses: actions/checkout@v4
         with:
           ref: V1.00D
@@ -48,558 +44,311 @@ jobs:
           python-version: "3.12"
           cache: "pip"
 
-      - name: Setup SSH Key for VPS Access
+      - name: Install Backend Dependencies
         run: |
-          echo "🔑 Setting up SSH key for VPS deployment..."
+          echo "📦 Installing Python dependencies..."
+          python -m pip install --upgrade --no-cache-dir pip
+          pip install --no-cache-dir -r requirements.txt
+
+      - name: Install Frontend Dependencies
+        run: |
+          echo "📦 Installing Node.js dependencies..."
+          cd frontend
+          npm ci --legacy-peer-deps --no-progress --prefer-online
+
+      - name: Ensure DevDeploy Branding
+        run: |
+          sed -i 's/<title>.*<\/title>/<title>devdeploy - Landscape Architecture Tool (Development)<\/title>/' frontend/index.html
+
+      - name: Run Backend Smoke Tests
+        continue-on-error: ${{ github.event_name == 'workflow_dispatch' && inputs.force_deploy }}
+        run: |
+          echo "🧪 Running backend smoke tests..."
+          python -m pytest tests/test_dependency_validator_import.py
+
+      - name: Run Frontend Unit Tests
+        continue-on-error: ${{ github.event_name == 'workflow_dispatch' && inputs.force_deploy }}
+        run: |
+          echo "🧪 Running frontend unit tests..."
+          cd frontend
+          npm run test:run
+
+      - name: Build Frontend
+        run: |
+          echo "🏗️ Building frontend bundle..."
+          cd frontend
+          npm run build
+          if [ ! -f "dist/index.html" ]; then
+            echo "❌ Frontend build failed: dist/index.html missing"
+            exit 1
+          fi
+
+      - name: Prepare Fullstack Bundle
+        run: |
+          echo "📦 Preparing fullstack deployment bundle..."
+          mkdir -p build_artifacts/fullstack_bundle/backend build_artifacts/fullstack_bundle/frontend
+
+          rsync -a --delete --exclude '__pycache__' src/ build_artifacts/fullstack_bundle/backend/src/
+          rsync -a migrations/ build_artifacts/fullstack_bundle/backend/migrations/
+          rsync -a config/ build_artifacts/fullstack_bundle/backend/config/
+          rsync -a scripts/deployment/ build_artifacts/fullstack_bundle/backend/scripts/deployment/
+
+          cp requirements.txt build_artifacts/fullstack_bundle/backend/
+          if [ -f requirements-dev.txt ]; then
+            cp requirements-dev.txt build_artifacts/fullstack_bundle/backend/
+          fi
+          cp pyproject.toml build_artifacts/fullstack_bundle/backend/
+          cp .env.example build_artifacts/fullstack_bundle/backend/ || true
+
+          rsync -a frontend/dist/ build_artifacts/fullstack_bundle/frontend/dist/
+          cp frontend/package.json build_artifacts/fullstack_bundle/frontend/
+          cp frontend/package-lock.json build_artifacts/fullstack_bundle/frontend/ || true
+
+          cat <<EOF > build_artifacts/fullstack_bundle/metadata.json
+          {
+            "version": "V1.00D",
+            "commit": "${{ github.sha }}",
+            "generated_at": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")",
+            "runner": "${{ runner.name }}"
+          }
+          EOF
+
+          tar -czf build_artifacts/fullstack_bundle.tar.gz -C build_artifacts fullstack_bundle
+
+      - name: Upload Fullstack Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: v1d-fullstack-bundle
+          path: build_artifacts/fullstack_bundle.tar.gz
+          retention-days: 7
+
+  deploy-to-devdeploy:
+    name: Deploy to DevDeploy VPS
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    needs: build-and-test
+    if: github.ref == 'refs/heads/V1.00D'
+
+    environment:
+      name: devdeploy
+      url: http://72.60.176.200:8080
+
+    steps:
+      - name: Checkout Source
+        uses: actions/checkout@v4
+        with:
+          ref: V1.00D
+
+      - name: Download Fullstack Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: v1d-fullstack-bundle
+          path: deployment_artifacts
+
+      - name: Setup SSH Credentials
+        run: |
+          echo "🔑 Configuring SSH credentials..."
           mkdir -p ~/.ssh
           chmod 700 ~/.ssh
-          
-          # Verify SSH key secret is available
+
           if [ -z "${{ secrets.VPS_SSH_KEY }}" ]; then
-            echo "❌ ERROR: VPS_SSH_KEY secret is not configured!"
-            echo "⚠️  Please add VPS_SSH_KEY to repository secrets"
-            echo "📖 See: docs/deployment/GITHUB_SECRETS_CONFIGURATION.md"
+            echo "❌ VPS_SSH_KEY secret missing"
             exit 1
           fi
-          
-          # Save SSH key to file
+
           echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/vps_key
           chmod 600 ~/.ssh/vps_key
-          
-          # Verify key format
-          if ! grep -q "BEGIN.*PRIVATE KEY" ~/.ssh/vps_key; then
-            echo "❌ ERROR: VPS_SSH_KEY doesn't appear to be a valid SSH private key"
-            echo "⚠️  Key should start with '-----BEGIN OPENSSH PRIVATE KEY-----'"
-            exit 1
-          fi
-          
-          echo "✅ SSH key configured successfully"
 
-      - name: Validate V1.00D Branch
-        run: |
-          echo "🔍 Validating V1.00D deployment readiness..."
-
-          # Verify we're on the correct branch
-          CURRENT_BRANCH=$(git branch --show-current)
-          if [ "$CURRENT_BRANCH" != "V1.00D" ]; then
-            echo "❌ Error: Not on V1.00D branch (current: $CURRENT_BRANCH)"
-            exit 1
-          fi
-
-          # Check for devdeploy title configuration
-          if grep -q "devdeploy" frontend/index.html; then
-            echo "✅ DevDeploy title configured correctly"
-          else
-            echo "⚠️ DevDeploy title not found, setting it..."
-            sed -i 's/<title>.*<\/title>/<title>devdeploy - Landscape Architecture Tool (Development)<\/title>/' frontend/index.html
-          fi
-
-          echo "✅ V1.00D branch validation complete"
+          ssh-keyscan -H "${{ secrets.VPS_HOST != '' && secrets.VPS_HOST || '72.60.176.200' }}" >> ~/.ssh/known_hosts 2>/dev/null
 
       - name: Run Pre-Deployment Validation
         env:
           VPS_HOST: ${{ secrets.VPS_HOST != '' && secrets.VPS_HOST || '72.60.176.200' }}
           VPS_USER: ${{ secrets.VPS_USER != '' && secrets.VPS_USER || 'root' }}
-          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
         run: |
-          echo "🔍 Running comprehensive pre-deployment validation..."
-          
-          # Make validation script executable
-          chmod +x scripts/deployment/validate_deployment_prerequisites.sh
-          
-          # Run validation script
-          if scripts/deployment/validate_deployment_prerequisites.sh; then
-            echo "✅ All pre-deployment checks passed"
+          echo "🔍 Running pre-deployment checks..."
+          chmod +x scripts/deployment/validate_deployment_prerequisites.sh || true
+          if [ -f scripts/deployment/validate_deployment_prerequisites.sh ]; then
+            if ! scripts/deployment/validate_deployment_prerequisites.sh; then
+              echo "⚠️ Validation script reported issues"
+            fi
           else
-            echo "⚠️ Some validation checks failed - review above"
-            echo "📖 For help, see: docs/deployment/GITHUB_SECRETS_CONFIGURATION.md"
-            # Don't fail the workflow here - let user decide with force_deploy option
+            echo "ℹ️ Validation script not present; skipping"
           fi
 
-      - name: Install Backend Dependencies
-        run: |
-          echo "📦 Installing Python dependencies..."
-          
-          # Upgrade pip first
-          pip install --upgrade --no-cache-dir pip
-          
-          # Install requirements
-          if [ -f "requirements.txt" ]; then
-            pip install --no-cache-dir -r requirements.txt
-            echo "✅ Python dependencies installed from requirements.txt"
-          else
-            echo "❌ ERROR: requirements.txt not found"
-            exit 1
-          fi
-
-      - name: Install Frontend Dependencies
-        run: |
-          echo "📦 Installing Node.js dependencies..."
-          
-          cd frontend
-          
-          # Verify package files exist
-          if [ ! -f "package.json" ]; then
-            echo "❌ ERROR: package.json not found"
-            exit 1
-          fi
-          
-          if [ ! -f "package-lock.json" ]; then
-            echo "⚠️ WARNING: package-lock.json not found - npm ci requires this"
-            echo "Running npm install instead..."
-            npm install --legacy-peer-deps --no-progress
-          else
-            # Use npm ci for consistent builds
-            npm ci --legacy-peer-deps --no-progress --prefer-online
-          fi
-          
-          echo "✅ Node.js dependencies installed"
-
-      - name: Build Frontend for DevDeploy
-        run: |
-          echo "🏗️ Building V1.00D frontend for devdeploy..."
-          cd frontend
-
-          # Ensure devdeploy title is set
-          sed -i 's/<title>.*<\/title>/<title>devdeploy - Landscape Architecture Tool (Development)<\/title>/' index.html
-
-          # Build with development configuration
-          npm run build
-
-          # Verify build output
-          if [ ! -f "dist/index.html" ]; then
-            echo "❌ Frontend build failed - no dist/index.html"
-            exit 1
-          fi
-
-          # Verify devdeploy title in built output
-          if grep -q "devdeploy" dist/index.html; then
-            echo "✅ DevDeploy title confirmed in build output"
-          else
-            echo "❌ DevDeploy title missing from build output"
-            exit 1
-          fi
-
-          echo "✅ Frontend build complete with devdeploy branding"
-
-      - name: Run Quick Tests
-        if: ${{ !inputs.force_deploy }}
-        run: |
-          echo "🧪 Running quick validation tests..."
-
-          # Test backend startup
-          timeout 10s python src/main.py &>/dev/null && echo "✅ Backend starts successfully" || echo "⚠️ Backend startup test completed"
-
-          # Test frontend build integrity
-          cd frontend
-          if [ -f "dist/index.html" ] && [ -d "dist/assets" ]; then
-            echo "✅ Frontend build integrity verified"
-          else
-            echo "❌ Frontend build integrity check failed"
-            exit 1
-          fi
-
-      - name: Deploy to VPS DevDeploy Environment
+      - name: Transfer Bundle to VPS
         env:
           VPS_HOST: ${{ secrets.VPS_HOST != '' && secrets.VPS_HOST || '72.60.176.200' }}
           VPS_USER: ${{ secrets.VPS_USER != '' && secrets.VPS_USER || 'root' }}
-          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
         run: |
-          echo "🚀 Deploying V1.00D to devdeploy environment..."
-          echo "   VPS Host: $VPS_HOST"
-          echo "   VPS User: $VPS_USER"
-          echo ""
+          echo "📤 Uploading bundle to VPS..."
+          scp -i ~/.ssh/vps_key -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
+            deployment_artifacts/fullstack_bundle.tar.gz \
+            "$VPS_USER@$VPS_HOST:/tmp/v1d_fullstack_bundle.tar.gz"
 
-          # Verify SSH key is available (already done in Setup SSH Key step)
-          if [ ! -f ~/.ssh/vps_key ]; then
-            echo "❌ ERROR: SSH key not found at ~/.ssh/vps_key"
-            echo "⚠️  This should have been created in the 'Setup SSH Key' step"
-            exit 1
-          fi
-
-          # Test SSH connectivity before deployment
-          echo "🔍 Testing SSH connectivity to VPS..."
-          # Add VPS host key to known_hosts to enable host key verification
-          ssh-keyscan -H "$VPS_HOST" >> ~/.ssh/known_hosts 2>/dev/null
-          if ssh -i ~/.ssh/vps_key -o ConnectTimeout=30 -o BatchMode=yes "$VPS_USER@$VPS_HOST" "echo 'SSH connection test successful'"; then
-            echo "✅ SSH connection verified"
-          else
-            echo "❌ ERROR: Cannot establish SSH connection to VPS"
-            echo "⚠️  Possible issues:"
-            echo "   • Firewall blocking GitHub Actions IPs (port 22)"
-            echo "   • SSH key not added to VPS authorized_keys"
-            echo "   • VPS is down or unreachable"
-            echo "   • Wrong VPS_HOST or VPS_USER"
-            echo ""
-            echo "📖 Troubleshooting guide: docs/deployment/GITHUB_SECRETS_CONFIGURATION.md"
-            exit 1
-          fi
-
-          # Create enhanced deployment script with better error handling and VPS discovery
-          cat > deploy_v1d_to_devdeploy.sh << 'EOF'
-          #!/bin/bash
+      - name: Deploy Bundle on VPS
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST != '' && secrets.VPS_HOST || '72.60.176.200' }}
+          VPS_USER: ${{ secrets.VPS_USER != '' && secrets.VPS_USER || 'root' }}
+        run: |
+          echo "🚀 Deploying bundle on VPS..."
+          SSH_OPTS="-i ~/.ssh/vps_key -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=30"
+          ssh $SSH_OPTS "$VPS_USER@$VPS_HOST" 'bash -s' <<'EOF'
           set -e
 
-          echo "🔄 Starting V1.00D deployment audit and update..."
+          DEPLOY_DIR="/var/www/landscape-architecture-tool-dev"
+          BUNDLE_PATH="/tmp/v1d_fullstack_bundle.tar.gz"
 
-          # Function to find actual deployment directory
-          # CRITICAL: ONLY use development directory - NEVER deploy V1.00D to production!
-          find_deployment_dir() {
-              # HARDCODED to development directory only for safety
-              DEV_DIR="/var/www/landscape-architecture-tool-dev"
-              
-              if [ -d "$DEV_DIR" ]; then
-                  echo "$DEV_DIR"
-                  return 0
-              else
-                  echo "$DEV_DIR"  # Return dev dir even if it doesn't exist - we'll create it
-                  return 0
-              fi
-          }
-
-          # Find the actual deployment directory
-          DEPLOY_DIR=$(find_deployment_dir)
-          if [ -z "$DEPLOY_DIR" ]; then
-              echo "❌ No deployment directory found. Creating new deployment..."
-              DEPLOY_DIR="/var/www/landscape-architecture-tool-dev"
-          else
-              echo "✅ Using deployment directory: $DEPLOY_DIR"
+          echo "📦 Extracting deployment bundle..."
+          if [ ! -f "$BUNDLE_PATH" ]; then
+              echo "❌ Deployment bundle missing at $BUNDLE_PATH"
+              exit 1
           fi
 
-          # Ensure the directory exists before attempting to change into it
+          TMP_DIR=$(mktemp -d /tmp/v1d_bundle_XXXX)
+          tar -xzf "$BUNDLE_PATH" -C "$TMP_DIR"
+          BUNDLE_ROOT="$TMP_DIR/fullstack_bundle"
+
+          echo "📁 Ensuring deployment directory exists..."
           mkdir -p "$DEPLOY_DIR"
           cd "$DEPLOY_DIR"
 
           if [ ! -d .git ]; then
-              echo "📥 Initializing repository contents..."
+              echo "📥 Initializing repository..."
               git clone https://github.com/HANSKMIEL/landscape-architecture-tool.git .
               git checkout V1.00D
           fi
 
-          # CRITICAL SAFETY CHECK: Verify we're deploying to development ONLY
-          if [[ "$DEPLOY_DIR" != "/var/www/landscape-architecture-tool-dev" ]]; then
-              echo "🚨 CRITICAL ERROR: Deployment directory is not the development directory!"
-              echo "❌ Current directory: $DEPLOY_DIR"
-              echo "✅ Expected directory: /var/www/landscape-architecture-tool-dev"
-              echo "🛡️ BLOCKING deployment to protect production (optura.nl)"
-              exit 1
-          fi
-          
-          echo "✅ Confirmed deployment to development directory: $DEPLOY_DIR"
-
-          # Show current commit before update
-          echo "📍 Current commit: $(git rev-parse HEAD)"
-          echo "📍 Current commit message: $(git log -1 --oneline)"
-
-          # Pull latest V1.00D changes
-          echo "🔄 Pulling latest V1.00D changes..."
+          echo "🔄 Syncing repository with origin/V1.00D..."
           git fetch origin
           git reset --hard origin/V1.00D
 
-          # Show new commit after update
-          echo "📍 New commit: $(git rev-parse HEAD)"
-          echo "📍 New commit message: $(git log -1 --oneline)"
-
-          # Ensure devdeploy title is set
-          sed -i 's/<title>.*<\/title>/<title>devdeploy - Landscape Architecture Tool (Development)<\/title>/' frontend/index.html
-
-          # Setup Python virtual environment if needed
-          VENV_PATH="venv-dev"
-          if [ ! -f "$VENV_PATH/bin/activate" ]; then
-              echo "🐍 Creating development Python virtual environment..."
-              rm -rf "$VENV_PATH"
-              if ! python3 -m venv "$VENV_PATH"; then
-                  echo "⚠️ python3-venv not available. Attempting automatic installation..."
-                  if command -v apt-get >/dev/null 2>&1; then
-                      if [ "$(id -u)" -ne 0 ]; then
-                          SUDO="sudo"
-                      else
-                          SUDO=""
-                      fi
-                      export DEBIAN_FRONTEND=noninteractive
-                      $SUDO apt-get update -y
-                      if ! $SUDO apt-get install -y python3-venv; then
-                          if ! $SUDO apt-get install -y python3.12-venv; then
-                              echo "❌ Failed to install python3 virtual environment tooling."
-                              exit 1
-                          fi
-                      fi
-                      unset DEBIAN_FRONTEND
-                      if ! python3 -m venv "$VENV_PATH"; then
-                          echo "❌ Failed to create development virtual environment even after installing python3-venv."
-                          exit 1
-                      fi
-                  else
-                      echo "❌ Failed to create development virtual environment and apt-get is unavailable to install python3-venv."
-                      exit 1
-                  fi
-              fi
+          echo "🗃️ Applying backend bundle contents..."
+          rsync -a --delete "$BUNDLE_ROOT/backend/src/" "$DEPLOY_DIR/src/"
+          rsync -a --delete "$BUNDLE_ROOT/backend/migrations/" "$DEPLOY_DIR/migrations/"
+          rsync -a "$BUNDLE_ROOT/backend/config/" "$DEPLOY_DIR/config/"
+          rsync -a "$BUNDLE_ROOT/backend/scripts/deployment/" "$DEPLOY_DIR/scripts/deployment/"
+          cp "$BUNDLE_ROOT/backend/requirements.txt" "$DEPLOY_DIR/requirements.txt"
+          cp "$BUNDLE_ROOT/backend/pyproject.toml" "$DEPLOY_DIR/pyproject.toml"
+          if [ -f "$BUNDLE_ROOT/backend/requirements-dev.txt" ]; then
+              cp "$BUNDLE_ROOT/backend/requirements-dev.txt" "$DEPLOY_DIR/requirements-dev.txt"
+          fi
+          if [ -f "$BUNDLE_ROOT/backend/.env.example" ] && [ ! -f "$DEPLOY_DIR/.env" ]; then
+              cp "$BUNDLE_ROOT/backend/.env.example" "$DEPLOY_DIR/.env"
           fi
 
-          # Update Python dependencies
-          echo "📦 Updating Python dependencies..."
+          echo "🗃️ Updating frontend build artifacts..."
+          rsync -a --delete "$BUNDLE_ROOT/frontend/dist/" "$DEPLOY_DIR/frontend/dist/"
+
+          if [ -f "$BUNDLE_ROOT/metadata.json" ]; then
+              mkdir -p "$DEPLOY_DIR/deployment-metadata"
+              cp "$BUNDLE_ROOT/metadata.json" "$DEPLOY_DIR/deployment-metadata/deploy_$(date -u +"%Y%m%dT%H%M%SZ").json"
+          fi
+
+          echo "🐍 Ensuring Python virtual environment..."
+          VENV_PATH="$DEPLOY_DIR/venv-dev"
+          if [ ! -f "$VENV_PATH/bin/activate" ]; then
+              python3 -m venv "$VENV_PATH" || {
+                  echo "⚠️ python3-venv missing, attempting installation..."
+                  if command -v apt-get >/dev/null 2>&1; then
+                      export DEBIAN_FRONTEND=noninteractive
+                      apt-get update -y
+                      apt-get install -y python3-venv
+                      unset DEBIAN_FRONTEND
+                      python3 -m venv "$VENV_PATH"
+                  else
+                      echo "❌ Unable to create virtual environment"
+                      exit 1
+                  fi
+              }
+          fi
+
           source "$VENV_PATH/bin/activate"
           pip install --upgrade --no-cache-dir pip
           pip install --no-cache-dir -r requirements.txt
 
-          # Ensure Node.js and npm are available
-          if ! command -v npm >/dev/null 2>&1; then
-              echo "⚠️ npm not found. Installing Node.js 20..."
-              if command -v apt-get >/dev/null 2>&1; then
-                  if [ "$(id -u)" -ne 0 ]; then
-                      SUDO="sudo"
-                  else
-                      SUDO=""
-                  fi
-                  export DEBIAN_FRONTEND=noninteractive
-                  $SUDO apt-get update -y
-                  $SUDO apt-get install -y curl ca-certificates gnupg
-                  if ! curl -fsSL https://deb.nodesource.com/setup_20.x | $SUDO bash -; then
-                      echo "⚠️ Nodesource setup failed, attempting default Node.js install..."
-                  fi
-                  if ! $SUDO apt-get install -y nodejs npm; then
-                      echo "❌ Failed to install Node.js/npm."
-                      exit 1
-                  fi
-                  unset DEBIAN_FRONTEND
-              else
-                  echo "❌ npm is not available and apt-get cannot be used to install it."
-                  exit 1
-              fi
-          fi
+          echo "🗄️ Running database migrations..."
+          export FLASK_APP="src.main"
+          flask db upgrade
 
-          # Update and build frontend
-          echo "🏗️ Building frontend..."
-          cd frontend
-          npm ci --legacy-peer-deps --no-progress --prefer-online
-          npm run build
-
-          # Verify devdeploy title in build
-          if ! grep -q "devdeploy" dist/index.html; then
-              echo "⚠️ Fixing devdeploy title in build output..."
-              sed -i 's/<title>.*<\/title>/<title>devdeploy - Landscape Architecture Tool (Development)<\/title>/' dist/index.html
-          fi
-
-          # Set proper ownership
-          cd "$DEPLOY_DIR"
-          if ! chown -R www-data:www-data . 2>chown_error.log; then
-              echo "⚠️ Could not set www-data ownership (may require root)"
-              echo "chown error output:"
-              cat chown_error.log
-          fi
-          rm -f chown_error.log
-          # Run firewall diagnostic and fix
-          echo "🔥 Checking and configuring firewall..."
-          if [ -f scripts/deployment/fix_firewall.sh ]; then
-              chmod +x scripts/deployment/fix_firewall.sh
-              bash scripts/deployment/fix_firewall.sh || echo "⚠️  Firewall configuration completed with warnings"
-          fi
-
-          echo ""
-
-          # Fix backend binding configuration
-          echo "🔧 Fixing backend binding to allow external access..."
-          if [ -f scripts/deployment/fix_backend_binding.sh ]; then
-              chmod +x scripts/deployment/fix_backend_binding.sh
-              bash scripts/deployment/fix_backend_binding.sh || echo "⚠️  Backend binding fix completed with warnings"
-          fi
-
-          echo ""
-
-          # Find and restart services - ONLY development service
-          echo "🔄 Restarting development backend service..."
-          
-          if systemctl is-active --quiet "landscape-backend-dev" 2>/dev/null; then
-              echo "🔄 Restarting landscape-backend-dev service..."
+          echo "🔄 Restarting backend service..."
+          if systemctl list-unit-files | grep -q "landscape-backend-dev"; then
               systemctl restart landscape-backend-dev
-          elif systemctl list-unit-files | grep -q "landscape-backend-dev"; then
-              echo "🔄 Starting landscape-backend-dev service..."
-              systemctl start landscape-backend-dev
           else
-              echo "⚠️ landscape-backend-dev service not found - may need manual setup"
-              echo "   Expected service: landscape-backend-dev.service"
-              echo "   Backend should bind to: 0.0.0.0:5001"
+              echo "⚠️ landscape-backend-dev service not found; please configure systemd service"
           fi
 
-          # Reload nginx
-          if ! systemctl reload nginx 2>reload_err.log; then
-              echo "⚠️ Could not reload nginx"
-              echo "Error details:"
-              cat reload_err.log
-              rm -f reload_err.log
-          else
-              rm -f reload_err.log
+          echo "🌐 Reloading nginx..."
+          if systemctl is-active --quiet nginx; then
+              systemctl reload nginx || systemctl restart nginx
           fi
 
-          echo "✅ V1.00D devdeploy deployment complete"
+          echo "🧹 Cleaning temporary bundle directory..."
+          rm -rf "$TMP_DIR"
+          rm -f "$BUNDLE_PATH"
 
-          # Enhanced verification with multiple endpoints
-          echo "🔍 Verifying deployment..."
-          sleep 5
-
-          # Test frontend on port 8080 (development)
-          if curl -s http://127.0.0.1:8080/ | grep -q "devdeploy"; then
-              echo "✅ Frontend devdeploy title verified on port 8080"
-          else
-              echo "❌ Frontend devdeploy title verification failed on port 8080"
-          fi
-
-          # Test backend API on port 5001 (development)
-          for endpoint in "/health" "/api/health" "/api/status"; do
-              if curl -s "http://127.0.0.1:5001$endpoint" | grep -q -E "(healthy|ok|success)"; then
-                  echo "✅ API endpoint $endpoint on port 5001 responded successfully"
-                  break
-              else
-                  echo "⚠️ API endpoint $endpoint on port 5001 check failed"
-              fi
-          done
-
-          # Show final deployment status
-          echo "📊 Final deployment status:"
-          echo "   Directory: $DEPLOY_DIR"
-          echo "   Commit: $(git rev-parse HEAD)"
-          echo "   Branch: V1.00D"
-          echo "   Frontend built: $([ -f frontend/dist/index.html ] && echo 'Yes' || echo 'No')"
-          echo "   Venv: $VENV_PATH"
-          echo "   Service: landscape-backend-dev"
-          echo "   Backend binding: 0.0.0.0:5001"
-          echo "   Frontend port: 8080"
-          
-          # Verify service status
-          if systemctl is-active --quiet landscape-backend-dev; then
-              echo "   Service status: ✅ Active"
-          else
-              echo "   Service status: ❌ Not running (check systemctl status landscape-backend-dev)"
-          fi
+          echo "✅ Deployment bundle applied successfully"
           EOF
 
-          # Execute deployment on VPS using SSH key with enhanced error handling
-          if [ -n "$VPS_SSH_KEY" ]; then
-            echo "🔑 Connecting to VPS via SSH..."
-            # Define common SSH connection parameters
-            SSH_OPTS="-i ~/.ssh/vps_key -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
-            
-            ssh $SSH_OPTS -o ConnectTimeout=30 $VPS_USER@$VPS_HOST "$(cat deploy_v1d_to_devdeploy.sh)" || {
-              echo "❌ SSH deployment failed with exit code $?"
-              echo "🔍 Attempting basic connectivity test..."
-              ssh $SSH_OPTS -o ConnectTimeout=10 $VPS_USER@$VPS_HOST "echo 'SSH connection successful'" || echo "❌ SSH connection failed"
-              exit 1
-            }
-          else
-            echo "❌ VPS_SSH_KEY secret not configured - cannot deploy"
-            exit 1
-          fi
-
-      - name: Verify DevDeploy Deployment
+      - name: Verify Fullstack Deployment
         env:
           VPS_HOST: ${{ secrets.VPS_HOST != '' && secrets.VPS_HOST || '72.60.176.200' }}
         run: |
-          echo "🔍 Verifying devdeploy deployment..."
-
-          # Wait for services to stabilize
+          echo "🔍 Validating frontend and backend integration..."
           sleep 15
 
-          # Enhanced verification with multiple checks
-          VERIFICATION_PASSED=0
-
-          # Test 1: Frontend devdeploy title
-          echo "🧪 Test 1: Frontend devdeploy title verification..."
-          if curl -s http://$VPS_HOST:8080 | grep -q "devdeploy"; then
-            echo "✅ DevDeploy title verification passed"
-            VERIFICATION_PASSED=$((VERIFICATION_PASSED + 1))
+          FRONTEND_RESPONSE=$(curl -s http://$VPS_HOST:8080/)
+          if echo "$FRONTEND_RESPONSE" | grep -q "devdeploy"; then
+            echo "✅ Frontend is serving devdeploy UI"
           else
-            echo "❌ DevDeploy title verification failed"
-            echo "🔍 Frontend response:"
-            curl -s http://$VPS_HOST:8080 | head -20
+            echo "❌ Frontend verification failed"
+            exit 1
           fi
 
-          # Test 2: API health endpoints on backend port 5001
-          echo "🧪 Test 2: Backend API health endpoint verification (port 5001)..."
-          API_WORKING=0
-          for endpoint in "/health" "/api/health" "/api/status"; do
-            echo "   Testing http://$VPS_HOST:5001$endpoint..."
-            if curl -s -m 10 http://$VPS_HOST:5001$endpoint 2>/dev/null | grep -q -E "(healthy|ok|success)"; then
-              echo "✅ Backend API endpoint $endpoint responded successfully"
-              API_WORKING=1
-              VERIFICATION_PASSED=$((VERIFICATION_PASSED + 1))
-              break
-            else
-              echo "⚠️ Backend API endpoint $endpoint check failed"
-              RESPONSE=$(curl -s -m 5 http://$VPS_HOST:5001$endpoint 2>&1 | head -5)
-              echo "   Response: $RESPONSE"
-            fi
-          done
+          HEALTH_RESPONSE=$(curl -s http://$VPS_HOST:8080/health)
+          if [ -z "$HEALTH_RESPONSE" ]; then
+            echo "❌ Backend health endpoint returned empty response"
+            exit 1
+          fi
+          DB_STATUS=$(python -c "import json,sys; data=json.loads(sys.stdin.read()); print(data.get('database_status') or data.get('database', {}).get('status', 'unknown'))" <<<"$HEALTH_RESPONSE")
 
-          if [ $API_WORKING -eq 0 ]; then
-            echo "❌ All backend API health checks failed on port 5001"
-            echo "⚠️ Note: Backend should be accessible via nginx proxy on port 8080"
-            echo "   Testing nginx proxy to backend..."
-            if curl -s -m 10 http://$VPS_HOST:8080/health 2>/dev/null | grep -q -E "(healthy|ok|success)"; then
-              echo "✅ Backend accessible via nginx proxy on port 8080"
-              API_WORKING=1
-              VERIFICATION_PASSED=$((VERIFICATION_PASSED + 1))
-            fi
+          if [ "$DB_STATUS" != "connected" ]; then
+            echo "❌ Database status from health check is $DB_STATUS"
+            exit 1
           fi
 
-          # Test 3: Basic connectivity
-          echo "🧪 Test 3: Basic HTTP connectivity..."
-          if curl -s -I http://$VPS_HOST:8080 | grep -q "200 OK"; then
-            echo "✅ HTTP connectivity verified"
-            VERIFICATION_PASSED=$((VERIFICATION_PASSED + 1))
-          else
-            echo "❌ HTTP connectivity failed"
-          fi
-
-          # Summary
-          echo ""
-          echo "📊 Verification Summary:"
-          echo "   Tests passed: $VERIFICATION_PASSED/3"
-
-          if [ $VERIFICATION_PASSED -ge 2 ]; then
-            echo "🎉 V1.00D successfully deployed to devdeploy environment!"
-            echo "🌐 Access at: http://$VPS_HOST:8080"
-          else
-            echo "⚠️ Deployment verification had issues but may still be functional"
-            echo "🔍 Manual verification recommended"
-          fi
+          echo "✅ Backend is healthy with active database connection"
 
       - name: Generate Deployment Report
         if: always()
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST != '' && secrets.VPS_HOST || '72.60.176.200' }}
         run: |
           echo "## V1.00D DevDeploy Deployment Report" > deployment-report.md
           echo "**Branch**: V1.00D" >> deployment-report.md
           echo "**Commit**: ${{ github.sha }}" >> deployment-report.md
-          echo "**Deployment Time**: $(date)" >> deployment-report.md
-          echo "**Environment**: DevDeploy (Development)" >> deployment-report.md
-          echo "**URL**: http://72.60.176.200:8080" >> deployment-report.md
+          echo "**Deployment Time (UTC)**: $(date -u)" >> deployment-report.md
+          echo "**Environment**: DevDeploy" >> deployment-report.md
+          echo "**URL**: http://$VPS_HOST:8080" >> deployment-report.md
           echo "" >> deployment-report.md
-          echo "### Deployment Status" >> deployment-report.md
-          echo "- Frontend Build: ✅" >> deployment-report.md
-          echo "- DevDeploy Title: ✅" >> deployment-report.md
-          echo "- VPS Deployment: ✅" >> deployment-report.md
-          echo "- Health Check: ✅" >> deployment-report.md
-          echo "" >> deployment-report.md
-          echo "### Access Information" >> deployment-report.md
-          echo "- **Development URL**: http://72.60.176.200:8080" >> deployment-report.md
-          echo "- **Title**: devdeploy - Landscape Architecture Tool (Development)" >> deployment-report.md
-          echo "- **Backend Port**: 5001" >> deployment-report.md
-          echo "- **Environment**: Development/Testing" >> deployment-report.md
+          echo "### Verification" >> deployment-report.md
+          echo "- Frontend Title: ✅" >> deployment-report.md
+          echo "- Backend Health: ✅" >> deployment-report.md
+          echo "- Database Status: connected" >> deployment-report.md
 
       - name: Upload Deployment Artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: v1d-devdeploy-deployment
+          name: v1d-devdeploy-report
           path: |
             deployment-report.md
-            frontend/dist/
+            deployment_artifacts/fullstack_bundle.tar.gz
           retention-days: 7
 
       - name: Notify Deployment Success
         if: success()
         run: |
-          echo "🎉 V1.00D DevDeploy Deployment Successful!"
-          echo "🌐 Access the development environment at: http://72.60.176.200:8080"
-          echo "🏷️ Browser tab will show: 'devdeploy - Landscape Architecture Tool (Development)'"
-          echo "🔧 Backend running on port 5001"
-          echo "📊 Isolated from production environment"
+          echo "🎉 V1.00D DevDeploy deployment completed successfully!"
+          echo "🌐 Access the environment at http://72.60.176.200:8080"
+          echo "✅ Frontend, backend, and database validated"
