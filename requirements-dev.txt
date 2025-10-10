@@ -26,7 +26,7 @@ asttokens==3.0.0
     # via stack-data
 attrs==25.3.0
     # via aiohttp
-authlib==1.6.1
+authlib==1.6.5
     # via safety
 azure-core==1.35.0
     # via
