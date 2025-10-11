@@ -368,7 +368,7 @@ class TestReportsPDFGeneration(DatabaseTestMixin):
 
         # Debug: Check if response is successful
         assert response.status_code == 200, (
-            f"Expected 200, got {response.status_code}: " f"{response.get_data(as_text=True)}"
+            f"Expected 200, got {response.status_code}: {response.get_data(as_text=True)}"
         )
 
         # Should attempt to create PDF

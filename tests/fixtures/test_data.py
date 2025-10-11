@@ -286,5 +286,3 @@ def project_plant_factory(db_session):
         plant = factory.SubFactory(TestPlantFactory)
 
     return TestProjectPlantFactory
-
-

@@ -616,9 +616,7 @@ class TestSupplierRoutesIntegration(DatabaseTestMixin):
         assert len(data["suppliers"]) == 1
         assert data["suppliers"][0]["name"] == "Alpha Native Plants"
 
-    def test_supplier_product_plant_management(
-        self, client, supplier_factory, plant_factory
-    ):
+    def test_supplier_product_plant_management(self, client, supplier_factory, plant_factory):
         """Test managing products and plants for suppliers"""
         supplier = supplier_factory(name="Management Test Supplier")
 

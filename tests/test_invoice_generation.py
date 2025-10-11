@@ -85,9 +85,7 @@ class TestInvoiceGeneration(DatabaseTestMixin):
         if projects_data["total"] > 0:
             project_id = projects_data["projects"][0]["id"]
 
-            response = authenticated_client.post(
-                f"/api/invoices/invoice/{project_id}", json={"format": "json"}
-            )
+            response = authenticated_client.post(f"/api/invoices/invoice/{project_id}", json={"format": "json"})
             assert response.status_code == 200
 
             data = response.get_json()

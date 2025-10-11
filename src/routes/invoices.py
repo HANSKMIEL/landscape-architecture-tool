@@ -254,7 +254,7 @@ def generate_quote_pdf(data):
         financial = data["financial"]
         summary_data = [
             ["Subtotaal", f"€ {financial['subtotal']:.2f}"],
-            [f"BTW ({financial['vat_rate']*100:.0f}%)", f"€ {financial['vat_amount']:.2f}"],
+            [f"BTW ({financial['vat_rate'] * 100:.0f}%)", f"€ {financial['vat_amount']:.2f}"],
             ["", ""],
             ["TOTAAL", f"€ {financial['total']:.2f}"],
         ]
@@ -298,7 +298,7 @@ def generate_quote_pdf(data):
         return send_file(
             buffer,
             as_attachment=True,
-            download_name=f'offerte_{data["quote_number"]}_{datetime.now(UTC).strftime("%Y%m%d")}.pdf',
+            download_name=f"offerte_{data['quote_number']}_{datetime.now(UTC).strftime('%Y%m%d')}.pdf",
             mimetype="application/pdf",
         )
 
@@ -464,7 +464,7 @@ def generate_invoice_pdf(data):
         financial = data["financial"]
         summary_data = [
             ["Subtotaal", f"€ {financial['subtotal']:.2f}"],
-            [f"BTW ({financial['vat_rate']*100:.0f}%)", f"€ {financial['vat_amount']:.2f}"],
+            [f"BTW ({financial['vat_rate'] * 100:.0f}%)", f"€ {financial['vat_amount']:.2f}"],
             ["", ""],
             ["TE BETALEN", f"€ {financial['total']:.2f}"],
         ]
@@ -506,7 +506,7 @@ def generate_invoice_pdf(data):
         return send_file(
             buffer,
             as_attachment=True,
-            download_name=f'factuur_{data["invoice_number"]}_{datetime.now(UTC).strftime("%Y%m%d")}.pdf',
+            download_name=f"factuur_{data['invoice_number']}_{datetime.now(UTC).strftime('%Y%m%d')}.pdf",
             mimetype="application/pdf",
         )
 

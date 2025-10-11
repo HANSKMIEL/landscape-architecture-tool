@@ -178,9 +178,7 @@ class TestProjectPlantsAPI:
         supplier = supplier_factory()
         plant = plant_factory(supplier=supplier)
         add_data = {"plant_id": plant.id, "quantity": 3}
-        client.post(
-            f"/api/projects/{project.id}/plants", data=json.dumps(add_data), content_type="application/json"
-        )
+        client.post(f"/api/projects/{project.id}/plants", data=json.dumps(add_data), content_type="application/json")
 
         # Update quantity
         update_data = {"quantity": 10}
@@ -492,9 +490,9 @@ class TestAPIAuthenticationAndAuthorization:
 
         for endpoint, expected_status in expected_status_by_endpoint.items():
             response = client.get(endpoint)
-            assert (
-                response.status_code == expected_status
-            ), f"Endpoint {endpoint} returned {response.status_code}, expected {expected_status}"
+            assert response.status_code == expected_status, (
+                f"Endpoint {endpoint} returned {response.status_code}, expected {expected_status}"
+            )
 
     @pytest.mark.usefixtures("authenticated_test_user")
     def test_post_endpoints_validation(
