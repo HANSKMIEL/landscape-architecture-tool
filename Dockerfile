@@ -1,8 +1,8 @@
 # Multi-stage Dockerfile for Landscape Architecture Tool Backend
-# 
-# IMPORTANT: When making changes to cache/performance modules, 
+#
+# IMPORTANT: When making changes to cache/performance modules,
 # it's recommended to build with --no-cache to ensure clean Python module imports:
-# docker build --no-cache -t landscape-architecture-tool .
+#   docker build --no-cache -t landscape-architecture-tool .
 #
 # Stage 1: Build stage
 FROM python:3.11-slim as builder
@@ -10,11 +10,11 @@ FROM python:3.11-slim as builder
 WORKDIR /app
 
 # Install system dependencies for building
-RUN apt-get update && apt-get install -y \
-    gcc \
-    g++ \
-    libpq-dev \
-    curl \
+RUN apt-get update && apt-get install -y 
+    gcc 
+    g++ 
+    libpq-dev 
+    curl 
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements first for better caching
@@ -33,15 +33,12 @@ RUN pip install --no-cache-dir --upgrade pip --trusted-host pypi.org --trusted-h
 COPY src/utils/dependency_validator.py /tmp/dependency_validator.py
 
 # Validate critical dependencies were installed successfully
-<<<<<<< HEAD
 RUN python -c "import sys; sys.path.insert(0, '/tmp'); \
     from dependency_validator import DependencyValidator; \
     validator = DependencyValidator(); \
     critical_ok, missing = validator.validate_critical_dependencies(); \
+    print(f'Critical dependencies missing: {missing}' if not critical_ok else 'All critical dependencies present'); \
     exit(0 if critical_ok else 1)"
-=======
-RUN python -c "import sys; sys.path.insert(0, '/tmp'); from dependency_validator import DependencyValidator; validator = DependencyValidator(); critical_ok, missing = validator.validate_critical_dependencies(); exit(0 if critical_ok else 1)"
->>>>>>> origin/main
 
 # Stage 2: Production stage
 FROM python:3.11-slim as production
@@ -88,4 +85,3 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
 
 # Run database migrations and start application
 CMD ["sh", "-c", "flask db upgrade 2>/dev/null || true && gunicorn -c gunicorn.conf.py wsgi:application"]
-
