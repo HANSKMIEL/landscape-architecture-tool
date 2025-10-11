@@ -102,13 +102,15 @@ class TestSupplierService(DatabaseTestMixin):
         assert len(result["suppliers"]) == 10
         assert result["current_page"] == 2
 
-    def test_get_supplier_by_id_success(self, app_context, sample_supplier):
+    def test_get_supplier_by_id_success(self, app_context, supplier_factory):
         """Test getting supplier by ID successfully"""
         # Authentication handled by authenticated_test_user fixture
-        supplier = SupplierService.get_supplier_by_id(sample_supplier.id)
+        supplier_instance = supplier_factory()
+
+        supplier = SupplierService.get_supplier_by_id(supplier_instance.id)
         assert supplier is not None
-        assert supplier.id == sample_supplier.id
-        assert supplier.name == sample_supplier.name
+        assert supplier.id == supplier_instance.id
+        assert supplier.name == supplier_instance.name
 
     def test_get_supplier_by_id_not_found(self, app_context):
         """Test getting supplier by non-existent ID"""
@@ -152,22 +154,23 @@ class TestSupplierService(DatabaseTestMixin):
         assert supplier.id is not None
         assert supplier.name == "Minimal Supplier"
 
-    def test_update_supplier_success(self, app_context, sample_supplier):
+    def test_update_supplier_success(self, app_context, supplier_factory):
         """Test updating a supplier successfully"""
         # Authentication handled by authenticated_test_user fixture
+        supplier_instance = supplier_factory()
         update_data = {
             "name": "Updated Supplier Name",
             "email": "updated@supplier.com",
             "specialization": "Garden Equipment",
         }
 
-        updated_supplier = SupplierService.update_supplier(sample_supplier.id, update_data)
+        updated_supplier = SupplierService.update_supplier(supplier_instance.id, update_data)
 
         assert updated_supplier is not None
         assert updated_supplier.name == "Updated Supplier Name"
         assert updated_supplier.email == "updated@supplier.com"
         assert updated_supplier.specialization == "Garden Equipment"
-        assert updated_supplier.id == sample_supplier.id
+        assert updated_supplier.id == supplier_instance.id
 
     def test_update_supplier_not_found(self, app_context):
         """Test updating non-existent supplier"""
@@ -176,10 +179,11 @@ class TestSupplierService(DatabaseTestMixin):
         result = SupplierService.update_supplier(999, update_data)
         assert result is None
 
-    def test_delete_supplier_success(self, app_context, sample_supplier):
+    def test_delete_supplier_success(self, app_context, supplier_factory):
         """Test deleting a supplier successfully"""
         # Authentication handled by authenticated_test_user fixture
-        supplier_id = sample_supplier.id
+        supplier_instance = supplier_factory()
+        supplier_id = supplier_instance.id
 
         result = SupplierService.delete_supplier(supplier_id)
 
@@ -190,25 +194,27 @@ class TestSupplierService(DatabaseTestMixin):
         deleted_supplier = db.session.get(Supplier, supplier_id)
         assert deleted_supplier is None
 
-    def test_delete_supplier_with_products(self, app_context, sample_supplier, product_factory):
+    def test_delete_supplier_with_products(self, app_context, supplier_factory, product_factory):
         """Test deleting supplier with products should fail"""
         # Authentication handled by authenticated_test_user fixture
+        supplier_instance = supplier_factory()
         # Add product to supplier
-        product_factory(supplier=sample_supplier)
+        product_factory(supplier=supplier_instance)
 
-        result = SupplierService.delete_supplier(sample_supplier.id)
+        result = SupplierService.delete_supplier(supplier_instance.id)
 
         assert result is False
         # Supplier should still exist
         self.assert_record_count(Supplier, 1)
 
-    def test_delete_supplier_with_plants(self, app_context, sample_supplier, plant_factory):
+    def test_delete_supplier_with_plants(self, app_context, supplier_factory, plant_factory):
         """Test deleting supplier with plants should fail"""
         # Authentication handled by authenticated_test_user fixture
+        supplier_instance = supplier_factory()
         # Add plant to supplier
-        plant_factory(supplier=sample_supplier)
+        plant_factory(supplier=supplier_instance)
 
-        result = SupplierService.delete_supplier(sample_supplier.id)
+        result = SupplierService.delete_supplier(supplier_instance.id)
 
         assert result is False
         # Supplier should still exist
@@ -220,15 +226,16 @@ class TestSupplierService(DatabaseTestMixin):
         result = SupplierService.delete_supplier(999)
         assert result is False
 
-    def test_get_supplier_products(self, app_context, sample_supplier, product_factory):
+    def test_get_supplier_products(self, app_context, supplier_factory, product_factory):
         """Test getting products for a supplier"""
         # Authentication handled by authenticated_test_user fixture
-        product_factory(supplier=sample_supplier, name="Product 1")
-        product_factory(supplier=sample_supplier, name="Product 2")
+        supplier_instance = supplier_factory()
+        product_factory(supplier=supplier_instance, name="Product 1")
+        product_factory(supplier=supplier_instance, name="Product 2")
         other_supplier = product_factory().supplier
         product_factory(supplier=other_supplier, name="Product 3")
 
-        supplier_products = SupplierService.get_supplier_products(sample_supplier.id)
+        supplier_products = SupplierService.get_supplier_products(supplier_instance.id)
 
         assert len(supplier_products) == 2
         product_names = [product.name for product in supplier_products]
@@ -236,15 +243,16 @@ class TestSupplierService(DatabaseTestMixin):
         assert "Product 2" in product_names
         assert "Product 3" not in product_names
 
-    def test_get_supplier_plants(self, app_context, sample_supplier, plant_factory):
+    def test_get_supplier_plants(self, app_context, supplier_factory, plant_factory):
         """Test getting plants for a supplier"""
         # Authentication handled by authenticated_test_user fixture
-        plant1 = plant_factory(supplier=sample_supplier, name="Plant 1")  # noqa: F841
-        plant2 = plant_factory(supplier=sample_supplier, name="Plant 2")  # noqa: F841
+        supplier_instance = supplier_factory()
+        plant1 = plant_factory(supplier=supplier_instance, name="Plant 1")  # noqa: F841
+        plant2 = plant_factory(supplier=supplier_instance, name="Plant 2")  # noqa: F841
         other_supplier = plant_factory().supplier
         plant3 = plant_factory(supplier=other_supplier, name="Plant 3")  # noqa: F841
 
-        supplier_plants = SupplierService.get_supplier_plants(sample_supplier.id)
+        supplier_plants = SupplierService.get_supplier_plants(supplier_instance.id)
 
         assert len(supplier_plants) == 2
         plant_names = [plant.name for plant in supplier_plants]
@@ -252,29 +260,31 @@ class TestSupplierService(DatabaseTestMixin):
         assert "Plant 2" in plant_names
         assert "Plant 3" not in plant_names
 
-    def test_get_supplier_statistics(self, app_context, sample_supplier, product_factory, plant_factory):
+    def test_get_supplier_statistics(self, app_context, supplier_factory, product_factory, plant_factory):
         """Test getting statistical information for a supplier"""
         # Authentication handled by authenticated_test_user fixture
+        supplier_instance = supplier_factory()
         # Create products and plants with different prices and quantities
-        product_factory(supplier=sample_supplier, price=10.0, stock_quantity=5)
-        product_factory(supplier=sample_supplier, price=20.0, stock_quantity=3)
-        plant_factory(supplier=sample_supplier, price=15.0)
-        plant_factory(supplier=sample_supplier, price=25.0)
+        product_factory(supplier=supplier_instance, price=10.0, stock_quantity=5)
+        product_factory(supplier=supplier_instance, price=20.0, stock_quantity=3)
+        plant_factory(supplier=supplier_instance, price=15.0)
+        plant_factory(supplier=supplier_instance, price=25.0)
 
-        stats = SupplierService.get_supplier_statistics(sample_supplier.id)
+        stats = SupplierService.get_supplier_statistics(supplier_instance.id)
 
-        assert stats["supplier_id"] == sample_supplier.id
-        assert stats["supplier_name"] == sample_supplier.name
+        assert stats["supplier_id"] == supplier_instance.id
+        assert stats["supplier_name"] == supplier_instance.name
         assert stats["total_products"] == 2
         assert stats["total_plants"] == 2
         assert stats["total_inventory_value"] == 110.0  # (10*5) + (20*3)
         assert stats["average_product_price"] == 15.0  # (10+20)/2
         assert stats["average_plant_price"] == 20.0  # (15+25)/2
 
-    def test_get_supplier_statistics_no_items(self, app_context, sample_supplier):
+    def test_get_supplier_statistics_no_items(self, app_context, supplier_factory):
         """Test getting statistics for supplier with no products/plants"""
         # Authentication handled by authenticated_test_user fixture
-        stats = SupplierService.get_supplier_statistics(sample_supplier.id)
+        supplier_instance = supplier_factory()
+        stats = SupplierService.get_supplier_statistics(supplier_instance.id)
 
         assert stats["total_products"] == 0
         assert stats["total_plants"] == 0
@@ -376,10 +386,11 @@ class TestSupplierService(DatabaseTestMixin):
         errors = SupplierService.validate_supplier_data(invalid_data)
         assert "Invalid email format" in errors
 
-    def test_validate_supplier_data_duplicate_email(self, app_context, sample_supplier):
+    def test_validate_supplier_data_duplicate_email(self, app_context, supplier_factory):
         """Test validating supplier data with duplicate email"""
         # Authentication handled by authenticated_test_user fixture
-        invalid_data = {"name": "New Supplier", "email": sample_supplier.email}
+        supplier_instance = supplier_factory()
+        invalid_data = {"name": "New Supplier", "email": supplier_instance.email}
 
         errors = SupplierService.validate_supplier_data(invalid_data)
         assert "Email already exists" in errors
@@ -400,9 +411,10 @@ class TestSupplierService(DatabaseTestMixin):
         errors = SupplierService.validate_supplier_data(invalid_data)
         assert "Website must start with http:// or https://" in errors
 
-    def test_add_product_to_supplier(self, app_context, sample_supplier):
+    def test_add_product_to_supplier(self, app_context, supplier_factory):
         """Test adding a product to a supplier"""
         # Authentication handled by authenticated_test_user fixture
+        supplier_instance = supplier_factory()
         product_data = {
             "name": "Test Product",
             "category": "Tools",
@@ -410,11 +422,11 @@ class TestSupplierService(DatabaseTestMixin):
             "sku": "TEST001",
         }
 
-        product = SupplierService.add_product_to_supplier(sample_supplier.id, product_data)
+        product = SupplierService.add_product_to_supplier(supplier_instance.id, product_data)
 
         assert product is not None
         assert product.name == "Test Product"
-        assert product.supplier_id == sample_supplier.id
+        assert product.supplier_id == supplier_instance.id
 
         # Verify it's in the database
         self.assert_record_count(Product, 1)
@@ -454,22 +466,23 @@ class TestSupplierService(DatabaseTestMixin):
         assert top_suppliers[1]["supplier"]["name"] == "Supplier 2"
         assert top_suppliers[1]["total_items"] == 3
 
-    def test_get_supplier_contact_info(self, app_context, sample_supplier):
+    def test_get_supplier_contact_info(self, app_context, supplier_factory):
         """Test getting formatted contact information for a supplier"""
         # Authentication handled by authenticated_test_user fixture
         # Update supplier with complete contact info
-        sample_supplier.contact_person = "John Doe"
-        sample_supplier.email = "john@supplier.com"
-        sample_supplier.phone = "555-123-4567"
-        sample_supplier.address = "123 Supplier St"
-        sample_supplier.city = "Supplier City"
-        sample_supplier.postal_code = "12345"
-        sample_supplier.website = "https://supplier.com"
+        supplier_instance = supplier_factory()
+        supplier_instance.contact_person = "John Doe"
+        supplier_instance.email = "john@supplier.com"
+        supplier_instance.phone = "555-123-4567"
+        supplier_instance.address = "123 Supplier St"
+        supplier_instance.city = "Supplier City"
+        supplier_instance.postal_code = "12345"
+        supplier_instance.website = "https://supplier.com"
         db.session.commit()
 
-        contact_info = SupplierService.get_supplier_contact_info(sample_supplier.id)
+        contact_info = SupplierService.get_supplier_contact_info(supplier_instance.id)
 
-        assert contact_info["name"] == sample_supplier.name
+        assert contact_info["name"] == supplier_instance.name
         assert contact_info["contact_person"] == "John Doe"
         assert contact_info["email"] == "john@supplier.com"
         assert contact_info["phone"] == "555-123-4567"

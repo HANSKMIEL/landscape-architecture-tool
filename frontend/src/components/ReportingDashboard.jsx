@@ -3,26 +3,26 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { 
-  BarChart, 
-  Bar, 
-  LineChart, 
-  Line, 
-  PieChart, 
-  Pie, 
-  Cell, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
-  Legend, 
-  ResponsiveContainer 
+import {
+  BarChart,
+  Bar,
+  LineChart,
+  Line,
+  PieChart,
+  Pie,
+  Cell,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer
 } from 'recharts';
-import { 
-  Download, 
-  TrendingUp, 
-  Users, 
-  DollarSign, 
+import {
+  Download,
+  TrendingUp,
+  Users,
+  DollarSign,
   BarChart3,
   RefreshCw,
   FileText
@@ -155,7 +155,7 @@ const ReportingDashboard = () => {
       const response = await fetch('/api/reports/business-summary?format=pdf', {
         method: 'GET'
       });
-      
+
       if (response.ok) {
         const blob = await response.blob();
         const url = window.URL.createObjectURL(blob);
@@ -451,7 +451,7 @@ const ReportingDashboard = () => {
                   <XAxis dataKey="name" angle={-45} textAnchor="end" height={100} />
                   <YAxis />
                   <Tooltip formatter={(value, name) => [
-                    name === 'project_count' ? value : `€${Number(value ?? 0).toLocaleString()}`, 
+                    name === 'project_count' ? value : `€${Number(value ?? 0).toLocaleString()}`,
                     name === 'project_count' ? uiText.projects : uiText.totalValue
                   ]} />
                   <Legend />

@@ -8,10 +8,10 @@ import { Input } from './ui/input';
 import { Textarea } from './ui/textarea';
 import { Label } from './ui/label';
 
-const PhotoUpload = ({ 
-  category = 'example', 
-  entityId = null, 
-  onUploadSuccess = () => {},
+const PhotoUpload = ({
+  category = 'example',
+  entityId = null,
+  onUploadSuccess = () => { },
   allowedCategories = ['plant', 'material', 'property', 'project', 'example', 'inspiration', 'reference']
 }) => {
   const [isDragging, setIsDragging] = useState(false);
@@ -54,10 +54,10 @@ const PhotoUpload = ({
   const handleDrop = useCallback((e) => {
     e.preventDefault();
     setIsDragging(false);
-    
+
     const files = Array.from(e.dataTransfer.files);
     const imageFiles = files.filter(file => file.type.startsWith('image/'));
-    
+
     if (imageFiles.length !== files.length) {
       toast({
         title: "Alleen afbeeldingen toegestaan",
@@ -212,11 +212,10 @@ const PhotoUpload = ({
 
         {/* Drag and Drop Area */}
         <div
-          className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
-            isDragging 
-              ? 'border-primary bg-primary/5' 
+          className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${isDragging
+              ? 'border-primary bg-primary/5'
               : 'border-gray-300 hover:border-gray-400'
-          }`}
+            }`}
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}

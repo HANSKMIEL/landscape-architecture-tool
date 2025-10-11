@@ -4,12 +4,12 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Progress } from '@/components/ui/progress'
-import { 
-  Upload, 
-  Download, 
-  FileText, 
-  CheckCircle, 
-  AlertCircle, 
+import {
+  Upload,
+  Download,
+  FileText,
+  CheckCircle,
+  AlertCircle,
   Loader2,
   FileSpreadsheet,
   Database,
@@ -25,7 +25,7 @@ import { useLanguage } from '../i18n/LanguageProvider'
 const ImportExport = () => {
   const { t } = useLanguage()
   const fileInputRef = useRef(null)
-  
+
   // State management
   const [activeTab, setActiveTab] = useState('import')
   const [selectedDataType, setSelectedDataType] = useState('clients')
@@ -39,30 +39,30 @@ const ImportExport = () => {
 
   // Data types configuration
   const dataTypes = [
-    { 
-      id: 'clients', 
-      label: t('clients.title', 'Clients'), 
+    {
+      id: 'clients',
+      label: t('clients.title', 'Clients'),
       icon: Users,
       color: 'text-blue-600',
       bgColor: 'bg-blue-50'
     },
-    { 
-      id: 'plants', 
-      label: t('plants.title', 'Plants'), 
+    {
+      id: 'plants',
+      label: t('plants.title', 'Plants'),
       icon: Leaf,
       color: 'text-green-600',
       bgColor: 'bg-green-50'
     },
-    { 
-      id: 'products', 
-      label: t('products.title', 'Products'), 
+    {
+      id: 'products',
+      label: t('products.title', 'Products'),
       icon: Package,
       color: 'text-purple-600',
       bgColor: 'bg-purple-50'
     },
-    { 
-      id: 'suppliers', 
-      label: t('suppliers.title', 'Suppliers'), 
+    {
+      id: 'suppliers',
+      label: t('suppliers.title', 'Suppliers'),
       icon: Building,
       color: 'text-orange-600',
       bgColor: 'bg-orange-50'
@@ -101,7 +101,7 @@ const ImportExport = () => {
       })
 
       const result = await response.json()
-      
+
       if (!response.ok) {
         throw new Error(result.error || 'Validation failed')
       }
@@ -139,7 +139,7 @@ const ImportExport = () => {
       })
 
       const result = await response.json()
-      
+
       if (!response.ok) {
         throw new Error(result.error || 'Import failed')
       }
@@ -203,7 +203,7 @@ const ImportExport = () => {
         const headers = Object.keys(data[0])
         const csvContent = [
           headers.join(','),
-          ...data.map(row => 
+          ...data.map(row =>
             headers.map(header => `"${row[header] || ''}"`).join(',')
           )
         ].join('\n')
@@ -221,7 +221,7 @@ const ImportExport = () => {
 
       setExportProgress(100)
       setExportStatus('completed')
-      
+
       setTimeout(() => {
         setExportStatus('idle')
         setExportProgress(0)
@@ -236,7 +236,7 @@ const ImportExport = () => {
 
   // Download template
   const downloadTemplate = useCallback(() => {
-  const templates = {
+    const templates = {
       clients: [
         { name: 'Example Client', email: 'client@example.com', phone: '+31 6 12345678', address: 'Main Street 123', city: 'Amsterdam', postal_code: '1000 AB', country: 'Netherlands' }
       ],
@@ -251,11 +251,11 @@ const ImportExport = () => {
       ]
     }
 
-  const templateData = templates[selectedDataType]
+    const templateData = templates[selectedDataType]
     const headers = Object.keys(templateData[0])
     const csvContent = [
       headers.join(','),
-      ...templateData.map(row => 
+      ...templateData.map(row =>
         headers.map(header => `"${row[header] || ''}"`).join(',')
       )
     ].join('\n')
@@ -311,11 +311,10 @@ const ImportExport = () => {
               <button
                 key={type.id}
                 onClick={() => setSelectedDataType(type.id)}
-                className={`p-4 rounded-lg border-2 transition-all ${
-                  selectedDataType === type.id
+                className={`p-4 rounded-lg border-2 transition-all ${selectedDataType === type.id
                     ? 'border-green-500 bg-green-50'
                     : 'border-gray-200 hover:border-gray-300'
-                }`}
+                  }`}
               >
                 <div className="flex flex-col items-center space-y-2">
                   <type.icon className={`h-8 w-8 ${type.color}`} />
@@ -481,19 +480,17 @@ const ImportExport = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  <div className={`p-3 rounded-lg ${
-                    validationResults.valid ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'
-                  }`}>
-                    <div className={`flex items-center space-x-2 ${
-                      validationResults.valid ? 'text-green-800' : 'text-red-800'
+                  <div className={`p-3 rounded-lg ${validationResults.valid ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'
                     }`}>
+                    <div className={`flex items-center space-x-2 ${validationResults.valid ? 'text-green-800' : 'text-red-800'
+                      }`}>
                       {validationResults.valid ? (
                         <CheckCircle className="h-4 w-4" />
                       ) : (
                         <AlertCircle className="h-4 w-4" />
                       )}
                       <span className="font-medium">
-                        {validationResults.valid 
+                        {validationResults.valid
                           ? t('importExport.fileValid', 'File is valid and ready for import')
                           : t('importExport.fileInvalid', 'File has validation errors')
                         }
@@ -571,7 +568,7 @@ const ImportExport = () => {
                       {t('importExport.successfulImports', 'Successful Imports')}
                     </div>
                   </div>
-                  
+
                   <div className="p-4 bg-blue-50 rounded-lg">
                     <div className="text-2xl font-bold text-blue-600">
                       {importResults.updated_records || 0}
@@ -580,7 +577,7 @@ const ImportExport = () => {
                       {t('importExport.updatedRecords', 'Updated Records')}
                     </div>
                   </div>
-                  
+
                   <div className="p-4 bg-red-50 rounded-lg">
                     <div className="text-2xl font-bold text-red-600">
                       {importResults.failed_imports || 0}

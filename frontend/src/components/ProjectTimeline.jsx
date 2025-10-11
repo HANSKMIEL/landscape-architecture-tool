@@ -230,10 +230,10 @@ const ProjectTimeline = () => {
       const updatedTimeline = timelineData.map(milestone =>
         milestone.id === milestoneId
           ? {
-              ...milestone,
-              status: newStatus,
-              completed_date: newStatus === 'completed' ? new Date().toISOString().split('T')[0] : null
-            }
+            ...milestone,
+            status: newStatus,
+            completed_date: newStatus === 'completed' ? new Date().toISOString().split('T')[0] : null
+          }
           : milestone
       )
 
@@ -415,21 +415,19 @@ const ProjectTimeline = () => {
                           {/* Timeline connector */}
                           <div className="flex flex-col items-center">
                             <div
-                              className={`p-2 rounded-full ${
-                                milestone.status === 'completed'
+                              className={`p-2 rounded-full ${milestone.status === 'completed'
                                   ? 'bg-green-100 text-green-600'
                                   : milestone.status === 'in_progress'
-                                  ? 'bg-blue-100 text-blue-600'
-                                  : 'bg-gray-100 text-gray-400'
-                              }`}
+                                    ? 'bg-blue-100 text-blue-600'
+                                    : 'bg-gray-100 text-gray-400'
+                                }`}
                             >
                               <Icon className="h-5 w-5" />
                             </div>
                             {!isLast && (
                               <div
-                                className={`w-px h-16 ${
-                                  milestone.status === 'completed' ? 'bg-green-200' : 'bg-gray-200'
-                                }`}
+                                className={`w-px h-16 ${milestone.status === 'completed' ? 'bg-green-200' : 'bg-gray-200'
+                                  }`}
                               />
                             )}
                           </div>

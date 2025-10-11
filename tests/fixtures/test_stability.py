@@ -121,7 +121,7 @@ def error_recovery_context(operation_name: str = "test operation"):
         duration = time.time() - start_time
         safe_log(
             logger.error,
-            f"Failed {operation_name} after {duration:.2f}s: {e}\n" f"Traceback: {traceback.format_exc()}",
+            f"Failed {operation_name} after {duration:.2f}s: {e}\nTraceback: {traceback.format_exc()}",
         )
         raise
     finally:

@@ -407,13 +407,12 @@ const AISettings = () => {
             {statusIcon}
             <span className="text-sm font-medium">{uiText.statusLabel}:</span>
             <span
-              className={`text-sm ${
-                connectionStatus === 'connected'
+              className={`text-sm ${connectionStatus === 'connected'
                   ? 'text-green-600'
                   : connectionStatus === 'testing'
                     ? 'text-blue-600'
                     : 'text-red-600'
-              }`}
+                }`}
             >
               {statusText}
             </span>

@@ -4,16 +4,16 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { 
-  Building2, 
-  Plus, 
-  Upload, 
+import {
+  Building2,
+  Plus,
+  Upload,
   Download,
-  Edit, 
-  Trash2, 
-  Search, 
-  Eye, 
-  X, 
+  Edit,
+  Trash2,
+  Search,
+  Eye,
+  X,
   Loader2,
   Mail,
   Phone,
@@ -60,11 +60,11 @@ const Clients = () => {
       setError(null)
       const params = searchTerm ? { search: searchTerm } : {}
       const data = await ApiService.getClients(params)
-      
+
       // Defensive programming: ensure clients is always an array  
       const clientsArray = Array.isArray(data?.clients) ? data.clients :
-                          Array.isArray(data) ? data : []
-      
+        Array.isArray(data) ? data : []
+
       setClients(clientsArray)
       setTotalClients(data?.total || data?.pagination?.total || clientsArray.length)
     } catch (err) {
@@ -503,7 +503,7 @@ const Clients = () => {
           </p>
         </div>
         <div className="flex space-x-2">
-          <Button 
+          <Button
             variant="outline"
             onClick={exportClientsCSV}
             className="flex items-center space-x-2"
@@ -511,7 +511,7 @@ const Clients = () => {
             <Download className="h-4 w-4" />
             <span>{t('common.export', 'Export')}</span>
           </Button>
-          <Button 
+          <Button
             variant="outline"
             onClick={() => navigate('/import-export')}
             className="flex items-center space-x-2"
@@ -519,7 +519,7 @@ const Clients = () => {
             <Upload className="h-4 w-4" />
             <span>{t('clients.importExcel', 'Import Excel/CSV')}</span>
           </Button>
-          <Button 
+          <Button
             className="flex items-center space-x-2"
             onClick={() => setShowAddModal(true)}
           >
@@ -562,7 +562,7 @@ const Clients = () => {
                 {t('clients.noClients', 'No clients found')}
               </h2>
               <p className="text-gray-500 mb-6">
-                {searchTerm 
+                {searchTerm
                   ? t('clients.noSearchResults', 'No clients match your search criteria')
                   : t('clients.createFirst', 'Add your first client to get started')
                 }
@@ -618,11 +618,11 @@ const Clients = () => {
                     <span>{client.contact_person}</span>
                   </div>
                 )}
-                
+
                 {client.email && (
                   <div className="flex items-center text-gray-600 text-sm">
                     <Mail className="h-4 w-4 mr-2" />
-                    <a 
+                    <a
                       href={`mailto:${client.email}`}
                       className="text-blue-600 hover:underline"
                     >
@@ -630,11 +630,11 @@ const Clients = () => {
                     </a>
                   </div>
                 )}
-                
+
                 {client.phone && (
                   <div className="flex items-center text-gray-600 text-sm">
                     <Phone className="h-4 w-4 mr-2" />
-                    <a 
+                    <a
                       href={`tel:${client.phone}`}
                       className="text-blue-600 hover:underline"
                     >
@@ -642,7 +642,7 @@ const Clients = () => {
                     </a>
                   </div>
                 )}
-                
+
                 {(client.city || client.address) && (
                   <div className="flex items-start text-gray-600 text-sm">
                     <MapPin className="h-4 w-4 mr-2 mt-0.5" />
@@ -661,7 +661,7 @@ const Clients = () => {
 
                 {client.website && (
                   <div className="pt-2">
-                    <a 
+                    <a
                       href={client.website}
                       target="_blank"
                       rel="noopener noreferrer"

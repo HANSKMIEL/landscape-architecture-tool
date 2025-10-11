@@ -3,12 +3,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { 
-  Search, 
-  Plus, 
-  Building2, 
-  Phone, 
-  Mail, 
+import {
+  Search,
+  Plus,
+  Building2,
+  Phone,
+  Mail,
   MapPin,
   Trash2,
   Edit,
@@ -50,9 +50,9 @@ const Suppliers = () => {
   // Enhanced error handling with retry logic
   const handleApiError = (error, context = '') => {
     console.error(`Error in ${context}:`, error)
-    
+
     let errorMessage = 'An unexpected error occurred'
-    
+
     if (error.response?.data?.error) {
       errorMessage = error.response.data.error
     } else if (error.message) {
@@ -64,7 +64,7 @@ const Suppliers = () => {
         errorMessage = error.message
       }
     }
-    
+
     return errorMessage
   }
 
@@ -93,7 +93,7 @@ const Suppliers = () => {
   // Handle form input changes
   const handleInputChange = useCallback((e) => {
     const { name, value } = e.target
-    
+
     setFormData(prev => ({
       ...prev,
       [name]: value
@@ -121,7 +121,7 @@ const Suppliers = () => {
   const handleAddSupplier = async (e) => {
     e.preventDefault()
     setSubmitLoading(true)
-    
+
     try {
       await apiService.createSupplier(formData)
       await loadSuppliers()
@@ -140,7 +140,7 @@ const Suppliers = () => {
   const handleEditSupplier = async (e) => {
     e.preventDefault()
     setSubmitLoading(true)
-    
+
     try {
       await apiService.updateSupplier(editingSupplier.id, formData)
       await loadSuppliers()
@@ -168,7 +168,7 @@ const Suppliers = () => {
     }
 
     setDeleteLoading(supplierId)
-    
+
     try {
       await apiService.deleteSupplier(supplierId)
       toast.success(t('suppliers.deleteSuccess', 'Supplier successfully deleted!'))
@@ -431,7 +431,7 @@ const Suppliers = () => {
             {t('suppliers.subtitle', 'Manage your landscape architecture suppliers')}
           </p>
         </div>
-        <Button 
+        <Button
           className="flex items-center space-x-2"
           onClick={() => setShowAddModal(true)}
         >
@@ -473,7 +473,7 @@ const Suppliers = () => {
                 {t('suppliers.noSuppliers', 'No suppliers found')}
               </h2>
               <p className="text-gray-500 mb-6">
-                {searchTerm 
+                {searchTerm
                   ? t('suppliers.noSearchResults', 'No suppliers match your search criteria')
                   : t('suppliers.createFirst', 'Add your first supplier to get started')
                 }
@@ -526,11 +526,11 @@ const Suppliers = () => {
                     <span>{supplier.contact_person}</span>
                   </div>
                 )}
-                
+
                 {supplier.email && (
                   <div className="flex items-center text-gray-600 text-sm">
                     <Mail className="h-4 w-4 mr-2" />
-                    <a 
+                    <a
                       href={`mailto:${supplier.email}`}
                       className="text-blue-600 hover:underline"
                     >
@@ -538,11 +538,11 @@ const Suppliers = () => {
                     </a>
                   </div>
                 )}
-                
+
                 {supplier.phone && (
                   <div className="flex items-center text-gray-600 text-sm">
                     <Phone className="h-4 w-4 mr-2" />
-                    <a 
+                    <a
                       href={`tel:${supplier.phone}`}
                       className="text-blue-600 hover:underline"
                     >
@@ -550,7 +550,7 @@ const Suppliers = () => {
                     </a>
                   </div>
                 )}
-                
+
                 {(supplier.city || supplier.address) && (
                   <div className="flex items-start text-gray-600 text-sm">
                     <MapPin className="h-4 w-4 mr-2 mt-0.5" />
@@ -580,7 +580,7 @@ const Suppliers = () => {
 
                 {supplier.website && (
                   <div className="pt-2">
-                    <a 
+                    <a
                       href={supplier.website}
                       target="_blank"
                       rel="noopener noreferrer"

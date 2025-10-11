@@ -8,23 +8,23 @@ import React, { useState, useCallback, useRef } from 'react';
 const useOptimizedFormHandler = (initialFormData) => {
   const [formData, setFormData] = useState(initialFormData);
   const formRef = useRef(null);
-  
+
   // Memoized input change handler to prevent re-creation
   const handleInputChange = useCallback((e) => {
     const { name, value, type, checked } = e.target;
-    
+
     // Use functional update to prevent stale closures
     setFormData(prevData => ({
       ...prevData,
       [name]: type === 'checkbox' ? checked : value
     }));
   }, []); // Empty dependency array since we use functional updates
-  
+
   // Memoized reset function
   const resetForm = useCallback(() => {
     setFormData(initialFormData);
   }, [initialFormData]);
-  
+
   return {
     formData,
     handleInputChange,
@@ -34,14 +34,14 @@ const useOptimizedFormHandler = (initialFormData) => {
 };
 
 // Memoized Input Component to prevent unnecessary re-renders
-const MemoizedInput = React.memo(({ 
-  name, 
-  value, 
-  onChange, 
-  placeholder, 
+const MemoizedInput = React.memo(({
+  name,
+  value,
+  onChange,
+  placeholder,
   type = "text",
   required = false,
-  ...props 
+  ...props
 }) => {
   return (
     <input
@@ -59,26 +59,26 @@ const MemoizedInput = React.memo(({
 MemoizedInput.displayName = 'MemoizedInput';
 
 // Fixed Form Component with proper memoization
-const OptimizedPlantForm = React.memo(({ 
-  isEdit: _isEdit = false, 
-  onSubmit, 
-  onCancel, 
-  initialData = {} 
+const OptimizedPlantForm = React.memo(({
+  isEdit: _isEdit = false,
+  onSubmit,
+  onCancel,
+  initialData = {}
 }) => {
   const { formData, handleInputChange, resetForm, formRef } = useOptimizedFormHandler(initialData);
-  
+
   // Submit handler with useCallback
   const handleSubmit = useCallback((e) => {
     e.preventDefault();
     onSubmit(formData);
   }, [formData, onSubmit]);
-  
+
   // Cancel handler with useCallback
   const handleCancel = useCallback(() => {
     resetForm();
     onCancel();
   }, [resetForm, onCancel]);
-  
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
@@ -91,25 +91,25 @@ const OptimizedPlantForm = React.memo(({
             placeholder="Scientific Name"
             required
           />
-          
+
           <MemoizedInput
             name="common_name"
             value={formData.common_name}
             onChange={handleInputChange}
             placeholder="Common Name"
           />
-          
+
           {/* Additional form fields... */}
-          
+
           <div className="flex justify-end space-x-2 pt-4">
-            <button 
-              type="button" 
+            <button
+              type="button"
               onClick={handleCancel}
               className="px-4 py-2 border border-gray-300 rounded-md"
             >
               Cancel
             </button>
-            <button 
+            <button
               type="submit"
               className="px-4 py-2 bg-green-600 text-white rounded-md"
             >

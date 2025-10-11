@@ -67,12 +67,12 @@ const ProjectPlantManagement = ({ projectId }) => {
     try {
       setLoading(true);
       setError(null);
-      
+
       const response = await fetch(`/api/projects/${projectId}/plants`);
       if (!response.ok) {
         throw new Error(`API error: ${response.status}`);
       }
-      
+
       const data = await response.json();
       setProjectPlants(data);
     } catch (err) {
@@ -89,7 +89,7 @@ const ProjectPlantManagement = ({ projectId }) => {
       if (!response.ok) {
         throw new Error(`API error: ${response.status}`);
       }
-      
+
       const data = await response.json();
       setAvailablePlants(data);
     } catch (err) {
@@ -104,7 +104,7 @@ const ProjectPlantManagement = ({ projectId }) => {
       if (!response.ok) {
         throw new Error(`API error: ${response.status}`);
       }
-      
+
       const data = await response.json();
       setCostAnalysis(data);
     } catch (err) {
@@ -118,7 +118,7 @@ const ProjectPlantManagement = ({ projectId }) => {
 
     try {
       setLoading(true);
-      
+
       const response = await fetch(`/api/projects/${projectId}/plants`, {
         method: 'POST',
         headers: {
@@ -142,7 +142,7 @@ const ProjectPlantManagement = ({ projectId }) => {
       setUnitCost('');
       setNotes('');
       setShowAddModal(false);
-      
+
       await fetchProjectPlants();
       await fetchCostAnalysis();
     } catch (err) {
@@ -160,7 +160,7 @@ const ProjectPlantManagement = ({ projectId }) => {
 
     try {
       setLoading(true);
-      
+
       const response = await fetch(`/api/projects/${projectId}/plants/${plantId}`, {
         method: 'DELETE',
       });
@@ -208,9 +208,9 @@ const ProjectPlantManagement = ({ projectId }) => {
       if (!response.ok) {
         throw new Error(`API error: ${response.status}`);
       }
-      
+
       const data = await response.json();
-      
+
       // Create and download CSV
       const csvContent = generateCSVContent(data);
       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -230,13 +230,13 @@ const ProjectPlantManagement = ({ projectId }) => {
   // Generate CSV content for order list
   const generateCSVContent = (orderData) => {
     let csv = 'Supplier,Plant Name,Common Name,Quantity,Unit Cost,Total Cost,Status,Notes\n';
-    
+
     orderData.forEach(supplier => {
       supplier.plants.forEach(plant => {
         csv += `"${supplier.supplier_name}","${plant.plant_name}","${plant.common_name || ''}",${plant.quantity},${plant.unit_cost || 0},${plant.total_cost || 0},"${plant.status}","${plant.notes || ''}"\n`;
       });
     });
-    
+
     return csv;
   };
 
@@ -279,7 +279,7 @@ const ProjectPlantManagement = ({ projectId }) => {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
       </div>
-  <h3 className="text-lg font-semibold text-red-800 mb-2">{translate('errorLoading')}</h3>
+      <h3 className="text-lg font-semibold text-red-800 mb-2">{translate('errorLoading')}</h3>
       <p className="text-red-600 mb-4">{error}</p>
       <Button onClick={fetchProjectPlants} variant="destructive">
         {translate('tryAgain')}
@@ -434,7 +434,7 @@ const ProjectPlantManagement = ({ projectId }) => {
                 </svg>
               </button>
             </div>
-            
+
             <div className="p-6 space-y-4">
               {/* Search Plants */}
               <div>
@@ -462,9 +462,8 @@ const ProjectPlantManagement = ({ projectId }) => {
                         setSelectedPlant(plant);
                         setUnitCost(plant.price?.toString() || '');
                       }}
-                      className={`p-3 cursor-pointer hover:bg-gray-50 border-b ${
-                        selectedPlant?.id === plant.id ? 'bg-blue-50 border-blue-200' : ''
-                      }`}
+                      className={`p-3 cursor-pointer hover:bg-gray-50 border-b ${selectedPlant?.id === plant.id ? 'bg-blue-50 border-blue-200' : ''
+                        }`}
                     >
                       <div className="font-medium">{plant.name}</div>
                       <div className="text-sm text-gray-600">{plant.common_name}</div>

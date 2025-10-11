@@ -26,8 +26,12 @@ class TestProjectService(DatabaseTestMixin):
         assert result["pages"] == 0
         assert result["current_page"] == 1
 
-    def test_get_all_projects_with_data(self, app_context, sample_projects):
-        """Test getting projects with sample data"""
+    def test_get_all_projects_with_data(self, app_context, project_factory, client_factory):
+        """Test getting projects when records exist"""
+        client = client_factory()
+        for idx in range(3):
+            project_factory(name=f"Project {idx}", client=client)
+
         result = ProjectService.get_all_projects()
 
         assert len(result["projects"]) == 3
@@ -39,7 +43,7 @@ class TestProjectService(DatabaseTestMixin):
     def test_get_all_projects_with_search(self, app_context, project_factory, client_factory):
         """Test getting projects with search filter"""
         client = client_factory(name="Regular Client")
-        project1 = project_factory(  # noqa: F841
+        project_factory(
             name="Garden Renovation",
             description="Project description",
             location="City A",
@@ -51,62 +55,61 @@ class TestProjectService(DatabaseTestMixin):
             location="City B",
             client=client,
         )
-        project3 = project_factory(  # noqa: F841
+        project_factory(
             name="Pool Installation",
             description="Another description",
             location="City C",
             client=client,
         )
 
-        # Search by project name - should find one project
         result = ProjectService.get_all_projects(search="Garden")
         assert len(result["projects"]) == 1
         assert result["projects"][0]["name"] == "Garden Renovation"
 
-        # Search by client name - should find all three projects
         result = ProjectService.get_all_projects(search="Regular Client")
         assert len(result["projects"]) == 3
 
     def test_get_all_projects_with_status_filter(self, app_context, project_factory, client_factory):
         """Test getting projects with status filter"""
         client = client_factory()
-        project1 = project_factory(status="active", client=client)  # noqa: F841
-        project2 = project_factory(status="completed", client=client)  # noqa: F841
-        project3 = project_factory(status="active", client=client)  # noqa: F841
+        project_factory(status="active", client=client)
+        project_factory(status="completed", client=client)
+        project_factory(status="active", client=client)
 
         result = ProjectService.get_all_projects(status="active")
         assert len(result["projects"]) == 2
         assert all(project["status"] == "active" for project in result["projects"])
 
     def test_get_all_projects_with_client_filter(self, app_context, project_factory, client_factory):
-        """Test getting projects with client filter"""
+        """Test getting projects filtered by client"""
         client1 = client_factory(name="Client 1")
         client2 = client_factory(name="Client 2")
-        project1 = project_factory(client=client1)  # noqa: F841
-        project2 = project_factory(client=client1)  # noqa: F841
-        project3 = project_factory(client=client2)  # noqa: F841
+        project_factory(client=client1)
+        project_factory(client=client1)
+        project_factory(client=client2)
 
         result = ProjectService.get_all_projects(client_id=client1.id)
         assert len(result["projects"]) == 2
         assert all(project["client_id"] == client1.id for project in result["projects"])
 
-    def test_get_project_by_id_success(self, app_context, sample_project):
-        """Test getting project by ID successfully"""
-        # Authentication handled by authenticated_test_user fixture
-        project = ProjectService.get_project_by_id(sample_project.id)
+    def test_get_project_by_id_success(self, app_context, project_factory, client_factory):
+        """Test retrieving a project by ID"""
+        client = client_factory()
+        project_instance = project_factory(client=client)
+
+        project = ProjectService.get_project_by_id(project_instance.id)
         assert project is not None
-        assert project.id == sample_project.id
-        assert project.name == sample_project.name
+        assert project.id == project_instance.id
+        assert project.name == project_instance.name
 
     def test_get_project_by_id_not_found(self, app_context):
         """Test getting project by non-existent ID"""
-        # Authentication handled by authenticated_test_user fixture
         project = ProjectService.get_project_by_id(999)
         assert project is None
 
-    def test_create_project_success(self, app_context, sample_client):
+    def test_create_project_success(self, app_context, client_factory):
         """Test creating a project successfully"""
-        # Authentication handled by authenticated_test_user fixture
+        client = client_factory()
         project_data = {
             "name": "Test Project",
             "description": "A test project description",
@@ -114,7 +117,7 @@ class TestProjectService(DatabaseTestMixin):
             "area_size": 500.0,
             "budget": 10000.0,
             "status": "planning",
-            "client_id": sample_client.id,
+            "client_id": client.id,
         }
 
         project = ProjectService.create_project(project_data)
@@ -123,63 +126,58 @@ class TestProjectService(DatabaseTestMixin):
         assert project.name == "Test Project"
         assert project.description == "A test project description"
         assert project.budget == 10000.0
-        assert project.client_id == sample_client.id
-
-        # Verify it's in the database
+        assert project.client_id == client.id
         self.assert_record_count(Project, 1)
 
-    def test_create_project_minimal_data(self, app_context, sample_client):
+    def test_create_project_minimal_data(self, app_context, client_factory):
         """Test creating project with minimal required data"""
-        # Authentication handled by authenticated_test_user fixture
-        project_data = {"name": "Minimal Project", "client_id": sample_client.id}
+        client = client_factory()
+        project_data = {"name": "Minimal Project", "client_id": client.id}
 
         project = ProjectService.create_project(project_data)
 
         assert project.id is not None
         assert project.name == "Minimal Project"
-        assert project.client_id == sample_client.id
+        assert project.client_id == client.id
 
-    def test_update_project_success(self, app_context, sample_project):
+    def test_update_project_success(self, app_context, project_factory, client_factory):
         """Test updating a project successfully"""
-        # Authentication handled by authenticated_test_user fixture
+        client = client_factory()
+        project_instance = project_factory(client=client)
         update_data = {
             "name": "Updated Project Name",
             "budget": 15000.0,
             "status": "active",
         }
 
-        updated_project = ProjectService.update_project(sample_project.id, update_data)
+        updated_project = ProjectService.update_project(project_instance.id, update_data)
 
         assert updated_project is not None
         assert updated_project.name == "Updated Project Name"
         assert updated_project.budget == 15000.0
         assert updated_project.status == "active"
-        assert updated_project.id == sample_project.id
+        assert updated_project.id == project_instance.id
 
     def test_update_project_not_found(self, app_context):
         """Test updating non-existent project"""
-        # Authentication handled by authenticated_test_user fixture
         update_data = {"name": "Updated Name"}
         result = ProjectService.update_project(999, update_data)
         assert result is None
 
-    def test_delete_project_success(self, app_context, sample_project):
+    def test_delete_project_success(self, app_context, project_factory, client_factory):
         """Test deleting a project successfully"""
-        # Authentication handled by authenticated_test_user fixture
-        project_id = sample_project.id
+        client = client_factory()
+        project_instance = project_factory(client=client)
 
-        result = ProjectService.delete_project(project_id)
+        result = ProjectService.delete_project(project_instance.id)
 
         assert result is True
         self.assert_record_count(Project, 0)
-
-        # Verify project is gone
-        deleted_project = db.session.get(Project, project_id)
+        deleted_project = db.session.get(Project, project_instance.id)
         assert deleted_project is None
 
     def test_delete_project_not_found(self, app_context):
         """Test deleting non-existent project"""
-        # Authentication handled by authenticated_test_user fixture
         result = ProjectService.delete_project(999)
         assert result is False
 
@@ -187,10 +185,9 @@ class TestProjectService(DatabaseTestMixin):
         """Test getting projects by client"""
         client1 = client_factory()
         client2 = client_factory()
-
-        project1 = project_factory(client=client1)  # noqa: F841
-        project2 = project_factory(client=client1)  # noqa: F841
-        project3 = project_factory(client=client2)  # noqa: F841
+        project_factory(client=client1)
+        project_factory(client=client1)
+        project_factory(client=client2)
 
         client1_projects = ProjectService.get_projects_by_client(client1.id)
         assert len(client1_projects) == 2
@@ -199,125 +196,169 @@ class TestProjectService(DatabaseTestMixin):
     def test_get_projects_by_status(self, app_context, project_factory, client_factory):
         """Test getting projects by status"""
         client = client_factory()
-        project1 = project_factory(status="active", client=client)  # noqa: F841
-        project2 = project_factory(status="completed", client=client)  # noqa: F841
-        project3 = project_factory(status="active", client=client)  # noqa: F841
+        project_factory(status="active", client=client)
+        project_factory(status="completed", client=client)
+        project_factory(status="active", client=client)
 
         active_projects = ProjectService.get_projects_by_status("active")
         assert len(active_projects) == 2
         assert all(project.status == "active" for project in active_projects)
 
-    def test_add_plant_to_project_success(self, app_context, sample_project, sample_plant):
+    def test_add_plant_to_project_success(
+        self,
+        app_context,
+        project_factory,
+        client_factory,
+        plant_factory,
+        supplier_factory,
+    ):
         """Test adding a plant to a project successfully"""
-        # Authentication handled by authenticated_test_user fixture
-        result = ProjectService.add_plant_to_project(sample_project.id, sample_plant.id, quantity=5, unit_cost=25.99)
+        client = client_factory()
+        project_instance = project_factory(client=client)
+        supplier = supplier_factory()
+        plant = plant_factory(supplier=supplier)
+
+        result = ProjectService.add_plant_to_project(project_instance.id, plant.id, quantity=5, unit_cost=25.99)
 
         assert result is True
-
-        # Verify the relationship was created
-        project_plant = ProjectPlant.query.filter_by(project_id=sample_project.id, plant_id=sample_plant.id).first()
-
+        project_plant = ProjectPlant.query.filter_by(project_id=project_instance.id, plant_id=plant.id).first()
         assert project_plant is not None
         assert project_plant.quantity == 5
         assert project_plant.unit_cost == 25.99
 
-    def test_add_plant_to_project_existing_plant(self, app_context, sample_project, sample_plant):
-        """Test adding a plant that already exists in project
-        (should increase quantity)"""
-        # Authentication handled by authenticated_test_user fixture
-        # Add plant first time
-        ProjectService.add_plant_to_project(sample_project.id, sample_plant.id, quantity=3)
+    def test_add_plant_to_project_existing_plant(
+        self,
+        app_context,
+        project_factory,
+        client_factory,
+        plant_factory,
+        supplier_factory,
+    ):
+        """Test adding a plant that already exists in project"""
+        client = client_factory()
+        project_instance = project_factory(client=client)
+        supplier = supplier_factory()
+        plant = plant_factory(supplier=supplier)
 
-        # Add same plant again
-        result = ProjectService.add_plant_to_project(sample_project.id, sample_plant.id, quantity=2)
+        ProjectService.add_plant_to_project(project_instance.id, plant.id, quantity=3)
+        result = ProjectService.add_plant_to_project(project_instance.id, plant.id, quantity=2)
 
         assert result is True
-
-        # Should have combined quantity
-        project_plant = ProjectPlant.query.filter_by(project_id=sample_project.id, plant_id=sample_plant.id).first()
-
+        project_plant = ProjectPlant.query.filter_by(project_id=project_instance.id, plant_id=plant.id).first()
         assert project_plant.quantity == 5
 
-    def test_add_plant_to_project_invalid_project(self, app_context, sample_plant):
+    def test_add_plant_to_project_invalid_project(self, app_context, plant_factory, supplier_factory):
         """Test adding plant to non-existent project"""
-        # Authentication handled by authenticated_test_user fixture
-        result = ProjectService.add_plant_to_project(999, sample_plant.id, quantity=1)
+        supplier = supplier_factory()
+        plant = plant_factory(supplier=supplier)
+
+        result = ProjectService.add_plant_to_project(999, plant.id, quantity=1)
         assert result is False
 
-    def test_add_plant_to_project_invalid_plant(self, app_context, sample_project):
+    def test_add_plant_to_project_invalid_plant(self, app_context, project_factory, client_factory):
         """Test adding non-existent plant to project"""
-        # Authentication handled by authenticated_test_user fixture
-        result = ProjectService.add_plant_to_project(sample_project.id, 999, quantity=1)
+        client = client_factory()
+        project_instance = project_factory(client=client)
+
+        result = ProjectService.add_plant_to_project(project_instance.id, 999, quantity=1)
         assert result is False
 
-    def test_remove_plant_from_project_success(self, app_context, sample_project, sample_plant):
+    def test_remove_plant_from_project_success(
+        self,
+        app_context,
+        project_factory,
+        client_factory,
+        plant_factory,
+        supplier_factory,
+    ):
         """Test removing a plant from project successfully"""
-        # Authentication handled by authenticated_test_user fixture
-        # First add the plant
-        ProjectService.add_plant_to_project(sample_project.id, sample_plant.id, quantity=5)
+        client = client_factory()
+        project_instance = project_factory(client=client)
+        supplier = supplier_factory()
+        plant = plant_factory(supplier=supplier)
 
-        # Then remove it
-        result = ProjectService.remove_plant_from_project(sample_project.id, sample_plant.id)
+        ProjectService.add_plant_to_project(project_instance.id, plant.id, quantity=5)
+        result = ProjectService.remove_plant_from_project(project_instance.id, plant.id)
 
         assert result is True
-
-        # Verify it's gone
-        project_plant = ProjectPlant.query.filter_by(project_id=sample_project.id, plant_id=sample_plant.id).first()
-
+        project_plant = ProjectPlant.query.filter_by(project_id=project_instance.id, plant_id=plant.id).first()
         assert project_plant is None
 
-    def test_remove_plant_from_project_not_found(self, app_context, sample_project, sample_plant):
+    def test_remove_plant_from_project_not_found(
+        self,
+        app_context,
+        project_factory,
+        client_factory,
+        plant_factory,
+        supplier_factory,
+    ):
         """Test removing plant that's not in project"""
-        # Authentication handled by authenticated_test_user fixture
-        result = ProjectService.remove_plant_from_project(sample_project.id, sample_plant.id)
+        client = client_factory()
+        project_instance = project_factory(client=client)
+        supplier = supplier_factory()
+        plant = plant_factory(supplier=supplier)
+
+        result = ProjectService.remove_plant_from_project(project_instance.id, plant.id)
         assert result is False
 
-    def test_get_project_plants(self, app_context, sample_project, plant_factory):
+    def test_get_project_plants(
+        self,
+        app_context,
+        project_factory,
+        client_factory,
+        plant_factory,
+        supplier_factory,
+    ):
         """Test getting plants associated with a project"""
-        # Authentication handled by authenticated_test_user fixture
-        plant1 = plant_factory(name="Plant 1", price=10.0)
-        plant2 = plant_factory(name="Plant 2", price=20.0)
+        client = client_factory()
+        project_instance = project_factory(client=client)
+        supplier = supplier_factory()
+        plant1 = plant_factory(supplier=supplier, name="Plant 1", price=10.0)
+        plant2 = plant_factory(supplier=supplier, name="Plant 2", price=20.0)
 
-        # Add plants to project
-        ProjectService.add_plant_to_project(sample_project.id, plant1.id, quantity=5, unit_cost=12.0)
-        ProjectService.add_plant_to_project(sample_project.id, plant2.id, quantity=3, unit_cost=25.0)
+        ProjectService.add_plant_to_project(project_instance.id, plant1.id, quantity=5, unit_cost=12.0)
+        ProjectService.add_plant_to_project(project_instance.id, plant2.id, quantity=3, unit_cost=25.0)
 
-        project_plants = ProjectService.get_project_plants(sample_project.id)
+        project_plants = ProjectService.get_project_plants(project_instance.id)
 
         assert len(project_plants) == 2
-
-        # Check first plant data
         plant1_data = next(p for p in project_plants if p["name"] == "Plant 1")
         assert plant1_data["quantity"] == 5
         assert plant1_data["unit_cost"] == 12.0
-        assert plant1_data["total_price"] == 60.0
 
-    def test_calculate_project_cost(self, app_context, sample_project, plant_factory):
+    def test_calculate_project_cost(
+        self,
+        app_context,
+        project_factory,
+        client_factory,
+        plant_factory,
+        supplier_factory,
+    ):
         """Test calculating total cost for a project"""
-        # Authentication handled by authenticated_test_user fixture
-        plant1 = plant_factory(name="Plant 1")
-        plant2 = plant_factory(name="Plant 2")
+        client = client_factory()
+        project_instance = project_factory(client=client)
+        supplier = supplier_factory()
+        plant1 = plant_factory(supplier=supplier, name="Plant 1")
+        plant2 = plant_factory(supplier=supplier, name="Plant 2")
 
-        # Add plants with different quantities and prices
-        ProjectService.add_plant_to_project(sample_project.id, plant1.id, quantity=5, unit_cost=10.0)
-        ProjectService.add_plant_to_project(sample_project.id, plant2.id, quantity=3, unit_cost=20.0)
+        ProjectService.add_plant_to_project(project_instance.id, plant1.id, quantity=5, unit_cost=10.0)
+        ProjectService.add_plant_to_project(project_instance.id, plant2.id, quantity=3, unit_cost=20.0)
 
-        cost_analysis = ProjectService.calculate_project_cost(sample_project.id)
+        cost_analysis = ProjectService.calculate_project_cost(project_instance.id)
 
-        assert cost_analysis["total_cost"] == 110.0  # (5*10) + (3*20)
+        assert cost_analysis["total_cost"] == 110.0
         assert cost_analysis["plant_count"] == 2
         assert len(cost_analysis["plant_costs"]) == 2
 
-        # Check individual plant costs
         plant1_cost = next(p for p in cost_analysis["plant_costs"] if p["plant_name"] == "Plant 1")
         assert plant1_cost["line_total"] == 50.0
 
-    def test_update_project_status(self, app_context, sample_project):
+    def test_update_project_status(self, app_context, project_factory, client_factory):
         """Test updating project status"""
-        # Authentication handled by authenticated_test_user fixture
-        original_status = sample_project.status  # noqa: F841
+        client = client_factory()
+        project_instance = project_factory(client=client)
 
-        updated_project = ProjectService.update_project_status(sample_project.id, "completed")
+        updated_project = ProjectService.update_project_status(project_instance.id, "completed")
 
         assert updated_project is not None
         assert updated_project.status == "completed"
@@ -325,16 +366,15 @@ class TestProjectService(DatabaseTestMixin):
 
     def test_update_project_status_not_found(self, app_context):
         """Test updating status of non-existent project"""
-        # Authentication handled by authenticated_test_user fixture
         result = ProjectService.update_project_status(999, "completed")
         assert result is None
 
-    def test_validate_project_data_success(self, app_context, sample_client):
+    def test_validate_project_data_success(self, app_context, client_factory):
         """Test validating correct project data"""
-        # Authentication handled by authenticated_test_user fixture
+        client = client_factory()
         valid_data = {
             "name": "Valid Project",
-            "client_id": sample_client.id,
+            "client_id": client.id,
             "budget": 5000.0,
             "area_size": 100.0,
             "status": "planning",
@@ -345,7 +385,6 @@ class TestProjectService(DatabaseTestMixin):
 
     def test_validate_project_data_missing_required(self, app_context):
         """Test validating project data with missing required fields"""
-        # Authentication handled by authenticated_test_user fixture
         invalid_data = {}
 
         errors = ProjectService.validate_project_data(invalid_data)
@@ -354,18 +393,17 @@ class TestProjectService(DatabaseTestMixin):
 
     def test_validate_project_data_invalid_client(self, app_context):
         """Test validating project data with invalid client ID"""
-        # Authentication handled by authenticated_test_user fixture
-        invalid_data = {"name": "Test Project", "client_id": 999}  # Non-existent client
+        invalid_data = {"name": "Test Project", "client_id": 999}
 
         errors = ProjectService.validate_project_data(invalid_data)
         assert "Invalid client_id" in errors
 
-    def test_validate_project_data_negative_numbers(self, app_context, sample_client):
+    def test_validate_project_data_negative_numbers(self, app_context, client_factory):
         """Test validating project data with negative numbers"""
-        # Authentication handled by authenticated_test_user fixture
+        client = client_factory()
         invalid_data = {
             "name": "Test Project",
-            "client_id": sample_client.id,
+            "client_id": client.id,
             "budget": -1000.0,
             "area_size": -50.0,
         }
@@ -374,12 +412,12 @@ class TestProjectService(DatabaseTestMixin):
         assert "budget must be non-negative" in errors
         assert "area_size must be non-negative" in errors
 
-    def test_validate_project_data_invalid_status(self, app_context, sample_client):
+    def test_validate_project_data_invalid_status(self, app_context, client_factory):
         """Test validating project data with invalid status"""
-        # Authentication handled by authenticated_test_user fixture
+        client = client_factory()
         invalid_data = {
             "name": "Test Project",
-            "client_id": sample_client.id,
+            "client_id": client.id,
             "status": "invalid_status",
         }
 

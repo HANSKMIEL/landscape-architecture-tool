@@ -289,10 +289,10 @@ const AIAssistant = () => {
                   >
                     <div
                       className={`max-w-[80%] p-3 rounded-lg ${message.type === 'user'
-                          ? 'bg-green-600 text-white'
-                          : message.isError
-                            ? 'bg-red-50 text-red-800 border border-red-200'
-                            : 'bg-gray-100 text-gray-800'
+                        ? 'bg-green-600 text-white'
+                        : message.isError
+                          ? 'bg-red-50 text-red-800 border border-red-200'
+                          : 'bg-gray-100 text-gray-800'
                         }`}
                     >
                       <div className="flex items-start space-x-2">

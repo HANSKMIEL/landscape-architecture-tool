@@ -145,7 +145,7 @@ const PlantRecommendations = () => {
     setLoading(true)
     setError(null)
     setRecommendations([])
-    
+
     try {
       const response = await fetch('/api/plant-recommendations', {
         method: 'POST',
@@ -154,7 +154,7 @@ const PlantRecommendations = () => {
         },
         body: JSON.stringify(searchCriteria)
       })
-      
+
       if (response.ok) {
         const data = await response.json()
         setRecommendations(data.recommendations)
@@ -171,7 +171,7 @@ const PlantRecommendations = () => {
   }
 
   const handlePlantSelection = (plantId) => {
-    setSelectedPlants(prev => 
+    setSelectedPlants(prev =>
       prev.includes(plantId)
         ? prev.filter(id => id !== plantId)
         : [...prev, plantId]
@@ -180,7 +180,7 @@ const PlantRecommendations = () => {
 
   const handleExport = async () => {
     if (!requestId) return
-    
+
     try {
       const response = await fetch('/api/plant-recommendations/export', {
         method: 'POST',
@@ -192,7 +192,7 @@ const PlantRecommendations = () => {
           format: 'csv'
         })
       })
-      
+
       if (response.ok) {
         const blob = await response.blob()
         const url = window.URL.createObjectURL(blob)
@@ -212,7 +212,7 @@ const PlantRecommendations = () => {
   // eslint-disable-next-line no-unused-vars
   const submitFeedback = async (feedbackData) => {
     if (!requestId) return
-    
+
     try {
       const response = await fetch('/api/plant-recommendations/feedback', {
         method: 'POST',
@@ -225,7 +225,7 @@ const PlantRecommendations = () => {
           rating: feedbackData.rating
         })
       })
-      
+
       if (response.ok) {
         setShowFeedback(false)
         // Show success message
@@ -264,7 +264,7 @@ const PlantRecommendations = () => {
                 </SelectContent>
               </Select>
             </div>
-            
+
             <div>
               <Label>{translate('sunExposure')}</Label>
               <Select value={searchCriteria.sun_exposure} onValueChange={(value) => handleCriteriaChange('sun_exposure', value)}>
@@ -278,7 +278,7 @@ const PlantRecommendations = () => {
                 </SelectContent>
               </Select>
             </div>
-            
+
             <div>
               <Label>{translate('soilType')}</Label>
               <Select value={searchCriteria.soil_type} onValueChange={(value) => handleCriteriaChange('soil_type', value)}>
@@ -292,20 +292,20 @@ const PlantRecommendations = () => {
                 </SelectContent>
               </Select>
             </div>
-            
+
             <div>
               <Label>{translate('soilPh')}</Label>
-              <Input 
-                type="number" 
-                step="0.1" 
-                min="1" 
+              <Input
+                type="number"
+                step="0.1"
+                min="1"
                 max="14"
                 value={searchCriteria.soil_ph}
                 onChange={(e) => handleCriteriaChange('soil_ph', e.target.value)}
                 placeholder="6.5"
               />
             </div>
-            
+
             <div>
               <Label>{translate('moistureLevel')}</Label>
               <Select value={searchCriteria.moisture_level} onValueChange={(value) => handleCriteriaChange('moisture_level', value)}>
@@ -334,15 +334,15 @@ const PlantRecommendations = () => {
             <div>
               <Label>{translate('desiredHeight')}</Label>
               <div className="flex space-x-2">
-                <Input 
-                  type="number" 
+                <Input
+                  type="number"
                   step="0.1"
                   value={searchCriteria.desired_height_min}
                   onChange={(e) => handleCriteriaChange('desired_height_min', e.target.value)}
                   placeholder="Min"
                 />
-                <Input 
-                  type="number" 
+                <Input
+                  type="number"
                   step="0.1"
                   value={searchCriteria.desired_height_max}
                   onChange={(e) => handleCriteriaChange('desired_height_max', e.target.value)}
@@ -350,19 +350,19 @@ const PlantRecommendations = () => {
                 />
               </div>
             </div>
-            
+
             <div>
               <Label>{translate('desiredWidth')}</Label>
               <div className="flex space-x-2">
-                <Input 
-                  type="number" 
+                <Input
+                  type="number"
                   step="0.1"
                   value={searchCriteria.desired_width_min}
                   onChange={(e) => handleCriteriaChange('desired_width_min', e.target.value)}
                   placeholder="Min"
                 />
-                <Input 
-                  type="number" 
+                <Input
+                  type="number"
                   step="0.1"
                   value={searchCriteria.desired_width_max}
                   onChange={(e) => handleCriteriaChange('desired_width_max', e.target.value)}
@@ -370,7 +370,7 @@ const PlantRecommendations = () => {
                 />
               </div>
             </div>
-            
+
             <div>
               <Label>{translate('bloomSeason')}</Label>
               <Select value={searchCriteria.bloom_season} onValueChange={(value) => handleCriteriaChange('bloom_season', value)}>
@@ -384,12 +384,12 @@ const PlantRecommendations = () => {
                 </SelectContent>
               </Select>
             </div>
-            
+
             <div>
               <Label>{translate('colorPreferences')}</Label>
               <div className="flex flex-wrap gap-2 mt-2">
                 {criteriaOptions?.bloom_colors?.slice(0, 8).map(color => (
-                  <Badge 
+                  <Badge
                     key={color}
                     variant={searchCriteria.color_preferences.includes(color) ? "default" : "outline"}
                     className="cursor-pointer"
@@ -425,7 +425,7 @@ const PlantRecommendations = () => {
                 </SelectContent>
               </Select>
             </div>
-            
+
             <div>
               <Label>{translate('budgetRange')}</Label>
               <Select value={searchCriteria.budget_range} onValueChange={(value) => handleCriteriaChange('budget_range', value)}>
@@ -496,8 +496,8 @@ const PlantRecommendations = () => {
         </div>
 
         <div className="flex justify-end pt-4">
-          <Button 
-            onClick={handleSearch} 
+          <Button
+            onClick={handleSearch}
             disabled={loading}
             className="flex items-center space-x-2"
           >
@@ -579,20 +579,20 @@ const PlantRecommendations = () => {
                     )}
                     <Badge variant="secondary">{rec.plant.category}</Badge>
                   </div>
-                  
+
                   <div className="flex items-center space-x-4 mb-3">
                     <div className="flex items-center space-x-1">
                       <Star className="h-4 w-4 text-yellow-500 fill-current" />
                       <span className="font-medium">{(rec.score * 100).toFixed(0)}%</span>
                       <span className="text-sm text-gray-500">{translate('score')}</span>
                     </div>
-                    
+
                     {rec.plant.price && (
                       <div className="text-sm text-gray-600">
                         ${rec.plant.price}
                       </div>
                     )}
-                    
+
                     <div className="flex items-center space-x-2">
                       <Checkbox
                         checked={selectedPlants.includes(rec.plant.id)}
@@ -616,7 +616,7 @@ const PlantRecommendations = () => {
                     ))}
                   </ul>
                 </div>
-                
+
                 {rec.warnings.length > 0 && (
                   <div>
                     <h5 className="font-medium text-yellow-700 mb-2 flex items-center space-x-1">
@@ -674,11 +674,11 @@ const PlantRecommendations = () => {
           <TabsTrigger value="search">{translate('searchCriteria')}</TabsTrigger>
           <TabsTrigger value="results">{translate('results')}</TabsTrigger>
         </TabsList>
-        
+
         <TabsContent value="search" className="space-y-4">
           {renderCriteriaForm()}
         </TabsContent>
-        
+
         <TabsContent value="results" className="space-y-4">
           {renderResults()}
         </TabsContent>

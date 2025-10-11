@@ -109,7 +109,7 @@ def validate_file_structure(df: pd.DataFrame, import_type: str) -> dict[str, Any
     }
 
     optional_columns = {
-    "suppliers": ["country", "website", "specialization", "notes"],
+        "suppliers": ["country", "website", "specialization", "notes"],
         "plants": ["notes", "native_region", "soil_type"],
         "products": ["stock_quantity", "notes"],
         "clients": ["company", "notes"],

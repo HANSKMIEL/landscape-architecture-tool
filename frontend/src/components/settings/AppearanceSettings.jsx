@@ -179,18 +179,16 @@ const AppearanceSettings = () => {
             <div className="grid grid-cols-2 gap-3">
               <button
                 onClick={() => setTheme('light')}
-                className={`p-3 rounded-lg border-2 transition-all ${
-                  theme === 'light' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'
-                }`}
+                className={`p-3 rounded-lg border-2 transition-all ${theme === 'light' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'
+                  }`}
               >
                 <Sun className="h-5 w-5 mx-auto mb-2" />
                 <span className="text-sm font-medium">{uiText.lightMode}</span>
               </button>
               <button
                 onClick={() => setTheme('dark')}
-                className={`p-3 rounded-lg border-2 transition-all ${
-                  theme === 'dark' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'
-                }`}
+                className={`p-3 rounded-lg border-2 transition-all ${theme === 'dark' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'
+                  }`}
               >
                 <Moon className="h-5 w-5 mx-auto mb-2" />
                 <span className="text-sm font-medium">{uiText.darkMode}</span>
@@ -208,9 +206,8 @@ const AppearanceSettings = () => {
                 <button
                   key={color}
                   onClick={() => setColorScheme(color)}
-                  className={`h-12 rounded-lg border-2 transition-all ${
-                    colorScheme === color ? 'border-gray-800 scale-105' : 'border-gray-200 hover:border-gray-300'
-                  }`}
+                  className={`h-12 rounded-lg border-2 transition-all ${colorScheme === color ? 'border-gray-800 scale-105' : 'border-gray-200 hover:border-gray-300'
+                    }`}
                   style={{ backgroundColor: COLOR_VALUES[color] }}
                   aria-label={uiText.colorOptions[color]}
                 />

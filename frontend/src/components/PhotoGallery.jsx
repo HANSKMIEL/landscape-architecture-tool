@@ -18,14 +18,14 @@ import {
   DialogTrigger,
 } from './ui/dialog';
 
-const PhotoGallery = ({ 
-  category = null, 
-  entityId = null, 
+const PhotoGallery = ({
+  category = null,
+  entityId = null,
   title = "Foto Galerij",
   showUpload = true,
   maxPhotos = 50,
   columns = 4,
-  onPhotoUpdate = () => {}
+  onPhotoUpdate = () => { }
 }) => {
   const [photos, setPhotos] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -190,7 +190,7 @@ const PhotoGallery = ({
                     e.target.src = `/api/photos/file/${photo.id}`;
                   }}
                 />
-                
+
                 {/* Primary badge */}
                 {photo.is_primary && (
                   <Badge variant="secondary" className="absolute top-2 left-2">
@@ -257,7 +257,7 @@ const PhotoGallery = ({
                           </DropdownMenuItem>
                         )}
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem 
+                        <DropdownMenuItem
                           onClick={() => handleDeletePhoto(photo.id)}
                           className="text-red-600"
                         >

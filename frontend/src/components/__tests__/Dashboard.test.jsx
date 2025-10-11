@@ -54,16 +54,16 @@ describe('Dashboard Component', () => {
   describe('Rendering and Loading States', () => {
     it('renders dashboard title and subtitle', async () => {
       render(<Dashboard />)
-      
+
       await waitForLoadingToFinish()
-      
+
       expect(screen.getByText('Dashboard')).toBeInTheDocument()
       expect(screen.getByText(/overzicht van uw landschapsarchitectuur projecten/i)).toBeInTheDocument()
     })
 
     it('shows loading state initially', async () => {
       render(<Dashboard />)
-      
+
       // Check for loading skeleton elements
       expect(document.querySelector('.animate-pulse')).toBeInTheDocument()
 
@@ -73,15 +73,15 @@ describe('Dashboard Component', () => {
 
     it('displays dashboard data after loading', async () => {
       render(<Dashboard />)
-      
+
       await waitForLoadingToFinish()
-      
+
       // Check for stats cards in Dutch
       expect(screen.getByText('Leveranciers')).toBeInTheDocument()
       expect(screen.getByText('Planten')).toBeInTheDocument()
       expect(screen.getByText('Actieve Projecten')).toBeInTheDocument()
       expect(screen.getByText('Totaal Budget')).toBeInTheDocument()
-      
+
       // Check for stat values from mock data (updated to match mock response structure)
       expect(screen.getByText('5')).toBeInTheDocument()   // suppliers
       expect(screen.getByText('156')).toBeInTheDocument() // plants
@@ -90,11 +90,11 @@ describe('Dashboard Component', () => {
 
     it('displays recent activity section', async () => {
       render(<Dashboard />)
-      
+
       await waitForLoadingToFinish()
-      
+
       expect(screen.getByText('Recente Activiteit')).toBeInTheDocument()
-      
+
       // Look for activity items from mock data
       await waitFor(() => {
         expect(screen.getByText(/new project.*garden redesign.*created/i)).toBeInTheDocument()
@@ -106,7 +106,7 @@ describe('Dashboard Component', () => {
     let consoleErrorSpy
 
     beforeEach(() => {
-      consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+      consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => { })
     })
 
     afterEach(() => {
@@ -142,7 +142,7 @@ describe('Dashboard Component', () => {
       });
 
       render(<Dashboard />)
-      
+
       await waitFor(() => {
         expectErrorMessage(/stats api error: 500/i)
       })
@@ -185,7 +185,7 @@ describe('Dashboard Component', () => {
       });
 
       render(<Dashboard />)
-      
+
       await waitFor(() => {
         expectErrorMessage(/activity api error: 500/i)
       })
@@ -224,7 +224,7 @@ describe('Dashboard Component', () => {
       });
 
       render(<Dashboard />)
-      
+
       await waitFor(() => {
         expectErrorMessage(/stats api error: 500/i)
       })
@@ -233,7 +233,7 @@ describe('Dashboard Component', () => {
       expect(retryButton).toBeInTheDocument()
 
       await user.click(retryButton)
-      
+
       await waitForLoadingToFinish()
       expect(screen.getByText('Leveranciers')).toBeInTheDocument()
     })
@@ -242,18 +242,18 @@ describe('Dashboard Component', () => {
   describe('Data Display and Formatting', () => {
     it('displays active vs completed projects correctly', async () => {
       render(<Dashboard />)
-      
+
       await waitForLoadingToFinish()
-      
+
       expect(screen.getByText('Actieve Projecten')).toBeInTheDocument()
       expect(screen.getByText('3')).toBeInTheDocument() // active_projects from mock
     })
 
     it('displays budget information with proper formatting', async () => {
       render(<Dashboard />)
-      
+
       await waitForLoadingToFinish()
-      
+
       expect(screen.getByText('Totaal Budget')).toBeInTheDocument()
       // Check for Euro formatting (Dutch locale)
       expect(screen.getByText('€ 150.000')).toBeInTheDocument() // total_budget formatted
@@ -261,12 +261,12 @@ describe('Dashboard Component', () => {
 
     it('displays plants and suppliers information', async () => {
       render(<Dashboard />)
-      
+
       await waitForLoadingToFinish()
-      
+
       expect(screen.getByText('Planten')).toBeInTheDocument()
       expect(screen.getByText('156')).toBeInTheDocument() // plants from mock
-      
+
       expect(screen.getByText('Leveranciers')).toBeInTheDocument()
       expect(screen.getByText('5')).toBeInTheDocument() // suppliers from mock
     })
@@ -275,18 +275,18 @@ describe('Dashboard Component', () => {
   describe('Interactive Elements', () => {
     it('renders chart component when stats are available', async () => {
       render(<Dashboard />)
-      
+
       await waitForLoadingToFinish()
-      
+
       // The DashboardStatsChart should be rendered with data
       expect(screen.getByText('Projectoverzicht')).toBeInTheDocument()
     })
 
     it('shows quick action buttons', async () => {
       render(<Dashboard />)
-      
+
       await waitForLoadingToFinish()
-      
+
       expect(screen.getByText('Snelle Acties')).toBeInTheDocument()
       expect(screen.getByText('Leverancier toevoegen')).toBeInTheDocument()
       expect(screen.getByText('Plant toevoegen')).toBeInTheDocument()
@@ -294,18 +294,18 @@ describe('Dashboard Component', () => {
 
     it('navigates when clicking quick action buttons', async () => {
       render(<Dashboard />)
-      
+
       await waitForLoadingToFinish()
-      
-  const addSupplierButton = screen.getByText('Leverancier toevoegen')
-  await user.click(addSupplierButton)
 
-  // Ensure navigation intent updates the mocked location
-  expect(window.location.href).toBe('/suppliers')
+      const addSupplierButton = screen.getByText('Leverancier toevoegen')
+      await user.click(addSupplierButton)
 
-  // In a real test environment with actual routing, we'd check navigation
-  // For now, we just verify the button is clickable and navigation was requested
-  expect(addSupplierButton).toBeInTheDocument()
+      // Ensure navigation intent updates the mocked location
+      expect(window.location.href).toBe('/suppliers')
+
+      // In a real test environment with actual routing, we'd check navigation
+      // For now, we just verify the button is clickable and navigation was requested
+      expect(addSupplierButton).toBeInTheDocument()
     })
   })
 
@@ -319,9 +319,9 @@ describe('Dashboard Component', () => {
       })
 
       render(<Dashboard />)
-      
+
       await waitForLoadingToFinish()
-      
+
       // Check that responsive grid classes are present
       const statsGrid = document.querySelector('.grid.grid-cols-1.md\\:grid-cols-2.lg\\:grid-cols-4')
       expect(statsGrid).toBeInTheDocument()
@@ -331,27 +331,27 @@ describe('Dashboard Component', () => {
   describe('Accessibility', () => {
     it('should not have accessibility violations', async () => {
       const { container } = render(<Dashboard />)
-      
+
       await waitForLoadingToFinish()
-      
+
       const results = await axe(container)
       expect(results).toHaveNoViolations()
     })
 
     it('has proper ARIA labels and roles', async () => {
       render(<Dashboard />)
-      
+
       await waitForLoadingToFinish()
-      
+
       // Check for proper heading hierarchy
       expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(/dashboard/i)
-      
+
       // Check for proper button labels
       const retryButton = screen.queryByRole('button', { name: /opnieuw proberen/i })
       if (retryButton) {
         expect(retryButton).toHaveAccessibleName()
       }
-      
+
       // Check for proper region landmarks
       const main = document.querySelector('main') || document.querySelector('.min-h-screen')
       expect(main).toBeInTheDocument()
@@ -359,15 +359,15 @@ describe('Dashboard Component', () => {
 
     it('supports keyboard navigation', async () => {
       render(<Dashboard />)
-      
+
       await waitForLoadingToFinish()
-      
+
       // Test tab navigation through interactive elements
       await user.tab()
-      
+
       const firstFocusableElement = document.activeElement
       expect(firstFocusableElement).toBeInstanceOf(HTMLElement)
-      
+
       // Test that focused elements are visible
       if (firstFocusableElement) {
         expect(firstFocusableElement).toBeVisible()
@@ -379,7 +379,7 @@ describe('Dashboard Component', () => {
     let consoleErrorSpy
 
     beforeEach(() => {
-      consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+      consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => { })
     })
 
     afterEach(() => {
@@ -388,7 +388,7 @@ describe('Dashboard Component', () => {
 
     it('refreshes data when retry is clicked after network recovery', async () => {
       let callCount = 0
-      
+
       // Mock unstable network with simple fetch
       global.fetch.mockImplementation((url) => {
         if (url.includes('/api/dashboard/stats')) {
@@ -426,7 +426,7 @@ describe('Dashboard Component', () => {
       });
 
       render(<Dashboard />)
-      
+
       // Wait for initial error
       await waitFor(() => {
         expectErrorMessage(/stats api error: 500/i)
@@ -434,7 +434,7 @@ describe('Dashboard Component', () => {
 
       const retryButton = screen.getByRole('button', { name: /opnieuw proberen/i })
       await user.click(retryButton)
-      
+
       // Wait for successful refresh with new data
       await waitFor(() => {
         expect(screen.getByText('200')).toBeInTheDocument() // Updated plants count
@@ -445,14 +445,14 @@ describe('Dashboard Component', () => {
   describe('Performance', () => {
     it('loads and renders within acceptable time', async () => {
       const startTime = performance.now()
-      
+
       render(<Dashboard />)
-      
+
       await waitForLoadingToFinish()
-      
+
       const endTime = performance.now()
       const renderTime = endTime - startTime
-      
+
       // Should render within 2 seconds
       expect(renderTime).toBeLessThan(2000)
     })

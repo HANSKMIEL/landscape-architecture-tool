@@ -5,7 +5,7 @@ import apiService from '../services/api';
 // Helper component to eliminate button code duplication
 const GenerateButton = ({ onClick, icon: Icon, text, variant, isLoading, disabled }) => {
   const baseClasses = "inline-flex items-center px-3 py-2 text-sm leading-4 font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed";
-  
+
   const variantClasses = {
     outline: "border border-gray-300 shadow-sm text-gray-700 bg-white hover:bg-gray-50",
     solid: "border border-transparent text-white bg-green-600 hover:bg-green-700"
@@ -17,7 +17,7 @@ const GenerateButton = ({ onClick, icon: Icon, text, variant, isLoading, disable
     <button
       onClick={onClick}
       disabled={disabled}
-  className={`${baseClasses} ${variantClasses[variant]}`}
+      className={`${baseClasses} ${variantClasses[variant]}`}
     >
       {isLoading ? (
         <>
@@ -59,7 +59,7 @@ const InvoiceQuoteManager = () => {
   const generateQuote = async (projectId, format = 'pdf') => {
     try {
       setGeneratingPdf(projectId);
-      
+
       if (format === 'pdf') {
         // Create a temporary link to download the PDF
         const url = `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}/api/invoices/quote/${projectId}?format=pdf`;
@@ -84,10 +84,10 @@ const InvoiceQuoteManager = () => {
   const generateInvoice = async (projectId, format = 'pdf') => {
     try {
       setGeneratingPdf(projectId);
-      
+
       if (format === 'pdf') {
         await apiService.generateInvoice(projectId, { format: 'pdf' });
-        
+
         // Create a temporary link to download the PDF
         const url = `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}/api/invoices/invoice/${projectId}`;
         const link = document.createElement('a');
@@ -220,14 +220,14 @@ const InvoiceQuoteManager = () => {
                         <User className="h-4 w-4 mr-2 text-gray-400" />
                         <span>{project.client_name}</span>
                       </div>
-                      
+
                       {project.area_size > 0 && (
                         <div className="flex items-center">
                           <MapPin className="h-4 w-4 mr-2 text-gray-400" />
                           <span>{project.area_size} m²</span>
                         </div>
                       )}
-                      
+
                       {project.plant_count > 0 && (
                         <div className="flex items-center">
                           <Package className="h-4 w-4 mr-2 text-gray-400" />

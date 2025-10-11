@@ -101,8 +101,15 @@ class TestUserModel:
             "username": "testuser",
             "email": "test@example.com",
             "role": "employee",
+            "first_name": None,
+            "last_name": None,
+            "full_name": "testuser",
+            "phone": None,
+            "company": None,
+            "notes": None,
             "is_active": True,
             "created_at": user.created_at.isoformat() if user.created_at else None,
             "updated_at": user.updated_at.isoformat() if user.updated_at else None,
+            "last_login": None,
         }
         assert user_dict == expected

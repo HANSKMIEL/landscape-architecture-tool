@@ -6,8 +6,10 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from tests.fixtures.auth_fixtures import authenticated_test_user, setup_test_authentication
+from tests.fixtures.auth_fixtures import authenticated_test_user
 from tests.fixtures.database import DatabaseTestMixin
+
+pytestmark = pytest.mark.usefixtures("authenticated_test_user")
 
 
 @pytest.mark.api
@@ -81,10 +83,11 @@ class TestReportsRoutes(DatabaseTestMixin):
         data = response.get_json()
         assert "error" in data
 
-    def test_generate_project_report_json_format(self, client, app_context, sample_project):
+    def test_generate_project_report_json_format(self, client, app_context, project_factory):
         """Test project report in JSON format"""
-        # Use the sample project
-        response = client.get(f"/api/reports/project/{sample_project.id}")
+        project = project_factory()
+
+        response = client.get(f"/api/reports/project/{project.id}")
 
         if response.status_code == 404:
             # If no project exists, skip this test
@@ -112,9 +115,11 @@ class TestReportsRoutes(DatabaseTestMixin):
         assert "name" in client_data
         assert "email" in client_data
 
-    def test_generate_project_report_pdf_format(self, client, app_context, sample_project):
+    def test_generate_project_report_pdf_format(self, client, app_context, project_factory):
         """Test project report in PDF format"""
-        response = client.get(f"/api/reports/project/{sample_project.id}", query_string={"format": "pdf"})
+        project = project_factory()
+
+        response = client.get(f"/api/reports/project/{project.id}", query_string={"format": "pdf"})
 
         if response.status_code == 404:
             pytest.skip("No sample project available")

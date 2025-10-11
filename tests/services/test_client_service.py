@@ -7,17 +7,20 @@ Comprehensive tests for client service layer business logic.
 import pytest
 
 from src.models.landscape import Client
+from src.models.photo import Photo
 from src.models.user import db
 from src.services.client_service import ClientService
-from tests.fixtures.auth_fixtures import authenticated_test_user, setup_test_authentication
+from tests.fixtures.auth_fixtures import authenticated_test_user
 from tests.fixtures.database import DatabaseTestMixin
+
+pytestmark = pytest.mark.usefixtures("app_context", "authenticated_test_user")
 
 
 @pytest.mark.service
 class TestClientService(DatabaseTestMixin):
     """Test Client Service operations"""
 
-    def test_get_all_clients_empty(self, app_context):
+    def test_get_all_clients_empty(self):
         """Test getting clients when database is empty"""
         result = ClientService.get_all_clients()
 
@@ -26,7 +29,7 @@ class TestClientService(DatabaseTestMixin):
         assert result["pages"] == 0
         assert result["current_page"] == 1
 
-    def test_get_all_clients_with_data(self, app_context, client_factory, project_factory):
+    def test_get_all_clients_with_data(self, client_factory, project_factory):
         """Test getting clients with sample data including project counts"""
         client1 = client_factory(name="Client One")
         client2 = client_factory(name="Client Two")  # noqa: F841
@@ -46,7 +49,7 @@ class TestClientService(DatabaseTestMixin):
         assert client1_data["project_count"] == 2
         assert client1_data["active_projects"] == 1
 
-    def test_get_all_clients_with_search(self, app_context, client_factory):
+    def test_get_all_clients_with_search(self, client_factory):
         """Test getting clients with search filter"""
         client_factory(name="Alpha Corp", email="contact@alpha.com")
         client2 = client_factory(name="Beta LLC", email="info@beta.com")  # noqa: F841
@@ -67,7 +70,7 @@ class TestClientService(DatabaseTestMixin):
         assert len(result["clients"]) == 1
         assert result["clients"][0]["name"] == "Gamma Inc"
 
-    def test_get_all_clients_pagination(self, app_context, client_factory):
+    def test_get_all_clients_pagination(self, client_factory):
         """Test clients pagination"""
         # Create 15 clients
         for i in range(15):
@@ -85,19 +88,21 @@ class TestClientService(DatabaseTestMixin):
         assert len(result["clients"]) == 5
         assert result["current_page"] == 2
 
-    def test_get_client_by_id_success(self, app_context, sample_client):
+    def test_get_client_by_id_success(self, client_factory):
         """Test getting client by ID successfully"""
-        client = ClientService.get_client_by_id(sample_client.id)
-        assert client is not None
-        assert client.id == sample_client.id
-        assert client.name == sample_client.name
+        client_instance = client_factory()
 
-    def test_get_client_by_id_not_found(self, app_context):
+        client = ClientService.get_client_by_id(client_instance.id)
+        assert client is not None
+        assert client.id == client_instance.id
+        assert client.name == client_instance.name
+
+    def test_get_client_by_id_not_found(self):
         """Test getting client by non-existent ID"""
         client = ClientService.get_client_by_id(999)
         assert client is None
 
-    def test_create_client_success(self, app_context):
+    def test_create_client_success(self):
         """Test creating a client successfully"""
         # Authentication handled by authenticated_test_user fixture
         client_data = {
@@ -120,7 +125,7 @@ class TestClientService(DatabaseTestMixin):
         # Verify it's in the database
         self.assert_record_count(Client, 1)
 
-    def test_create_client_minimal_data(self, app_context):
+    def test_create_client_minimal_data(self):
         """Test creating client with minimal required data"""
         # Authentication handled by authenticated_test_user fixture
         client_data = {"name": "Minimal Client"}
@@ -130,34 +135,39 @@ class TestClientService(DatabaseTestMixin):
         assert client.id is not None
         assert client.name == "Minimal Client"
 
-    def test_update_client_success(self, app_context, sample_client):
+    def test_update_client_success(self, client_factory):
         """Test updating a client successfully"""
         # Authentication handled by authenticated_test_user fixture
+        client_instance = client_factory()
         update_data = {
             "name": "Updated Client Name",
             "email": "updated@example.com",
             "phone": "555-999-8888",
         }
 
-        updated_client = ClientService.update_client(sample_client.id, update_data)
+        updated_client = ClientService.update_client(client_instance.id, update_data)
 
         assert updated_client is not None
         assert updated_client.name == "Updated Client Name"
         assert updated_client.email == "updated@example.com"
         assert updated_client.phone == "555-999-8888"
-        assert updated_client.id == sample_client.id
+        assert updated_client.id == client_instance.id
 
-    def test_update_client_not_found(self, app_context):
+    def test_update_client_not_found(self):
         """Test updating non-existent client"""
         # Authentication handled by authenticated_test_user fixture
         update_data = {"name": "Updated Name"}
         result = ClientService.update_client(999, update_data)
         assert result is None
 
-    def test_delete_client_success(self, app_context, sample_client):
+    def test_delete_client_success(self, client_factory):
         """Test deleting a client successfully"""
         # Authentication handled by authenticated_test_user fixture
-        client_id = sample_client.id
+        client_instance = client_factory()
+        client_id = client_instance.id
+
+        # Access Photo model to ensure photo table is registered for cascades
+        assert Photo.__tablename__ == "photos"
 
         result = ClientService.delete_client(client_id)
 
@@ -168,43 +178,46 @@ class TestClientService(DatabaseTestMixin):
         deleted_client = db.session.get(Client, client_id)
         assert deleted_client is None
 
-    def test_delete_client_with_active_projects(self, app_context, sample_client, project_factory):
+    def test_delete_client_with_active_projects(self, client_factory, project_factory):
         """Test deleting client with active projects should fail"""
         # Authentication handled by authenticated_test_user fixture
+        client_instance = client_factory()
         # Add active project to client
-        project_factory(client=sample_client, status="active")
+        project_factory(client=client_instance, status="active")
 
-        result = ClientService.delete_client(sample_client.id)
+        result = ClientService.delete_client(client_instance.id)
 
         assert result is False
         # Client should still exist
         self.assert_record_count(Client, 1)
 
-    def test_delete_client_with_inactive_projects(self, app_context, sample_client, project_factory):
+    def test_delete_client_with_inactive_projects(self, client_factory, project_factory):
         """Test deleting client with only inactive projects should succeed"""
         # Authentication handled by authenticated_test_user fixture
+        client_instance = client_factory()
         # Add completed project to client
-        project_factory(client=sample_client, status="completed")
+        project_factory(client=client_instance, status="completed")
 
-        result = ClientService.delete_client(sample_client.id)
+        result = ClientService.delete_client(client_instance.id)
 
         assert result is True
         self.assert_record_count(Client, 0)
 
-    def test_delete_client_not_found(self, app_context):
+    def test_delete_client_not_found(self):
         """Test deleting non-existent client"""
         # Authentication handled by authenticated_test_user fixture
         result = ClientService.delete_client(999)
         assert result is False
 
-    def test_get_client_projects(self, app_context, sample_client, project_factory):
+    def test_get_client_projects(self, client_factory, project_factory):
         """Test getting projects for a client"""
-        project1 = project_factory(client=sample_client, name="Project 1")  # noqa: F841
-        project2 = project_factory(client=sample_client, name="Project 2")  # noqa: F841
+        client_instance = client_factory()
+        project_factory(client=client_instance, name="Project 1")
+        project_factory(client=client_instance, name="Project 2")
         other_client = project_factory().client
-        project3 = project_factory(client=other_client, name="Project 3")  # noqa: F841
+        project_factory(client=other_client, name="Project 3")
 
-        client_projects = ClientService.get_client_projects(sample_client.id)
+        client_projects = ClientService.get_client_projects(client_instance.id)
 
         assert len(client_projects) == 2
         project_names = [project.name for project in client_projects]
@@ -212,17 +225,18 @@ class TestClientService(DatabaseTestMixin):
         assert "Project 2" in project_names
         assert "Project 3" not in project_names
 
-    def test_get_client_statistics(self, app_context, sample_client, project_factory):
+    def test_get_client_statistics(self, client_factory, project_factory):
         """Test getting statistical information for a client"""
+        client_instance = client_factory()
         # Create projects with different statuses and budgets
-        project_factory(client=sample_client, status="active", budget=5000.0, area_size=100.0)
-        project_factory(client=sample_client, status="completed", budget=8000.0, area_size=150.0)
-        project_factory(client=sample_client, status="planning", budget=3000.0, area_size=75.0)
+        project_factory(client=client_instance, status="active", budget=5000.0, area_size=100.0)
+        project_factory(client=client_instance, status="completed", budget=8000.0, area_size=150.0)
+        project_factory(client=client_instance, status="planning", budget=3000.0, area_size=75.0)
 
-        stats = ClientService.get_client_statistics(sample_client.id)
+        stats = ClientService.get_client_statistics(client_instance.id)
 
-        assert stats["client_id"] == sample_client.id
-        assert stats["client_name"] == sample_client.name
+        assert stats["client_id"] == client_instance.id
+        assert stats["client_name"] == client_instance.name
         assert stats["total_projects"] == 3
         assert stats["active_projects"] == 1
         assert stats["completed_projects"] == 1
@@ -230,19 +244,20 @@ class TestClientService(DatabaseTestMixin):
         assert stats["total_area"] == 325.0
         assert stats["average_project_budget"] == 16000.0 / 3
 
-    def test_get_client_statistics_no_projects(self, app_context, sample_client):
+    def test_get_client_statistics_no_projects(self, client_factory):
         """Test getting statistics for client with no projects"""
-        stats = ClientService.get_client_statistics(sample_client.id)
+        client_instance = client_factory()
+        stats = ClientService.get_client_statistics(client_instance.id)
 
         assert stats["total_projects"] == 0
         assert stats["average_project_budget"] == 0
 
-    def test_get_client_statistics_not_found(self, app_context):
+    def test_get_client_statistics_not_found(self):
         """Test getting statistics for non-existent client"""
         stats = ClientService.get_client_statistics(999)
         assert stats == {}
 
-    def test_search_clients(self, app_context, client_factory):
+    def test_search_clients(self, client_factory):
         """Test searching clients"""
         client_factory(name="Alpha Corp", email="alpha@test.com")
         client_factory(name="Beta LLC", company="Beta Solutions")
@@ -263,7 +278,7 @@ class TestClientService(DatabaseTestMixin):
         assert len(results) == 1
         assert results[0].name == "Beta LLC"
 
-    def test_validate_client_data_success(self, app_context):
+    def test_validate_client_data_success(self):
         """Test validating correct client data"""
         valid_data = {
             "name": "Valid Client",
@@ -274,35 +289,36 @@ class TestClientService(DatabaseTestMixin):
         errors = ClientService.validate_client_data(valid_data)
         assert errors == []
 
-    def test_validate_client_data_missing_required(self, app_context):
+    def test_validate_client_data_missing_required(self):
         """Test validating client data with missing required fields"""
         invalid_data = {}
 
         errors = ClientService.validate_client_data(invalid_data)
         assert "name is required" in errors
 
-    def test_validate_client_data_invalid_email(self, app_context):
+    def test_validate_client_data_invalid_email(self):
         """Test validating client data with invalid email"""
         invalid_data = {"name": "Test Client", "email": "invalid-email-format"}
 
         errors = ClientService.validate_client_data(invalid_data)
         assert "Invalid email format" in errors
 
-    def test_validate_client_data_duplicate_email(self, app_context, sample_client):
+    def test_validate_client_data_duplicate_email(self, client_factory):
         """Test validating client data with duplicate email"""
-        invalid_data = {"name": "New Client", "email": sample_client.email}
+        existing_client = client_factory()
+        invalid_data = {"name": "New Client", "email": existing_client.email}
 
         errors = ClientService.validate_client_data(invalid_data)
         assert "Email already exists" in errors
 
-    def test_validate_client_data_invalid_phone(self, app_context):
+    def test_validate_client_data_invalid_phone(self):
         """Test validating client data with invalid phone number"""
         invalid_data = {"name": "Test Client", "phone": "not-a-phone-number"}
 
         errors = ClientService.validate_client_data(invalid_data)
         assert "Invalid phone number format" in errors
 
-    def test_get_clients_by_company(self, app_context, client_factory):
+    def test_get_clients_by_company(self, client_factory):
         """Test getting clients by company"""
         client1 = client_factory(company="ABC Corp")  # noqa: F841
         client2 = client_factory(company="ABC Corp")  # noqa: F841
@@ -312,7 +328,7 @@ class TestClientService(DatabaseTestMixin):
         assert len(abc_clients) == 2
         assert all(client.company == "ABC Corp" for client in abc_clients)
 
-    def test_get_top_clients_by_projects(self, app_context, client_factory, project_factory):
+    def test_get_top_clients_by_projects(self, client_factory, project_factory):
         """Test getting top clients by number of projects"""
         client1 = client_factory(name="Client 1")
         client2 = client_factory(name="Client 2")
@@ -333,7 +349,7 @@ class TestClientService(DatabaseTestMixin):
         assert top_clients[1]["client"]["name"] == "Client 2"
         assert top_clients[1]["project_count"] == 2
 
-    def test_get_top_clients_by_budget(self, app_context, client_factory, project_factory):
+    def test_get_top_clients_by_budget(self, client_factory, project_factory):
         """Test getting top clients by total budget"""
         client1 = client_factory(name="Client 1")
         client2 = client_factory(name="Client 2")
@@ -356,7 +372,7 @@ class TestClientService(DatabaseTestMixin):
 class TestClientServiceIntegration(DatabaseTestMixin):
     """Integration tests for Client Service"""
 
-    def test_full_client_lifecycle(self, app_context, project_factory):
+    def test_full_client_lifecycle(self, project_factory):
         """Test complete client lifecycle from creation to deletion"""
         # Create client
         client_data = {
@@ -387,6 +403,7 @@ class TestClientServiceIntegration(DatabaseTestMixin):
         # Update client
         update_data = {"email": "updated@test.com", "phone": "555-UPDATED"}
         updated_client = ClientService.update_client(client.id, update_data)
+        assert updated_client is not None
         assert updated_client.email == "updated@test.com"
 
         # Delete client (should succeed since no active projects)
@@ -397,7 +414,7 @@ class TestClientServiceIntegration(DatabaseTestMixin):
         deleted_client = ClientService.get_client_by_id(client.id)
         assert deleted_client is None
 
-    def test_client_project_relationship_management(self, app_context, client_factory, project_factory):
+    def test_client_project_relationship_management(self, client_factory, project_factory):
         """Test complex client-project relationship scenarios"""
         # Authentication handled by authenticated_test_user fixture
         client = client_factory(name="Relationship Test Client")
@@ -436,7 +453,7 @@ class TestClientServiceIntegration(DatabaseTestMixin):
         delete_result = ClientService.delete_client(client.id)
         assert delete_result is True
 
-    def test_client_search_and_pagination_complex(self, app_context, client_factory):
+    def test_client_search_and_pagination_complex(self, client_factory):
         """Test complex search and pagination scenarios"""
         # Create diverse clients
         clients_data = [

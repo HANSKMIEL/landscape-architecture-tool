@@ -114,7 +114,14 @@ class User(db.Model):
 
     def has_permission(self, required_role):
         """Check if user has required permission level"""
-        role_hierarchy = {"client": 1, "user": 2, "admin": 3, "sysadmin": 4, "developer": 5}
+        role_hierarchy = {
+            "client": 1,
+            "user": 2,
+            "employee": 2,
+            "admin": 3,
+            "sysadmin": 4,
+            "developer": 5,
+        }
 
         user_level = role_hierarchy.get(self.role, 0)
         required_level = role_hierarchy.get(required_role, 0)

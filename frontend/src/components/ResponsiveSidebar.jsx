@@ -27,87 +27,87 @@ const ResponsiveSidebar = ({ isOpen, onClose, user }) => {
   const { t, currentLanguage } = useLanguage()
 
   const navigation = [
-    { 
-      name: t('navigation.dashboard', 'Dashboard'), 
-      href: '/dashboard', 
+    {
+      name: t('navigation.dashboard', 'Dashboard'),
+      href: '/dashboard',
       icon: LayoutDashboard,
       roles: ['admin', 'employee', 'client']
     },
-    { 
-      name: t('navigation.suppliers', 'Suppliers'), 
-      href: '/suppliers', 
+    {
+      name: t('navigation.suppliers', 'Suppliers'),
+      href: '/suppliers',
       icon: Building2,
       roles: ['admin', 'employee']
     },
-    { 
-      name: t('navigation.products', 'Products'), 
-      href: '/products', 
+    {
+      name: t('navigation.products', 'Products'),
+      href: '/products',
       icon: Package,
       roles: ['admin', 'employee']
     },
-    { 
-      name: t('navigation.plants', 'Plants'), 
-      href: '/plants', 
+    {
+      name: t('navigation.plants', 'Plants'),
+      href: '/plants',
       icon: Leaf,
       roles: ['admin', 'employee']
     },
-    { 
-      name: t('navigation.clients', 'Clients'), 
-      href: '/clients', 
+    {
+      name: t('navigation.clients', 'Clients'),
+      href: '/clients',
       icon: Users,
       roles: ['admin', 'employee']
     },
-    { 
-      name: t('navigation.projects', 'Projects'), 
-      href: '/projects', 
+    {
+      name: t('navigation.projects', 'Projects'),
+      href: '/projects',
       icon: FolderOpen,
       roles: ['admin', 'employee', 'client']
     },
-    { 
-      name: t('navigation.timeline', 'Project Timeline'), 
-      href: '/timeline', 
+    {
+      name: t('navigation.timeline', 'Project Timeline'),
+      href: '/timeline',
       icon: Calendar,
       roles: ['admin', 'employee', 'client']
     },
-    { 
-      name: t('plants.recommendations', 'Plant Recommendations'), 
-      href: '/plant-recommendations', 
+    {
+      name: t('plants.recommendations', 'Plant Recommendations'),
+      href: '/plant-recommendations',
       icon: Lightbulb,
       roles: ['admin', 'employee', 'client']
     },
-    { 
-      name: t('navigation.reports', 'Reports'), 
-      href: '/reports', 
+    {
+      name: t('navigation.reports', 'Reports'),
+      href: '/reports',
       icon: FileText,
       roles: ['admin', 'employee']
     },
-    { 
-      name: t('aiAssistant.title', 'AI Assistant'), 
-      href: '/ai-assistant', 
+    {
+      name: t('aiAssistant.title', 'AI Assistant'),
+      href: '/ai-assistant',
       icon: Bot,
       roles: ['admin', 'employee']
     },
-    { 
-      name: t('invoices.title', 'Invoices & Quotes'), 
-      href: '/invoices', 
+    {
+      name: t('invoices.title', 'Invoices & Quotes'),
+      href: '/invoices',
       icon: Receipt,
       roles: ['admin', 'employee']
     },
-    { 
-      name: t('navigation.photos', 'Photo Gallery'), 
-      href: '/photos', 
+    {
+      name: t('navigation.photos', 'Photo Gallery'),
+      href: '/photos',
       icon: Camera,
       roles: ['admin', 'employee', 'client']
     },
-    { 
-      name: t('navigation.settings', 'Settings'), 
-      href: '/settings', 
+    {
+      name: t('navigation.settings', 'Settings'),
+      href: '/settings',
       icon: Settings,
       roles: ['admin', 'employee', 'client']
     },
-    { 
-      name: t('navigation.users', 'User Management'), 
-      href: '/users', 
+    {
+      name: t('navigation.users', 'User Management'),
+      href: '/users',
       icon: UserCog,
       roles: ['admin']  // Only admins can access user management
     },
@@ -116,7 +116,7 @@ const ResponsiveSidebar = ({ isOpen, onClose, user }) => {
   // Filter navigation based on user role
   const getFilteredNavigation = () => {
     if (!user) return navigation
-    
+
     return navigation.filter(item => {
       if (!item.roles) return true
       return item.roles.includes(user.role)
@@ -197,7 +197,7 @@ const ResponsiveSidebar = ({ isOpen, onClose, user }) => {
               </p>
             </div>
           </div>
-          
+
           <button
             onClick={onClose}
             className="sidebar-close-btn lg:hidden"
@@ -211,10 +211,9 @@ const ResponsiveSidebar = ({ isOpen, onClose, user }) => {
         {user && (
           <div className="px-4 py-3 border-b border-gray-200 bg-gray-50 mx-4 rounded-lg mb-4">
             <div className="flex items-center space-x-3">
-              <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold ${
-                user.role === 'admin' ? 'bg-red-600' :
-                user.role === 'employee' ? 'bg-blue-600' : 'bg-green-600'
-              }`}>
+              <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold ${user.role === 'admin' ? 'bg-red-600' :
+                  user.role === 'employee' ? 'bg-blue-600' : 'bg-green-600'
+                }`}>
                 {user.username.charAt(0).toUpperCase()}
               </div>
               <div className="flex-1 min-w-0">

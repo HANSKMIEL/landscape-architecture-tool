@@ -138,6 +138,7 @@ Comprehensive documentation is organized in the `documentation/` directory by ca
 - **For Developers**: [Developer Guidelines](documentation/development/DEVELOPER_GUIDELINES.md)
 - **For DevOps**: [Deployment Guide](documentation/deployment/DEPLOYMENT_GUIDE.md)
 - **Troubleshooting**: [Pipeline Troubleshooting](documentation/pipeline/PIPELINE_TROUBLESHOOTING.md)
+- **MCP Guardrails & Agent Workflow**: [`docs/development/V1_00D_fullstack_dev_strategy.md`](docs/development/V1_00D_fullstack_dev_strategy.md)
 
 ### New in v2.0 (Backend Refactoring)
 - **Modular Architecture** - Separated models, services, routes, and utilities

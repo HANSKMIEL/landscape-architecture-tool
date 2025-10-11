@@ -1,12 +1,12 @@
 import React from 'react';
 
 // Button component with landscape-inspired variants
-export const Button = ({ 
-  children, 
-  variant = 'primary', 
+export const Button = ({
+  children,
+  variant = 'primary',
   size = 'md',
   className = '',
-  ...props 
+  ...props
 }) => {
   const baseClasses = 'btn';
   const variantClasses = {
@@ -17,7 +17,7 @@ export const Button = ({
     water: 'btn-water',
     outline: 'btn-outline'
   };
-  
+
   const sizeClasses = {
     sm: 'px-3 py-1.5 text-xs',
     md: 'px-4 py-2 text-sm',
@@ -34,12 +34,12 @@ export const Button = ({
 };
 
 // Card component with landscape themes
-export const Card = ({ 
-  children, 
-  variant = 'default', 
+export const Card = ({
+  children,
+  variant = 'default',
   interactive = false,
   className = '',
-  ...props 
+  ...props
 }) => {
   const baseClasses = 'card';
   const variantClasses = {
@@ -48,7 +48,7 @@ export const Card = ({
     water: 'card-water',
     earth: 'card-earth'
   };
-  
+
   const interactiveClass = interactive ? 'card-interactive' : '';
   const classes = `${baseClasses} ${variantClasses[variant]} ${interactiveClass} ${className}`;
 
@@ -60,11 +60,11 @@ export const Card = ({
 };
 
 // Container component with size variants
-export const Container = ({ 
-  children, 
+export const Container = ({
+  children,
   size = 'default',
   className = '',
-  ...props 
+  ...props
 }) => {
   const sizeClasses = {
     narrow: 'max-w-3xl mx-auto px-4',
@@ -82,11 +82,11 @@ export const Container = ({
 };
 
 // Stack component for consistent spacing
-export const Stack = ({ 
-  children, 
+export const Stack = ({
+  children,
   space = 'md',
   className = '',
-  ...props 
+  ...props
 }) => {
   const spaceClasses = {
     sm: 'stack-sm',
@@ -104,12 +104,12 @@ export const Stack = ({
 };
 
 // Grid component for responsive layouts
-export const Grid = ({ 
-  children, 
+export const Grid = ({
+  children,
   cols = 'auto',
   gap = 'md',
   className = '',
-  ...props 
+  ...props
 }) => {
   const colsClasses = {
     auto: 'grid-cols-auto',
@@ -145,7 +145,7 @@ export const DesignSystemShowcase = () => {
             Landscape Architecture Design System
           </h1>
           <p className="text-slate-600 text-lg">
-            A comprehensive design system inspired by natural landscapes, 
+            A comprehensive design system inspired by natural landscapes,
             featuring earth tones, organic patterns, and sustainable design principles.
           </p>
         </div>
@@ -174,7 +174,7 @@ export const DesignSystemShowcase = () => {
                 Beautiful garden design with native plants and sustainable practices.
               </p>
             </Card>
-            
+
             <Card variant="water">
               <h3 className="text-lg font-semibold text-blue-800 mb-2">
                 Water Features
@@ -219,19 +219,19 @@ export const DesignSystemShowcase = () => {
               <p className="text-sm font-medium">Primary Green</p>
               <p className="text-xs text-slate-600">#22c55e</p>
             </div>
-            
+
             <div className="text-center">
               <div className="w-16 h-16 bg-blue-500 rounded-lg mx-auto mb-2 shadow-water"></div>
               <p className="text-sm font-medium">Secondary Blue</p>
               <p className="text-xs text-slate-600">#3b82f6</p>
             </div>
-            
+
             <div className="text-center">
               <div className="w-16 h-16 bg-lime-500 rounded-lg mx-auto mb-2"></div>
               <p className="text-sm font-medium">Nature Green</p>
               <p className="text-xs text-slate-600">#84cc16</p>
             </div>
-            
+
             <div className="text-center">
               <div className="w-16 h-16 bg-amber-600 rounded-lg mx-auto mb-2 shadow-earth"></div>
               <p className="text-sm font-medium">Earth Brown</p>

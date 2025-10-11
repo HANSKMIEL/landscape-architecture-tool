@@ -1,16 +1,33 @@
 import pytest
 
-from tests.fixtures.auth_fixtures import authenticated_test_user, setup_test_authentication
+from tests.fixtures.auth_fixtures import authenticated_test_user
 from tests.fixtures.database import DatabaseTestMixin
+
+
+@pytest.fixture
+def authenticated_client(client, app_context, authenticated_test_user):
+    """Provide an authenticated client for invoice routes."""
+
+    return client
+
+
+@pytest.fixture
+def invoiceable_project(project_factory, project_plant_factory, plant_factory):
+    """Create a project with associated plant data eligible for invoicing."""
+
+    project = project_factory(status="completed", budget=5000, area_size=120)
+    plant = plant_factory()
+    project_plant_factory(project=project, plant=plant, quantity=5, unit_cost=35.0)
+    return project
 
 
 @pytest.mark.api
 class TestInvoiceGeneration(DatabaseTestMixin):
     """Test invoice and quote generation functionality"""
 
-    def test_get_invoiceable_projects(self, client, app_context):
+    def test_get_invoiceable_projects(self, authenticated_client, invoiceable_project):
         """Test getting list of invoiceable projects"""
-        response = client.get("/api/invoices/projects")
+        response = authenticated_client.get("/api/invoices/projects")
         assert response.status_code == 200
 
         data = response.get_json()
@@ -18,16 +35,16 @@ class TestInvoiceGeneration(DatabaseTestMixin):
         assert "total" in data
         assert data["total"] >= 0
 
-    def test_generate_quote_json(self, client, app_context):
+    def test_generate_quote_json(self, authenticated_client, invoiceable_project):
         """Test generating quote in JSON format"""
         # First get available projects
-        projects_response = client.get("/api/invoices/projects")
+        projects_response = authenticated_client.get("/api/invoices/projects")
         projects_data = projects_response.get_json()
 
         if projects_data["total"] > 0:
             project_id = projects_data["projects"][0]["id"]
 
-            response = client.get(f"/api/invoices/quote/{project_id}?format=json")
+            response = authenticated_client.get(f"/api/invoices/quote/{project_id}?format=json")
             assert response.status_code == 200
 
             data = response.get_json()
@@ -45,30 +62,32 @@ class TestInvoiceGeneration(DatabaseTestMixin):
             assert "total" in financial
             assert financial["vat_rate"] == 0.21  # Dutch VAT rate
 
-    def test_generate_quote_pdf_endpoint(self, client, app_context):
+    def test_generate_quote_pdf_endpoint(self, authenticated_client, invoiceable_project):
         """Test that PDF quote endpoint responds correctly"""
         # First get available projects
-        projects_response = client.get("/api/invoices/projects")
+        projects_response = authenticated_client.get("/api/invoices/projects")
         projects_data = projects_response.get_json()
 
         if projects_data["total"] > 0:
             project_id = projects_data["projects"][0]["id"]
 
             # Test PDF endpoint (should return PDF content or appropriate response)
-            response = client.get(f"/api/invoices/quote/{project_id}?format=pdf")
+            response = authenticated_client.get(f"/api/invoices/quote/{project_id}?format=pdf")
             # PDF generation might fail in test environment, but endpoint should exist
             assert response.status_code in [200, 500]  # 500 acceptable if PDF libs not fully available
 
-    def test_generate_invoice_json(self, client, app_context):
+    def test_generate_invoice_json(self, authenticated_client, invoiceable_project):
         """Test generating invoice in JSON format"""
         # First get available projects
-        projects_response = client.get("/api/invoices/projects")
+        projects_response = authenticated_client.get("/api/invoices/projects")
         projects_data = projects_response.get_json()
 
         if projects_data["total"] > 0:
             project_id = projects_data["projects"][0]["id"]
 
-            response = client.post(f"/api/invoices/invoice/{project_id}", json={"format": "json"})
+            response = authenticated_client.post(
+                f"/api/invoices/invoice/{project_id}", json={"format": "json"}
+            )
             assert response.status_code == 200
 
             data = response.get_json()
@@ -81,15 +100,15 @@ class TestInvoiceGeneration(DatabaseTestMixin):
             assert "items" in data
             assert "financial" in data
 
-    def test_quote_financial_calculations(self, client, app_context):
+    def test_quote_financial_calculations(self, authenticated_client, invoiceable_project):
         """Test that quote financial calculations are correct"""
-        projects_response = client.get("/api/invoices/projects")
+        projects_response = authenticated_client.get("/api/invoices/projects")
         projects_data = projects_response.get_json()
 
         if projects_data["total"] > 0:
             project_id = projects_data["projects"][0]["id"]
 
-            response = client.get(f"/api/invoices/quote/{project_id}?format=json")
+            response = authenticated_client.get(f"/api/invoices/quote/{project_id}?format=json")
             data = response.get_json()
 
             financial = data["financial"]
@@ -106,15 +125,15 @@ class TestInvoiceGeneration(DatabaseTestMixin):
             expected_total = subtotal + vat_amount
             assert abs(total - expected_total) < 0.01  # Allow for rounding
 
-    def test_company_information_included(self, client, app_context):
+    def test_company_information_included(self, authenticated_client, invoiceable_project):
         """Test that company information is properly included"""
-        projects_response = client.get("/api/invoices/projects")
+        projects_response = authenticated_client.get("/api/invoices/projects")
         projects_data = projects_response.get_json()
 
         if projects_data["total"] > 0:
             project_id = projects_data["projects"][0]["id"]
 
-            response = client.get(f"/api/invoices/quote/{project_id}?format=json")
+            response = authenticated_client.get(f"/api/invoices/quote/{project_id}?format=json")
             data = response.get_json()
 
             company = data["company"]
@@ -124,24 +143,24 @@ class TestInvoiceGeneration(DatabaseTestMixin):
             assert "phone" in company
             assert "email" in company
 
-    def test_invalid_project_id(self, client, app_context):
+    def test_invalid_project_id(self, authenticated_client):
         """Test handling of invalid project ID"""
         # Authentication handled by authenticated_test_user fixture
-        response = client.get("/api/invoices/quote/99999?format=json")
+        response = authenticated_client.get("/api/invoices/quote/99999?format=json")
         assert response.status_code == 404
 
         data = response.get_json()
         assert "error" in data
 
-    def test_quote_items_structure(self, client, app_context):
+    def test_quote_items_structure(self, authenticated_client, invoiceable_project):
         """Test that quote items have proper structure"""
-        projects_response = client.get("/api/invoices/projects")
+        projects_response = authenticated_client.get("/api/invoices/projects")
         projects_data = projects_response.get_json()
 
         if projects_data["total"] > 0:
             project_id = projects_data["projects"][0]["id"]
 
-            response = client.get(f"/api/invoices/quote/{project_id}?format=json")
+            response = authenticated_client.get(f"/api/invoices/quote/{project_id}?format=json")
             data = response.get_json()
 
             items = data["items"]

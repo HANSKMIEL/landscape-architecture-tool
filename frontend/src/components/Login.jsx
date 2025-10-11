@@ -23,7 +23,7 @@ const Login = ({ onLogin }) => {
   const [forgotPasswordLoading, setForgotPasswordLoading] = useState(false);
   const [forgotPasswordSuccess, setForgotPasswordSuccess] = useState(false);
   const [isRetrying, setIsRetrying] = useState(false);
-  
+
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -38,10 +38,10 @@ const Login = ({ onLogin }) => {
       retryCount,
       ...context
     };
-    
+
     // Log to console for development
     console.error('Login Error Analytics:', errorData);
-    
+
     // In production, this would send to analytics service
     // analytics.track('login_error', errorData);
   };
@@ -71,7 +71,7 @@ const Login = ({ onLogin }) => {
   const handleApiError = (error, response) => {
     let errorMessage = '';
     let errorType = '';
-    
+
     if (!response) {
       // Network error
       errorType = 'network';
@@ -91,7 +91,7 @@ const Login = ({ onLogin }) => {
           }
           logError('validation', apiError, { status, formData: { username: formData.username } });
           break;
-        
+
         case 401:
           errorType = 'auth';
           if (apiError === 'Invalid credentials') {
@@ -101,19 +101,19 @@ const Login = ({ onLogin }) => {
           }
           logError('authentication', apiError, { status, username: formData.username });
           break;
-        
+
         case 423:
           errorType = 'auth';
           errorMessage = '🔒 Your account has been temporarily locked for security reasons. Please try again in a few minutes or contact support.';
           logError('account_locked', apiError, { status, username: formData.username });
           break;
-        
+
         case 429:
           errorType = 'server';
           errorMessage = '⏱️ Too many login attempts detected. Please wait a moment before trying again to ensure security.';
           logError('rate_limited', apiError, { status, retryCount });
           break;
-        
+
         case 500:
         case 502:
         case 503:
@@ -121,7 +121,7 @@ const Login = ({ onLogin }) => {
           errorMessage = '🔧 Our servers are experiencing temporary issues. Please try again in a few moments.';
           logError('server_error', apiError, { status });
           break;
-        
+
         default:
           errorType = 'server';
           errorMessage = '❗ An unexpected error occurred. Please try again or contact support if the problem persists.';
@@ -140,15 +140,15 @@ const Login = ({ onLogin }) => {
     setRetryCount(prev => prev + 1);
     setError('');
     setErrorType('');
-    
+
     // Small delay for better UX
     await new Promise(resolve => setTimeout(resolve, 500));
-    
+
     const syntheticEvent = {
-      preventDefault: () => {},
+      preventDefault: () => { },
       target: { checkValidity: () => true }
     };
-    
+
     await handleSubmit(syntheticEvent);
     setIsRetrying(false);
   };
@@ -179,7 +179,7 @@ const Login = ({ onLogin }) => {
       await onLogin(formData);
       setSuccess('Login successful! Redirecting...');
       setRetryCount(0); // Reset retry count on success
-      
+
       // Redirect to intended page or dashboard
       const from = location.state?.from?.pathname || '/dashboard';
       setTimeout(() => {
@@ -257,7 +257,7 @@ const Login = ({ onLogin }) => {
                     Als het e-mailadres bestaat, is er een reset link verzonden.
                   </AlertDescription>
                 </Alert>
-                <Button 
+                <Button
                   onClick={resetForgotPasswordForm}
                   className="w-full"
                   variant="outline"
@@ -296,8 +296,8 @@ const Login = ({ onLogin }) => {
                 </div>
 
                 <div className="space-y-3">
-                  <Button 
-                    type="submit" 
+                  <Button
+                    type="submit"
                     className="w-full bg-blue-600 hover:bg-blue-700"
                     disabled={forgotPasswordLoading || !forgotPasswordEmail}
                   >
@@ -311,7 +311,7 @@ const Login = ({ onLogin }) => {
                     )}
                   </Button>
 
-                  <Button 
+                  <Button
                     type="button"
                     onClick={resetForgotPasswordForm}
                     className="w-full"
@@ -349,22 +349,19 @@ const Login = ({ onLogin }) => {
         <div className="bg-white rounded-xl shadow-xl p-8">
           <form onSubmit={handleSubmit} className="space-y-6">
             {error && (
-              <Alert 
+              <Alert
                 id="login-error"
                 role="alert"
                 aria-live="polite"
                 aria-atomic="true"
-                className={`border-l-4 ${
-                  errorType === 'network' ? 'border-orange-400 bg-orange-50' : 'border-red-400 bg-red-50'
-                }`}
+                className={`border-l-4 ${errorType === 'network' ? 'border-orange-400 bg-orange-50' : 'border-red-400 bg-red-50'
+                  }`}
               >
-                <AlertCircle className={`h-4 w-4 ${
-                  errorType === 'network' ? 'text-orange-600' : 'text-red-600'
-                }`} />
+                <AlertCircle className={`h-4 w-4 ${errorType === 'network' ? 'text-orange-600' : 'text-red-600'
+                  }`} />
                 <div>
-                  <AlertDescription className={`${
-                    errorType === 'network' ? 'text-orange-800' : 'text-red-800'
-                  }`}>
+                  <AlertDescription className={`${errorType === 'network' ? 'text-orange-800' : 'text-red-800'
+                    }`}>
                     {error}
                   </AlertDescription>
                   {/* Show retry button for network errors or server errors */}
@@ -394,7 +391,7 @@ const Login = ({ onLogin }) => {
                       )}
                     </div>
                   )}
-                  
+
                   {/* Help text based on error type */}
                   {errorType === 'auth' && (
                     <div className="mt-2 text-xs text-gray-600">
@@ -407,7 +404,7 @@ const Login = ({ onLogin }) => {
                       </button>
                     </div>
                   )}
-                  
+
                   {errorType === 'validation' && (
                     <div className="mt-2 text-xs text-gray-600">
                       Please check that all fields are filled correctly.
@@ -442,11 +439,10 @@ const Login = ({ onLogin }) => {
                   required
                   value={formData.username}
                   onChange={handleInputChange}
-                  className={`block w-full pl-10 pr-3 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:border-transparent transition-colors ${
-                    errorType === 'validation' || errorType === 'auth' 
-                      ? 'border-red-300 focus:ring-red-500' 
+                  className={`block w-full pl-10 pr-3 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:border-transparent transition-colors ${errorType === 'validation' || errorType === 'auth'
+                      ? 'border-red-300 focus:ring-red-500'
                       : 'border-gray-300 focus:ring-green-500'
-                  }`}
+                    }`}
                   placeholder="Voer uw gebruikersnaam of e-mail in"
                   disabled={isLoading || isRetrying}
                   aria-describedby={error ? "login-error" : undefined}
@@ -478,11 +474,10 @@ const Login = ({ onLogin }) => {
                       handleSubmit(e);
                     }
                   }}
-                  className={`block w-full pl-10 pr-12 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:border-transparent transition-colors ${
-                    errorType === 'validation' || errorType === 'auth' 
-                      ? 'border-red-300 focus:ring-red-500' 
+                  className={`block w-full pl-10 pr-12 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:border-transparent transition-colors ${errorType === 'validation' || errorType === 'auth'
+                      ? 'border-red-300 focus:ring-red-500'
                       : 'border-gray-300 focus:ring-green-500'
-                  }`}
+                    }`}
                   placeholder="Voer uw wachtwoord in"
                   disabled={isLoading || isRetrying}
                   autoComplete="current-password"

@@ -317,7 +317,7 @@ const BulkDataSettings = () => {
                   className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                 />
               </div>
-              
+
               <div className="flex items-center justify-between">
                 <div>
                   <div className="font-medium text-sm">{uiText.options.autoCorrectData.label}</div>
@@ -330,7 +330,7 @@ const BulkDataSettings = () => {
                   className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                 />
               </div>
-              
+
               <div className="flex items-center justify-between">
                 <div>
                   <div className="font-medium text-sm">{uiText.options.requireAllFields.label}</div>
@@ -381,7 +381,7 @@ const BulkDataSettings = () => {
               <input
                 type="checkbox"
                 checked={importSettings.enableBackup}
-                  onChange={toggleImportOption('enableBackup')}
+                onChange={toggleImportOption('enableBackup')}
                 className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
               />
             </div>
@@ -407,20 +407,20 @@ const BulkDataSettings = () => {
               </div>
               <input
                 type="checkbox"
-                  checked={exportSettings.includeEmptyFields}
-                  onChange={toggleExportOption('includeEmptyFields')}
+                checked={exportSettings.includeEmptyFields}
+                onChange={toggleExportOption('includeEmptyFields')}
                 className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
               />
             </div>
-            
+
             <div className="flex items-center justify-between">
               <div>
                 <div className="font-medium text-sm">{uiText.exportOptions.includeImages}</div>
               </div>
               <input
                 type="checkbox"
-                  checked={exportSettings.includeImages}
-                  onChange={toggleExportOption('includeImages')}
+                checked={exportSettings.includeImages}
+                onChange={toggleExportOption('includeImages')}
                 className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
               />
             </div>

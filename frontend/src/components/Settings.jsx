@@ -218,20 +218,18 @@ const Settings = () => {
                     <button
                       key={tab.id}
                       onClick={() => setActiveTab(tab.id)}
-                      className={`w-full rounded-lg border p-3 text-left transition-colors ${
-                        isActive
+                      className={`w-full rounded-lg border p-3 text-left transition-colors ${isActive
                           ? 'border-blue-200 bg-blue-100 text-blue-700'
                           : tab.enabled
                             ? 'border-gray-200 bg-white hover:bg-gray-50'
                             : 'cursor-not-allowed border-gray-100 bg-gray-50 text-gray-400'
-                      }`}
+                        }`}
                       disabled={!tab.enabled}
                     >
                       <div className="flex items-center gap-3">
                         <IconComponent
-                          className={`h-5 w-5 ${
-                            isActive ? 'text-blue-600' : tab.enabled ? 'text-gray-600' : 'text-gray-400'
-                          }`}
+                          className={`h-5 w-5 ${isActive ? 'text-blue-600' : tab.enabled ? 'text-gray-600' : 'text-gray-400'
+                            }`}
                         />
                         <div>
                           <div className="font-medium">{tab.label}</div>

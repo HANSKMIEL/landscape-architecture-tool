@@ -321,10 +321,16 @@ def generate_invoice(project_id):
 
         # Get quote data first
         quote_response = generate_quote(project_id)
-        if quote_response[1] != 200:  # Error case
+        if isinstance(quote_response, tuple):
+            response_obj, status_code = quote_response
+        else:
+            response_obj = quote_response
+            status_code = response_obj.status_code
+
+        if status_code != 200:  # Error case
             return quote_response
 
-        quote_data = quote_response[0].get_json()
+        quote_data = response_obj.get_json()
 
         # Convert quote to invoice
         invoice_data = quote_data.copy()
@@ -332,7 +338,7 @@ def generate_invoice(project_id):
             {
                 "invoice_number": f"FACT-{project.id:04d}-{datetime.now(UTC).strftime('%Y%m')}",
                 "invoice_date": datetime.now(UTC).isoformat(),
-                "due_date": (datetime.now(UTC).replace(day=datetime.now().day + 30)).isoformat(),
+                "due_date": (datetime.now(UTC) + timedelta(days=30)).isoformat(),
                 "payment_terms": "30 dagen",
                 "type": "invoice",
             }

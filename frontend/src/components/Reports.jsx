@@ -737,7 +737,7 @@ const Reports = () => {
                   {renderChart(analyticsData.monthlyData, 'line')}
                 </CardContent>
               </Card>
-              
+
               <Card>
                 <CardHeader>
                   <CardTitle>{t('reports.projectStatus', 'Project Status Distribution')}</CardTitle>
@@ -777,7 +777,7 @@ const Reports = () => {
                   )}
                 </CardContent>
               </Card>
-              
+
               <Card>
                 <CardHeader>
                   <CardTitle>{t('reports.topClientsByBudget', 'Top Clients by Budget')}</CardTitle>
@@ -825,7 +825,7 @@ const Reports = () => {
                     </div>
                   </CardContent>
                 </Card>
-                
+
                 <Card>
                   <CardContent className="p-6">
                     <div className="flex items-center">
@@ -841,7 +841,7 @@ const Reports = () => {
                     </div>
                   </CardContent>
                 </Card>
-                
+
                 <Card>
                   <CardContent className="p-6">
                     <div className="flex items-center">
@@ -858,7 +858,7 @@ const Reports = () => {
                   </CardContent>
                 </Card>
               </div>
-              
+
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <Card>
                   <CardHeader>
@@ -868,7 +868,7 @@ const Reports = () => {
                     {renderChart(analyticsData.statusDistribution, 'pie')}
                   </CardContent>
                 </Card>
-                
+
                 <Card>
                   <CardHeader>
                     <CardTitle>{t('reports.monthlyProjectDistribution', 'Monthly Project Distribution')}</CardTitle>
@@ -911,7 +911,7 @@ const Reports = () => {
                     </div>
                   </CardContent>
                 </Card>
-                
+
                 <Card>
                   <CardContent className="p-6">
                     <div className="flex items-center">
@@ -927,7 +927,7 @@ const Reports = () => {
                     </div>
                   </CardContent>
                 </Card>
-                
+
                 <Card>
                   <CardContent className="p-6">
                     <div className="flex items-center">
@@ -944,7 +944,7 @@ const Reports = () => {
                   </CardContent>
                 </Card>
               </div>
-              
+
               <Card>
                 <CardHeader>
                   <CardTitle>{t('reports.plantCategoryDistribution', 'Plant Category Distribution')}</CardTitle>
@@ -986,7 +986,7 @@ const Reports = () => {
                     </div>
                   </CardContent>
                 </Card>
-                
+
                 <Card>
                   <CardContent className="p-6">
                     <div className="flex items-center">
@@ -1002,7 +1002,7 @@ const Reports = () => {
                     </div>
                   </CardContent>
                 </Card>
-                
+
                 <Card>
                   <CardContent className="p-6">
                     <div className="flex items-center">
@@ -1019,7 +1019,7 @@ const Reports = () => {
                   </CardContent>
                 </Card>
               </div>
-              
+
               <Card>
                 <CardHeader>
                   <CardTitle>{t('reports.monthlyRevenue', 'Monthly Revenue')}</CardTitle>

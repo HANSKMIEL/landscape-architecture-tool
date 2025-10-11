@@ -17,7 +17,10 @@ from tests.fixtures.test_stability import (
     validate_test_environment,
 )
 
-pytest_plugins = ["tests.fixtures.auth_fixtures"]
+pytest_plugins = [
+    "tests.fixtures.auth_fixtures",
+    "tests.fixtures.test_data",
+]
 
 # Configure logging for tests
 logging.basicConfig(level=logging.INFO)
