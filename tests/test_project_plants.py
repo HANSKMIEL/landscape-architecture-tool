@@ -297,7 +297,7 @@ class TestProjectPlantAPI:
         data = init_database
 
         response = client.post(
-            f'/api/projects/{data["project_id"]}/plants',
+            f"/api/projects/{data['project_id']}/plants",
             data=json.dumps(
                 {
                     "plant_id": data["plant1_id"],
@@ -322,13 +322,13 @@ class TestProjectPlantAPI:
 
         # Add plant first
         client.post(
-            f'/api/projects/{data["project_id"]}/plants',
+            f"/api/projects/{data['project_id']}/plants",
             data=json.dumps({"plant_id": data["plant1_id"], "quantity": 5}),
             content_type="application/json",
         )
 
         # Get plants
-        response = client.get(f'/api/projects/{data["project_id"]}/plants')
+        response = client.get(f"/api/projects/{data['project_id']}/plants")
 
         assert response.status_code == 200
         response_data = json.loads(response.data)
@@ -342,14 +342,14 @@ class TestProjectPlantAPI:
 
         # Add plant first
         client.post(
-            f'/api/projects/{data["project_id"]}/plants',
+            f"/api/projects/{data['project_id']}/plants",
             data=json.dumps({"plant_id": data["plant1_id"], "quantity": 5}),
             content_type="application/json",
         )
 
         # Update quantity
         response = client.put(
-            f'/api/projects/{data["project_id"]}/plants/{data["plant1_id"]}',
+            f"/api/projects/{data['project_id']}/plants/{data['plant1_id']}",
             data=json.dumps({"quantity": 10}),
             content_type="application/json",
         )
@@ -364,13 +364,13 @@ class TestProjectPlantAPI:
 
         # Add plants first
         client.post(
-            f'/api/projects/{data["project_id"]}/plants',
+            f"/api/projects/{data['project_id']}/plants",
             data=json.dumps({"plant_id": data["plant1_id"], "quantity": 5, "unit_cost": 25.99}),
             content_type="application/json",
         )
 
         # Get cost analysis
-        response = client.get(f'/api/projects/{data["project_id"]}/cost-analysis')
+        response = client.get(f"/api/projects/{data['project_id']}/cost-analysis")
 
         assert response.status_code == 200
         response_data = json.loads(response.data)
@@ -384,13 +384,13 @@ class TestProjectPlantAPI:
 
         # Add plants first
         client.post(
-            f'/api/projects/{data["project_id"]}/plants',
+            f"/api/projects/{data['project_id']}/plants",
             data=json.dumps({"plant_id": data["plant1_id"], "quantity": 5, "unit_cost": 25.99}),
             content_type="application/json",
         )
 
         # Get order list
-        response = client.get(f'/api/projects/{data["project_id"]}/plant-order-list')
+        response = client.get(f"/api/projects/{data['project_id']}/plant-order-list")
 
         assert response.status_code == 200
         response_data = json.loads(response.data)
@@ -407,18 +407,18 @@ class TestProjectPlantAPI:
 
         # Add plant first
         client.post(
-            f'/api/projects/{data["project_id"]}/plants',
+            f"/api/projects/{data['project_id']}/plants",
             data=json.dumps({"plant_id": data["plant1_id"], "quantity": 5}),
             content_type="application/json",
         )
 
         # Remove plant
-        response = client.delete(f'/api/projects/{data["project_id"]}/plants/{data["plant1_id"]}')
+        response = client.delete(f"/api/projects/{data['project_id']}/plants/{data['plant1_id']}")
 
         assert response.status_code == 200
 
         # Verify plant is removed
-        response = client.get(f'/api/projects/{data["project_id"]}/plants')
+        response = client.get(f"/api/projects/{data['project_id']}/plants")
         response_data = json.loads(response.data)
         assert len(response_data) == 0
 
@@ -428,7 +428,7 @@ class TestProjectPlantAPI:
         data = init_database
 
         response = client.post(
-            f'/api/projects/{data["project_id"]}/plants/batch',
+            f"/api/projects/{data['project_id']}/plants/batch",
             data=json.dumps(
                 {
                     "plants": [
@@ -465,7 +465,7 @@ class TestProjectPlantIntegration:
 
         # 1. Add plants to project
         response = client.post(
-            f'/api/projects/{data["project_id"]}/plants/batch',
+            f"/api/projects/{data['project_id']}/plants/batch",
             data=json.dumps(
                 {
                     "plants": [
@@ -489,7 +489,7 @@ class TestProjectPlantIntegration:
         assert response.status_code == 201
 
         # 2. Check cost analysis
-        response = client.get(f'/api/projects/{data["project_id"]}/cost-analysis')
+        response = client.get(f"/api/projects/{data['project_id']}/cost-analysis")
         assert response.status_code == 200
         cost_data = json.loads(response.data)
         expected_total = (5 * 25.99) + (10 * 12.50)
@@ -497,14 +497,14 @@ class TestProjectPlantIntegration:
 
         # 3. Update plant status to ordered
         response = client.put(
-            f'/api/projects/{data["project_id"]}/plants/{data["plant1_id"]}',
+            f"/api/projects/{data['project_id']}/plants/{data['plant1_id']}",
             data=json.dumps({"status": "ordered"}),
             content_type="application/json",
         )
         assert response.status_code == 200
 
         # 4. Generate order list
-        response = client.get(f'/api/projects/{data["project_id"]}/plant-order-list')
+        response = client.get(f"/api/projects/{data['project_id']}/plant-order-list")
         assert response.status_code == 200
         order_data = json.loads(response.data)
         assert "suppliers" in order_data
@@ -513,14 +513,14 @@ class TestProjectPlantIntegration:
 
         # 5. Update remaining plants to planted
         response = client.put(
-            f'/api/projects/{data["project_id"]}/plants/{data["plant2_id"]}',
+            f"/api/projects/{data['project_id']}/plants/{data['plant2_id']}",
             data=json.dumps({"status": "planted"}),
             content_type="application/json",
         )
         assert response.status_code == 200
 
         # 6. Final project plant list check
-        response = client.get(f'/api/projects/{data["project_id"]}/plants')
+        response = client.get(f"/api/projects/{data['project_id']}/plants")
         assert response.status_code == 200
         plants_data = json.loads(response.data)
         assert len(plants_data) == 2

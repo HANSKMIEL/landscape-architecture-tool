@@ -371,9 +371,7 @@ class PRAnalyzer:
         if dependabot_data["major_updates_requiring_testing"] > 0:
             major_prs = pr_counts["pr_numbers"]["major_updates"]
             major_update_count = dependabot_data["major_updates_requiring_testing"]
-            steps.append(
-                f"Extensive testing needed for {major_update_count} major updates: {major_prs}"
-            )
+            steps.append(f"Extensive testing needed for {major_update_count} major updates: {major_prs}")
 
         if pr_counts["non_dependabot_prs"] > 0:
             steps.append(f"Review {pr_counts['non_dependabot_prs']} non-Dependabot PRs separately")

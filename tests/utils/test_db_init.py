@@ -181,7 +181,6 @@ class TestPopulateSampleData:
                     patch("src.utils.db_init.Client"),
                     patch("src.utils.db_init.Project"),
                 ):
-
                     populate_sample_data()
 
                     # Verify supplier data structure
@@ -231,7 +230,6 @@ class TestPopulateSampleData:
                         patch("src.utils.db_init.Client"),
                         patch("src.utils.db_init.Project"),
                     ):
-
                         populate_sample_data()
 
                         # Verify plant data structure
@@ -286,7 +284,6 @@ class TestPopulateSampleData:
                             patch("src.utils.db_init.Plant"),
                             patch("src.utils.db_init.Product"),
                         ):
-
                             populate_sample_data()
 
                             # Verify project data structure
