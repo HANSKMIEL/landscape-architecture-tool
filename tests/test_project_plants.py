@@ -13,7 +13,7 @@ from src.main import create_app
 from src.models.landscape import Client, Plant, Project, Supplier
 from src.models.user import db
 from src.services.project_plant import ProjectPlantService
-from tests.fixtures.auth_fixtures import authenticated_test_user, setup_test_authentication
+from tests.fixtures.auth_fixtures import setup_test_authentication
 
 
 @pytest.fixture
@@ -29,10 +29,16 @@ def app():
         db.drop_all()
 
 
-@pytest.fixture
-def client(app):
+@pytest.fixture(name="client")
+def client_fixture(app):
     """Create test client"""
-    return app.test_client()
+    test_client = app.test_client()
+
+    # Ensure an authenticated session for API tests
+    with app.app_context():
+        setup_test_authentication(test_client, db.session)
+
+    return test_client
 
 
 @pytest.fixture

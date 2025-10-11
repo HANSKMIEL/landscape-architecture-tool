@@ -349,6 +349,7 @@ class TestPlantRecommendationAPI:
     def test_get_recommendations_endpoint(self, client, app, db_setup):
         """Test the main recommendations API endpoint"""
         with app.app_context():
+            setup_test_authentication(client, db.session)
             # Test request
             request_data = {
                 "hardiness_zone": "5-8",
@@ -393,6 +394,7 @@ class TestPlantRecommendationAPI:
     def test_criteria_options_endpoint(self, client, app, db_setup):
         """Test the criteria options API endpoint"""
         with app.app_context():
+            setup_test_authentication(client, db.session)
             response = client.get("/api/plant-recommendations/criteria-options")
 
             assert response.status_code == 200
@@ -412,6 +414,7 @@ class TestPlantRecommendationAPI:
     def test_feedback_endpoint(self, client, app, db_setup):
         """Test the feedback submission endpoint"""
         with app.app_context():
+            setup_test_authentication(client, db.session)
             # First get recommendations to get a request_id
             request_data = {"hardiness_zone": "5-8", "maintenance_level": "Low"}
 
@@ -449,6 +452,7 @@ class TestPlantRecommendationAPI:
     def test_invalid_request_handling(self, client, app, db_setup):
         """Test handling of invalid requests"""
         with app.app_context():
+            setup_test_authentication(client, db.session)
             # Test empty request
             response = client.post("/api/plant-recommendations", data="", content_type="application/json")
             assert response.status_code == 400
@@ -468,6 +472,7 @@ class TestRecommendationIntegration:
     def test_full_workflow(self, client, app, db_setup):
         """Test complete recommendation workflow from request to feedback"""
         with app.app_context():
+            setup_test_authentication(client, db.session)
             # 1. Get criteria options
             options_response = client.get("/api/plant-recommendations/criteria-options")
             assert options_response.status_code == 200
@@ -510,6 +515,8 @@ class TestRecommendationIntegration:
 
             # 4. Verify data persistence
             request_record = db.session.get(PlantRecommendationRequest, rec_data["request_id"])
-            assert request_record is not None
+            if request_record is None:
+                pytest.fail("Expected recommendation request to exist after feedback submission")
+
             assert request_record.feedback_rating == 4
             assert "improvements" in request_record.user_feedback
