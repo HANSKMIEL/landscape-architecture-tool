@@ -189,8 +189,6 @@ class TestUserModel:
 
     def test_password_reset_token_expiration(self):
         """Test password reset token expiration"""
-        from datetime import datetime, timedelta
-
         user = User(username="testuser", email="test@example.com", role="employee")
         user.set_password("testpass123")
         db.session.add(user)
