@@ -110,7 +110,7 @@ executing==2.2.0
     # via stack-data
 factory-boy==3.3.0
     # via -r requirements-dev.in
-faker==19.6.0
+faker==37.11.0
     # via
     #   -r requirements-dev.in
     #   factory-boy
@@ -364,9 +364,7 @@ pytest-timeout==2.1.0
 pytest-xdist==3.3.1
     # via -r requirements-dev.in
 python-dateutil==2.9.0.post0
-    # via
-    #   faker
-    #   pandas
+    # via pandas
 python-dotenv==1.1.1
     # via -r requirements.in
 pytz==2025.2
@@ -483,7 +481,9 @@ typing-extensions==4.14.1
 typing-inspection==0.4.1
     # via pydantic
 tzdata==2025.2
-    # via pandas
+    # via
+    #   faker
+    #   pandas
 urllib3==2.5.0
     # via
     #   requests
