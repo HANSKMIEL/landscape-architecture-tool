@@ -490,9 +490,9 @@ class TestAPIAuthenticationAndAuthorization:
 
         for endpoint, expected_status in expected_status_by_endpoint.items():
             response = client.get(endpoint)
-            assert response.status_code == expected_status, (
-                f"Endpoint {endpoint} returned {response.status_code}, expected {expected_status}"
-            )
+            assert (
+                response.status_code == expected_status
+            ), f"Endpoint {endpoint} returned {response.status_code}, expected {expected_status}"
 
     @pytest.mark.usefixtures("authenticated_test_user")
     def test_post_endpoints_validation(
