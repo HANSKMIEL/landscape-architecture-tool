@@ -367,9 +367,9 @@ class TestReportsPDFGeneration(DatabaseTestMixin):
         response = client.get("/api/reports/business-summary", query_string={"format": "pdf"})
 
         # Debug: Check if response is successful
-        assert response.status_code == 200, (
-            f"Expected 200, got {response.status_code}: {response.get_data(as_text=True)}"
-        )
+        assert (
+            response.status_code == 200
+        ), f"Expected 200, got {response.status_code}: {response.get_data(as_text=True)}"
 
         # Should attempt to create PDF
         mock_doc.assert_called()
