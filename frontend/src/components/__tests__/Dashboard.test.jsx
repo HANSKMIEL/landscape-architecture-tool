@@ -1,5 +1,5 @@
 // Jest provides describe, it, expect, beforeEach as globals
-import { screen, waitFor } from '@testing-library/react'
+import { screen, waitFor, act } from '@testing-library/react'
 import { axe, toHaveNoViolations } from 'jest-axe'
 import { render } from '../../test/utils/render.jsx'
 import { setupUser, waitForLoadingToFinish, expectErrorMessage } from '../../test/utils/testHelpers'
@@ -24,8 +24,10 @@ describe('Dashboard Component', () => {
       expect(screen.getByText(/overzicht van uw landschapsarchitectuur projecten/i)).toBeInTheDocument()
     })
 
-    it('shows loading state initially', () => {
-      render(<Dashboard />)
+    it('shows loading state initially', async () => {
+      await act(async () => {
+        render(<Dashboard />)
+      })
       
       // Check for loading skeleton elements
       expect(document.querySelector('.animate-pulse')).toBeInTheDocument()
