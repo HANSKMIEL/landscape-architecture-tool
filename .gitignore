@@ -200,6 +200,11 @@ quality_gates_report_*.json
 /*_IMPLEMENTATION*.md
 /dev_log.md
 
+# Session/Cookie files - should never be committed
+*cookies*.txt
+*.cookie
+session_*.txt
+
 coverage-vitest/
 **/coverage-vitest/
 
