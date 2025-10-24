@@ -1,0 +1,279 @@
+name: Copilot Dependency Analysis
+
+on:
+  issues:
+    types: [opened, reopened]
+  issue_comment:
+    types: [created]
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: 'Issue number for dependency analysis'
+        required: true
+        type: number
+
+jobs:
+  copilot-analysis:
+    if: |
+      (github.event_name == 'issues' && contains(github.event.issue.labels.*.name, 'dependabot-analysis')) ||
+      (github.event_name == 'issue_comment' && contains(github.event.issue.labels.*.name, 'dependabot-analysis') && 
+       (contains(github.event.comment.body, '@copilot') || github.event.comment.user.login == 'copilot')) ||
+      github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    
+    permissions:
+      issues: write
+      pull-requests: write
+      contents: read
+      actions: read
+      
+    steps:
+      - name: Get issue details
+        id: get-issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issueNumber = context.payload.issue?.number || context.payload.inputs?.issue_number;
+            
+            const issue = await github.rest.issues.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issueNumber
+            });
+            
+            // Extract PR number from issue body
+            const prMatch = issue.data.body.match(/\*\*PR:\*\* #(\d+)/);
+            const prNumber = prMatch ? parseInt(prMatch[1]) : null;
+            
+            // Extract dependency info
+            const dependencyMatch = issue.data.body.match(/\*\*Dependency:\*\* (.+)/);
+            const dependency = dependencyMatch ? dependencyMatch[1] : 'Unknown';
+            
+            // Extract update type
+            const updateTypeMatch = issue.data.body.match(/\*\*Update Type:\*\* (\w+)/);
+            const updateType = updateTypeMatch ? updateTypeMatch[1] : 'unknown';
+            
+            // Extract priority
+            const priorityMatch = issue.data.body.match(/\*\*Priority:\*\* (\w+)/);
+            const priority = priorityMatch ? priorityMatch[1] : 'medium';
+            
+            return {
+              issueNumber,
+              prNumber,
+              dependency,
+              updateType,
+              priority,
+              title: issue.data.title,
+              body: issue.data.body
+            };
+
+      - name: Notify analysis start
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issueData = ${{ steps.get-issue.outputs.result }};
+            
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issueData.issueNumber,
+              body: [
+                `🤖 **Copilot Analysis Started**`,
+                ``,
+                `I'm beginning the comprehensive dependency analysis for **${issueData.dependency}**.`,
+                ``,
+                `**Analysis Plan:**`,
+                `- 🔍 Impact assessment and breaking change review`,
+                `- 🧪 Comprehensive testing strategy development`,  
+                `- 📋 Code migration planning`,
+                `- 🔒 Security validation`,
+                `- ⚡ Safe implementation with full validation`,
+                ``,
+                `**Estimated Time:** ${issueData.priority === 'critical' ? '2-4 hours' : '1-2 hours'}`,
+                ``,
+                `I'll provide updates as I progress through each phase. You can follow along or provide additional context if needed.`,
+                ``,
+                `---`,
+                `*Analysis initiated automatically by Copilot Dependency Analysis workflow*`
+              ].join('\n')
+            });
+
+      - name: Create analysis checklist
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issueData = ${{ steps.get-issue.outputs.result }};
+            
+            // Get current issue to check if analysis checklist already exists
+            const issue = await github.rest.issues.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issueData.issueNumber
+            });
+            
+            // Check if body already has the analysis checklist
+            if (issue.data.body.includes('## 📊 Copilot Analysis Progress')) {
+              console.log('Analysis checklist already exists');
+              return;
+            }
+            
+            // Add analysis progress section to issue
+            const updatedBody = issue.data.body + `\n\n## 📊 Copilot Analysis Progress\n\n` +
+              `### Phase 1: Impact Assessment\n` +
+              `- [ ] Clone repository and checkout PR branch\n` +
+              `- [ ] Review dependency changelog and release notes\n` +
+              `- [ ] Identify breaking changes and deprecated features\n` +
+              `- [ ] Assess compatibility with current codebase\n` +
+              `- [ ] Document affected code areas\n\n` +
+              
+              `### Phase 2: Testing Strategy\n` +
+              `- [ ] Run existing test suite baseline\n` +
+              `- [ ] Identify test failures and compatibility issues\n` +
+              `- [ ] Create comprehensive testing plan\n` +
+              `- [ ] Test critical user workflows\n` +
+              `- [ ] Validate API compatibility\n\n` +
+              
+              `### Phase 3: Implementation\n` +
+              `- [ ] Fix breaking changes in application code\n` +
+              `- [ ] Update configuration files\n` +
+              `- [ ] Add new tests for updated functionality\n` +
+              `- [ ] Update documentation\n` +
+              `- [ ] Implement security validations\n\n` +
+              
+              `### Phase 4: Validation & Deployment\n` +
+              `- [ ] Run full test suite and ensure all tests pass\n` +
+              `- [ ] Test critical application workflows manually\n` +
+              `- [ ] Verify build and deployment process\n` +
+              `- [ ] Create migration notes and documentation\n` +
+              `- [ ] Approve and merge dependency update\n\n` +
+              
+              `---\n` +
+              `*Progress will be updated automatically as analysis proceeds*`;
+            
+            await github.rest.issues.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issueData.issueNumber,
+              body: updatedBody
+            });
+            
+            console.log('Added analysis progress checklist to issue');
+
+      - name: Auto-assign to Copilot
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issueData = ${{ steps.get-issue.outputs.result }};
+            
+            try {
+              await github.rest.issues.addAssignees({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issueData.issueNumber,
+                assignees: ['copilot']
+              });
+              console.log('Assigned issue to Copilot');
+            } catch (error) {
+              console.log('Could not assign to Copilot (user may not exist):', error.message);
+            }
+
+      - name: Set priority labels
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issueData = ${{ steps.get-issue.outputs.result }};
+            
+            const labels = [
+              'copilot-analyzing',
+              'in-progress',
+              'automated-analysis'
+            ];
+            
+            // Add priority-specific labels
+            if (issueData.priority === 'critical') {
+              labels.push('priority-critical');
+            } else if (issueData.priority === 'high') {
+              labels.push('priority-high');
+            }
+            
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issueData.issueNumber,
+              labels: labels
+            });
+
+      - name: Create milestone for tracking
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issueData = ${{ steps.get-issue.outputs.result }};
+            
+            try {
+              // Check if milestone already exists
+              const milestones = await github.rest.issues.listMilestones({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                state: 'open'
+              });
+              
+              let milestone = milestones.data.find(m => m.title === 'Dependency Updates - Copilot Analysis');
+              
+              if (!milestone) {
+                // Create milestone if it doesn't exist
+                const newMilestone = await github.rest.issues.createMilestone({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  title: 'Dependency Updates - Copilot Analysis',
+                  description: 'Tracking milestone for critical dependency updates being analyzed by Copilot',
+                  due_on: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString() // 1 week from now
+                });
+                milestone = newMilestone.data;
+              }
+              
+              // Assign issue to milestone
+              await github.rest.issues.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issueData.issueNumber,
+                milestone: milestone.number
+              });
+              
+              console.log(`Assigned issue to milestone: ${milestone.title}`);
+            } catch (error) {
+              console.log('Could not create/assign milestone:', error.message);
+            }
+
+      - name: Schedule follow-up reminder
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issueData = ${{ steps.get-issue.outputs.result }};
+            
+            // Calculate reminder time based on priority
+            const reminderHours = issueData.priority === 'critical' ? 4 : 
+                                issueData.priority === 'high' ? 8 : 24;
+            
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issueData.issueNumber,
+              body: [
+                `⏰ **Analysis Timeline Set**`,
+                ``,
+                `**Target Completion:** ${reminderHours} hours from now`,
+                `**Next Check:** I'll provide a progress update in ${Math.floor(reminderHours/2)} hours`,
+                ``,
+                `**Quick Access Commands:**`,
+                `- \`@copilot status\` - Get current analysis status`,
+                `- \`@copilot help\` - Get guidance on specific issues`,
+                `- \`@copilot test\` - Run comprehensive validation`,
+                ``,
+                `**Monitoring:** This issue will be automatically monitored for progress and completion.`,
+                ``,
+                `---`,
+                `*Automated timeline management by Copilot Dependency Analysis*`
+              ].join('\n')
+            });
+            
+            console.log(`Set up analysis timeline: ${reminderHours} hours for completion`);

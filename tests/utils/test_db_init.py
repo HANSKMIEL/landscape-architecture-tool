@@ -7,7 +7,6 @@ from unittest.mock import Mock, patch
 import pytest
 
 from src.utils.db_init import initialize_database, populate_sample_data
-from tests.fixtures.auth_fixtures import authenticated_test_user, setup_test_authentication
 
 
 class TestInitializeDatabase:
@@ -41,18 +40,24 @@ class TestPopulateSampleData:
     """Test sample data population function"""
 
     @patch("src.utils.db_init.Supplier")
+    @patch("src.utils.db_init.User")
     @patch("src.utils.db_init.db")
     @patch("src.utils.db_init.logger")
-    def test_populate_sample_data_skips_if_data_exists(self, mock_logger, mock_db, mock_supplier):
+    def test_populate_sample_data_skips_if_data_exists(self, mock_logger, mock_db, mock_user, mock_supplier):
         """Test that sample data is skipped if suppliers already exist"""
         # Mock that suppliers already exist
         mock_query = Mock()
         mock_query.count.return_value = 5
         mock_supplier.query = mock_query
 
+        # Mock that users already exist so user creation is skipped
+        mock_user_query = Mock()
+        mock_user_query.count.return_value = 3
+        mock_user.query = mock_user_query
+
         populate_sample_data()
 
-        mock_logger.info.assert_called_with("Sample data already exists, skipping initialization")
+        mock_logger.info.assert_called_with("Sample business data already exists, skipping initialization")
         # Should not add new suppliers
         mock_db.session.add.assert_not_called()
 
@@ -100,7 +105,7 @@ class TestPopulateSampleData:
         populate_sample_data()
 
         # Should log that data creation started
-        mock_logger.info.assert_any_call("Populating database with sample data...")
+        mock_logger.info.assert_any_call("Populating database with sample business data...")
 
         # Should create suppliers, plants, products, clients, and projects
         assert mock_supplier.call_count == 3
@@ -114,10 +119,10 @@ class TestPopulateSampleData:
 
         # Should flush and commit
         mock_db.session.flush.assert_called()
-        mock_db.session.commit.assert_called_once()
+        assert mock_db.session.commit.call_count == 2
 
         # Should log success
-        mock_logger.info.assert_any_call("Sample data created successfully!")
+        mock_logger.info.assert_any_call("Sample business data created successfully!")
 
     @patch("src.utils.db_init.Supplier")
     @patch("src.utils.db_init.db")
@@ -143,6 +148,7 @@ class TestPopulateSampleData:
         mock_logger.error.assert_called_with("Error populating sample data: Database error")
 
     def test_populate_sample_data_supplier_data_structure(self, app_context):
+        del app_context
         """Test that supplier data has expected structure"""
         # Authentication handled by authenticated_test_user fixture
         # This tests the actual data structure without mocking
@@ -175,7 +181,6 @@ class TestPopulateSampleData:
                     patch("src.utils.db_init.Client"),
                     patch("src.utils.db_init.Project"),
                 ):
-
                     populate_sample_data()
 
                     # Verify supplier data structure
@@ -190,6 +195,7 @@ class TestPopulateSampleData:
                     assert first_supplier["specialization"] == "Bomen en heesters"
 
     def test_populate_sample_data_plant_data_structure(self, app_context):
+        del app_context
         """Test that plant data has expected structure"""
         # Authentication handled by authenticated_test_user fixture
         with patch("src.utils.db_init.db.session") as mock_session:
@@ -224,7 +230,6 @@ class TestPopulateSampleData:
                         patch("src.utils.db_init.Client"),
                         patch("src.utils.db_init.Project"),
                     ):
-
                         populate_sample_data()
 
                         # Verify plant data structure
@@ -242,6 +247,7 @@ class TestPopulateSampleData:
                         assert first_plant["supplier_id"] == 1  # First supplier's ID
 
     def test_populate_sample_data_project_data_structure(self, app_context):
+        del app_context
         """Test that project data has expected structure"""
         # Authentication handled by authenticated_test_user fixture
         with patch("src.utils.db_init.db.session") as mock_session:
@@ -278,7 +284,6 @@ class TestPopulateSampleData:
                             patch("src.utils.db_init.Plant"),
                             patch("src.utils.db_init.Product"),
                         ):
-
                             populate_sample_data()
 
                             # Verify project data structure
@@ -294,10 +299,11 @@ class TestPopulateSampleData:
 
     @patch("src.utils.db_init.logger")
     def test_populate_sample_data_logging(self, mock_logger, app_context):
+        del app_context
         """Test that appropriate logging messages are generated"""
         with patch("src.utils.db_init.Supplier.query") as mock_query:
             mock_query.count.return_value = 5  # Data exists
 
             populate_sample_data()
 
-            mock_logger.info.assert_called_with("Sample data already exists, skipping initialization")
+        mock_logger.info.assert_called_with("Sample business data already exists, skipping initialization")

@@ -82,7 +82,7 @@ const ExcelImportManager = () => {
 
       const response = await apiService.processImport(formData);
       setImportResult(response);
-      
+
       // Refresh status after successful import
       if (response.success) {
         await loadImportStatus();
@@ -174,17 +174,16 @@ const ExcelImportManager = () => {
       {/* Import Type Selection */}
       <div className="bg-white shadow-md rounded-lg p-6 mb-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">1. Kies Import Type</h2>
-        
+
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
           {importTypes.map((type) => (
             <button
               key={type.value}
               onClick={() => setImportType(type.value)}
-              className={`p-4 border-2 rounded-lg text-center transition-colors ${
-                importType === type.value
+              className={`p-4 border-2 rounded-lg text-center transition-colors ${importType === type.value
                   ? 'border-green-500 bg-green-50 text-green-700'
                   : 'border-gray-200 hover:border-gray-300'
-              }`}
+                }`}
             >
               <div className="text-2xl mb-2">{type.icon}</div>
               <div className="font-medium">{type.label}</div>
@@ -219,10 +218,10 @@ const ExcelImportManager = () => {
       {/* File Upload */}
       <div className="bg-white shadow-md rounded-lg p-6 mb-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">2. Upload Bestand</h2>
-        
+
         <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
           <FileSpreadsheet className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-          
+
           {selectedFile ? (
             <div className="space-y-2">
               <p className="text-sm font-medium text-gray-900">{selectedFile.name}</p>
@@ -287,7 +286,7 @@ const ExcelImportManager = () => {
       {validationResult && (
         <div className="bg-white shadow-md rounded-lg p-6 mb-6">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">3. Validatie Resultaat</h2>
-          
+
           <div className={`p-4 rounded-md ${validationResult.valid ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`}>
             <div className="flex">
               {validationResult.valid ? (
@@ -303,13 +302,13 @@ const ExcelImportManager = () => {
                   <p className={validationResult.valid ? 'text-green-700' : 'text-red-700'}>
                     {validationResult.total_rows} rijen gevonden
                   </p>
-                  
+
                   {validationResult.missing_columns && validationResult.missing_columns.length > 0 && (
                     <p className="text-red-700 mt-1">
                       Ontbrekende kolommen: {validationResult.missing_columns.join(', ')}
                     </p>
                   )}
-                  
+
                   {validationResult.data_issues && validationResult.data_issues.length > 0 && (
                     <div className="mt-2">
                       <p className="text-red-700 font-medium">Data problemen:</p>
@@ -320,7 +319,7 @@ const ExcelImportManager = () => {
                       </ul>
                     </div>
                   )}
-                  
+
                   {validationResult.recommendations && validationResult.recommendations.length > 0 && (
                     <div className="mt-2">
                       <p className="text-blue-700 font-medium">Aanbevelingen:</p>
@@ -394,7 +393,7 @@ const ExcelImportManager = () => {
       {importResult && (
         <div className="bg-white shadow-md rounded-lg p-6">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">4. Import Resultaat</h2>
-          
+
           <div className={`p-4 rounded-md ${importResult.success ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`}>
             <div className="flex">
               {importResult.success ? (
@@ -406,7 +405,7 @@ const ExcelImportManager = () => {
                 <h3 className={`text-sm font-medium ${importResult.success ? 'text-green-800' : 'text-red-800'}`}>
                   {importResult.message}
                 </h3>
-                
+
                 {importResult.success && (
                   <div className="mt-2 text-sm text-green-700">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -429,7 +428,7 @@ const ExcelImportManager = () => {
                     </div>
                   </div>
                 )}
-                
+
                 {importResult.errors && importResult.errors.length > 0 && (
                   <div className="mt-2">
                     <p className="text-red-700 font-medium">Fouten:</p>
@@ -472,7 +471,7 @@ const ExcelImportManager = () => {
                 <li>Als de validatie succesvol is, start de import</li>
               </ol>
               <p className="mt-3 font-medium">
-                Tips: Gebruik unieke email-adressen voor klanten en leveranciers. 
+                Tips: Gebruik unieke email-adressen voor klanten en leveranciers.
                 Zorg ervoor dat leverancier IDs bestaan voordat u planten of producten importeert.
               </p>
             </div>

@@ -6,10 +6,17 @@ const API_BASE_URL = getApiBaseUrl();
 
 class ApiService {
   async request(endpoint, options = {}) {
-    // Use mock API for static demo (GitHub Pages) or when explicitly flagged
-    if (isStaticDemo() || API_BASE_URL === 'MOCK_API') {
+    // CRITICAL FIX: Force real API usage for VPS IP 72.60.176.200
+    const isVpsEnvironment = window.location.hostname === '72.60.176.200';
+    
+    // Use mock API for static demo (GitHub Pages) or when explicitly flagged, BUT NOT for VPS
+    if (!isVpsEnvironment && (isStaticDemo() || API_BASE_URL === 'MOCK_API')) {
       console.log('Using mock API - detected GitHub Pages or mock flag');
       return this.handleMockRequest(endpoint, options);
+    }
+    
+    if (isVpsEnvironment) {
+      console.log('✅ VPS ENVIRONMENT DETECTED - Using real API');
     }
     const url = `${API_BASE_URL}${endpoint}`;
     const config = {

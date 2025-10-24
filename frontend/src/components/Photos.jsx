@@ -1,18 +1,16 @@
 import React, { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
-import { 
-  Camera, 
-  Upload, 
-  Grid, 
-  List, 
-  Filter, 
+import {
+  Camera,
+  Upload,
+  Grid,
+  List,
+  Filter,
   Search,
   Image as ImageIcon,
   MapPin,
   Calendar,
-  Tag,
-  Download,
-  Trash2
+  Tag
 } from 'lucide-react'
 import PhotoUpload from './PhotoUpload'
 import PhotoGallery from './PhotoGallery'
@@ -94,11 +92,11 @@ const Photos = ({ user }) => {
   // Filter photos based on search and category
   const filteredPhotos = photos.filter(photo => {
     const matchesSearch = photo.filename?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         photo.caption?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         photo.tags?.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))
-    
+      photo.caption?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      photo.tags?.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))
+
     const matchesCategory = selectedCategory === 'all' || photo.category === selectedCategory
-    
+
     return matchesSearch && matchesCategory
   })
 
@@ -237,13 +235,13 @@ const Photos = ({ user }) => {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <ImageIcon className="h-5 w-5" />
-              {selectedCategory === 'all' 
+              {selectedCategory === 'all'
                 ? t('photos.allPhotos', 'All Photos')
                 : categories.find(c => c.value === selectedCategory)?.label
               }
               {searchTerm && (
                 <span className="text-sm text-gray-500">
-                  - {t('photos.searchResults', 'Search results for')}: "{searchTerm}"
+                  - {t('photos.searchResults', 'Search results for')}: “{searchTerm}”
                 </span>
               )}
             </CardTitle>
@@ -269,7 +267,7 @@ const Photos = ({ user }) => {
                 </button>
               </div>
             ) : (
-              <PhotoGallery 
+              <PhotoGallery
                 photos={filteredPhotos}
                 viewMode={viewMode}
                 onDeletePhoto={handleDeletePhoto}
@@ -295,7 +293,7 @@ const Photos = ({ user }) => {
                     ×
                   </button>
                 </div>
-                <PhotoUpload 
+                <PhotoUpload
                   onPhotoUploaded={handlePhotoUploaded}
                   onCancel={() => setShowUpload(false)}
                 />

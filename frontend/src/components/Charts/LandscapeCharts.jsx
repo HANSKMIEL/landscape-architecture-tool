@@ -65,16 +65,16 @@ export const LandscapeBarChart = ({ data, dataKey, xAxisKey, title, height = 300
       <ResponsiveContainer width="100%" height={height}>
         <BarChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-          <XAxis 
-            dataKey={xAxisKey} 
+          <XAxis
+            dataKey={xAxisKey}
             stroke="#6b7280"
             fontSize={12}
           />
           <YAxis stroke="#6b7280" fontSize={12} />
           <Tooltip content={<CustomTooltip />} />
           <Legend />
-          <Bar 
-            dataKey={dataKey} 
+          <Bar
+            dataKey={dataKey}
             fill={COLORS.primary}
             radius={[4, 4, 0, 0]}
           />
@@ -121,17 +121,17 @@ export const LandscapeLineChart = ({ data, dataKey, xAxisKey, title, height = 30
       <ResponsiveContainer width="100%" height={height}>
         <LineChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-          <XAxis 
-            dataKey={xAxisKey} 
+          <XAxis
+            dataKey={xAxisKey}
             stroke="#6b7280"
             fontSize={12}
           />
           <YAxis stroke="#6b7280" fontSize={12} />
           <Tooltip content={<CustomTooltip />} />
           <Legend />
-          <Line 
-            type="monotone" 
-            dataKey={dataKey} 
+          <Line
+            type="monotone"
+            dataKey={dataKey}
             stroke={COLORS.primary}
             strokeWidth={3}
             dot={{ fill: COLORS.primary, strokeWidth: 2, r: 4 }}
@@ -151,17 +151,17 @@ export const LandscapeAreaChart = ({ data, dataKey, xAxisKey, title, height = 30
       <ResponsiveContainer width="100%" height={height}>
         <AreaChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-          <XAxis 
-            dataKey={xAxisKey} 
+          <XAxis
+            dataKey={xAxisKey}
             stroke="#6b7280"
             fontSize={12}
           />
           <YAxis stroke="#6b7280" fontSize={12} />
           <Tooltip content={<CustomTooltip />} />
           <Legend />
-          <Area 
-            type="monotone" 
-            dataKey={dataKey} 
+          <Area
+            type="monotone"
+            dataKey={dataKey}
             stroke={COLORS.primary}
             fill={COLORS.primary}
             fillOpacity={0.3}
@@ -180,8 +180,8 @@ export const LandscapeMultiBarChart = ({ data, dataKeys, xAxisKey, title, height
       <ResponsiveContainer width="100%" height={height}>
         <BarChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-          <XAxis 
-            dataKey={xAxisKey} 
+          <XAxis
+            dataKey={xAxisKey}
             stroke="#6b7280"
             fontSize={12}
           />
@@ -189,9 +189,9 @@ export const LandscapeMultiBarChart = ({ data, dataKeys, xAxisKey, title, height
           <Tooltip content={<CustomTooltip />} />
           <Legend />
           {dataKeys.map((key, index) => (
-            <Bar 
+            <Bar
               key={key}
-              dataKey={key} 
+              dataKey={key}
               fill={CHART_COLORS[index % CHART_COLORS.length]}
               radius={[4, 4, 0, 0]}
             />
@@ -226,7 +226,7 @@ export const DashboardStatsChart = ({ stats }) => {
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       {/* Overview Pie Chart */}
       <div className="bg-white p-6 rounded-lg shadow-sm border">
-        <LandscapePieChart 
+        <LandscapePieChart
           data={chartData}
           dataKey="value"
           nameKey="name"
@@ -237,7 +237,7 @@ export const DashboardStatsChart = ({ stats }) => {
 
       {/* Monthly Revenue Chart */}
       <div className="bg-white p-6 rounded-lg shadow-sm border">
-        <LandscapeAreaChart 
+        <LandscapeAreaChart
           data={monthlyData}
           dataKey="revenue"
           xAxisKey="month"
@@ -248,7 +248,7 @@ export const DashboardStatsChart = ({ stats }) => {
 
       {/* Projects Bar Chart */}
       <div className="bg-white p-6 rounded-lg shadow-sm border lg:col-span-2">
-        <LandscapeMultiBarChart 
+        <LandscapeMultiBarChart
           data={monthlyData}
           dataKeys={['revenue', 'projects']}
           xAxisKey="month"

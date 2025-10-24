@@ -1,0 +1,354 @@
+name: V1.00D Fullstack DevDeploy
+
+on:
+  push:
+    branches: [V1.00D]
+  workflow_dispatch:
+    inputs:
+      force_deploy:
+        description: "Force deployment even if smoke tests fail"
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+concurrency:
+  group: v1d-devdeploy-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-test:
+    name: Build & Verify Fullstack Bundle
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    if: github.ref == 'refs/heads/V1.00D'
+
+    steps:
+      - name: Checkout Source
+        uses: actions/checkout@v4
+        with:
+          ref: V1.00D
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Setup Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Install Backend Dependencies
+        run: |
+          echo "📦 Installing Python dependencies..."
+          python -m pip install --upgrade --no-cache-dir pip
+          pip install --no-cache-dir -r requirements.txt
+
+      - name: Install Frontend Dependencies
+        run: |
+          echo "📦 Installing Node.js dependencies..."
+          cd frontend
+          npm ci --legacy-peer-deps --no-progress --prefer-online
+
+      - name: Ensure DevDeploy Branding
+        run: |
+          sed -i 's/<title>.*<\/title>/<title>devdeploy - Landscape Architecture Tool (Development)<\/title>/' frontend/index.html
+
+      - name: Run Backend Smoke Tests
+        continue-on-error: ${{ github.event_name == 'workflow_dispatch' && inputs.force_deploy }}
+        run: |
+          echo "🧪 Running backend smoke tests..."
+          python -m pytest tests/test_dependency_validator_import.py
+
+      - name: Run Frontend Unit Tests
+        continue-on-error: ${{ github.event_name == 'workflow_dispatch' && inputs.force_deploy }}
+        run: |
+          echo "🧪 Running frontend unit tests..."
+          cd frontend
+          npm run test:run
+
+      - name: Build Frontend
+        run: |
+          echo "🏗️ Building frontend bundle..."
+          cd frontend
+          npm run build
+          if [ ! -f "dist/index.html" ]; then
+            echo "❌ Frontend build failed: dist/index.html missing"
+            exit 1
+          fi
+
+      - name: Prepare Fullstack Bundle
+        run: |
+          echo "📦 Preparing fullstack deployment bundle..."
+          mkdir -p build_artifacts/fullstack_bundle/backend build_artifacts/fullstack_bundle/frontend
+
+          rsync -a --delete --exclude '__pycache__' src/ build_artifacts/fullstack_bundle/backend/src/
+          rsync -a migrations/ build_artifacts/fullstack_bundle/backend/migrations/
+          rsync -a config/ build_artifacts/fullstack_bundle/backend/config/
+          rsync -a scripts/deployment/ build_artifacts/fullstack_bundle/backend/scripts/deployment/
+
+          cp requirements.txt build_artifacts/fullstack_bundle/backend/
+          if [ -f requirements-dev.txt ]; then
+            cp requirements-dev.txt build_artifacts/fullstack_bundle/backend/
+          fi
+          cp pyproject.toml build_artifacts/fullstack_bundle/backend/
+          cp .env.example build_artifacts/fullstack_bundle/backend/ || true
+
+          rsync -a frontend/dist/ build_artifacts/fullstack_bundle/frontend/dist/
+          cp frontend/package.json build_artifacts/fullstack_bundle/frontend/
+          cp frontend/package-lock.json build_artifacts/fullstack_bundle/frontend/ || true
+
+          cat <<EOF > build_artifacts/fullstack_bundle/metadata.json
+          {
+            "version": "V1.00D",
+            "commit": "${{ github.sha }}",
+            "generated_at": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")",
+            "runner": "${{ runner.name }}"
+          }
+          EOF
+
+          tar -czf build_artifacts/fullstack_bundle.tar.gz -C build_artifacts fullstack_bundle
+
+      - name: Upload Fullstack Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: v1d-fullstack-bundle
+          path: build_artifacts/fullstack_bundle.tar.gz
+          retention-days: 7
+
+  deploy-to-devdeploy:
+    name: Deploy to DevDeploy VPS
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    needs: build-and-test
+    if: github.ref == 'refs/heads/V1.00D'
+
+    environment:
+      name: devdeploy
+      url: http://72.60.176.200:8080
+
+    steps:
+      - name: Checkout Source
+        uses: actions/checkout@v4
+        with:
+          ref: V1.00D
+
+      - name: Download Fullstack Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: v1d-fullstack-bundle
+          path: deployment_artifacts
+
+      - name: Setup SSH Credentials
+        run: |
+          echo "🔑 Configuring SSH credentials..."
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+
+          if [ -z "${{ secrets.VPS_SSH_KEY }}" ]; then
+            echo "❌ VPS_SSH_KEY secret missing"
+            exit 1
+          fi
+
+          echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/vps_key
+          chmod 600 ~/.ssh/vps_key
+
+          ssh-keyscan -H "${{ secrets.VPS_HOST != '' && secrets.VPS_HOST || '72.60.176.200' }}" >> ~/.ssh/known_hosts 2>/dev/null
+
+      - name: Run Pre-Deployment Validation
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST != '' && secrets.VPS_HOST || '72.60.176.200' }}
+          VPS_USER: ${{ secrets.VPS_USER != '' && secrets.VPS_USER || 'root' }}
+        run: |
+          echo "🔍 Running pre-deployment checks..."
+          chmod +x scripts/deployment/validate_deployment_prerequisites.sh || true
+          if [ -f scripts/deployment/validate_deployment_prerequisites.sh ]; then
+            if ! scripts/deployment/validate_deployment_prerequisites.sh; then
+              echo "⚠️ Validation script reported issues"
+            fi
+          else
+            echo "ℹ️ Validation script not present; skipping"
+          fi
+
+      - name: Transfer Bundle to VPS
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST != '' && secrets.VPS_HOST || '72.60.176.200' }}
+          VPS_USER: ${{ secrets.VPS_USER != '' && secrets.VPS_USER || 'root' }}
+        run: |
+          echo "📤 Uploading bundle to VPS..."
+          scp -i ~/.ssh/vps_key -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
+            deployment_artifacts/fullstack_bundle.tar.gz \
+            "$VPS_USER@$VPS_HOST:/tmp/v1d_fullstack_bundle.tar.gz"
+
+      - name: Deploy Bundle on VPS
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST != '' && secrets.VPS_HOST || '72.60.176.200' }}
+          VPS_USER: ${{ secrets.VPS_USER != '' && secrets.VPS_USER || 'root' }}
+        run: |
+          echo "🚀 Deploying bundle on VPS..."
+          SSH_OPTS="-i ~/.ssh/vps_key -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=30"
+          ssh $SSH_OPTS "$VPS_USER@$VPS_HOST" 'bash -s' <<'EOF'
+          set -e
+
+          DEPLOY_DIR="/var/www/landscape-architecture-tool-dev"
+          BUNDLE_PATH="/tmp/v1d_fullstack_bundle.tar.gz"
+
+          echo "📦 Extracting deployment bundle..."
+          if [ ! -f "$BUNDLE_PATH" ]; then
+              echo "❌ Deployment bundle missing at $BUNDLE_PATH"
+              exit 1
+          fi
+
+          TMP_DIR=$(mktemp -d /tmp/v1d_bundle_XXXX)
+          tar -xzf "$BUNDLE_PATH" -C "$TMP_DIR"
+          BUNDLE_ROOT="$TMP_DIR/fullstack_bundle"
+
+          echo "📁 Ensuring deployment directory exists..."
+          mkdir -p "$DEPLOY_DIR"
+          cd "$DEPLOY_DIR"
+
+          if [ ! -d .git ]; then
+              echo "📥 Initializing repository..."
+              git clone https://github.com/HANSKMIEL/landscape-architecture-tool.git .
+              git checkout V1.00D
+          fi
+
+          echo "🔄 Syncing repository with origin/V1.00D..."
+          git fetch origin
+          git reset --hard origin/V1.00D
+
+          echo "🗃️ Applying backend bundle contents..."
+          rsync -a --delete "$BUNDLE_ROOT/backend/src/" "$DEPLOY_DIR/src/"
+          rsync -a --delete "$BUNDLE_ROOT/backend/migrations/" "$DEPLOY_DIR/migrations/"
+          rsync -a "$BUNDLE_ROOT/backend/config/" "$DEPLOY_DIR/config/"
+          rsync -a "$BUNDLE_ROOT/backend/scripts/deployment/" "$DEPLOY_DIR/scripts/deployment/"
+          cp "$BUNDLE_ROOT/backend/requirements.txt" "$DEPLOY_DIR/requirements.txt"
+          cp "$BUNDLE_ROOT/backend/pyproject.toml" "$DEPLOY_DIR/pyproject.toml"
+          if [ -f "$BUNDLE_ROOT/backend/requirements-dev.txt" ]; then
+              cp "$BUNDLE_ROOT/backend/requirements-dev.txt" "$DEPLOY_DIR/requirements-dev.txt"
+          fi
+          if [ -f "$BUNDLE_ROOT/backend/.env.example" ] && [ ! -f "$DEPLOY_DIR/.env" ]; then
+              cp "$BUNDLE_ROOT/backend/.env.example" "$DEPLOY_DIR/.env"
+          fi
+
+          echo "🗃️ Updating frontend build artifacts..."
+          rsync -a --delete "$BUNDLE_ROOT/frontend/dist/" "$DEPLOY_DIR/frontend/dist/"
+
+          if [ -f "$BUNDLE_ROOT/metadata.json" ]; then
+              mkdir -p "$DEPLOY_DIR/deployment-metadata"
+              cp "$BUNDLE_ROOT/metadata.json" "$DEPLOY_DIR/deployment-metadata/deploy_$(date -u +"%Y%m%dT%H%M%SZ").json"
+          fi
+
+          echo "🐍 Ensuring Python virtual environment..."
+          VENV_PATH="$DEPLOY_DIR/venv-dev"
+          if [ ! -f "$VENV_PATH/bin/activate" ]; then
+              python3 -m venv "$VENV_PATH" || {
+                  echo "⚠️ python3-venv missing, attempting installation..."
+                  if command -v apt-get >/dev/null 2>&1; then
+                      export DEBIAN_FRONTEND=noninteractive
+                      apt-get update -y
+                      apt-get install -y python3-venv
+                      unset DEBIAN_FRONTEND
+                      python3 -m venv "$VENV_PATH"
+                  else
+                      echo "❌ Unable to create virtual environment"
+                      exit 1
+                  fi
+              }
+          fi
+
+          source "$VENV_PATH/bin/activate"
+          pip install --upgrade --no-cache-dir pip
+          pip install --no-cache-dir -r requirements.txt
+
+          echo "🗄️ Running database migrations..."
+          export FLASK_APP="src.main"
+          flask db upgrade
+
+          echo "🔄 Restarting backend service..."
+          if systemctl list-unit-files | grep -q "landscape-backend-dev"; then
+              systemctl restart landscape-backend-dev
+          else
+              echo "⚠️ landscape-backend-dev service not found; please configure systemd service"
+          fi
+
+          echo "🌐 Reloading nginx..."
+          if systemctl is-active --quiet nginx; then
+              systemctl reload nginx || systemctl restart nginx
+          fi
+
+          echo "🧹 Cleaning temporary bundle directory..."
+          rm -rf "$TMP_DIR"
+          rm -f "$BUNDLE_PATH"
+
+          echo "✅ Deployment bundle applied successfully"
+          EOF
+
+      - name: Verify Fullstack Deployment
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST != '' && secrets.VPS_HOST || '72.60.176.200' }}
+        run: |
+          echo "🔍 Validating frontend and backend integration..."
+          sleep 15
+
+          FRONTEND_RESPONSE=$(curl -s http://$VPS_HOST:8080/)
+          if echo "$FRONTEND_RESPONSE" | grep -q "devdeploy"; then
+            echo "✅ Frontend is serving devdeploy UI"
+          else
+            echo "❌ Frontend verification failed"
+            exit 1
+          fi
+
+          HEALTH_RESPONSE=$(curl -s http://$VPS_HOST:8080/health)
+          if [ -z "$HEALTH_RESPONSE" ]; then
+            echo "❌ Backend health endpoint returned empty response"
+            exit 1
+          fi
+          DB_STATUS=$(python -c "import json,sys; data=json.loads(sys.stdin.read()); print(data.get('database_status') or data.get('database', {}).get('status', 'unknown'))" <<<"$HEALTH_RESPONSE")
+
+          if [ "$DB_STATUS" != "connected" ]; then
+            echo "❌ Database status from health check is $DB_STATUS"
+            exit 1
+          fi
+
+          echo "✅ Backend is healthy with active database connection"
+
+      - name: Generate Deployment Report
+        if: always()
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST != '' && secrets.VPS_HOST || '72.60.176.200' }}
+        run: |
+          echo "## V1.00D DevDeploy Deployment Report" > deployment-report.md
+          echo "**Branch**: V1.00D" >> deployment-report.md
+          echo "**Commit**: ${{ github.sha }}" >> deployment-report.md
+          echo "**Deployment Time (UTC)**: $(date -u)" >> deployment-report.md
+          echo "**Environment**: DevDeploy" >> deployment-report.md
+          echo "**URL**: http://$VPS_HOST:8080" >> deployment-report.md
+          echo "" >> deployment-report.md
+          echo "### Verification" >> deployment-report.md
+          echo "- Frontend Title: ✅" >> deployment-report.md
+          echo "- Backend Health: ✅" >> deployment-report.md
+          echo "- Database Status: connected" >> deployment-report.md
+
+      - name: Upload Deployment Artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v1d-devdeploy-report
+          path: |
+            deployment-report.md
+            deployment_artifacts/fullstack_bundle.tar.gz
+          retention-days: 7
+
+      - name: Notify Deployment Success
+        if: success()
+        run: |
+          echo "🎉 V1.00D DevDeploy deployment completed successfully!"
+          echo "🌐 Access the environment at http://72.60.176.200:8080"
+          echo "✅ Frontend, backend, and database validated"

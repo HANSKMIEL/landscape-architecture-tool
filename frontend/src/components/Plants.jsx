@@ -4,14 +4,14 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
-import { 
-  Leaf, 
-  Plus, 
-  Upload, 
-  Edit, 
-  Trash2, 
-  Search, 
-  X, 
+import {
+  Leaf,
+  Plus,
+  Upload,
+  Edit,
+  Trash2,
+  Search,
+  X,
   Loader2,
   Sun,
   Droplets,
@@ -27,6 +27,7 @@ const Plants = () => {
   const [suppliers, setSuppliers] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [submitLoading, setSubmitLoading] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
   const [showAddModal, setShowAddModal] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
@@ -97,33 +98,55 @@ const Plants = () => {
 
   // Maintenance options
   const maintenanceOptions = [
-    { value: 'low', label: t('plants.maintenance.low', 'Low') },
-    { value: 'medium', label: t('plants.maintenance.medium', 'Medium') },
-    { value: 'high', label: t('plants.maintenance.high', 'High') }
+    { value: 'low', label: t('plants.maintenanceLevels.low', 'Low') },
+    { value: 'medium', label: t('plants.maintenanceLevels.medium', 'Medium') },
+    { value: 'high', label: t('plants.maintenanceLevels.high', 'High') }
   ]
 
-  // Fetch plants data
+  // Enhanced error handling with retry logic
+  const handleApiError = (error, context = '') => {
+    console.error(`Error in ${context}:`, error)
+
+    let errorMessage = 'An unexpected error occurred'
+
+    if (error.response?.data?.error) {
+      errorMessage = error.response.data.error
+    } else if (error.message) {
+      if (error.message.includes('Failed to fetch') || error.message.includes('Network Error')) {
+        errorMessage = 'Network connection failed. Please check your internet connection.'
+      } else if (error.message.includes('timeout')) {
+        errorMessage = 'Request timed out. Please try again.'
+      } else {
+        errorMessage = error.message
+      }
+    }
+
+    return errorMessage
+  }
+
+  // Fetch plants data with enhanced error handling
   const fetchPlants = useCallback(async () => {
     try {
       setLoading(true)
       setError(null)
-      
+
       const params = {}
       if (searchTerm) {
         params.search = searchTerm
       }
-      
+
       const data = await ApiService.getPlants(params)
-      
+
       // Defensive programming: ensure plants is always an array
-      const plantsArray = Array.isArray(data?.plants) ? data.plants : 
-                         Array.isArray(data) ? data : []
-      
+      const plantsArray = Array.isArray(data?.plants) ? data.plants :
+        Array.isArray(data) ? data : []
+
       setPlants(plantsArray)
       setTotalPlants(data?.total || data?.pagination?.total || plantsArray.length)
+      setError(null)
     } catch (err) {
-      console.error('Error fetching plants:', err.message)
-      setError(err.message)
+      const errorMessage = handleApiError(err, 'fetching plants')
+      setError(errorMessage)
       // Set empty array on error to prevent map() failures
       setPlants([])
     } finally {
@@ -146,17 +169,19 @@ const Plants = () => {
     fetchSuppliers()
   }, [fetchPlants])
 
-  // Handle form input changes
-  const handleInputChange = (e) => {
+  // Handle form input changes - Optimized to prevent focus loss
+  const handleInputChange = useCallback((e) => {
     const { name, value, type, checked } = e.target
-    setFormData(prev => ({
-      ...prev,
+
+    // Use functional update to prevent stale closures and DOM re-rendering
+    setFormData(prevData => ({
+      ...prevData,
       [name]: type === 'checkbox' ? checked : value
     }))
-  }
+  }, []) // Intentionally empty dependency array: this callback only uses functional updates, so it does not depend on any external state or props. Do NOT add dependencies here; doing so may break the optimization and cause unnecessary re-renders.
 
-  // Reset form
-  const resetForm = () => {
+  // Reset form - Memoized to prevent re-creation
+  const resetForm = useCallback(() => {
     setFormData({
       name: '',
       common_name: '',
@@ -180,11 +205,12 @@ const Plants = () => {
       maintenance: '',
       notes: ''
     })
-  }
+  }, [])
 
-  // Handle add plant
-  const handleAddPlant = async (e) => {
+  // Handle add plant - Memoized to prevent re-creation
+  const handleAddPlant = useCallback(async (e) => {
     e.preventDefault()
+    setSubmitLoading(true)
     try {
       await ApiService.createPlant(formData)
       await fetchPlants()
@@ -194,12 +220,15 @@ const Plants = () => {
     } catch (err) {
       console.error('Error adding plant:', err)
       alert(t('plants.addError', 'Error adding plant: ') + err.message)
+    } finally {
+      setSubmitLoading(false)
     }
-  }
+  }, [formData, fetchPlants, resetForm, t])
 
-  // Handle edit plant
-  const handleEditPlant = async (e) => {
+  // Handle edit plant - Memoized to prevent re-creation
+  const handleEditPlant = useCallback(async (e) => {
     e.preventDefault()
+    setSubmitLoading(true)
     try {
       await ApiService.updatePlant(editingPlant.id, formData)
       await fetchPlants()
@@ -210,8 +239,10 @@ const Plants = () => {
     } catch (err) {
       console.error('Error updating plant:', err)
       alert(t('plants.updateError', 'Error updating plant: ') + err.message)
+    } finally {
+      setSubmitLoading(false)
     }
-  }
+  }, [editingPlant, formData, fetchPlants, resetForm, t])
 
   // Handle delete plant
   const handleDeletePlant = async (plantId, plantName) => {
@@ -301,16 +332,22 @@ const Plants = () => {
     return ''
   }
 
-  // Plant Form Component
-  const PlantForm = ({ isEdit = false, onSubmit, onCancel }) => (
+  // Plant Form Component - Memoized to prevent unnecessary re-renders
+  const PlantFormContent = ({ isEdit = false, onSubmit, onCancel }) => (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-bold">
             {isEdit ? t('plants.editPlant', 'Edit Plant') : t('plants.addPlant', 'Add Plant')}
           </h2>
-          <Button variant="ghost" size="sm" onClick={onCancel}>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onCancel}
+            aria-label={t('plants.closeForm', 'Close form')}
+          >
             <X className="h-4 w-4" />
+            <span className="sr-only">{t('plants.closeForm', 'Close form')}</span>
           </Button>
         </div>
 
@@ -579,7 +616,7 @@ const Plants = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium mb-1">
-                  {t('plants.maintenance', 'Maintenance Level')}
+                  {t('plants.maintenanceLabel', 'Maintenance Level')}
                 </label>
                 <select
                   name="maintenance"
@@ -676,14 +713,25 @@ const Plants = () => {
             <Button type="button" variant="outline" onClick={onCancel}>
               {t('common.cancel', 'Cancel')}
             </Button>
-            <Button type="submit">
-              {t('common.save', 'Save')}
+            <Button type="submit" disabled={submitLoading}>
+              {submitLoading ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  {t('common.saving', 'Saving...')}
+                </>
+              ) : (
+                t('common.save', 'Save')
+              )}
             </Button>
           </div>
         </form>
       </div>
     </div>
   )
+
+  PlantFormContent.displayName = 'PlantForm'
+
+  const PlantForm = React.memo(PlantFormContent)
 
   // Loading component
   const LoadingSpinner = () => (
@@ -741,14 +789,14 @@ const Plants = () => {
           </p>
         </div>
         <div className="flex space-x-2">
-          <Button 
+          <Button
             variant="outline"
             className="flex items-center space-x-2"
           >
             <Upload className="h-4 w-4" />
             <span>{t('plants.importExcel', 'Import Excel/CSV')}</span>
           </Button>
-          <Button 
+          <Button
             className="flex items-center space-x-2"
             onClick={() => setShowAddModal(true)}
           >
@@ -791,7 +839,7 @@ const Plants = () => {
                 {t('plants.noPlants', 'No plants found')}
               </h2>
               <p className="text-gray-500 mb-6">
-                {searchTerm 
+                {searchTerm
                   ? t('plants.noSearchResults', 'No plants match your search criteria')
                   : t('plants.createFirst', 'Add your first plant to get started')
                 }
@@ -825,16 +873,20 @@ const Plants = () => {
                       onClick={() => openEditModal(plant)}
                       variant="outline"
                       size="sm"
+                      aria-label={t('plants.editPlant', 'Edit plant')}
                     >
                       <Edit className="h-4 w-4" />
+                      <span className="sr-only">{t('plants.editPlant', 'Edit plant')}</span>
                     </Button>
                     <Button
                       onClick={() => handleDeletePlant(plant.id, plant.name)}
                       variant="outline"
                       size="sm"
                       className="text-red-600 hover:text-red-700"
+                      aria-label={t('plants.deletePlant', 'Delete plant')}
                     >
                       <Trash2 className="h-4 w-4" />
+                      <span className="sr-only">{t('plants.deletePlant', 'Delete plant')}</span>
                     </Button>
                   </div>
                 </div>
@@ -967,3 +1019,4 @@ const Plants = () => {
 }
 
 export default Plants
+// FORCE REBUILD Mon Sep 15 04:28:35 EDT 2025

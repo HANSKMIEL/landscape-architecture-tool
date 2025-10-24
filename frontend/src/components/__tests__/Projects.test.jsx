@@ -14,7 +14,7 @@ describe('Projects Component', () => {
   beforeEach(() => {
     // Store original fetch
     originalFetch = global.fetch
-    
+
     // Reset mocks before each test
     clearAllMocks()
 
@@ -34,7 +34,7 @@ describe('Projects Component', () => {
             status: 'Planning'
           },
           {
-            id: 2, 
+            id: 2,
             name: 'Park Renovation',
             description: 'Urban park landscape renovation with sustainable features',
             client_name: 'City Council',
@@ -48,13 +48,13 @@ describe('Projects Component', () => {
             name: 'Corporate Landscape',
             description: 'Office building exterior landscaping design',
             client_name: 'TechCorp BV',
-            location: 'Rotterdam, Netherlands', 
+            location: 'Rotterdam, Netherlands',
             budget: 75000,
             start_date: '2024-02-01',
             status: 'Completed'
           }
         ])
-        
+
         return Promise.resolve({
           ok: true,
           status: 200,
@@ -64,7 +64,24 @@ describe('Projects Component', () => {
           json: () => Promise.resolve({ projects: mockProjects })
         })
       }
-      
+
+      if (url.includes('/clients')) {
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          headers: {
+            get: (name) => name === 'content-type' ? 'application/json' : null
+          },
+          json: () => Promise.resolve({
+            clients: [
+              { id: 1, name: 'Family Johnson' },
+              { id: 2, name: 'City Council' },
+              { id: 3, name: 'TechCorp BV' }
+            ]
+          })
+        })
+      }
+
       // Default fallback for unhandled URLs
       return Promise.reject(new Error(`Unhandled URL in mock: ${url}`))
     })
@@ -78,7 +95,7 @@ describe('Projects Component', () => {
   describe('Basic Rendering', () => {
     it('renders projects page with English language', async () => {
       renderWithLanguage(<Projects language="en" />, { language: 'en' })
-      
+
       await waitFor(() => {
         expect(screen.getByText('Projects')).toBeInTheDocument()
       }, { timeout: 5000 })
@@ -86,7 +103,7 @@ describe('Projects Component', () => {
 
     it('renders projects page with Dutch language', async () => {
       renderWithLanguage(<Projects language="nl" />, { language: 'nl' })
-      
+
       await waitFor(() => {
         expect(screen.getByText('Projecten')).toBeInTheDocument()
       }, { timeout: 5000 })
@@ -94,18 +111,18 @@ describe('Projects Component', () => {
 
     it('displays projects data after loading', async () => {
       renderWithLanguage(<Projects language="en" />, { language: 'en' })
-      
+
       // Wait for initial page load
       await waitFor(() => {
         expect(screen.getByText('Projects')).toBeInTheDocument()
       }, { timeout: 5000 })
-      
+
       // Wait for projects data to load (increased timeout for CI reliability)
       await waitFor(() => {
         // Look for project names from mock data
         expect(screen.getByText(/Garden Redesign Project/i)).toBeInTheDocument()
       }, { timeout: 15000 })
-      
+
       // Verify other mock projects are displayed
       await waitFor(() => {
         expect(screen.getByText(/Park Renovation/i)).toBeInTheDocument()
@@ -117,7 +134,7 @@ describe('Projects Component', () => {
   describe('Language Support', () => {
     it('displays correct translations for English', async () => {
       renderWithLanguage(<Projects language="en" />, { language: 'en' })
-      
+
       await waitFor(() => {
         expect(screen.getByText('Projects')).toBeInTheDocument()
         expect(screen.getByText(/manage your landscape architecture projects/i)).toBeInTheDocument()
@@ -126,7 +143,7 @@ describe('Projects Component', () => {
 
     it('displays correct translations for Dutch', async () => {
       renderWithLanguage(<Projects language="nl" />, { language: 'nl' })
-      
+
       await waitFor(() => {
         expect(screen.getByText('Projecten')).toBeInTheDocument()
         expect(screen.getByText(/beheer uw landschapsarchitectuur projecten/i)).toBeInTheDocument()
@@ -137,11 +154,11 @@ describe('Projects Component', () => {
   describe('Accessibility', () => {
     it('should not have accessibility violations', async () => {
       const { container } = renderWithLanguage(<Projects language="en" />, { language: 'en' })
-      
+
       await waitFor(() => {
         expect(screen.getByText('Projects')).toBeInTheDocument()
       }, { timeout: 5000 })
-      
+
       const results = await axe(container)
       expect(results).toHaveNoViolations()
     })

@@ -4,6 +4,7 @@ import { Toaster } from 'react-hot-toast'
 import ResponsiveSidebar from './components/ResponsiveSidebar'
 import Header from './components/Header'
 import Login from './components/Login'
+import Register from './components/Register'
 import ErrorBoundary from './components/ErrorBoundary'
 import authService from './services/authService'
 import toast from 'react-hot-toast'
@@ -36,7 +37,7 @@ function AppContent() {
   const [authLoading, setAuthLoading] = useState(true)
   const [loginError, setLoginError] = useState('')
 
-  const toggleSidebar = () => setSidebarOpen(!sidebarOpen)
+  const toggleSidebar = () => setSidebarOpen((prev) => !prev)
   const closeSidebar = () => setSidebarOpen(false)
 
   // Check authentication status on app load
@@ -62,14 +63,14 @@ function AppContent() {
       setLoginError('')
       const response = await authService.login(credentials)
       setUser(response.user)
-      
+
       const welcomeMessage = t('auth.welcome', `Welcome back, ${response.user.username}!`)
         .replace('{username}', response.user.username)
-      
+
       toast.success(welcomeMessage)
     } catch (error) {
       const errorMessage = t('auth.loginFailed', 'Login failed. Please check your credentials.')
-      
+
       console.error('Login error:', error)
       setLoginError(errorMessage)
       toast.error(errorMessage)
@@ -80,9 +81,9 @@ function AppContent() {
     try {
       await authService.logout()
       setUser(null)
-      
+
       const logoutMessage = t('auth.logoutSuccess', 'Successfully logged out')
-      
+
       toast.success(logoutMessage)
     } catch (error) {
       console.error('Logout error:', error)
@@ -121,7 +122,7 @@ function AppContent() {
   return (
     <ErrorBoundary>
       <Router>
-        <AuthenticatedApp 
+        <AuthenticatedApp
           user={user}
           authLoading={authLoading}
           loginError={loginError}
@@ -137,15 +138,15 @@ function AppContent() {
 }
 
 // Component that handles authentication inside Router context
-function AuthenticatedApp({ 
-  user, 
-  authLoading, 
-  loginError, 
-  handleLogin, 
-  handleLogout, 
-  sidebarOpen, 
-  toggleSidebar, 
-  closeSidebar 
+function AuthenticatedApp({
+  user,
+  authLoading,
+  loginError,
+  handleLogin,
+  handleLogout,
+  sidebarOpen,
+  toggleSidebar,
+  closeSidebar
 }) {
   const { t } = useLanguage()
 
@@ -163,90 +164,99 @@ function AuthenticatedApp({
     )
   }
 
-  // Show login screen if not authenticated
+  // Show login/register screen if not authenticated
   if (!user) {
-    return <Login onLogin={handleLogin} error={loginError} />
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-blue-50">
+        <Routes>
+          <Route path="/login" element={<Login onLogin={handleLogin} error={loginError} />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="*" element={<Navigate to="/login" replace />} />
+        </Routes>
+      </div>
+    )
   }
 
   return (
-        <div className="min-h-screen bg-gray-50">
-        {/* Responsive Sidebar */}
-        <ResponsiveSidebar 
-          isOpen={sidebarOpen} 
-          onClose={closeSidebar}
-          user={user}
-        />
-        
-        {/* Main content area */}
-        <div className={`main-content ${sidebarOpen ? 'sidebar-open' : ''}`}>
-          {/* Header */}
-          <div className="header-container">
-            <Header 
-              onMenuClick={toggleSidebar}
-              sidebarOpen={sidebarOpen}
-              user={user}
-              onLogout={handleLogout}
-            />
-          </div>
-          
-          {/* Main content */}
-          <main className="p-4 sm:p-6">
-            <Suspense fallback={
-              <div className="flex items-center justify-center h-64">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
-                <span className="ml-3 text-gray-600">
-                  {t('common.loading', 'Loading...')}
-                </span>
-              </div>
-            }>
-              <Routes>
-                <Route path="/" element={<Navigate to="/dashboard" replace />} />
-                <Route path="/dashboard" element={<Dashboard user={user} />} />
-                <Route path="/suppliers" element={<Suppliers user={user} />} />
-                <Route path="/plants" element={<Plants user={user} />} />
-                <Route path="/products" element={<Products user={user} />} />
-                <Route path="/clients" element={<Clients user={user} />} />
-                <Route path="/projects" element={<Projects user={user} />} />
-                <Route path="/plant-recommendations" element={<PlantRecommendations user={user} />} />
-                <Route path="/reports" element={<Reports user={user} />} />
-                <Route path="/ai-assistant" element={<AIAssistant user={user} />} />
-                <Route path="/invoices" element={<InvoiceQuoteManager user={user} />} />
-                <Route path="/photos" element={<Photos user={user} />} />
-                <Route path="/timeline" element={<ProjectTimeline user={user} />} />
-                <Route path="/settings" element={<Settings user={user} />} />
-                <Route path="/users" element={<UserManagement user={user} />} />
-                <Route path="/password-reset" element={<PasswordReset />} />
-              </Routes>
-            </Suspense>
-          </main>
+    <div className="min-h-screen bg-gray-50">
+      {/* Responsive Sidebar */}
+      <ResponsiveSidebar
+        isOpen={sidebarOpen}
+        onClose={closeSidebar}
+        user={user}
+      />
+
+      {/* Main content area */}
+      <div className={`main-content ${sidebarOpen ? 'sidebar-open' : ''}`}>
+        {/* Header */}
+        <div className="header-container">
+          <Header
+            onMenuClick={toggleSidebar}
+            sidebarOpen={sidebarOpen}
+            user={user}
+            onLogout={handleLogout}
+          />
         </div>
-        
-        {/* Toast notifications */}
-        <Toaster 
-          position="top-right"
-          toastOptions={{
-            duration: 4000,
-            style: {
-              background: '#363636',
-              color: '#fff',
-            },
-            success: {
-              duration: 3000,
-              theme: {
-                primary: '#059669',
-                secondary: '#fff',
-              },
-            },
-            error: {
-              duration: 5000,
-              theme: {
-                primary: '#dc2626',
-                secondary: '#fff',
-              },
-            },
-          }}
-        />
+
+        {/* Main content */}
+        <main className="p-4 sm:p-6">
+          <Suspense fallback={
+            <div className="flex items-center justify-center h-64">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
+              <span className="ml-3 text-gray-600">
+                {t('common.loading', 'Loading...')}
+              </span>
+            </div>
+          }>
+            <Routes>
+              <Route path="/" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/login" element={<Login onLogin={handleLogin} error={loginError} />} />
+              <Route path="/dashboard" element={<Dashboard user={user} />} />
+              <Route path="/suppliers" element={<Suppliers user={user} />} />
+              <Route path="/plants" element={<Plants user={user} />} />
+              <Route path="/products" element={<Products user={user} />} />
+              <Route path="/clients" element={<Clients user={user} />} />
+              <Route path="/projects" element={<Projects user={user} />} />
+              <Route path="/plant-recommendations" element={<PlantRecommendations user={user} />} />
+              <Route path="/reports" element={<Reports user={user} />} />
+              <Route path="/ai-assistant" element={<AIAssistant user={user} />} />
+              <Route path="/invoices" element={<InvoiceQuoteManager user={user} />} />
+              <Route path="/photos" element={<Photos user={user} />} />
+              <Route path="/timeline" element={<ProjectTimeline user={user} />} />
+              <Route path="/settings" element={<Settings user={user} />} />
+              <Route path="/users" element={<UserManagement user={user} />} />
+              <Route path="/password-reset" element={<PasswordReset />} />
+            </Routes>
+          </Suspense>
+        </main>
       </div>
+
+      {/* Toast notifications */}
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          duration: 4000,
+          style: {
+            background: '#363636',
+            color: '#fff',
+          },
+          success: {
+            duration: 3000,
+            theme: {
+              primary: '#059669',
+              secondary: '#fff',
+            },
+          },
+          error: {
+            duration: 5000,
+            theme: {
+              primary: '#dc2626',
+              secondary: '#fff',
+            },
+          },
+        }}
+      />
+    </div>
   )
 }
 

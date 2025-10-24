@@ -1,0 +1,207 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Backend and Frontend CI
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    permissions:
+      contents: read
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: app_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd="pg_isready -U postgres"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=12
+
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/app_test
+      TEST_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/app_test
+      FLASK_ENV: testing
+      PYTHONPATH: .
+      PIP_DISABLE_PIP_VERSION_CHECK: 1
+      PYTHONUNBUFFERED: "1"
+      CI: "true"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        timeout-minutes: 2
+        with:
+          python-version: "3.12"
+          cache: "pip"
+          cache-dependency-path: |
+            requirements.txt
+            requirements-dev.txt
+
+      - name: Install backend dependencies
+        timeout-minutes: 10
+        run: |
+          set -euxo pipefail
+          if command -v make >/dev/null 2>&1 && [ -f Makefile ]; then
+            make install
+          else
+            python -m pip install --upgrade pip
+            if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+            if [ -f requirements-dev.txt ]; then pip install -r requirements-dev.txt; fi
+            pip install --upgrade pytest pytest-cov ruff black isort SQLAlchemy psycopg2-binary
+          fi
+          # Verify tools are available
+          which ruff || echo "ruff not found in PATH"
+          which black || echo "black not found in PATH"
+          which isort || echo "isort not found in PATH"
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        timeout-minutes: 2
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        timeout-minutes: 4
+        run: |
+          set -euxo pipefail
+          cd frontend
+          npm ci
+
+      - name: Wait for Postgres
+        timeout-minutes: 2
+        run: |
+          for i in {1..60}; do
+            pg_isready -h localhost -p 5432 -U postgres && exit 0
+            sleep 2
+          done
+          echo "Postgres did not become ready in time" >&2
+          exit 1
+
+      - name: Prepare database schema (alembic if available, else create_all)
+        timeout-minutes: 2
+        run: |
+          python - <<'PY'
+          import importlib, os
+          import sqlalchemy as sa
+          from sqlalchemy import text
+          url = os.environ["TEST_DATABASE_URL"]
+          print(f"Preparing database with URL: {url}")
+          engine = sa.create_engine(url, future=True)
+          with engine.connect() as conn:
+              try:
+                  conn.execute(text("SET SESSION statement_timeout = '15s'"))
+              except Exception:
+                  pass
+          try:
+              # Try Flask-based migrations first
+              from src.main import app
+              with app.app_context():
+                  from alembic.config import Config
+                  from alembic import command as alembic_command
+                  cfg_path = 'migrations/alembic.ini'
+                  if os.path.exists(cfg_path):
+                      cfg = Config(cfg_path)
+                      alembic_command.upgrade(cfg, 'head')
+                      print('✅ Applied Alembic migrations')
+                  else:
+                      raise RuntimeError('alembic.ini not found')
+          except Exception as e:
+              print(f'Alembic not available/applicable ({e}); falling back to create_all')
+              try:
+                  from src.models.user import db
+                  db.metadata.create_all(bind=engine)
+                  print('✅ Created tables via db.metadata.create_all')
+              except Exception as ex:
+                  print(f'DB fallback failed ({ex}); schema may need manual setup')
+          PY
+
+      - name: Build (backend/ frontend)
+        timeout-minutes: 3
+        run: |
+          set -euxo pipefail
+          if command -v make >/dev/null 2>&1 && [ -f Makefile ]; then
+            make build
+          else
+            cd frontend
+            npm run build
+          fi
+
+      - name: Lint with enhanced security and quality checks
+        timeout-minutes: 5
+        run: |
+          set -euxo pipefail
+          echo "🔍 Running comprehensive code quality checks..."
+          
+          # Python linting with enhanced security checks
+          echo "🐍 Python security and quality analysis..."
+          ruff check . --output-format=github
+          black --check . --diff
+          isort --check-only . --diff
+          
+          # Security scanning with bandit
+          echo "🔒 Security vulnerability scanning..."
+          bandit -r src/ -f json -o bandit-report.json || echo "⚠️ Security issues detected - check bandit-report.json"
+          
+          # Safety check for known vulnerabilities
+          echo "🛡️ Dependency vulnerability check..."
+          safety check --json --output safety-report.json || echo "⚠️ Vulnerable dependencies detected - check safety-report.json"
+          
+          # Frontend linting
+          echo "🌐 Frontend quality analysis..."
+          cd frontend
+          npm run lint
+          
+          echo "✅ All quality checks completed"
+
+      - name: Backend tests
+        timeout-minutes: 4
+        run: |
+          set -euxo pipefail
+          if command -v make >/dev/null 2>&1 && [ -f Makefile ]; then
+            make backend-test
+          else
+            pytest -q --maxfail=1 --disable-warnings --durations=10 --cov=. --cov-report=xml
+          fi
+
+      - name: Frontend tests (Vitest with coverage)
+        timeout-minutes: 4
+        run: |
+          set -euxo pipefail
+          cd frontend
+          npm run test:coverage
+
+      - name: Upload security and quality reports
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-and-quality-reports
+          path: |
+            bandit-report.json
+            safety-report.json
+            coverage.xml
+            .coverage
+            frontend/coverage
+            frontend/coverage-vitest
+          if-no-files-found: ignore

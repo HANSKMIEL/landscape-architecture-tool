@@ -4,19 +4,57 @@ Enhanced test stability and robustness utilities
 
 import functools
 import logging
+import os
 import sys
 import time
 import traceback
 from collections.abc import Callable
-from contextlib import contextmanager
+from contextlib import contextmanager, nullcontext
 from typing import Any
 
 import pytest
+from flask import has_app_context
+from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 
 from tests.fixtures.auth_fixtures import authenticated_test_user, setup_test_authentication
 
 logger = logging.getLogger(__name__)
+
+
+_REGISTERED_TEST_APP = None
+
+
+def safe_log(method: Callable[[str], None], message: str):
+    """Log the message while tolerating teardown-time stream shutdowns."""
+
+    logger_obj = getattr(method, "__self__", None)
+    handlers = []
+
+    if logger_obj is not None:
+        handlers.extend(getattr(logger_obj, "handlers", []))
+        if getattr(logger_obj, "propagate", False):
+            handlers.extend(logging.getLogger().handlers)
+
+    # If all handlers with streams are closed, skip logging to avoid ValueError noise
+    if handlers and all(getattr(getattr(handler, "stream", None), "closed", False) for handler in handlers):
+        return
+
+    previous_raise_exceptions = logging.raiseExceptions
+    logging.raiseExceptions = False
+    try:
+        method(message)
+    except Exception:
+        # During pytest teardown handlers may be in inconsistent states; ignore logging failures.
+        pass
+    finally:
+        logging.raiseExceptions = previous_raise_exceptions
+
+
+def register_test_app(app):
+    """Store the test app so cleanup routines can enter an app context when needed."""
+    global _REGISTERED_TEST_APP
+    _REGISTERED_TEST_APP = app
 
 
 def retry_on_failure(max_retries: int = 3, delay: float = 0.5, backoff: float = 2.0):
@@ -56,7 +94,12 @@ def retry_on_failure(max_retries: int = 3, delay: float = 0.5, backoff: float = 
                         break
 
             # Re-raise the last exception if all retries failed
-            raise last_exception
+            if last_exception is not None:
+                raise last_exception
+
+            raise AssertionError(
+                f"Test {func.__name__} failed without an exception instance captured for retry handling"
+            )
 
         return wrapper
 
@@ -70,13 +113,16 @@ def error_recovery_context(operation_name: str = "test operation"):
     """
     start_time = time.time()
     try:
-        logger.info(f"Starting {operation_name}")
+        safe_log(logger.info, f"Starting {operation_name}")
         yield
         duration = time.time() - start_time
-        logger.info(f"Completed {operation_name} successfully in {duration:.2f}s")
+        safe_log(logger.info, f"Completed {operation_name} successfully in {duration:.2f}s")
     except Exception as e:
         duration = time.time() - start_time
-        logger.error(f"Failed {operation_name} after {duration:.2f}s: {e}\n" f"Traceback: {traceback.format_exc()}")
+        safe_log(
+            logger.error,
+            f"Failed {operation_name} after {duration:.2f}s: {e}\nTraceback: {traceback.format_exc()}",
+        )
         raise
     finally:
         # Cleanup logic can be added here
@@ -100,7 +146,7 @@ def validate_test_environment() -> dict[str, bool]:
             from src.models.user import db
 
             # Simple query to test database connection
-            db.session.execute("SELECT 1")
+            db.session.execute(text("SELECT 1"))
             validations["database"] = True
         else:
             # Skip database validation if no app context
@@ -110,12 +156,13 @@ def validate_test_environment() -> dict[str, bool]:
         logger.error(f"Database validation failed: {e}")
         validations["database"] = False
 
-    # Check required environment variables
-    import os
-
-    required_env_vars = ["FLASK_ENV"]
-    for var in required_env_vars:
-        validations[f"env_var_{var}"] = var in os.environ
+    # Check required environment variables and set safe defaults when missing
+    required_env_vars: dict[str, str] = {"FLASK_ENV": "testing"}
+    for var, default in required_env_vars.items():
+        if var not in os.environ:
+            os.environ[var] = default
+            safe_log(logger.info, f"Setting default {var}={default} for test environment")
+        validations[f"env_var_{var}"] = True
 
     # Check imports
     try:
@@ -241,25 +288,38 @@ def isolate_database_transaction(func: Callable) -> Callable:
     return wrapper
 
 
-def cleanup_test_data():
+def cleanup_test_data(app=None):
     """Clean up any residual test data."""
     from src.models.landscape import Client, Plant, Product, Project, ProjectPlant, Supplier
     from src.models.user import db
 
-    try:
-        # Delete in dependency order
-        db.session.query(ProjectPlant).delete()
-        db.session.query(Project).delete()
-        db.session.query(Product).delete()
-        db.session.query(Plant).delete()
-        db.session.query(Supplier).delete()
-        db.session.query(Client).delete()
+    app_for_cleanup = app or _REGISTERED_TEST_APP
+    context_manager = nullcontext()
 
-        db.session.commit()
-        logger.info("Test data cleanup completed")
+    if not has_app_context():
+        if app_for_cleanup is None:
+            from src.main import create_app
+
+            app_for_cleanup = create_app()
+            app_for_cleanup.config.update(TESTING=True)
+
+        context_manager = app_for_cleanup.app_context()
+
+    try:
+        with context_manager:
+            # Delete in dependency order
+            db.session.query(ProjectPlant).delete()
+            db.session.query(Project).delete()
+            db.session.query(Product).delete()
+            db.session.query(Plant).delete()
+            db.session.query(Supplier).delete()
+            db.session.query(Client).delete()
+
+            db.session.commit()
+            safe_log(logger.info, "Test data cleanup completed")
     except Exception as e:
         db.session.rollback()
-        logger.error(f"Test data cleanup failed: {e}")
+        safe_log(logger.error, f"Test data cleanup failed: {e}")
 
 
 @pytest.fixture(autouse=True)

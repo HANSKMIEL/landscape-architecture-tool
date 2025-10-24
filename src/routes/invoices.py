@@ -254,7 +254,7 @@ def generate_quote_pdf(data):
         financial = data["financial"]
         summary_data = [
             ["Subtotaal", f"€ {financial['subtotal']:.2f}"],
-            [f"BTW ({financial['vat_rate']*100:.0f}%)", f"€ {financial['vat_amount']:.2f}"],
+            [f"BTW ({financial['vat_rate'] * 100:.0f}%)", f"€ {financial['vat_amount']:.2f}"],
             ["", ""],
             ["TOTAAL", f"€ {financial['total']:.2f}"],
         ]
@@ -298,7 +298,7 @@ def generate_quote_pdf(data):
         return send_file(
             buffer,
             as_attachment=True,
-            download_name=f'offerte_{data["quote_number"]}_{datetime.now(UTC).strftime("%Y%m%d")}.pdf',
+            download_name=f"offerte_{data['quote_number']}_{datetime.now(UTC).strftime('%Y%m%d')}.pdf",
             mimetype="application/pdf",
         )
 
@@ -321,10 +321,16 @@ def generate_invoice(project_id):
 
         # Get quote data first
         quote_response = generate_quote(project_id)
-        if quote_response[1] != 200:  # Error case
+        if isinstance(quote_response, tuple):
+            response_obj, status_code = quote_response
+        else:
+            response_obj = quote_response
+            status_code = response_obj.status_code
+
+        if status_code != 200:  # Error case
             return quote_response
 
-        quote_data = quote_response[0].get_json()
+        quote_data = response_obj.get_json()
 
         # Convert quote to invoice
         invoice_data = quote_data.copy()
@@ -332,7 +338,7 @@ def generate_invoice(project_id):
             {
                 "invoice_number": f"FACT-{project.id:04d}-{datetime.now(UTC).strftime('%Y%m')}",
                 "invoice_date": datetime.now(UTC).isoformat(),
-                "due_date": (datetime.now(UTC).replace(day=datetime.now().day + 30)).isoformat(),
+                "due_date": (datetime.now(UTC) + timedelta(days=30)).isoformat(),
                 "payment_terms": "30 dagen",
                 "type": "invoice",
             }
@@ -458,7 +464,7 @@ def generate_invoice_pdf(data):
         financial = data["financial"]
         summary_data = [
             ["Subtotaal", f"€ {financial['subtotal']:.2f}"],
-            [f"BTW ({financial['vat_rate']*100:.0f}%)", f"€ {financial['vat_amount']:.2f}"],
+            [f"BTW ({financial['vat_rate'] * 100:.0f}%)", f"€ {financial['vat_amount']:.2f}"],
             ["", ""],
             ["TE BETALEN", f"€ {financial['total']:.2f}"],
         ]
@@ -500,7 +506,7 @@ def generate_invoice_pdf(data):
         return send_file(
             buffer,
             as_attachment=True,
-            download_name=f'factuur_{data["invoice_number"]}_{datetime.now(UTC).strftime("%Y%m%d")}.pdf',
+            download_name=f"factuur_{data['invoice_number']}_{datetime.now(UTC).strftime('%Y%m%d')}.pdf",
             mimetype="application/pdf",
         )
 

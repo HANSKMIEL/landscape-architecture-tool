@@ -1,0 +1,194 @@
+name: VPS Root Diagnostic
+
+on:
+  workflow_dispatch:
+    inputs:
+      diagnostic_type:
+        description: 'Type of diagnostic to run'
+        required: true
+        default: 'full'
+        type: choice
+        options:
+          - full
+          - firewall-only
+          - network-only
+          - services-only
+
+jobs:
+  root-diagnostic:
+    name: Root Access Diagnostic
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Test Basic Connectivity
+        run: |
+          echo "=== Testing Basic Connectivity ==="
+          echo "Testing from GitHub Actions runner..."
+          echo "Runner IP:"
+          curl -s ifconfig.me || echo "Could not determine IP"
+          echo ""
+          
+          echo "Testing SSH port 22..."
+          timeout 10 bash -c 'cat < /dev/null > /dev/tcp/72.60.176.200/22' && echo "✅ SSH Port 22 is OPEN" || echo "❌ SSH Port 22 is CLOSED"
+          
+          echo "Testing Frontend port 8080..."
+          timeout 10 bash -c 'cat < /dev/null > /dev/tcp/72.60.176.200/8080' && echo "✅ Port 8080 is OPEN" || echo "❌ Port 8080 is CLOSED"
+          
+          echo "Testing Backend port 5001..."
+          timeout 10 bash -c 'cat < /dev/null > /dev/tcp/72.60.176.200/5001' && echo "✅ Port 5001 is OPEN" || echo "❌ Port 5001 is CLOSED"
+      
+      - name: Full System Diagnostic via SSH
+        if: inputs.diagnostic_type == 'full' || inputs.diagnostic_type == 'firewall-only'
+        run: |
+          echo "=== Full System Diagnostic ==="
+          
+          # Create SSH key from secret
+          mkdir -p ~/.ssh
+          echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          
+          # Add to known hosts
+          ssh-keyscan -H 72.60.176.200 >> ~/.ssh/known_hosts 2>/dev/null || true
+          
+          # Run comprehensive diagnostic
+          ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10 root@72.60.176.200 << 'ENDSSH'
+            echo "=== VPS ROOT DIAGNOSTIC REPORT ==="
+            echo "Timestamp: $(date)"
+            echo ""
+            
+            echo "=== 1. SYSTEM INFO ==="
+            echo "Hostname: $(hostname)"
+            echo "OS: $(cat /etc/os-release | grep PRETTY_NAME)"
+            echo "Kernel: $(uname -r)"
+            echo "Uptime: $(uptime)"
+            echo ""
+            
+            echo "=== 2. NETWORK INTERFACES ==="
+            ip addr show
+            echo ""
+            
+            echo "=== 3. FIREWALL STATUS - UFW ==="
+            ufw status verbose || echo "UFW not available"
+            echo ""
+            
+            echo "=== 4. FIREWALL STATUS - iptables ==="
+            echo "IPv4 rules:"
+            iptables -L -n -v --line-numbers
+            echo ""
+            echo "IPv6 rules:"
+            ip6tables -L -n -v --line-numbers || echo "IPv6 tables not available"
+            echo ""
+            
+            echo "=== 5. NAT TABLE ==="
+            iptables -t nat -L -n -v
+            echo ""
+            
+            echo "=== 6. LISTENING PORTS ==="
+            ss -tulpn | grep LISTEN
+            echo ""
+            
+            echo "=== 7. NGINX STATUS ==="
+            systemctl status nginx --no-pager || echo "Nginx not running"
+            echo ""
+            
+            echo "=== 8. BACKEND SERVICE STATUS ==="
+            systemctl status landscape-backend-dev --no-pager || echo "Backend not running"
+            echo ""
+            
+            echo "=== 9. NGINX CONFIGURATION ==="
+            nginx -T 2>&1 | head -100
+            echo ""
+            
+            echo "=== 10. ACTIVE CONNECTIONS ==="
+            ss -ant | head -20
+            echo ""
+            
+            echo "=== 11. ROUTING TABLE ==="
+            ip route
+            echo ""
+            
+            echo "=== 12. TEST LOCAL CONNECTIVITY ==="
+            echo "Testing localhost:8080..."
+            curl -s -o /dev/null -w "HTTP %{http_code} - Time: %{time_total}s\n" http://localhost:8080/ || echo "Failed"
+            
+            echo "Testing localhost:5001/health..."
+            curl -s -o /dev/null -w "HTTP %{http_code} - Time: %{time_total}s\n" http://localhost:5001/health || echo "Failed"
+            echo ""
+            
+            echo "=== 13. CHECK CLOUD-INIT / VENDOR DATA ==="
+            ls -la /var/lib/cloud/ 2>/dev/null || echo "Cloud-init not found"
+            cat /var/lib/cloud/instance/vendor-data.txt 2>/dev/null || echo "No vendor data"
+            echo ""
+            
+            echo "=== 14. CHECK FOR HOSTINGER FIREWALL AGENT ==="
+            ps aux | grep -i firewall | grep -v grep
+            systemctl list-units | grep -i firewall
+            echo ""
+            
+            echo "=== 15. CHECK NETWORK NAMESPACES ==="
+            ip netns list || echo "No network namespaces"
+            echo ""
+            
+            echo "=== DIAGNOSTIC COMPLETE ==="
+ENDSSH
+      
+      - name: Test HTTP Access from GitHub Actions
+        run: |
+          echo "=== Testing HTTP Access from GitHub Actions ==="
+          
+          echo "Testing frontend (http://72.60.176.200:8080/)..."
+          timeout 10 curl -v http://72.60.176.200:8080/ 2>&1 | head -30 || echo "Frontend test failed"
+          echo ""
+          
+          echo "Testing backend (http://72.60.176.200:5001/health)..."
+          timeout 10 curl -v http://72.60.176.200:5001/health 2>&1 | head -30 || echo "Backend test failed"
+          echo ""
+      
+      - name: Network Diagnostic Only
+        if: inputs.diagnostic_type == 'network-only'
+        run: |
+          echo "=== Network Diagnostic ==="
+          
+          mkdir -p ~/.ssh
+          echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H 72.60.176.200 >> ~/.ssh/known_hosts 2>/dev/null || true
+          
+          ssh -o StrictHostKeyChecking=no root@72.60.176.200 << 'ENDSSH'
+            echo "=== NETWORK DIAGNOSTIC ==="
+            echo "Network Interfaces:"
+            ip addr show
+            echo ""
+            echo "Routing Table:"
+            ip route
+            echo ""
+            echo "Listening Ports:"
+            ss -tulpn
+            echo ""
+            echo "Active Connections:"
+            ss -ant
+ENDSSH
+      
+      - name: Services Diagnostic Only
+        if: inputs.diagnostic_type == 'services-only'
+        run: |
+          echo "=== Services Diagnostic ==="
+          
+          mkdir -p ~/.ssh
+          echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H 72.60.176.200 >> ~/.ssh/known_hosts 2>/dev/null || true
+          
+          ssh -o StrictHostKeyChecking=no root@72.60.176.200 << 'ENDSSH'
+            echo "=== SERVICES DIAGNOSTIC ==="
+            systemctl status nginx --no-pager
+            echo ""
+            systemctl status landscape-backend-dev --no-pager
+            echo ""
+            echo "Testing local services:"
+            curl -s http://localhost:8080/ | head -10
+            curl -s http://localhost:5001/health
+ENDSSH

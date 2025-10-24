@@ -414,8 +414,7 @@ class FinalComprehensiveAnalyzer:
 
 def main():
     analyzer = FinalComprehensiveAnalyzer()
-    results = analyzer.generate_final_report()
-    return results
+    return analyzer.generate_final_report()
 
 
 if __name__ == "__main__":

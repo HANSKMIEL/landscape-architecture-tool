@@ -1,0 +1,356 @@
+{
+  "name": "Inventory Management Automation",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "inventory-alert",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-inventory",
+      "name": "Webhook - Inventory Alert",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [100, 300],
+      "webhookId": "inventory-alert"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "number": [
+            {
+              "value1": "={{$json.current_stock}}",
+              "operation": "smaller",
+              "value2": "={{$json.minimum_threshold}}"
+            }
+          ]
+        }
+      },
+      "id": "check-stock-level",
+      "name": "Check Stock Level",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [300, 300]
+    },
+    {
+      "parameters": {
+        "url": "=http://landscape-backend:5000/api/plants/{{$json.plant_id}}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "get-plant-details",
+      "name": "Get Plant Details",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [500, 200]
+    },
+    {
+      "parameters": {
+        "url": "=http://landscape-backend:5000/api/suppliers/{{$json.supplier_id || $('Get Plant Details').item.json.supplier_id}}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "get-supplier-details",
+      "name": "Get Supplier Details",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [700, 200]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "number": [
+            {
+              "value1": "={{$json.current_stock}}",
+              "operation": "equal",
+              "value2": 0
+            }
+          ]
+        }
+      },
+      "id": "check-critical-level",
+      "name": "Check Critical Level",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [900, 200]
+    },
+    {
+      "parameters": {
+        "sendTo": "=procurement@landscapetool.com",
+        "subject": "=🚨 CRITICAL: Out of Stock - {{$('Get Plant Details').item.json.common_name}}",
+        "emailType": "html",
+        "message": "=<!DOCTYPE html>\n<html>\n<head>\n    <style>\n        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }\n        .header { background-color: #ff4444; color: white; padding: 20px; text-align: center; }\n        .content { padding: 20px; }\n        .critical { background-color: #ffe6e6; padding: 15px; border-left: 4px solid #ff4444; margin: 20px 0; }\n        .warning { background-color: #fff3cd; padding: 15px; border-left: 4px solid #ffc107; margin: 20px 0; }\n        .supplier-info { background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin: 20px 0; }\n        .action-needed { background-color: #e3f2fd; padding: 15px; border-left: 4px solid #2196f3; margin: 20px 0; }\n    </style>\n</head>\n<body>\n    <div class=\"header\">\n        <h1>🚨 CRITICAL INVENTORY ALERT</h1>\n    </div>\n    <div class=\"content\">\n        <div class=\"critical\">\n            <h3>⚠️ OUT OF STOCK</h3>\n            <p><strong>Plant:</strong> {{$('Get Plant Details').item.json.common_name}} ({{$('Get Plant Details').item.json.scientific_name}})</p>\n            <p><strong>Current Stock:</strong> {{$json.current_stock}}</p>\n            <p><strong>Minimum Threshold:</strong> {{$json.minimum_threshold}}</p>\n            <p><strong>Plant ID:</strong> {{$json.plant_id}}</p>\n        </div>\n        \n        <div class=\"supplier-info\">\n            <h3>📞 Supplier Information</h3>\n            <p><strong>Supplier:</strong> {{$('Get Supplier Details').item.json.name}}</p>\n            <p><strong>Contact:</strong> {{$('Get Supplier Details').item.json.contact_person}}</p>\n            <p><strong>Phone:</strong> {{$('Get Supplier Details').item.json.phone}}</p>\n            <p><strong>Email:</strong> {{$('Get Supplier Details').item.json.email}}</p>\n        </div>\n        \n        <div class=\"action-needed\">\n            <h3>🚀 IMMEDIATE ACTION REQUIRED</h3>\n            <ul>\n                <li>❗ Contact supplier immediately</li>\n                <li>📋 Check current projects requiring this plant</li>\n                <li>🔄 Place emergency order if needed</li>\n                <li>📞 Notify project managers of potential delays</li>\n                <li>🔍 Consider alternative plant species</li>\n            </ul>\n        </div>\n        \n        <h3>Plant Details</h3>\n        <ul>\n            <li><strong>Category:</strong> {{$('Get Plant Details').item.json.category}}</li>\n            <li><strong>Sun Exposure:</strong> {{$('Get Plant Details').item.json.sun_exposure}}</li>\n            <li><strong>Price:</strong> €{{$('Get Plant Details').item.json.price}}</li>\n            <li><strong>Native:</strong> {{$('Get Plant Details').item.json.native ? 'Yes' : 'No'}}</li>\n        </ul>\n        \n        <p><strong>Alert Time:</strong> {{$json.timestamp}}</p>\n    </div>\n</body>\n</html>",
+        "options": {}
+      },
+      "id": "send-critical-alert",
+      "name": "Send Critical Alert",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [1100, 100],
+      "credentials": {
+        "smtp": {
+          "id": "1",
+          "name": "SMTP Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "=procurement@landscapetool.com",
+        "subject": "=⚠️ Low Stock Alert - {{$('Get Plant Details').item.json.common_name}}",
+        "emailType": "html",
+        "message": "=<!DOCTYPE html>\n<html>\n<head>\n    <style>\n        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }\n        .header { background-color: #ff9800; color: white; padding: 20px; text-align: center; }\n        .content { padding: 20px; }\n        .warning { background-color: #fff3cd; padding: 15px; border-left: 4px solid #ffc107; margin: 20px 0; }\n        .supplier-info { background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin: 20px 0; }\n        .recommendations { background-color: #e8f5e8; padding: 15px; border-left: 4px solid #4caf50; margin: 20px 0; }\n    </style>\n</head>\n<body>\n    <div class=\"header\">\n        <h1>⚠️ LOW STOCK ALERT</h1>\n    </div>\n    <div class=\"content\">\n        <div class=\"warning\">\n            <h3>📉 Stock Running Low</h3>\n            <p><strong>Plant:</strong> {{$('Get Plant Details').item.json.common_name}} ({{$('Get Plant Details').item.json.scientific_name}})</p>\n            <p><strong>Current Stock:</strong> {{$json.current_stock}}</p>\n            <p><strong>Minimum Threshold:</strong> {{$json.minimum_threshold}}</p>\n            <p><strong>Recommended Reorder:</strong> {{$json.minimum_threshold * 3}} units</p>\n        </div>\n        \n        <div class=\"supplier-info\">\n            <h3>📞 Supplier Information</h3>\n            <p><strong>Supplier:</strong> {{$('Get Supplier Details').item.json.name}}</p>\n            <p><strong>Contact:</strong> {{$('Get Supplier Details').item.json.contact_person}}</p>\n            <p><strong>Phone:</strong> {{$('Get Supplier Details').item.json.phone}}</p>\n            <p><strong>Email:</strong> {{$('Get Supplier Details').item.json.email}}</p>\n        </div>\n        \n        <div class=\"recommendations\">\n            <h3>💡 Recommended Actions</h3>\n            <ul>\n                <li>📞 Contact supplier for availability</li>\n                <li>📋 Review upcoming project requirements</li>\n                <li>🛒 Place reorder before stock depletes</li>\n                <li>📊 Update minimum threshold if needed</li>\n            </ul>\n        </div>\n        \n        <h3>Plant Details</h3>\n        <ul>\n            <li><strong>Category:</strong> {{$('Get Plant Details').item.json.category}}</li>\n            <li><strong>Sun Exposure:</strong> {{$('Get Plant Details').item.json.sun_exposure}}</li>\n            <li><strong>Price per Unit:</strong> €{{$('Get Plant Details').item.json.price}}</li>\n            <li><strong>Estimated Reorder Cost:</strong> €{{$('Get Plant Details').item.json.price * $json.minimum_threshold * 3}}</li>\n        </ul>\n    </div>\n</body>\n</html>",
+        "options": {}
+      },
+      "id": "send-low-stock-alert",
+      "name": "Send Low Stock Alert",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [1100, 300],
+      "credentials": {
+        "smtp": {
+          "id": "1",
+          "name": "SMTP Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "folderId": "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms",
+        "name": "=Purchase Order - {{$('Get Plant Details').item.json.common_name}} - {{$now.toFormat('yyyy-MM-dd')}}",
+        "options": {
+          "contents": "=Purchase Order Details:\n\nPlant: {{$('Get Plant Details').item.json.common_name}}\nScientific Name: {{$('Get Plant Details').item.json.scientific_name}}\nCurrent Stock: {{$json.current_stock}}\nReorder Quantity: {{$json.minimum_threshold * 3}}\nUnit Price: €{{$('Get Plant Details').item.json.price}}\nTotal Cost: €{{$('Get Plant Details').item.json.price * $json.minimum_threshold * 3}}\n\nSupplier: {{$('Get Supplier Details').item.json.name}}\nContact: {{$('Get Supplier Details').item.json.contact_person}}\nPhone: {{$('Get Supplier Details').item.json.phone}}\nEmail: {{$('Get Supplier Details').item.json.email}}\n\nAlert Generated: {{$json.timestamp}}\nPO Created: {{$now}}\n\nStatus: PENDING APPROVAL"
+        }
+      },
+      "id": "create-purchase-order",
+      "name": "Create Purchase Order",
+      "type": "n8n-nodes-base.googleDocs",
+      "typeVersion": 1,
+      "position": [1300, 100],
+      "credentials": {
+        "googleApi": {
+          "id": "2",
+          "name": "Google API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=http://landscape-backend:5000/api/n8n/receive/task-completed",
+        "sendBody": true,
+        "bodyContentType": "json",
+        "jsonBody": "={\n  \"task_id\": \"inventory-alert-{{$json.plant_id}}\",\n  \"task_type\": \"inventory_management\",\n  \"status\": \"{{$json.current_stock === 0 ? 'critical' : 'warning'}}\",\n  \"result_data\": {\n    \"plant_id\": {{$json.plant_id}},\n    \"plant_name\": \"{{$('Get Plant Details').item.json.common_name}}\",\n    \"current_stock\": {{$json.current_stock}},\n    \"minimum_threshold\": {{$json.minimum_threshold}},\n    \"supplier_id\": {{$json.supplier_id || $('Get Plant Details').item.json.supplier_id}},\n    \"supplier_name\": \"{{$('Get Supplier Details').item.json.name}}\",\n    \"alert_type\": \"{{$json.current_stock === 0 ? 'out_of_stock' : 'low_stock'}}\",\n    \"recommended_reorder\": {{$json.minimum_threshold * 3}},\n    \"estimated_cost\": {{$('Get Plant Details').item.json.price * $json.minimum_threshold * 3}}\n  },\n  \"timestamp\": \"{{$now}}\"\n}",
+        "options": {}
+      },
+      "id": "notify-backend-inventory",
+      "name": "Notify Backend Inventory",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [1500, 200]
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "alert_type",
+              "value": "adequate_stock"
+            },
+            {
+              "name": "message",
+              "value": "Stock levels are adequate"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "handle-adequate-stock",
+      "name": "Handle Adequate Stock",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [500, 400]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"status\": \"info\",\n  \"message\": \"Stock levels are adequate - no action required\",\n  \"plant_id\": {{$json.plant_id}},\n  \"current_stock\": {{$json.current_stock}},\n  \"minimum_threshold\": {{$json.minimum_threshold}},\n  \"stock_status\": \"adequate\",\n  \"timestamp\": \"{{$now}}\"\n}"
+      },
+      "id": "respond-adequate-stock",
+      "name": "Respond Adequate Stock",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [700, 400]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"status\": \"success\",\n  \"message\": \"Inventory alert workflow completed\",\n  \"plant_id\": {{$json.plant_id}},\n  \"current_stock\": {{$json.current_stock}},\n  \"minimum_threshold\": {{$json.minimum_threshold}},\n  \"alert_type\": \"{{$json.current_stock === 0 ? 'critical' : 'warning'}}\",\n  \"actions_completed\": [\n    \"{{$json.current_stock === 0 ? 'critical_alert_sent' : 'low_stock_alert_sent'}}\",\n    \"supplier_contacted\",\n    \"{{$json.current_stock === 0 ? 'purchase_order_created' : 'reorder_recommended'}}\",\n    \"backend_notified\"\n  ],\n  \"supplier_info\": {\n    \"name\": \"{{$('Get Supplier Details').item.json.name}}\",\n    \"contact\": \"{{$('Get Supplier Details').item.json.contact_person}}\",\n    \"email\": \"{{$('Get Supplier Details').item.json.email}}\"\n  },\n  \"recommended_reorder\": {{$json.minimum_threshold * 3}},\n  \"estimated_cost\": \"€{{$('Get Plant Details').item.json.price * $json.minimum_threshold * 3}}\",\n  \"timestamp\": \"{{$now}}\"\n}"
+      },
+      "id": "respond-alert-processed",
+      "name": "Respond Alert Processed",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1700, 200]
+    }
+  ],
+  "connections": {
+    "Webhook - Inventory Alert": {
+      "main": [
+        [
+          {
+            "node": "Check Stock Level",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Stock Level": {
+      "main": [
+        [
+          {
+            "node": "Get Plant Details",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Handle Adequate Stock",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Plant Details": {
+      "main": [
+        [
+          {
+            "node": "Get Supplier Details",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Supplier Details": {
+      "main": [
+        [
+          {
+            "node": "Check Critical Level",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Critical Level": {
+      "main": [
+        [
+          {
+            "node": "Send Critical Alert",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send Low Stock Alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Critical Alert": {
+      "main": [
+        [
+          {
+            "node": "Create Purchase Order",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Low Stock Alert": {
+      "main": [
+        [
+          {
+            "node": "Notify Backend Inventory",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Purchase Order": {
+      "main": [
+        [
+          {
+            "node": "Notify Backend Inventory",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notify Backend Inventory": {
+      "main": [
+        [
+          {
+            "node": "Respond Alert Processed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Handle Adequate Stock": {
+      "main": [
+        [
+          {
+            "node": "Respond Adequate Stock",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {},
+  "versionId": "3",
+  "id": "3",
+  "meta": {
+    "version": 1,
+    "templateCredsSetupCompleted": false
+  },
+  "tags": [
+    {
+      "createdAt": "2024-01-01T12:00:00.000Z",
+      "updatedAt": "2024-01-01T12:00:00.000Z",
+      "id": "1",
+      "name": "landscape-automation"
+    }
+  ]
+}

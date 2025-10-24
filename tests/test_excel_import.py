@@ -8,6 +8,7 @@ from tests.fixtures.database import DatabaseTestMixin
 
 
 @pytest.mark.api
+@pytest.mark.usefixtures("authenticated_test_user")
 class TestExcelImport(DatabaseTestMixin):
     """Test Excel import functionality"""
 

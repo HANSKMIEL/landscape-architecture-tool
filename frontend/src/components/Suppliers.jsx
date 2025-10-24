@@ -3,12 +3,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { 
-  Search, 
-  Plus, 
-  Building2, 
-  Phone, 
-  Mail, 
+import {
+  Search,
+  Plus,
+  Building2,
+  Phone,
+  Mail,
   MapPin,
   Trash2,
   Edit,
@@ -29,6 +29,8 @@ const Suppliers = () => {
   const [showEditModal, setShowEditModal] = useState(false)
   const [editingSupplier, setEditingSupplier] = useState(null)
   const [error, setError] = useState(null)
+  const [submitLoading, setSubmitLoading] = useState(false)
+  const [deleteLoading, setDeleteLoading] = useState(null)
 
   // Form state
   const [formData, setFormData] = useState({
@@ -45,18 +47,40 @@ const Suppliers = () => {
     specialties: ''
   })
 
+  // Enhanced error handling with retry logic
+  const handleApiError = (error, context = '') => {
+    console.error(`Error in ${context}:`, error)
+
+    let errorMessage = 'An unexpected error occurred'
+
+    if (error.response?.data?.error) {
+      errorMessage = error.response.data.error
+    } else if (error.message) {
+      if (error.message.includes('Failed to fetch') || error.message.includes('Network Error')) {
+        errorMessage = 'Network connection failed. Please check your internet connection.'
+      } else if (error.message.includes('timeout')) {
+        errorMessage = 'Request timed out. Please try again.'
+      } else {
+        errorMessage = error.message
+      }
+    }
+
+    return errorMessage
+  }
+
   const loadSuppliers = useCallback(async () => {
     try {
       setLoading(true)
       setError(null)
+
       const params = searchTerm ? { search: searchTerm } : {}
       const data = await apiService.getSuppliers(params)
       setSuppliers(data.suppliers || [])
       setTotalSuppliers(data.total || 0)
     } catch (error) {
-      console.error('Error loading suppliers:', error)
-      setError(error.message)
-      toast.error(`${t('suppliers.error', 'Error loading suppliers')}: ${error.message}`)
+      const errorMessage = handleApiError(error, 'loading suppliers')
+      setError(errorMessage)
+      toast.error(`${t('suppliers.error', 'Error loading suppliers')}: ${errorMessage}`)
     } finally {
       setLoading(false)
     }
@@ -67,13 +91,14 @@ const Suppliers = () => {
   }, [loadSuppliers])
 
   // Handle form input changes
-  const handleInputChange = (e) => {
+  const handleInputChange = useCallback((e) => {
     const { name, value } = e.target
+
     setFormData(prev => ({
       ...prev,
       [name]: value
     }))
-  }
+  }, [])
 
   // Reset form
   const resetForm = () => {
@@ -92,24 +117,30 @@ const Suppliers = () => {
     })
   }
 
-  // Handle add supplier
+  // Handle add supplier with enhanced error handling
   const handleAddSupplier = async (e) => {
     e.preventDefault()
+    setSubmitLoading(true)
+
     try {
       await apiService.createSupplier(formData)
       await loadSuppliers()
       setShowAddModal(false)
       resetForm()
       toast.success(t('suppliers.addSuccess', 'Supplier successfully added!'))
-    } catch (err) {
-      console.error('Error adding supplier:', err)
-      toast.error(t('suppliers.addError', 'Error adding supplier: ') + err.message)
+    } catch (error) {
+      const errorMessage = handleApiError(error, 'adding supplier')
+      toast.error(`${t('suppliers.addError', 'Error adding supplier:')} ${errorMessage}`)
+    } finally {
+      setSubmitLoading(false)
     }
   }
 
-  // Handle edit supplier
+  // Handle edit supplier with enhanced error handling
   const handleEditSupplier = async (e) => {
     e.preventDefault()
+    setSubmitLoading(true)
+
     try {
       await apiService.updateSupplier(editingSupplier.id, formData)
       await loadSuppliers()
@@ -117,25 +148,36 @@ const Suppliers = () => {
       setEditingSupplier(null)
       resetForm()
       toast.success(t('suppliers.updateSuccess', 'Supplier successfully updated!'))
-    } catch (err) {
-      console.error('Error updating supplier:', err)
-      toast.error(t('suppliers.updateError', 'Error updating supplier: ') + err.message)
+    } catch (error) {
+      const errorMessage = handleApiError(error, 'updating supplier')
+      toast.error(`${t('suppliers.updateError', 'Error updating supplier:')} ${errorMessage}`)
+    } finally {
+      setSubmitLoading(false)
     }
   }
 
-  // Handle delete supplier
+  // Handle delete supplier with enhanced error handling and loading state
   const handleDeleteSupplier = async (supplierId, supplierName) => {
-    if (!confirm(t('suppliers.deleteConfirm', 'Are you sure you want to delete "{name}"?').replace('{name}', supplierName))) {
+    const confirmationMessage = t(
+      'suppliers.deleteConfirm',
+      'Are you sure you want to delete "{name}"?'
+    ).replace('{name}', supplierName)
+
+    if (!window.confirm(confirmationMessage)) {
       return
     }
+
+    setDeleteLoading(supplierId)
 
     try {
       await apiService.deleteSupplier(supplierId)
       toast.success(t('suppliers.deleteSuccess', 'Supplier successfully deleted!'))
       loadSuppliers()
     } catch (error) {
-      console.error('Error deleting supplier:', error)
-      toast.error(t('suppliers.deleteError', 'Error deleting supplier: ') + error.message)
+      const errorMessage = handleApiError(error, 'deleting supplier')
+      toast.error(t('suppliers.deleteError', 'Error deleting supplier: ') + errorMessage)
+    } finally {
+      setDeleteLoading(null)
     }
   }
 
@@ -159,7 +201,7 @@ const Suppliers = () => {
   }
 
   // Supplier Form Component
-  const SupplierForm = ({ isEdit = false, onSubmit, onCancel }) => (
+  const SupplierForm = ({ isEdit = false, onSubmit, onCancel, isSubmitting = false }) => (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         <div className="flex justify-between items-center mb-4">
@@ -315,11 +357,18 @@ const Suppliers = () => {
           </div>
 
           <div className="flex justify-end space-x-2 pt-4">
-            <Button type="button" variant="outline" onClick={onCancel}>
+            <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
               {t('common.cancel', 'Cancel')}
             </Button>
-            <Button type="submit">
-              {t('common.save', 'Save')}
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? (
+                <span className="flex items-center gap-2">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  {t('common.saving', 'Saving...')}
+                </span>
+              ) : (
+                t('common.save', 'Save')
+              )}
             </Button>
           </div>
         </form>
@@ -382,7 +431,7 @@ const Suppliers = () => {
             {t('suppliers.subtitle', 'Manage your landscape architecture suppliers')}
           </p>
         </div>
-        <Button 
+        <Button
           className="flex items-center space-x-2"
           onClick={() => setShowAddModal(true)}
         >
@@ -424,7 +473,7 @@ const Suppliers = () => {
                 {t('suppliers.noSuppliers', 'No suppliers found')}
               </h2>
               <p className="text-gray-500 mb-6">
-                {searchTerm 
+                {searchTerm
                   ? t('suppliers.noSearchResults', 'No suppliers match your search criteria')
                   : t('suppliers.createFirst', 'Add your first supplier to get started')
                 }
@@ -459,8 +508,13 @@ const Suppliers = () => {
                       variant="outline"
                       size="sm"
                       className="text-red-600 hover:text-red-700"
+                      disabled={deleteLoading === supplier.id}
                     >
-                      <Trash2 className="h-4 w-4" />
+                      {deleteLoading === supplier.id ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Trash2 className="h-4 w-4" />
+                      )}
                     </Button>
                   </div>
                 </div>
@@ -472,11 +526,11 @@ const Suppliers = () => {
                     <span>{supplier.contact_person}</span>
                   </div>
                 )}
-                
+
                 {supplier.email && (
                   <div className="flex items-center text-gray-600 text-sm">
                     <Mail className="h-4 w-4 mr-2" />
-                    <a 
+                    <a
                       href={`mailto:${supplier.email}`}
                       className="text-blue-600 hover:underline"
                     >
@@ -484,11 +538,11 @@ const Suppliers = () => {
                     </a>
                   </div>
                 )}
-                
+
                 {supplier.phone && (
                   <div className="flex items-center text-gray-600 text-sm">
                     <Phone className="h-4 w-4 mr-2" />
-                    <a 
+                    <a
                       href={`tel:${supplier.phone}`}
                       className="text-blue-600 hover:underline"
                     >
@@ -496,7 +550,7 @@ const Suppliers = () => {
                     </a>
                   </div>
                 )}
-                
+
                 {(supplier.city || supplier.address) && (
                   <div className="flex items-start text-gray-600 text-sm">
                     <MapPin className="h-4 w-4 mr-2 mt-0.5" />
@@ -526,7 +580,7 @@ const Suppliers = () => {
 
                 {supplier.website && (
                   <div className="pt-2">
-                    <a 
+                    <a
                       href={supplier.website}
                       target="_blank"
                       rel="noopener noreferrer"
@@ -548,8 +602,10 @@ const Suppliers = () => {
           onSubmit={handleAddSupplier}
           onCancel={() => {
             setShowAddModal(false)
+            setSubmitLoading(false)
             resetForm()
           }}
+          isSubmitting={submitLoading}
         />
       )}
 
@@ -561,8 +617,10 @@ const Suppliers = () => {
           onCancel={() => {
             setShowEditModal(false)
             setEditingSupplier(null)
+            setSubmitLoading(false)
             resetForm()
           }}
+          isSubmitting={submitLoading}
         />
       )}
     </div>

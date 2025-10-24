@@ -1,50 +1,19 @@
 """Tests for photo upload and management system."""
 
-import tempfile
 from io import BytesIO
 
 import pytest
 from PIL import Image
 
-from src.main import create_app
 from src.models.photo import Photo, PhotoCategory
-from src.models.user import User, db
-from tests.fixtures.auth_fixtures import authenticated_test_user, setup_test_authentication
+from tests.fixtures.auth_fixtures import authenticated_test_user
 
 
 @pytest.fixture
-def app():
-    """Create application for testing."""
-    app = create_app()
-    app.config["TESTING"] = True
-    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///:memory:"
-    app.config["UPLOAD_FOLDER"] = tempfile.mkdtemp()
-    app.config["WTF_CSRF_ENABLED"] = False
+def authenticated_client(client, authenticated_test_user, tmp_path):
+    """Authenticated client with isolated upload folder for photo tests."""
 
-    with app.app_context():
-        db.create_all()
-
-        # Create test user
-        # Authentication handled by authenticated_test_user fixture
-        yield app
-
-        # Cleanup
-        db.session.remove()
-        db.drop_all()
-
-
-@pytest.fixture
-def client(app):
-    """Create test client."""
-    return app.test_client()
-
-
-@pytest.fixture
-def auth_client(client):
-    """Create authenticated test client."""
-    # Login
-    response = client.post("/api/auth/login", json={"username": "testuser", "password": "testpass"})
-    assert response.status_code == 200
+    client.application.config["UPLOAD_FOLDER"] = str(tmp_path)
     return client
 
 
@@ -68,11 +37,11 @@ class TestPhotoUpload:
 
         assert response.status_code == 401
 
-    def test_upload_success(self, auth_client, app):
+    def test_upload_success(self, authenticated_client, app_context):
         """Test successful photo upload."""
         img_data = create_test_image()
 
-        response = auth_client.post(
+        response = authenticated_client.post(
             "/api/photos/upload",
             data={
                 "file": (img_data, "test.jpg"),
@@ -88,34 +57,34 @@ class TestPhotoUpload:
         assert "photo" in data
 
         # Check database
-        with app.app_context():
+        with app_context.app_context():
             photo = Photo.query.first()
             assert photo is not None
             assert photo.title == "Test Photo"
             assert photo.description == "A test photo"
             assert photo.category == PhotoCategory.EXAMPLE
 
-    def test_upload_invalid_category(self, auth_client):
+    def test_upload_invalid_category(self, authenticated_client):
         """Test upload with invalid category."""
         img_data = create_test_image()
 
-        response = auth_client.post(
+        response = authenticated_client.post(
             "/api/photos/upload", data={"file": (img_data, "test.jpg"), "category": "invalid_category"}
         )
 
         assert response.status_code == 400
 
-    def test_upload_no_file(self, auth_client):
+    def test_upload_no_file(self, authenticated_client):
         """Test upload without file."""
-        response = auth_client.post("/api/photos/upload", data={"category": "example"})
+        response = authenticated_client.post("/api/photos/upload", data={"category": "example"})
 
         assert response.status_code == 400
 
-    def test_upload_with_entity_id(self, auth_client, app):
+    def test_upload_with_entity_id(self, authenticated_client, app_context):
         """Test upload with entity association."""
         img_data = create_test_image()
 
-        response = auth_client.post(
+        response = authenticated_client.post(
             "/api/photos/upload",
             data={"file": (img_data, "plant.jpg"), "category": "plant", "entity_id": "1", "title": "Plant Photo"},
         )
@@ -123,7 +92,7 @@ class TestPhotoUpload:
         assert response.status_code == 201
 
         # Check database
-        with app.app_context():
+        with app_context.app_context():
             photo = Photo.query.first()
             assert photo is not None
             assert photo.plant_id == 1
@@ -133,26 +102,26 @@ class TestPhotoUpload:
 class TestPhotoAPI:
     """Test photo API endpoints."""
 
-    def test_get_photos_empty(self, auth_client):
+    def test_get_photos_empty(self, authenticated_client):
         """Test getting photos when none exist."""
-        response = auth_client.get("/api/photos/")
+        response = authenticated_client.get("/api/photos/")
 
         assert response.status_code == 200
         data = response.get_json()
         assert data["photos"] == []
         assert data["count"] == 0
 
-    def test_get_photos_with_data(self, auth_client, app):
+    def test_get_photos_with_data(self, authenticated_client, app_context):
         """Test getting photos with data."""
         # Upload a photo first
         img_data = create_test_image()
-        upload_response = auth_client.post(
+        upload_response = authenticated_client.post(
             "/api/photos/upload", data={"file": (img_data, "test.jpg"), "category": "example", "title": "Test Photo"}
         )
         assert upload_response.status_code == 201
 
         # Get photos
-        response = auth_client.get("/api/photos/")
+        response = authenticated_client.get("/api/photos/")
 
         assert response.status_code == 200
         data = response.get_json()
@@ -160,75 +129,75 @@ class TestPhotoAPI:
         assert data["count"] == 1
         assert data["photos"][0]["title"] == "Test Photo"
 
-    def test_get_photos_by_category(self, auth_client):
+    def test_get_photos_by_category(self, authenticated_client):
         """Test filtering photos by category."""
         # Upload photos with different categories
         img_data1 = create_test_image()
-        auth_client.post(
+        authenticated_client.post(
             "/api/photos/upload", data={"file": (img_data1, "plant.jpg"), "category": "plant", "title": "Plant Photo"}
         )
 
         img_data2 = create_test_image()
-        auth_client.post(
+        authenticated_client.post(
             "/api/photos/upload",
             data={"file": (img_data2, "material.jpg"), "category": "material", "title": "Material Photo"},
         )
 
         # Get plant photos only
-        response = auth_client.get("/api/photos/?category=plant")
+        response = authenticated_client.get("/api/photos/?category=plant")
 
         assert response.status_code == 200
         data = response.get_json()
         assert len(data["photos"]) == 1
         assert data["photos"][0]["category"] == "plant"
 
-    def test_get_photo_by_id(self, auth_client, app):
+    def test_get_photo_by_id(self, authenticated_client, app_context):
         """Test getting specific photo by ID."""
         # Upload a photo first
         img_data = create_test_image()
-        upload_response = auth_client.post(
+        upload_response = authenticated_client.post(
             "/api/photos/upload", data={"file": (img_data, "test.jpg"), "category": "example", "title": "Test Photo"}
         )
 
         photo_id = upload_response.get_json()["photo"]["id"]
 
         # Get photo by ID
-        response = auth_client.get(f"/api/photos/{photo_id}")
+        response = authenticated_client.get(f"/api/photos/{photo_id}")
 
         assert response.status_code == 200
         data = response.get_json()
         assert data["photo"]["id"] == photo_id
         assert data["photo"]["title"] == "Test Photo"
 
-    def test_get_nonexistent_photo(self, auth_client):
+    def test_get_nonexistent_photo(self, authenticated_client):
         """Test getting photo that doesn't exist."""
-        response = auth_client.get("/api/photos/999")
+        response = authenticated_client.get("/api/photos/999")
 
         assert response.status_code == 404
 
-    def test_delete_photo(self, auth_client, app):
+    def test_delete_photo(self, authenticated_client, app_context):
         """Test deleting photo."""
         # Authentication handled by authenticated_test_user fixture
         # Upload a photo first
         img_data = create_test_image()
-        upload_response = auth_client.post(
+        upload_response = authenticated_client.post(
             "/api/photos/upload", data={"file": (img_data, "test.jpg"), "category": "example"}
         )
 
         photo_id = upload_response.get_json()["photo"]["id"]
 
         # Delete photo
-        response = auth_client.delete(f"/api/photos/{photo_id}")
+        response = authenticated_client.delete(f"/api/photos/{photo_id}")
 
         assert response.status_code == 200
 
         # Verify it's gone
-        get_response = auth_client.get(f"/api/photos/{photo_id}")
+        get_response = authenticated_client.get(f"/api/photos/{photo_id}")
         assert get_response.status_code == 404
 
-    def test_get_photo_categories(self, auth_client):
+    def test_get_photo_categories(self, authenticated_client):
         """Test getting available photo categories."""
-        response = auth_client.get("/api/photos/categories")
+        response = authenticated_client.get("/api/photos/categories")
 
         assert response.status_code == 200
         data = response.get_json()

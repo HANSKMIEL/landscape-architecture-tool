@@ -19,7 +19,7 @@ from tests.fixtures.auth_fixtures import authenticated_test_user, setup_test_aut
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
-from scripts.update_dev_log import DevLogManager  # noqa: E402
+from scripts.development.update_dev_log import DevLogManager  # noqa: E402
 
 
 class TestDevLogManager:
@@ -65,7 +65,7 @@ class TestDevLogManager:
 
     def test_format_log_entry_basic(self, log_manager):
         """Test basic log entry formatting"""
-        with patch("scripts.update_dev_log.datetime") as mock_datetime:
+        with patch("scripts.development.update_dev_log.datetime") as mock_datetime:
             mock_datetime.now.return_value.strftime.return_value = "2025-01-01 12:00:00"
 
             entry = log_manager.format_log_entry("feature_added", "Test feature implementation", "test_author")
@@ -83,7 +83,7 @@ class TestDevLogManager:
 
     def test_format_log_entry_with_impact(self, log_manager):
         """Test log entry formatting with impact assessment"""
-        with patch("scripts.update_dev_log.datetime") as mock_datetime:
+        with patch("scripts.development.update_dev_log.datetime") as mock_datetime:
             mock_datetime.now.return_value.strftime.return_value = "2025-01-01 12:00:00"
 
             entry = log_manager.format_log_entry(

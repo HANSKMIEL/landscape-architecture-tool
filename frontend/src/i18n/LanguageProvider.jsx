@@ -34,22 +34,55 @@ export const useLanguage = () => {
 };
 
 // Language provider component
-export const LanguageProvider = ({ children }) => {
-  const [currentLanguage, setCurrentLanguage] = useState('nl'); // Default to Dutch
+export const LanguageProvider = ({ children, initialLanguage = 'nl' }) => {
+  const getStoredLanguage = () => {
+    try {
+      return typeof window !== 'undefined' ? localStorage.getItem('preferredLanguage') : null;
+    } catch (error) {
+      console.warn('Unable to access localStorage for language preference:', error);
+      return null;
+    }
+  };
 
-  // Load language preference from localStorage on mount
+  const resolveInitialLanguage = () => {
+    if (initialLanguage && translations[initialLanguage]) {
+      return initialLanguage;
+    }
+
+    const storedLanguage = getStoredLanguage();
+    if (storedLanguage && translations[storedLanguage]) {
+      return storedLanguage;
+    }
+
+    return 'nl';
+  };
+
+  const [currentLanguage, setCurrentLanguage] = useState(resolveInitialLanguage); // Default to resolved language
+
+  // Keep language in sync if initialLanguage prop changes
   useEffect(() => {
-    const savedLanguage = localStorage.getItem('preferredLanguage');
+    if (initialLanguage && translations[initialLanguage]) {
+      setCurrentLanguage(initialLanguage);
+      return;
+    }
+
+    const savedLanguage = getStoredLanguage();
     if (savedLanguage && translations[savedLanguage]) {
       setCurrentLanguage(savedLanguage);
     }
-  }, []);
+  }, [initialLanguage]);
 
   // Save language preference to localStorage when changed
   const changeLanguage = (languageCode) => {
     if (translations[languageCode]) {
       setCurrentLanguage(languageCode);
-      localStorage.setItem('preferredLanguage', languageCode);
+      try {
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('preferredLanguage', languageCode);
+        }
+      } catch (error) {
+        console.warn('Unable to persist language preference:', error);
+      }
     }
   };
 
@@ -57,7 +90,7 @@ export const LanguageProvider = ({ children }) => {
   const t = (key, fallback = key) => {
     const keys = key.split('.');
     let value = translations[currentLanguage];
-    
+
     for (const k of keys) {
       if (value && typeof value === 'object' && k in value) {
         value = value[k];
@@ -74,7 +107,7 @@ export const LanguageProvider = ({ children }) => {
         return englishValue;
       }
     }
-    
+
     return typeof value === 'string' ? value : fallback;
   };
 

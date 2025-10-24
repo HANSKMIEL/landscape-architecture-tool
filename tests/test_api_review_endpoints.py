@@ -10,118 +10,15 @@ import json
 
 import pytest
 
-from src.main import create_app
-from src.models.landscape import Client, Plant, Project, Supplier
-from src.models.user import db
-from tests.fixtures.auth_fixtures import authenticated_test_user, setup_test_authentication
-
-
-@pytest.fixture
-def app():
-    """Create test application"""
-    app = create_app()
-    app.config["TESTING"] = True
-    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///:memory:"
-    app.config["WTF_CSRF_ENABLED"] = False
-
-    with app.app_context():
-        db.create_all()
-        yield app
-        db.drop_all()
-
-
-@pytest.fixture
-def client(app):
-    """Create test client"""
-    return app.test_client()
-
-
-@pytest.fixture
-def app_context(app):
-    """Provide app context for tests"""
-    with app.app_context():
-        yield app
-
-
-@pytest.fixture
-def sample_supplier(app_context):
-    """Create a sample supplier"""
-    supplier = Supplier(
-        name="Test Supplier",
-        contact_person="John Doe",
-        email="john@testsupplier.com",
-        phone="123-456-7890",
-        address="123 Test St",
-        city="Test City",
-        postal_code="12345",
-    )
-    db.session.add(supplier)
-    db.session.commit()
-    return supplier
-
-
-@pytest.fixture
-def sample_plant(app_context, sample_supplier):
-    """Create a sample plant"""
-    plant = Plant(
-        name="Test Plant",
-        common_name="Test Common Name",
-        category="Tree",
-        height_min=1.0,
-        height_max=5.0,
-        width_min=1.0,
-        width_max=3.0,
-        sun_requirements="Full Sun",
-        water_needs="Medium",
-        hardiness_zone="5-8",
-        maintenance="Low",
-        price=25.50,
-        supplier_id=sample_supplier.id,
-    )
-    db.session.add(plant)
-    db.session.commit()
-    return plant
-
-
-@pytest.fixture
-def sample_client(app_context):
-    """Create a sample client"""
-    client = Client(
-        name="Test Client",
-        email="test@client.com",
-        phone="987-654-3210",
-        address="456 Client Ave",
-        city="Client City",
-        postal_code="54321",
-        client_type="Particulier",
-    )
-    db.session.add(client)
-    db.session.commit()
-    return client
-
-
-@pytest.fixture
-def sample_project(app_context, sample_client):
-    """Create a sample project"""
-    project = Project(
-        name="Test Project",
-        description="A test project for API validation",
-        client_id=sample_client.id,
-        location="Test Location",
-        area_size=100.0,
-        budget=50000.0,
-        status="Planning",
-    )
-    db.session.add(project)
-    db.session.commit()
-    return project
+pytestmark = pytest.mark.usefixtures("app_context")
 
 
 @pytest.mark.api
 class TestPlantRecommendationsAPI:
     """Test plant recommendations API endpoints"""
 
-    def test_criteria_options_endpoint(self, client, app_context, authenticated_test_user):
+    @pytest.mark.usefixtures("authenticated_test_user")
+    def test_criteria_options_endpoint(self, client):
         """Test plant recommendation criteria options endpoint"""
         response = client.get("/api/plant-recommendations/criteria-options")
 
@@ -141,7 +38,8 @@ class TestPlantRecommendationsAPI:
             assert key in data
             assert isinstance(data[key], list)
 
-    def test_plant_recommendations_endpoint(self, client, app_context, authenticated_test_user):
+    @pytest.mark.usefixtures("authenticated_test_user")
+    def test_plant_recommendations_endpoint(self, client):
         """Test basic plant recommendations functionality"""
         # Authentication handled by authenticated_test_user fixture
         request_data = {"hardiness_zone": "5-9", "sun_exposure": "Full Sun", "max_results": 3, "min_score": 0.3}
@@ -169,7 +67,8 @@ class TestPlantRecommendationsAPI:
             assert "match_reasons" in rec
             assert "warnings" in rec
 
-    def test_plant_recommendations_error_handling(self, client, app_context, authenticated_test_user):
+    @pytest.mark.usefixtures("authenticated_test_user")
+    def test_plant_recommendations_error_handling(self, client):
         """Test error handling for plant recommendations"""
         # Authentication handled by authenticated_test_user fixture
         # Test empty request body
@@ -180,7 +79,7 @@ class TestPlantRecommendationsAPI:
         response = client.post("/api/plant-recommendations", data="invalid json", content_type="application/json")
         assert response.status_code == 400
 
-    def test_recommendation_history_endpoint(self, client, app_context):
+    def test_recommendation_history_endpoint(self, client):
         """Test recommendation history endpoint"""
         response = client.get("/api/plant-recommendations/history")
 
@@ -194,7 +93,7 @@ class TestPlantRecommendationsAPI:
         assert "has_more" in data
         assert isinstance(data["history"], list)
 
-    def test_recommendation_history_with_params(self, client, app_context):
+    def test_recommendation_history_with_params(self, client):
         """Test recommendation history with query parameters"""
         response = client.get("/api/plant-recommendations/history?limit=10&offset=0")
 
@@ -203,7 +102,7 @@ class TestPlantRecommendationsAPI:
         assert data["limit"] == 10
         assert data["offset"] == 0
 
-    def test_recommendation_history_invalid_params(self, client, app_context):
+    def test_recommendation_history_invalid_params(self, client):
         """Test recommendation history with invalid parameters"""
         response = client.get("/api/plant-recommendations/history?limit=invalid")
         assert response.status_code == 400
@@ -216,13 +115,23 @@ class TestPlantRecommendationsAPI:
 class TestProjectPlantsAPI:
     """Test project plants API endpoints"""
 
-    def test_add_plant_to_project(self, client, app_context, sample_project, sample_plant, authenticated_test_user):
+    @pytest.mark.usefixtures("authenticated_test_user")
+    def test_add_plant_to_project(
+        self,
+        client,
+        project_factory,
+        plant_factory,
+        supplier_factory,
+    ):
         """Test adding a plant to a project"""
         # Authentication handled by authenticated_test_user fixture
-        request_data = {"plant_id": sample_plant.id, "quantity": 5, "unit_cost": 25.50, "notes": "Test plant addition"}
+        project = project_factory()
+        supplier = supplier_factory()
+        plant = plant_factory(supplier=supplier)
+        request_data = {"plant_id": plant.id, "quantity": 5, "unit_cost": 25.50, "notes": "Test plant addition"}
 
         response = client.post(
-            f"/api/projects/{sample_project.id}/plants", data=json.dumps(request_data), content_type="application/json"
+            f"/api/projects/{project.id}/plants", data=json.dumps(request_data), content_type="application/json"
         )
 
         assert response.status_code == 201
@@ -238,34 +147,43 @@ class TestProjectPlantsAPI:
         assert "status" in data
 
         # Validate values
-        assert data["project_id"] == sample_project.id
-        assert data["plant_id"] == sample_plant.id
+        assert data["project_id"] == project.id
+        assert data["plant_id"] == plant.id
         assert data["quantity"] == 5
         assert data["unit_cost"] == 25.50
         assert data["total_cost"] == 127.50  # 5 * 25.50
 
-    def test_get_project_plants(self, client, app_context, sample_project):
+    def test_get_project_plants(self, client, project_factory):
         """Test getting plants for a project"""
         # Authentication handled by authenticated_test_user fixture
-        response = client.get(f"/api/projects/{sample_project.id}/plants")
+        project = project_factory()
+        response = client.get(f"/api/projects/{project.id}/plants")
 
         assert response.status_code == 200
         data = response.get_json()
         assert isinstance(data, list)
 
-    def test_update_project_plant(self, client, app_context, sample_project, sample_plant, authenticated_test_user):
+    @pytest.mark.usefixtures("authenticated_test_user")
+    def test_update_project_plant(
+        self,
+        client,
+        project_factory,
+        plant_factory,
+        supplier_factory,
+    ):
         """Test updating project plant details"""
         # Authentication handled by authenticated_test_user fixture
         # First add a plant
-        add_data = {"plant_id": sample_plant.id, "quantity": 3}
-        client.post(
-            f"/api/projects/{sample_project.id}/plants", data=json.dumps(add_data), content_type="application/json"
-        )
+        project = project_factory()
+        supplier = supplier_factory()
+        plant = plant_factory(supplier=supplier)
+        add_data = {"plant_id": plant.id, "quantity": 3}
+        client.post(f"/api/projects/{project.id}/plants", data=json.dumps(add_data), content_type="application/json")
 
         # Update quantity
         update_data = {"quantity": 10}
         response = client.put(
-            f"/api/projects/{sample_project.id}/plants/{sample_plant.id}",
+            f"/api/projects/{project.id}/plants/{plant.id}",
             data=json.dumps(update_data),
             content_type="application/json",
         )
@@ -274,10 +192,11 @@ class TestProjectPlantsAPI:
         data = response.get_json()
         assert data["quantity"] == 10
 
-    def test_project_cost_analysis(self, client, app_context, sample_project):
+    def test_project_cost_analysis(self, client, project_factory):
         """Test project cost analysis endpoint"""
         # Authentication handled by authenticated_test_user fixture
-        response = client.get(f"/api/projects/{sample_project.id}/cost-analysis")
+        project = project_factory()
+        response = client.get(f"/api/projects/{project.id}/cost-analysis")
 
         assert response.status_code == 200
         data = response.get_json()
@@ -285,27 +204,38 @@ class TestProjectPlantsAPI:
         # Should have cost analysis structure
         assert isinstance(data, dict)
 
-    def test_plant_order_list(self, client, app_context, sample_project):
+    def test_plant_order_list(self, client, project_factory):
         """Test plant order list generation"""
         # Authentication handled by authenticated_test_user fixture
-        response = client.get(f"/api/projects/{sample_project.id}/plant-order-list")
+        project = project_factory()
+        response = client.get(f"/api/projects/{project.id}/plant-order-list")
 
         assert response.status_code == 200
         data = response.get_json()
         assert isinstance(data, dict)
 
-    def test_batch_add_plants(self, client, app_context, sample_project, sample_plant):
+    @pytest.mark.usefixtures("authenticated_test_user")
+    def test_batch_add_plants(
+        self,
+        client,
+        project_factory,
+        plant_factory,
+        supplier_factory,
+    ):
         """Test adding multiple plants at once"""
         # Authentication handled by authenticated_test_user fixture
+        project = project_factory()
+        supplier = supplier_factory()
+        plant = plant_factory(supplier=supplier)
         request_data = {
             "plants": [
-                {"plant_id": sample_plant.id, "quantity": 2},
-                {"plant_id": sample_plant.id, "quantity": 3, "unit_cost": 15.00},
+                {"plant_id": plant.id, "quantity": 2},
+                {"plant_id": plant.id, "quantity": 3, "unit_cost": 15.00},
             ]
         }
 
         response = client.post(
-            f"/api/projects/{sample_project.id}/plants/batch",
+            f"/api/projects/{project.id}/plants/batch",
             data=json.dumps(request_data),
             content_type="application/json",
         )
@@ -319,7 +249,8 @@ class TestProjectPlantsAPI:
         assert "total_added" in data
         assert "total_errors" in data
 
-    def test_project_plants_error_handling(self, client, app_context, authenticated_test_user):
+    @pytest.mark.usefixtures("authenticated_test_user")
+    def test_project_plants_error_handling(self, client):
         """Test error handling for invalid project/plant IDs"""
         # Authentication handled by authenticated_test_user fixture
         # Test invalid project ID
@@ -335,7 +266,8 @@ class TestProjectPlantsAPI:
 class TestReportsAPI:
     """Test reports API endpoints"""
 
-    def test_business_summary_json(self, client, app_context, authenticated_test_user):
+    @pytest.mark.usefixtures("authenticated_test_user")
+    def test_business_summary_json(self, client):
         """Test business summary report in JSON format"""
         # Authentication handled by authenticated_test_user fixture
         response = client.get("/api/reports/business-summary")
@@ -357,11 +289,12 @@ class TestReportsAPI:
             assert key in summary
             assert isinstance(summary[key], int)
 
-    def test_business_summary_with_date_filter(self, client, app_context, authenticated_test_user):
+    @pytest.mark.usefixtures("authenticated_test_user")
+    def test_business_summary_with_date_filter(self, client):
         """Test business summary with date filtering"""
         # Authentication handled by authenticated_test_user fixture
         response = client.get(
-            "/api/reports/business-summary" "?start_date=2025-01-01T00:00:00" "&end_date=2025-12-31T23:59:59"
+            "/api/reports/business-summary?start_date=2025-01-01T00:00:00&end_date=2025-12-31T23:59:59"
         )
 
         assert response.status_code == 200
@@ -369,10 +302,12 @@ class TestReportsAPI:
         assert data["period"]["start_date"] == "2025-01-01T00:00:00"
         assert data["period"]["end_date"] == "2025-12-31T23:59:59"
 
-    def test_project_report_json(self, client, app_context, sample_project):
+    @pytest.mark.usefixtures("authenticated_test_user")
+    def test_project_report_json(self, client, project_factory):
         """Test project report in JSON format"""
         # Authentication handled by authenticated_test_user fixture
-        response = client.get(f"/api/reports/project/{sample_project.id}")
+        project = project_factory()
+        response = client.get(f"/api/reports/project/{project.id}")
 
         assert response.status_code == 200
         data = response.get_json()
@@ -390,15 +325,16 @@ class TestReportsAPI:
         assert "id" in project_data
         assert "name" in project_data
         assert "status" in project_data
-        assert project_data["id"] == sample_project.id
+        assert project_data["id"] == project.id
 
-    def test_project_report_not_found(self, client, app_context):
+    @pytest.mark.usefixtures("authenticated_test_user")
+    def test_project_report_not_found(self, client):
         """Test project report with invalid project ID"""
         # Authentication handled by authenticated_test_user fixture
         response = client.get("/api/reports/project/999")
         assert response.status_code == 404
 
-    def test_plant_usage_report(self, client, app_context):
+    def test_plant_usage_report(self, client):
         """Test plant usage statistics report"""
         # Authentication handled by authenticated_test_user fixture
         response = client.get("/api/reports/plant-usage")
@@ -417,7 +353,7 @@ class TestReportsAPI:
         assert isinstance(data["category_distribution"], dict)
         assert isinstance(data["total_unique_plants"], int)
 
-    def test_supplier_performance_report(self, client, app_context):
+    def test_supplier_performance_report(self, client):
         """Test supplier performance report"""
         # Authentication handled by authenticated_test_user fixture
         response = client.get("/api/reports/supplier-performance")
@@ -434,7 +370,8 @@ class TestReportsAPI:
         assert isinstance(data["suppliers"], list)
         assert isinstance(data["total_suppliers"], int)
 
-    def test_reports_error_handling(self, client, app_context, authenticated_test_user):
+    @pytest.mark.usefixtures("authenticated_test_user")
+    def test_reports_error_handling(self, client):
         """Test error handling for reports"""
         # Authentication handled by authenticated_test_user fixture
         # Test invalid date format
@@ -446,7 +383,8 @@ class TestReportsAPI:
 class TestAPIIntegrationScenarios:
     """Integration tests combining multiple API endpoints"""
 
-    def test_full_recommendation_workflow(self, client, app_context, authenticated_test_user):
+    @pytest.mark.usefixtures("authenticated_test_user")
+    def test_full_recommendation_workflow(self, client):
         """Test complete plant recommendation workflow"""
         # 1. Get criteria options
         response = client.get("/api/plant-recommendations/criteria-options")
@@ -467,20 +405,28 @@ class TestAPIIntegrationScenarios:
         response = client.get("/api/plant-recommendations/history")
         assert response.status_code == 200
 
+    @pytest.mark.usefixtures("authenticated_test_user")
     def test_project_plant_management_workflow(
-        self, client, app_context, sample_project, sample_plant, authenticated_test_user
+        self,
+        client,
+        project_factory,
+        plant_factory,
+        supplier_factory,
     ):
         """Test complete project plant management workflow"""
         # Authentication handled by authenticated_test_user fixture
+        project = project_factory()
+        supplier = supplier_factory()
+        plant = plant_factory(supplier=supplier)
         # 1. Add plant to project
-        add_data = {"plant_id": sample_plant.id, "quantity": 5}
+        add_data = {"plant_id": plant.id, "quantity": 5}
         response = client.post(
-            f"/api/projects/{sample_project.id}/plants", data=json.dumps(add_data), content_type="application/json"
+            f"/api/projects/{project.id}/plants", data=json.dumps(add_data), content_type="application/json"
         )
         assert response.status_code == 201
 
         # 2. Get project plants
-        response = client.get(f"/api/projects/{sample_project.id}/plants")
+        response = client.get(f"/api/projects/{project.id}/plants")
         assert response.status_code == 200
         plants = response.get_json()
         assert len(plants) >= 1
@@ -488,29 +434,35 @@ class TestAPIIntegrationScenarios:
         # 3. Update plant quantity
         update_data = {"quantity": 8}
         response = client.put(
-            f"/api/projects/{sample_project.id}/plants/{sample_plant.id}",
+            f"/api/projects/{project.id}/plants/{plant.id}",
             data=json.dumps(update_data),
             content_type="application/json",
         )
         assert response.status_code == 200
 
         # 4. Get cost analysis
-        response = client.get(f"/api/projects/{sample_project.id}/cost-analysis")
+        response = client.get(f"/api/projects/{project.id}/cost-analysis")
         assert response.status_code == 200
 
         # 5. Generate order list
-        response = client.get(f"/api/projects/{sample_project.id}/plant-order-list")
+        response = client.get(f"/api/projects/{project.id}/plant-order-list")
         assert response.status_code == 200
 
-    def test_reporting_workflow(self, client, app_context, sample_project):
+    @pytest.mark.usefixtures("authenticated_test_user")
+    def test_reporting_workflow(
+        self,
+        client,
+        project_factory,
+    ):
         """Test complete reporting workflow"""
         # Authentication handled by authenticated_test_user fixture
+        project = project_factory()
         # 1. Business summary
         response = client.get("/api/reports/business-summary")
         assert response.status_code == 200
 
         # 2. Project report
-        response = client.get(f"/api/reports/project/{sample_project.id}")
+        response = client.get(f"/api/reports/project/{project.id}")
         assert response.status_code == 200
 
         # 3. Plant usage report
@@ -526,21 +478,28 @@ class TestAPIIntegrationScenarios:
 class TestAPIAuthenticationAndAuthorization:
     """Test authentication and authorization for API endpoints"""
 
-    def test_endpoints_accessible_without_auth(self, client, app_context):
-        """Test that API endpoints are accessible (no auth implemented yet)"""
-        # Test key endpoints are accessible
-        endpoints = [
-            "/api/plant-recommendations/criteria-options",
-            "/api/reports/business-summary",
-            "/api/reports/plant-usage",
-            "/api/reports/supplier-performance",
-        ]
+    def test_endpoints_access_control(self, client):
+        """Validate unauthenticated access patterns for public vs protected endpoints"""
+        expected_status_by_endpoint = {
+            "/api/plant-recommendations/criteria-options": 200,
+            "/api/reports/plant-usage": 200,
+            "/api/reports/supplier-performance": 200,
+            # Business summary is protected via @login_required and should reject anonymous calls
+            "/api/reports/business-summary": 401,
+        }
 
-        for endpoint in endpoints:
+        for endpoint, expected_status in expected_status_by_endpoint.items():
             response = client.get(endpoint)
-            assert response.status_code == 200, f"Endpoint {endpoint} should be accessible"
+            assert response.status_code == expected_status, (
+                f"Endpoint {endpoint} returned {response.status_code}, expected {expected_status}"
+            )
 
-    def test_post_endpoints_validation(self, client, app_context):
+    @pytest.mark.usefixtures("authenticated_test_user")
+    def test_post_endpoints_validation(
+        self,
+        client,
+        project_factory,
+    ):
         """Test POST endpoints have proper validation"""
         # Authentication handled by authenticated_test_user fixture
         # Test plant recommendations requires valid JSON
@@ -548,7 +507,8 @@ class TestAPIAuthenticationAndAuthorization:
         assert response.status_code == 400
 
         # Test project plants requires valid data
-        response = client.post("/api/projects/1/plants")
+        project = project_factory()
+        response = client.post(f"/api/projects/{project.id}/plants")
         assert response.status_code == 400
 
 

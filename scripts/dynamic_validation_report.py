@@ -16,7 +16,8 @@ from pathlib import Path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
-from src.utils.pr_analyzer import create_validation_report
+# Import after path modification (required for project structure)
+from src.utils.pr_analyzer import create_validation_report  # noqa: E402
 
 
 def run_validation_checks():

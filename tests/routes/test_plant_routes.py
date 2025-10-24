@@ -9,30 +9,20 @@ import json
 import pytest
 
 from src.models.landscape import Plant
-from tests.fixtures.auth_fixtures import authenticated_test_user, setup_test_authentication
+from tests.fixtures.auth_fixtures import authenticated_test_user
 from tests.fixtures.database import DatabaseTestMixin
+
+
+@pytest.fixture
+def authenticated_client(client, app_context, authenticated_test_user):
+    """Provide an authenticated test client with application context"""
+
+    return client
 
 
 @pytest.mark.api
 class TestPlantRoutes(DatabaseTestMixin):
     """Test Plant API endpoints"""
-
-    @pytest.fixture
-    def authenticated_client(self, client, app_context):
-        """Create an authenticated test client"""
-        from src.models.user import User, db
-
-        # Create test user
-        user = User(username="testuser", email="test@example.com", role="admin")
-        user.set_password("testpass")
-        db.session.add(user)
-        db.session.commit()
-
-        # Login
-        response = client.post("/api/auth/login", json={"username": "testuser", "password": "testpass"})
-        assert response.status_code == 200
-
-        return client
 
     def test_get_plants_empty(self, authenticated_client, app_context):
         """Test getting plants when database is empty"""
@@ -47,14 +37,27 @@ class TestPlantRoutes(DatabaseTestMixin):
         assert data["current_page"] == 1
         assert data["pages"] == 0
 
-    def test_get_plants_with_data(self, authenticated_client, app_context, sample_plants):
-        """Test getting plants with sample data"""
+    def test_get_plants_with_data(self, authenticated_client, app_context, supplier_factory):
+        """Test getting plants after creating them through the API"""
+        supplier = supplier_factory()
+        for idx in range(3):
+            plant_payload = {
+                "name": f"API Created Plant {idx}",
+                "common_name": f"Common Name {idx}",
+                "category": "Shrub",
+                "supplier_id": supplier.id,
+            }
+            create_response = authenticated_client.post(
+                "/api/plants", data=json.dumps(plant_payload), content_type="application/json"
+            )
+            assert create_response.status_code == 201
+
         response = authenticated_client.get("/api/plants")
 
         assert response.status_code == 200
         data = response.get_json()
-        assert len(data["plants"]) == 5
-        assert data["total"] == 5
+        assert len(data["plants"]) == 3
+        assert data["total"] == 3
         assert all("id" in plant for plant in data["plants"])
         assert all("name" in plant for plant in data["plants"])
 
@@ -155,8 +158,9 @@ class TestPlantRoutes(DatabaseTestMixin):
         assert len(data["plants"]) == 2
         assert all(plant["category"] == "Tree" and plant["native"] for plant in data["plants"])
 
-    def test_create_plant_success(self, authenticated_client, app_context, sample_supplier):
+    def test_create_plant_success(self, authenticated_client, app_context, supplier_factory):
         """Test creating a plant successfully"""
+        supplier = supplier_factory()
         plant_data = {
             "name": "Test Plant",
             "common_name": "Common Test Plant",
@@ -165,7 +169,7 @@ class TestPlantRoutes(DatabaseTestMixin):
             "height_max": 150.0,
             "sun_exposure": "full_sun",
             "price": 25.99,
-            "supplier_id": sample_supplier.id,
+            "supplier_id": supplier.id,
         }
 
         response = authenticated_client.post(
@@ -224,14 +228,17 @@ class TestPlantRoutes(DatabaseTestMixin):
         data = response.get_json()
         assert "error" in data
 
-    def test_get_plant_by_id_success(self, authenticated_client, app_context, sample_plant):
+    def test_get_plant_by_id_success(self, authenticated_client, app_context, plant_factory, supplier_factory):
         """Test getting a specific plant by ID"""
-        response = authenticated_client.get(f"/api/plants/{sample_plant.id}")
+        supplier = supplier_factory()
+        plant = plant_factory(supplier=supplier)
+
+        response = authenticated_client.get(f"/api/plants/{plant.id}")
 
         assert response.status_code == 200
         data = response.get_json()
-        assert data["id"] == sample_plant.id
-        assert data["name"] == sample_plant.name
+        assert data["id"] == plant.id
+        assert data["name"] == plant.name
 
     def test_get_plant_by_id_not_found(self, authenticated_client, app_context):
         """Test getting plant by non-existent ID"""
@@ -241,16 +248,18 @@ class TestPlantRoutes(DatabaseTestMixin):
         data = response.get_json()
         assert "error" in data
 
-    def test_update_plant_success(self, authenticated_client, app_context, sample_plant):
+    def test_update_plant_success(self, authenticated_client, app_context, plant_factory, supplier_factory):
         """Test updating a plant successfully"""
+        supplier = supplier_factory()
+        plant = plant_factory(supplier=supplier)
         update_data = {
             "name": "Updated Plant Name",
             "price": 35.99,
             "notes": "Updated notes",
         }
 
-        response = client.put(
-            f"/api/plants/{sample_plant.id}",
+        response = authenticated_client.put(
+            f"/api/plants/{plant.id}",
             data=json.dumps(update_data),
             content_type="application/json",
         )
@@ -265,7 +274,7 @@ class TestPlantRoutes(DatabaseTestMixin):
         """Test updating non-existent plant"""
         update_data = {"name": "Updated Name"}
 
-        response = client.put(
+        response = authenticated_client.put(
             "/api/plants/999",
             data=json.dumps(update_data),
             content_type="application/json",
@@ -275,12 +284,14 @@ class TestPlantRoutes(DatabaseTestMixin):
         data = response.get_json()
         assert "error" in data
 
-    def test_update_plant_invalid_data(self, authenticated_client, app_context, sample_plant):
+    def test_update_plant_invalid_data(self, authenticated_client, app_context, plant_factory, supplier_factory):
         """Test updating plant with invalid data"""
+        supplier = supplier_factory()
+        plant = plant_factory(supplier=supplier)
         update_data = {"height_min": 200.0, "height_max": 100.0}  # Invalid: max < min
 
-        response = client.put(
-            f"/api/plants/{sample_plant.id}",
+        response = authenticated_client.put(
+            f"/api/plants/{plant.id}",
             data=json.dumps(update_data),
             content_type="application/json",
         )
@@ -289,11 +300,13 @@ class TestPlantRoutes(DatabaseTestMixin):
         data = response.get_json()
         assert "error" in data
 
-    def test_delete_plant_success(self, authenticated_client, app_context, sample_plant):
+    def test_delete_plant_success(self, authenticated_client, app_context, plant_factory, supplier_factory):
         """Test deleting a plant successfully"""
-        plant_id = sample_plant.id
+        supplier = supplier_factory()
+        plant = plant_factory(supplier=supplier)
+        plant_id = plant.id
 
-        response = client.delete(f"/api/plants/{plant_id}")
+        response = authenticated_client.delete(f"/api/plants/{plant_id}")
 
         assert response.status_code == 200
         data = response.get_json()
@@ -304,23 +317,31 @@ class TestPlantRoutes(DatabaseTestMixin):
 
     def test_delete_plant_not_found(self, authenticated_client, app_context):
         """Test deleting non-existent plant"""
-        response = client.delete("/api/plants/999")
+        response = authenticated_client.delete("/api/plants/999")
 
         assert response.status_code == 404
         data = response.get_json()
         assert "error" in data
 
     def test_delete_plant_with_project_associations(
-        self, client, app_context, sample_plant, project_factory, client_factory
+        self,
+        authenticated_client,
+        app_context,
+        plant_factory,
+        supplier_factory,
+        project_factory,
+        client_factory,
     ):
         """Test deleting plant that has project associations"""
         client_obj = client_factory()
         project = project_factory(client=client_obj)  # noqa: F841
+        supplier = supplier_factory()
+        plant = plant_factory(supplier=supplier)
 
         # Add plant to project (would need to create ProjectPlant relationship)
         # This test verifies business logic constraints
 
-        response = client.delete(f"/api/plants/{sample_plant.id}")
+        response = authenticated_client.delete(f"/api/plants/{plant.id}")
 
         # Depending on business rules, this might succeed or fail
         # If cascading deletes are allowed, should succeed
@@ -360,28 +381,41 @@ class TestPlantRoutes(DatabaseTestMixin):
         assert len(suggestions) == 2
         assert all("Rose" in suggestion["name"] for suggestion in suggestions)
 
-    def test_plants_export(self, authenticated_client, app_context, sample_plants):
-        """Test exporting plants data"""
+    def test_plants_export(self, authenticated_client, app_context, supplier_factory):
+        """Test exporting plants data after creating plants via the API"""
+        supplier = supplier_factory()
+        for idx in range(2):
+            plant_payload = {
+                "name": f"Export Plant {idx}",
+                "category": "Tree",
+                "supplier_id": supplier.id,
+            }
+            create_response = authenticated_client.post(
+                "/api/plants", data=json.dumps(plant_payload), content_type="application/json"
+            )
+            assert create_response.status_code == 201
+
         response = authenticated_client.get("/api/plants/export?format=json")
 
         assert response.status_code == 200
         data = response.get_json()
         assert "plants" in data
-        assert len(data["plants"]) == 5
+        assert len(data["plants"]) == 2
 
-    def test_plants_bulk_import(self, authenticated_client, app_context, sample_supplier):
+    def test_plants_bulk_import(self, authenticated_client, app_context, supplier_factory):
         """Test bulk importing plants"""
+        supplier = supplier_factory()
         plants_data = {
             "plants": [
                 {
                     "name": "Bulk Plant 1",
                     "category": "Tree",
-                    "supplier_id": sample_supplier.id,
+                    "supplier_id": supplier.id,
                 },
                 {
                     "name": "Bulk Plant 2",
                     "category": "Shrub",
-                    "supplier_id": sample_supplier.id,
+                    "supplier_id": supplier.id,
                 },
             ]
         }
@@ -468,7 +502,7 @@ class TestPlantRoutesIntegration(DatabaseTestMixin):
 
         # 3. Update plant
         update_data = {"price": 55.99, "notes": "Updated in workflow test"}
-        response = client.put(
+        response = authenticated_client.put(
             f"/api/plants/{plant_id}",
             data=json.dumps(update_data),
             content_type="application/json",
@@ -485,7 +519,7 @@ class TestPlantRoutesIntegration(DatabaseTestMixin):
         assert search_results["plants"][0]["id"] == plant_id
 
         # 5. Delete plant
-        response = client.delete(f"/api/plants/{plant_id}")
+        response = authenticated_client.delete(f"/api/plants/{plant_id}")
         assert response.status_code == 200
 
         # 6. Verify deletion

@@ -1,33 +1,37 @@
-import React, { useState, useEffect } from 'react';
-import { 
-  Users, 
-  Plus, 
-  Search, 
-  Filter, 
-  Edit, 
-  Trash2, 
-  Lock, 
-  Unlock, 
-  Mail, 
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import {
+  Search,
+  Trash2,
+  Lock,
+  Unlock,
   Upload,
   Download,
-  MoreVertical,
-  Eye,
-  EyeOff,
   AlertCircle,
   CheckCircle,
   UserPlus,
-  FileText
 } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Alert, AlertDescription } from './ui/alert';
 import { Badge } from './ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from './ui/dialog';
+
+const INITIAL_CREATE_FORM = {
+  username: '',
+  email: '',
+  password: '',
+  role: 'user',
+  first_name: '',
+  last_name: '',
+  phone: '',
+  company: '',
+  notes: '',
+};
+
+const CSV_TEMPLATE = `username,email,password,role,first_name,last_name,phone,company,notes\njohn.doe,john@example.com,password123,user,John,Doe,+1234567890,Example Corp,Sample user\njane.admin,jane@example.com,,admin,Jane,Smith,,Admin Corp,Admin user with generated password`;
 
 const UserManagement = () => {
   const [users, setUsers] = useState([]);
@@ -35,244 +39,232 @@ const UserManagement = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
-  const [roleFilter, setRoleFilter] = useState('');
+  const [roleFilter, setRoleFilter] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [showCreateUser, setShowCreateUser] = useState(false);
   const [showBulkImport, setShowBulkImport] = useState(false);
-  const [editingUser, setEditingUser] = useState(null);
-
-  // Create user form state
-  const [createUserForm, setCreateUserForm] = useState({
-    username: '',
-    email: '',
-    password: '',
-    role: 'user',
-    first_name: '',
-    last_name: '',
-    phone: '',
-    company: '',
-    notes: ''
-  });
-
-  // Bulk import state
+  const [createUserForm, setCreateUserForm] = useState(INITIAL_CREATE_FORM);
   const [bulkImportFile, setBulkImportFile] = useState(null);
   const [bulkImportLoading, setBulkImportLoading] = useState(false);
   const [bulkImportResults, setBulkImportResults] = useState(null);
 
-  const roles = [
-    { value: 'client', label: 'Client', color: 'bg-blue-100 text-blue-800' },
-    { value: 'user', label: 'User', color: 'bg-gray-100 text-gray-800' },
-    { value: 'admin', label: 'Admin', color: 'bg-green-100 text-green-800' },
-    { value: 'sysadmin', label: 'System Admin', color: 'bg-purple-100 text-purple-800' },
-    { value: 'developer', label: 'Developer', color: 'bg-red-100 text-red-800' }
-  ];
+  const roleOptions = useMemo(
+    () => [
+      { value: 'client', label: 'Client', color: 'bg-blue-100 text-blue-800' },
+      { value: 'user', label: 'User', color: 'bg-gray-100 text-gray-800' },
+      { value: 'admin', label: 'Admin', color: 'bg-green-100 text-green-800' },
+      { value: 'sysadmin', label: 'System Admin', color: 'bg-purple-100 text-purple-800' },
+      { value: 'developer', label: 'Developer', color: 'bg-red-100 text-red-800' },
+    ],
+    [],
+  );
 
-  useEffect(() => {
-    fetchUsers();
-  }, [currentPage, searchTerm, roleFilter]);
+  const clearFeedback = useCallback(() => {
+    setError('');
+    setSuccess('');
+  }, []);
 
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async () => {
     try {
       setLoading(true);
+
       const params = new URLSearchParams({
-        page: currentPage.toString(),
+        page: String(currentPage),
         per_page: '20',
-        ...(searchTerm && { search: searchTerm }),
-        ...(roleFilter && { role: roleFilter })
       });
 
-      const response = await fetch(`/api/users?${params}`);
-      const data = await response.json();
-
-      if (response.ok) {
-        setUsers(data.users);
-        setTotalPages(data.pages);
-      } else {
-        setError(data.error || 'Failed to fetch users');
+      const trimmedSearch = searchTerm.trim();
+      if (trimmedSearch) {
+        params.set('search', trimmedSearch);
       }
+      if (roleFilter !== 'all') {
+        params.set('role', roleFilter);
+      }
+
+      const response = await fetch(`/api/users?${params.toString()}`);
+      const data = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to fetch users');
+      }
+
+      setUsers(data.users || []);
+      setTotalPages(data.pages || 1);
+      setError('');
     } catch (err) {
-      setError('Network error. Please try again.');
+      console.error('Failed to fetch users:', err);
+      setError(err.message || 'Network error. Please try again.');
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentPage, roleFilter, searchTerm]);
 
-  const handleCreateUser = async (e) => {
-    e.preventDefault();
+  useEffect(() => {
+    fetchUsers();
+  }, [fetchUsers]);
+
+  const handleCreateUser = async (event) => {
+    event.preventDefault();
+    clearFeedback();
+
     try {
       const response = await fetch('/api/users', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(createUserForm)
+        body: JSON.stringify(createUserForm),
       });
 
-      const data = await response.json();
+      const data = await response.json().catch(() => ({}));
 
-      if (response.ok) {
-        setSuccess('User created successfully');
-        setShowCreateUser(false);
-        setCreateUserForm({
-          username: '',
-          email: '',
-          password: '',
-          role: 'user',
-          first_name: '',
-          last_name: '',
-          phone: '',
-          company: '',
-          notes: ''
-        });
-        fetchUsers();
-      } else {
-        setError(data.error || 'Failed to create user');
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to create user');
       }
+
+      setSuccess('User created successfully');
+      setShowCreateUser(false);
+      setCreateUserForm(INITIAL_CREATE_FORM);
+      await fetchUsers();
     } catch (err) {
-      setError('Network error. Please try again.');
-    }
-  };
-
-  const handleUpdateUser = async (userId, updates) => {
-    try {
-      const response = await fetch(`/api/users/${userId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updates)
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setSuccess('User updated successfully');
-        setEditingUser(null);
-        fetchUsers();
-      } else {
-        setError(data.error || 'Failed to update user');
-      }
-    } catch (err) {
-      setError('Network error. Please try again.');
+      console.error('Failed to create user:', err);
+      setError(err.message || 'Network error. Please try again.');
     }
   };
 
   const handleDeleteUser = async (userId) => {
-    if (!confirm('Are you sure you want to delete this user?')) return;
+    if (!window.confirm('Are you sure you want to delete this user?')) {
+      return;
+    }
+
+    clearFeedback();
 
     try {
       const response = await fetch(`/api/users/${userId}`, {
-        method: 'DELETE'
+        method: 'DELETE',
       });
 
-      if (response.ok) {
-        setSuccess('User deleted successfully');
-        fetchUsers();
-      } else {
-        const data = await response.json();
-        setError(data.error || 'Failed to delete user');
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        throw new Error(data.error || 'Failed to delete user');
       }
+
+      setSuccess('User deleted successfully');
+      await fetchUsers();
     } catch (err) {
-      setError('Network error. Please try again.');
+      console.error('Failed to delete user:', err);
+      setError(err.message || 'Network error. Please try again.');
     }
   };
 
   const handleResetPassword = async (userId) => {
-    if (!confirm('Are you sure you want to reset this user\'s password?')) return;
+    if (!window.confirm("Are you sure you want to reset this user's password?")) {
+      return;
+    }
+
+    clearFeedback();
 
     try {
       const response = await fetch(`/api/users/${userId}/reset-password`, {
-        method: 'POST'
+        method: 'POST',
       });
 
-      const data = await response.json();
+      const data = await response.json().catch(() => ({}));
 
-      if (response.ok) {
-        setSuccess(`Password reset. Temporary password: ${data.temporary_password}`);
-      } else {
-        setError(data.error || 'Failed to reset password');
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to reset password');
       }
+
+      setSuccess(`Password reset. Temporary password: ${data.temporary_password}`);
     } catch (err) {
-      setError('Network error. Please try again.');
+      console.error('Failed to reset password:', err);
+      setError(err.message || 'Network error. Please try again.');
     }
   };
 
   const handleUnlockAccount = async (userId) => {
+    clearFeedback();
+
     try {
       const response = await fetch(`/api/users/${userId}/unlock`, {
-        method: 'POST'
+        method: 'POST',
       });
 
-      if (response.ok) {
-        setSuccess('Account unlocked successfully');
-        fetchUsers();
-      } else {
-        const data = await response.json();
-        setError(data.error || 'Failed to unlock account');
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        throw new Error(data.error || 'Failed to unlock account');
       }
+
+      setSuccess('Account unlocked successfully');
+      await fetchUsers();
     } catch (err) {
-      setError('Network error. Please try again.');
+      console.error('Failed to unlock account:', err);
+      setError(err.message || 'Network error. Please try again.');
     }
   };
 
-  const handleBulkImport = async (e) => {
-    e.preventDefault();
-    if (!bulkImportFile) return;
+  const handleBulkImport = async (event) => {
+    event.preventDefault();
 
+    if (!bulkImportFile) {
+      return;
+    }
+
+    clearFeedback();
     setBulkImportLoading(true);
+
     try {
       const formData = new FormData();
       formData.append('file', bulkImportFile);
 
       const response = await fetch('/api/users/bulk-import', {
         method: 'POST',
-        body: formData
+        body: formData,
       });
 
-      const data = await response.json();
+      const data = await response.json().catch(() => ({}));
 
-      if (response.ok) {
-        setBulkImportResults(data);
-        setSuccess(`Bulk import completed: ${data.total_created} users created`);
-        fetchUsers();
-      } else {
-        setError(data.error || 'Failed to import users');
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to import users');
       }
+
+      setBulkImportResults(data);
+      setSuccess(`Bulk import completed: ${data.total_created} users created`);
+      setBulkImportFile(null);
+      await fetchUsers();
     } catch (err) {
-      setError('Network error. Please try again.');
+      console.error('Failed to import users:', err);
+      setError(err.message || 'Network error. Please try again.');
     } finally {
       setBulkImportLoading(false);
     }
   };
 
   const downloadCSVTemplate = () => {
-    const csvContent = `username,email,password,role,first_name,last_name,phone,company,notes
-john.doe,john@example.com,password123,user,John,Doe,+1234567890,Example Corp,Sample user
-jane.admin,jane@example.com,,admin,Jane,Smith,,Admin Corp,Admin user with generated password`;
-    
-    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const blob = new Blob([CSV_TEMPLATE], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'user_import_template.csv';
-    a.click();
+
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'user_import_template.csv';
+    link.click();
+
     window.URL.revokeObjectURL(url);
   };
 
   const getRoleBadge = (role) => {
-    const roleConfig = roles.find(r => r.value === role) || roles[1];
-    return (
-      <Badge className={roleConfig.color}>
-        {roleConfig.label}
-      </Badge>
-    );
+    const roleConfig = roleOptions.find((option) => option.value === role) || roleOptions[1];
+    return <Badge className={roleConfig.color}>{roleConfig.label}</Badge>;
   };
 
-  const formatDate = (dateString) => {
-    if (!dateString) return 'Never';
-    return new Date(dateString).toLocaleDateString();
+  const formatDate = (value) => {
+    if (!value) {
+      return 'Never';
+    }
+    return new Date(value).toLocaleDateString();
   };
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">User Management</h1>
@@ -290,7 +282,6 @@ jane.admin,jane@example.com,,admin,Jane,Smith,,Admin Corp,Admin user with genera
         </div>
       </div>
 
-      {/* Alerts */}
       {error && (
         <Alert className="border-red-200 bg-red-50">
           <AlertCircle className="h-4 w-4 text-red-600" />
@@ -305,7 +296,6 @@ jane.admin,jane@example.com,,admin,Jane,Smith,,Admin Corp,Admin user with genera
         </Alert>
       )}
 
-      {/* Filters */}
       <Card>
         <CardContent className="pt-6">
           <div className="flex space-x-4">
@@ -315,7 +305,7 @@ jane.admin,jane@example.com,,admin,Jane,Smith,,Admin Corp,Admin user with genera
                 <Input
                   placeholder="Search users..."
                   value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onChange={(event) => setSearchTerm(event.target.value)}
                   className="pl-10"
                 />
               </div>
@@ -325,8 +315,8 @@ jane.admin,jane@example.com,,admin,Jane,Smith,,Admin Corp,Admin user with genera
                 <SelectValue placeholder="Filter by role" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Roles</SelectItem>
-                {roles.map(role => (
+                <SelectItem value="all">All Roles</SelectItem>
+                {roleOptions.map((role) => (
                   <SelectItem key={role.value} value={role.value}>
                     {role.label}
                   </SelectItem>
@@ -337,7 +327,6 @@ jane.admin,jane@example.com,,admin,Jane,Smith,,Admin Corp,Admin user with genera
         </CardContent>
       </Card>
 
-      {/* Users Table */}
       <Card>
         <CardHeader>
           <CardTitle>Users ({users.length})</CardTitle>
@@ -359,7 +348,7 @@ jane.admin,jane@example.com,,admin,Jane,Smith,,Admin Corp,Admin user with genera
                   </tr>
                 </thead>
                 <tbody>
-                  {users.map(user => (
+                  {users.map((user) => (
                     <tr key={user.id} className="border-b hover:bg-gray-50">
                       <td className="py-3 px-4">
                         <div>
@@ -370,9 +359,7 @@ jane.admin,jane@example.com,,admin,Jane,Smith,,Admin Corp,Admin user with genera
                           )}
                         </div>
                       </td>
-                      <td className="py-3 px-4">
-                        {getRoleBadge(user.role)}
-                      </td>
+                      <td className="py-3 px-4">{getRoleBadge(user.role)}</td>
                       <td className="py-3 px-4">
                         <div className="flex items-center space-x-2">
                           {user.is_active ? (
@@ -385,34 +372,15 @@ jane.admin,jane@example.com,,admin,Jane,Smith,,Admin Corp,Admin user with genera
                           )}
                         </div>
                       </td>
-                      <td className="py-3 px-4 text-sm text-gray-600">
-                        {formatDate(user.last_login)}
-                      </td>
-                      <td className="py-3 px-4 text-sm text-gray-600">
-                        {formatDate(user.created_at)}
-                      </td>
+                      <td className="py-3 px-4 text-sm text-gray-600">{formatDate(user.last_login)}</td>
+                      <td className="py-3 px-4 text-sm text-gray-600">{formatDate(user.created_at)}</td>
                       <td className="py-3 px-4">
                         <div className="flex justify-end space-x-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => setEditingUser(user)}
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleResetPassword(user.id)}
-                          >
+                          <Button size="sm" variant="outline" onClick={() => handleResetPassword(user.id)}>
                             <Lock className="h-4 w-4" />
                           </Button>
                           {user.is_locked && (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => handleUnlockAccount(user.id)}
-                            >
+                            <Button size="sm" variant="outline" onClick={() => handleUnlockAccount(user.id)}>
                               <Unlock className="h-4 w-4" />
                             </Button>
                           )}
@@ -433,19 +401,12 @@ jane.admin,jane@example.com,,admin,Jane,Smith,,Admin Corp,Admin user with genera
             </div>
           )}
 
-          {/* Pagination */}
           {totalPages > 1 && (
             <div className="flex justify-center space-x-2 mt-6">
-              <Button
-                variant="outline"
-                disabled={currentPage === 1}
-                onClick={() => setCurrentPage(currentPage - 1)}
-              >
+              <Button variant="outline" disabled={currentPage === 1} onClick={() => setCurrentPage(currentPage - 1)}>
                 Previous
               </Button>
-              <span className="flex items-center px-4">
-                Page {currentPage} of {totalPages}
-              </span>
+              <span className="flex items-center px-4">Page {currentPage} of {totalPages}</span>
               <Button
                 variant="outline"
                 disabled={currentPage === totalPages}
@@ -458,7 +419,6 @@ jane.admin,jane@example.com,,admin,Jane,Smith,,Admin Corp,Admin user with genera
         </CardContent>
       </Card>
 
-      {/* Create User Dialog */}
       <Dialog open={showCreateUser} onOpenChange={setShowCreateUser}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
@@ -474,7 +434,9 @@ jane.admin,jane@example.com,,admin,Jane,Smith,,Admin Corp,Admin user with genera
                 <Input
                   id="username"
                   value={createUserForm.username}
-                  onChange={(e) => setCreateUserForm({...createUserForm, username: e.target.value})}
+                  onChange={(event) =>
+                    setCreateUserForm((prev) => ({ ...prev, username: event.target.value }))
+                  }
                   required
                 />
               </div>
@@ -484,7 +446,7 @@ jane.admin,jane@example.com,,admin,Jane,Smith,,Admin Corp,Admin user with genera
                   id="email"
                   type="email"
                   value={createUserForm.email}
-                  onChange={(e) => setCreateUserForm({...createUserForm, email: e.target.value})}
+                  onChange={(event) => setCreateUserForm((prev) => ({ ...prev, email: event.target.value }))}
                   required
                 />
               </div>
@@ -497,18 +459,23 @@ jane.admin,jane@example.com,,admin,Jane,Smith,,Admin Corp,Admin user with genera
                   id="password"
                   type="password"
                   value={createUserForm.password}
-                  onChange={(e) => setCreateUserForm({...createUserForm, password: e.target.value})}
+                  onChange={(event) =>
+                    setCreateUserForm((prev) => ({ ...prev, password: event.target.value }))
+                  }
                   placeholder="Leave empty for auto-generated"
                 />
               </div>
               <div>
                 <Label htmlFor="role">Role</Label>
-                <Select value={createUserForm.role} onValueChange={(value) => setCreateUserForm({...createUserForm, role: value})}>
+                <Select
+                  value={createUserForm.role}
+                  onValueChange={(value) => setCreateUserForm((prev) => ({ ...prev, role: value }))}
+                >
                   <SelectTrigger>
-                    <SelectValue />
+                    <SelectValue placeholder="Select a role" />
                   </SelectTrigger>
                   <SelectContent>
-                    {roles.map(role => (
+                    {roleOptions.map((role) => (
                       <SelectItem key={role.value} value={role.value}>
                         {role.label}
                       </SelectItem>
@@ -524,7 +491,9 @@ jane.admin,jane@example.com,,admin,Jane,Smith,,Admin Corp,Admin user with genera
                 <Input
                   id="first_name"
                   value={createUserForm.first_name}
-                  onChange={(e) => setCreateUserForm({...createUserForm, first_name: e.target.value})}
+                  onChange={(event) =>
+                    setCreateUserForm((prev) => ({ ...prev, first_name: event.target.value }))
+                  }
                 />
               </div>
               <div>
@@ -532,7 +501,9 @@ jane.admin,jane@example.com,,admin,Jane,Smith,,Admin Corp,Admin user with genera
                 <Input
                   id="last_name"
                   value={createUserForm.last_name}
-                  onChange={(e) => setCreateUserForm({...createUserForm, last_name: e.target.value})}
+                  onChange={(event) =>
+                    setCreateUserForm((prev) => ({ ...prev, last_name: event.target.value }))
+                  }
                 />
               </div>
             </div>
@@ -543,7 +514,7 @@ jane.admin,jane@example.com,,admin,Jane,Smith,,Admin Corp,Admin user with genera
                 <Input
                   id="phone"
                   value={createUserForm.phone}
-                  onChange={(e) => setCreateUserForm({...createUserForm, phone: e.target.value})}
+                  onChange={(event) => setCreateUserForm((prev) => ({ ...prev, phone: event.target.value }))}
                 />
               </div>
               <div>
@@ -551,7 +522,9 @@ jane.admin,jane@example.com,,admin,Jane,Smith,,Admin Corp,Admin user with genera
                 <Input
                   id="company"
                   value={createUserForm.company}
-                  onChange={(e) => setCreateUserForm({...createUserForm, company: e.target.value})}
+                  onChange={(event) =>
+                    setCreateUserForm((prev) => ({ ...prev, company: event.target.value }))
+                  }
                 />
               </div>
             </div>
@@ -563,7 +536,7 @@ jane.admin,jane@example.com,,admin,Jane,Smith,,Admin Corp,Admin user with genera
                 className="w-full p-2 border rounded-md"
                 rows={3}
                 value={createUserForm.notes}
-                onChange={(e) => setCreateUserForm({...createUserForm, notes: e.target.value})}
+                onChange={(event) => setCreateUserForm((prev) => ({ ...prev, notes: event.target.value }))}
               />
             </div>
 
@@ -577,16 +550,13 @@ jane.admin,jane@example.com,,admin,Jane,Smith,,Admin Corp,Admin user with genera
         </DialogContent>
       </Dialog>
 
-      {/* Bulk Import Dialog */}
       <Dialog open={showBulkImport} onOpenChange={setShowBulkImport}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Bulk Import Users</DialogTitle>
-            <DialogDescription>
-              Upload a CSV file to import multiple users at once.
-            </DialogDescription>
+            <DialogDescription>Upload a CSV file to import multiple users at once.</DialogDescription>
           </DialogHeader>
-          
+
           <div className="space-y-4">
             <div>
               <Button onClick={downloadCSVTemplate} variant="outline" className="w-full">
@@ -602,7 +572,7 @@ jane.admin,jane@example.com,,admin,Jane,Smith,,Admin Corp,Admin user with genera
                   id="csvFile"
                   type="file"
                   accept=".csv"
-                  onChange={(e) => setBulkImportFile(e.target.files[0])}
+                  onChange={(event) => setBulkImportFile(event.target.files?.[0] ?? null)}
                   required
                 />
               </div>
@@ -613,13 +583,13 @@ jane.admin,jane@example.com,,admin,Jane,Smith,,Admin Corp,Admin user with genera
                   <div className="text-sm">
                     <div className="text-green-600">✓ Created: {bulkImportResults.total_created} users</div>
                     <div className="text-red-600">✗ Errors: {bulkImportResults.total_errors}</div>
-                    {bulkImportResults.errors.length > 0 && (
+                    {(bulkImportResults.errors || []).length > 0 && (
                       <div className="mt-2">
                         <details>
                           <summary className="cursor-pointer">View Errors</summary>
                           <ul className="mt-1 text-xs text-red-600">
-                            {bulkImportResults.errors.map((error, index) => (
-                              <li key={index}>• {error}</li>
+                            {bulkImportResults.errors.map((err, index) => (
+                              <li key={index}>• {err}</li>
                             ))}
                           </ul>
                         </details>

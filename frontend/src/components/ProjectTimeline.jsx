@@ -1,18 +1,13 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
-import { 
-  Calendar, 
-  Clock, 
-  CheckCircle, 
-  AlertTriangle, 
-  Users, 
-  Camera,
+import {
+  Calendar,
+  Clock,
+  CheckCircle,
+  AlertTriangle,
+  Users,
   FileText,
   Plus,
-  Filter,
-  Search,
-  Download,
-  Upload,
   MapPin,
   Target,
   TrendingUp
@@ -20,24 +15,26 @@ import {
 import { useLanguage } from '../i18n/LanguageProvider'
 import toast from 'react-hot-toast'
 
-const ProjectTimeline = ({ user }) => {
+const createEmptyMilestone = () => ({
+  title: '',
+  description: '',
+  target_date: '',
+  milestone_type: 'design',
+  priority: 'medium',
+  assigned_to: '',
+  notes: ''
+})
+
+const ProjectTimeline = () => {
   const { t } = useLanguage()
   const [projects, setProjects] = useState([])
   const [selectedProject, setSelectedProject] = useState(null)
   const [timelineData, setTimelineData] = useState([])
   const [loading, setLoading] = useState(true)
   const [showAddMilestone, setShowAddMilestone] = useState(false)
-  const [newMilestone, setNewMilestone] = useState({
-    title: '',
-    description: '',
-    target_date: '',
-    milestone_type: 'design',
-    priority: 'medium',
-    assigned_to: '',
-    notes: ''
-  })
+  const [newMilestone, setNewMilestone] = useState(() => createEmptyMilestone())
 
-  const milestoneTypes = [
+  const milestoneTypes = useMemo(() => [
     { value: 'design', label: t('timeline.types.design', 'Design Phase'), icon: FileText, color: 'blue' },
     { value: 'planning', label: t('timeline.types.planning', 'Planning'), icon: Target, color: 'green' },
     { value: 'permits', label: t('timeline.types.permits', 'Permits & Approvals'), icon: AlertTriangle, color: 'yellow' },
@@ -46,65 +43,16 @@ const ProjectTimeline = ({ user }) => {
     { value: 'planting', label: t('timeline.types.planting', 'Planting'), icon: Calendar, color: 'green' },
     { value: 'maintenance', label: t('timeline.types.maintenance', 'Maintenance'), icon: TrendingUp, color: 'teal' },
     { value: 'completion', label: t('timeline.types.completion', 'Project Completion'), icon: CheckCircle, color: 'emerald' }
-  ]
+  ], [t])
 
-  const priorityLevels = [
+  const priorityLevels = useMemo(() => [
     { value: 'low', label: t('timeline.priority.low', 'Low'), color: 'gray' },
     { value: 'medium', label: t('timeline.priority.medium', 'Medium'), color: 'yellow' },
     { value: 'high', label: t('timeline.priority.high', 'High'), color: 'orange' },
     { value: 'critical', label: t('timeline.priority.critical', 'Critical'), color: 'red' }
-  ]
+  ], [t])
 
-  useEffect(() => {
-    fetchProjects()
-  }, [fetchProjects])
-
-  useEffect(() => {
-    if (selectedProject) {
-      fetchProjectTimeline(selectedProject.id)
-    }
-  }, [selectedProject, fetchProjectTimeline])
-
-  const fetchProjects = async () => {
-    try {
-      const response = await fetch('/api/projects', {
-        credentials: 'include'
-      })
-      if (response.ok) {
-        const data = await response.json()
-        setProjects(data.projects || [])
-        if (data.projects?.length > 0) {
-          setSelectedProject(data.projects[0])
-        }
-      }
-    } catch (error) {
-      console.error('Error fetching projects:', error)
-      toast.error(t('timeline.errors.fetchProjects', 'Failed to load projects'))
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const fetchProjectTimeline = async (projectId) => {
-    try {
-      const response = await fetch(`/api/projects/${projectId}/timeline`, {
-        credentials: 'include'
-      })
-      if (response.ok) {
-        const data = await response.json()
-        setTimelineData(data.timeline || [])
-      } else {
-        // If timeline endpoint doesn't exist, create mock data for demonstration
-        setTimelineData(generateMockTimeline(projectId))
-      }
-    } catch (error) {
-      console.error('Error fetching timeline:', error)
-      // Create mock data for demonstration
-      setTimelineData(generateMockTimeline(projectId))
-    }
-  }
-
-  const generateMockTimeline = (projectId) => {
+  const generateMockTimeline = useCallback((projectId) => {
     const baseDate = new Date()
     return [
       {
@@ -186,53 +134,109 @@ const ProjectTimeline = ({ user }) => {
         notes: ''
       }
     ]
-  }
+  }, [t])
 
-  const addMilestone = async () => {
+  const fetchProjectTimeline = useCallback(async (projectId) => {
+    if (!projectId) {
+      setTimelineData([])
+      return
+    }
+
+    try {
+      const response = await fetch(`/api/projects/${projectId}/timeline`, {
+        credentials: 'include'
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        setTimelineData(data.timeline || [])
+      } else {
+        setTimelineData(generateMockTimeline(projectId))
+      }
+    } catch (error) {
+      console.error('Error fetching timeline:', error)
+      setTimelineData(generateMockTimeline(projectId))
+    }
+  }, [generateMockTimeline])
+
+  const fetchProjects = useCallback(async () => {
+    try {
+      setLoading(true)
+      const response = await fetch('/api/projects', {
+        credentials: 'include'
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        const fetchedProjects = data.projects || []
+        setProjects(fetchedProjects)
+
+        if (fetchedProjects.length > 0) {
+          setSelectedProject(fetchedProjects[0])
+        } else {
+          setSelectedProject(null)
+          setTimelineData([])
+        }
+      } else {
+        toast.error(t('timeline.errors.fetchProjects', 'Failed to load projects'))
+      }
+    } catch (error) {
+      console.error('Error fetching projects:', error)
+      toast.error(t('timeline.errors.fetchProjects', 'Failed to load projects'))
+    } finally {
+      setLoading(false)
+    }
+  }, [t])
+
+  useEffect(() => {
+    fetchProjects()
+  }, [fetchProjects])
+
+  useEffect(() => {
+    if (selectedProject) {
+      fetchProjectTimeline(selectedProject.id)
+    } else {
+      setTimelineData([])
+    }
+  }, [selectedProject, fetchProjectTimeline])
+
+  const addMilestone = () => {
     if (!newMilestone.title || !newMilestone.target_date) {
       toast.error(t('timeline.errors.missingFields', 'Please fill in all required fields'))
       return
     }
 
-    try {
-      // For demo purposes, add to local state
-      const milestone = {
-        id: timelineData.length + 1,
-        project_id: selectedProject.id,
-        ...newMilestone,
-        status: 'pending',
-        created_at: new Date().toISOString()
-      }
-
-      setTimelineData(prev => [...prev, milestone])
-      setNewMilestone({
-        title: '',
-        description: '',
-        target_date: '',
-        milestone_type: 'design',
-        priority: 'medium',
-        assigned_to: '',
-        notes: ''
-      })
-      setShowAddMilestone(false)
-      toast.success(t('timeline.success.milestoneAdded', 'Milestone added successfully'))
-    } catch (error) {
-      console.error('Error adding milestone:', error)
-      toast.error(t('timeline.errors.addMilestone', 'Failed to add milestone'))
+    if (!selectedProject) {
+      toast.error(t('timeline.errors.noProjectSelected', 'Select a project before adding milestones'))
+      return
     }
+
+    const milestone = {
+      id: timelineData.length + 1,
+      project_id: selectedProject.id,
+      ...newMilestone,
+      status: 'pending',
+      created_at: new Date().toISOString()
+    }
+
+    setTimelineData(prev => [...prev, milestone])
+    setNewMilestone(createEmptyMilestone())
+    setShowAddMilestone(false)
+    toast.success(t('timeline.success.milestoneAdded', 'Milestone added successfully'))
   }
 
-  const updateMilestoneStatus = async (milestoneId, newStatus) => {
+  const updateMilestoneStatus = (milestoneId, newStatus) => {
     try {
-      const updatedTimeline = timelineData.map(milestone => 
-        milestone.id === milestoneId 
-          ? { 
-              ...milestone, 
-              status: newStatus,
-              completed_date: newStatus === 'completed' ? new Date().toISOString().split('T')[0] : null
-            }
+      const updatedTimeline = timelineData.map(milestone =>
+        milestone.id === milestoneId
+          ? {
+            ...milestone,
+            status: newStatus,
+            completed_date: newStatus === 'completed' ? new Date().toISOString().split('T')[0] : null
+          }
           : milestone
       )
+
       setTimelineData(updatedTimeline)
       toast.success(t('timeline.success.statusUpdated', 'Status updated successfully'))
     } catch (error) {
@@ -243,23 +247,34 @@ const ProjectTimeline = ({ user }) => {
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'completed': return 'bg-green-100 text-green-800 border-green-200'
-      case 'in_progress': return 'bg-blue-100 text-blue-800 border-blue-200'
-      case 'delayed': return 'bg-red-100 text-red-800 border-red-200'
-      case 'pending': return 'bg-gray-100 text-gray-800 border-gray-200'
-      default: return 'bg-gray-100 text-gray-800 border-gray-200'
+      case 'completed':
+        return 'bg-green-100 text-green-800 border-green-200'
+      case 'in_progress':
+        return 'bg-blue-100 text-blue-800 border-blue-200'
+      case 'delayed':
+        return 'bg-red-100 text-red-800 border-red-200'
+      case 'pending':
+      default:
+        return 'bg-gray-100 text-gray-800 border-gray-200'
     }
   }
 
   const getPriorityColor = (priority) => {
-    const level = priorityLevels.find(p => p.value === priority)
+    const level = priorityLevels.find(item => item.value === priority)
     return level ? `text-${level.color}-600` : 'text-gray-600'
   }
 
   const getTypeIcon = (type) => {
-    const milestoneType = milestoneTypes.find(t => t.value === type)
+    const milestoneType = milestoneTypes.find(item => item.value === type)
     return milestoneType ? milestoneType.icon : FileText
   }
+
+  const completedCount = timelineData.filter(milestone => milestone.status === 'completed').length
+  const inProgressCount = timelineData.filter(milestone => milestone.status === 'in_progress').length
+  const pendingCount = timelineData.filter(milestone => milestone.status === 'pending').length
+  const progressPercent = timelineData.length === 0
+    ? 0
+    : Math.round((completedCount / timelineData.length) * 100)
 
   if (loading) {
     return (
@@ -309,8 +324,9 @@ const ProjectTimeline = ({ user }) => {
             <CardContent>
               <select
                 value={selectedProject?.id || ''}
-                onChange={(e) => {
-                  const project = projects.find(p => p.id === parseInt(e.target.value))
+                onChange={(event) => {
+                  const projectId = Number(event.target.value)
+                  const project = projects.find(item => item.id === projectId) || null
                   setSelectedProject(project)
                 }}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
@@ -336,9 +352,7 @@ const ProjectTimeline = ({ user }) => {
                   <CheckCircle className="h-8 w-8 text-green-600" />
                   <div>
                     <p className="text-sm text-gray-600">{t('timeline.stats.completed', 'Completed')}</p>
-                    <p className="text-2xl font-bold text-gray-900">
-                      {timelineData.filter(m => m.status === 'completed').length}
-                    </p>
+                    <p className="text-2xl font-bold text-gray-900">{completedCount}</p>
                   </div>
                 </div>
               </div>
@@ -347,9 +361,7 @@ const ProjectTimeline = ({ user }) => {
                   <Clock className="h-8 w-8 text-blue-600" />
                   <div>
                     <p className="text-sm text-gray-600">{t('timeline.stats.inProgress', 'In Progress')}</p>
-                    <p className="text-2xl font-bold text-gray-900">
-                      {timelineData.filter(m => m.status === 'in_progress').length}
-                    </p>
+                    <p className="text-2xl font-bold text-gray-900">{inProgressCount}</p>
                   </div>
                 </div>
               </div>
@@ -358,9 +370,7 @@ const ProjectTimeline = ({ user }) => {
                   <AlertTriangle className="h-8 w-8 text-orange-600" />
                   <div>
                     <p className="text-sm text-gray-600">{t('timeline.stats.pending', 'Pending')}</p>
-                    <p className="text-2xl font-bold text-gray-900">
-                      {timelineData.filter(m => m.status === 'pending').length}
-                    </p>
+                    <p className="text-2xl font-bold text-gray-900">{pendingCount}</p>
                   </div>
                 </div>
               </div>
@@ -369,9 +379,7 @@ const ProjectTimeline = ({ user }) => {
                   <TrendingUp className="h-8 w-8 text-purple-600" />
                   <div>
                     <p className="text-sm text-gray-600">{t('timeline.stats.progress', 'Progress')}</p>
-                    <p className="text-2xl font-bold text-gray-900">
-                      {Math.round((timelineData.filter(m => m.status === 'completed').length / timelineData.length) * 100)}%
-                    </p>
+                    <p className="text-2xl font-bold text-gray-900">{progressPercent}%</p>
                   </div>
                 </div>
               </div>
@@ -406,19 +414,21 @@ const ProjectTimeline = ({ user }) => {
                         <div key={milestone.id} className="flex gap-4">
                           {/* Timeline connector */}
                           <div className="flex flex-col items-center">
-                            <div className={`p-2 rounded-full ${
-                              milestone.status === 'completed' 
-                                ? 'bg-green-100 text-green-600' 
-                                : milestone.status === 'in_progress'
-                                ? 'bg-blue-100 text-blue-600'
-                                : 'bg-gray-100 text-gray-400'
-                            }`}>
+                            <div
+                              className={`p-2 rounded-full ${milestone.status === 'completed'
+                                  ? 'bg-green-100 text-green-600'
+                                  : milestone.status === 'in_progress'
+                                    ? 'bg-blue-100 text-blue-600'
+                                    : 'bg-gray-100 text-gray-400'
+                                }`}
+                            >
                               <Icon className="h-5 w-5" />
                             </div>
                             {!isLast && (
-                              <div className={`w-px h-16 ${
-                                milestone.status === 'completed' ? 'bg-green-200' : 'bg-gray-200'
-                              }`} />
+                              <div
+                                className={`w-px h-16 ${milestone.status === 'completed' ? 'bg-green-200' : 'bg-gray-200'
+                                  }`}
+                              />
                             )}
                           </div>
 
@@ -442,24 +452,28 @@ const ProjectTimeline = ({ user }) => {
 
                               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-600">
                                 <div>
-                                  <span className="font-medium">{t('timeline.targetDate', 'Target Date')}:</span><br />
+                                  <span className="font-medium">{t('timeline.targetDate', 'Target Date')}:</span>
+                                  <br />
                                   {new Date(milestone.target_date).toLocaleDateString()}
                                 </div>
                                 {milestone.completed_date && (
                                   <div>
-                                    <span className="font-medium">{t('timeline.completedDate', 'Completed')}:</span><br />
+                                    <span className="font-medium">{t('timeline.completedDate', 'Completed')}:</span>
+                                    <br />
                                     {new Date(milestone.completed_date).toLocaleDateString()}
                                   </div>
                                 )}
                                 <div>
-                                  <span className="font-medium">{t('timeline.assignedTo', 'Assigned To')}:</span><br />
-                                  {milestone.assigned_to || 'Unassigned'}
+                                  <span className="font-medium">{t('timeline.assignedTo', 'Assigned To')}:</span>
+                                  <br />
+                                  {milestone.assigned_to || t('timeline.unassigned', 'Unassigned')}
                                 </div>
                               </div>
 
                               {milestone.notes && (
                                 <div className="mt-3 p-3 bg-gray-50 rounded-lg text-sm">
-                                  <span className="font-medium text-gray-700">{t('timeline.notes', 'Notes')}:</span><br />
+                                  <span className="font-medium text-gray-700">{t('timeline.notes', 'Notes')}:</span>
+                                  <br />
                                   {milestone.notes}
                                 </div>
                               )}
@@ -520,7 +534,7 @@ const ProjectTimeline = ({ user }) => {
                     <input
                       type="text"
                       value={newMilestone.title}
-                      onChange={(e) => setNewMilestone(prev => ({ ...prev, title: e.target.value }))}
+                      onChange={(event) => setNewMilestone(prev => ({ ...prev, title: event.target.value }))}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                       placeholder={t('timeline.form.titlePlaceholder', 'Enter milestone title...')}
                     />
@@ -532,7 +546,7 @@ const ProjectTimeline = ({ user }) => {
                     </label>
                     <textarea
                       value={newMilestone.description}
-                      onChange={(e) => setNewMilestone(prev => ({ ...prev, description: e.target.value }))}
+                      onChange={(event) => setNewMilestone(prev => ({ ...prev, description: event.target.value }))}
                       rows={3}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                       placeholder={t('timeline.form.descriptionPlaceholder', 'Enter milestone description...')}
@@ -547,7 +561,7 @@ const ProjectTimeline = ({ user }) => {
                       <input
                         type="date"
                         value={newMilestone.target_date}
-                        onChange={(e) => setNewMilestone(prev => ({ ...prev, target_date: e.target.value }))}
+                        onChange={(event) => setNewMilestone(prev => ({ ...prev, target_date: event.target.value }))}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                       />
                     </div>
@@ -558,7 +572,7 @@ const ProjectTimeline = ({ user }) => {
                       </label>
                       <select
                         value={newMilestone.milestone_type}
-                        onChange={(e) => setNewMilestone(prev => ({ ...prev, milestone_type: e.target.value }))}
+                        onChange={(event) => setNewMilestone(prev => ({ ...prev, milestone_type: event.target.value }))}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                       >
                         {milestoneTypes.map(type => (
@@ -577,7 +591,7 @@ const ProjectTimeline = ({ user }) => {
                       </label>
                       <select
                         value={newMilestone.priority}
-                        onChange={(e) => setNewMilestone(prev => ({ ...prev, priority: e.target.value }))}
+                        onChange={(event) => setNewMilestone(prev => ({ ...prev, priority: event.target.value }))}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                       >
                         {priorityLevels.map(priority => (
@@ -595,7 +609,7 @@ const ProjectTimeline = ({ user }) => {
                       <input
                         type="text"
                         value={newMilestone.assigned_to}
-                        onChange={(e) => setNewMilestone(prev => ({ ...prev, assigned_to: e.target.value }))}
+                        onChange={(event) => setNewMilestone(prev => ({ ...prev, assigned_to: event.target.value }))}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                         placeholder={t('timeline.form.assignedToPlaceholder', 'Team or person responsible...')}
                       />
@@ -608,7 +622,7 @@ const ProjectTimeline = ({ user }) => {
                     </label>
                     <textarea
                       value={newMilestone.notes}
-                      onChange={(e) => setNewMilestone(prev => ({ ...prev, notes: e.target.value }))}
+                      onChange={(event) => setNewMilestone(prev => ({ ...prev, notes: event.target.value }))}
                       rows={2}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                       placeholder={t('timeline.form.notesPlaceholder', 'Additional notes or requirements...')}

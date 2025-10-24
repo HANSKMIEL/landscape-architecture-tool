@@ -1,0 +1,65 @@
+{
+  "summary": {
+    "total_categories": 7,
+    "passed_categories": 0,
+    "failed_categories": 7,
+    "warnings": 0
+  },
+  "success_rate": 0.0,
+  "detailed_results": [
+    {
+      "test": "Health Endpoint",
+      "status": "FAIL",
+      "details": "Exception: HTTPConnectionPool(host='localhost', port=5000): Max retries exceeded with url: /health (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x7f0776e05f40>: Failed to establish a new connection: [Errno 111] Connection refused'))",
+      "timestamp": "2025-09-25T05:55:31.904303"
+    },
+    {
+      "test": "Public Endpoint /api/plant-recommendations/criteria-options",
+      "status": "FAIL",
+      "details": "Exception: HTTPConnectionPool(host='localhost', port=5000): Max retries exceeded with url: /api/plant-recommendations/criteria-options (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x7f0776e062d0>: Failed to establish a new connection: [Errno 111] Connection refused'))",
+      "timestamp": "2025-09-25T05:55:31.905409"
+    },
+    {
+      "test": "Public Endpoint /api/reports/plant-usage",
+      "status": "FAIL",
+      "details": "Exception: HTTPConnectionPool(host='localhost', port=5000): Max retries exceeded with url: /api/reports/plant-usage (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x7f0776e06600>: Failed to establish a new connection: [Errno 111] Connection refused'))",
+      "timestamp": "2025-09-25T05:55:31.906405"
+    },
+    {
+      "test": "Public Endpoint /api/reports/supplier-performance",
+      "status": "FAIL",
+      "details": "Exception: HTTPConnectionPool(host='localhost', port=5000): Max retries exceeded with url: /api/reports/supplier-performance (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x7f0776e06930>: Failed to establish a new connection: [Errno 111] Connection refused'))",
+      "timestamp": "2025-09-25T05:55:31.907216"
+    },
+    {
+      "test": "Authentication Login",
+      "status": "FAIL",
+      "details": "Exception: HTTPConnectionPool(host='localhost', port=5000): Max retries exceeded with url: /api/auth/login (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x7f0776e06d20>: Failed to establish a new connection: [Errno 111] Connection refused'))",
+      "timestamp": "2025-09-25T05:55:31.908132"
+    },
+    {
+      "test": "Authentication Login",
+      "status": "FAIL",
+      "details": "Exception: HTTPConnectionPool(host='localhost', port=5000): Max retries exceeded with url: /api/auth/login (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x7f0776e06f60>: Failed to establish a new connection: [Errno 111] Connection refused'))",
+      "timestamp": "2025-09-25T05:55:31.908913"
+    },
+    {
+      "test": "CRUD Create Supplier",
+      "status": "FAIL",
+      "details": "Exception: HTTPConnectionPool(host='localhost', port=5000): Max retries exceeded with url: /api/suppliers (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x7f0776e073e0>: Failed to establish a new connection: [Errno 111] Connection refused'))",
+      "timestamp": "2025-09-25T05:55:31.909823"
+    },
+    {
+      "test": "Database Functionality",
+      "status": "FAIL",
+      "details": "Exception: HTTPConnectionPool(host='localhost', port=5000): Max retries exceeded with url: /api/plant-recommendations/criteria-options (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x7f0776e075f0>: Failed to establish a new connection: [Errno 111] Connection refused'))",
+      "timestamp": "2025-09-25T05:55:31.910573"
+    },
+    {
+      "test": "Frontend Integration",
+      "status": "FAIL",
+      "details": "Exception: HTTPConnectionPool(host='localhost', port=5000): Max retries exceeded with url: / (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x7f0776e079e0>: Failed to establish a new connection: [Errno 111] Connection refused'))",
+      "timestamp": "2025-09-25T05:55:31.911445"
+    }
+  ]
+}
