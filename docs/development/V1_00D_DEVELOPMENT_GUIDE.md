@@ -1,12 +1,16 @@
 # V1.00D Development Guide
 
-**Status**: ✅ Active Development Branch
+> **⚠️ Important: Branch Migration Notice (October 2025)**
+> 
+> As of October 2025, the V1.00D branch has been renamed to `main`. This guide's content is still relevant, but references to "V1.00D" should now be understood as "main". See [Branch Migration Guide](../BRANCH_MIGRATION_GUIDE.md) for details.
+
+**Status**: ✅ Active Development Branch (now called `main`)
 **Environment**: http://72.60.176.200:8080
 **Auto-Deploy**: Enabled on push
 
 ## 🎯 Quick Start
 
-V1.00D is the active development branch. All pushes automatically deploy to the development environment.
+The main branch (formerly V1.00D) is the active development branch. All pushes automatically deploy to the development environment.
 
 ### Development URL
 
@@ -16,7 +20,7 @@ http://72.60.176.200:8080
 
 ### Current Setup
 
-- **Branch**: V1.00D
+- **Branch**: main (formerly V1.00D)
 - **Deployment**: Automatic via GitHub Actions
 - **Directory**: `/var/www/landscape-architecture-tool-dev` (on VPS)
 - **Title**: "devdeploy - Landscape Architecture Tool (Development)"
@@ -34,7 +38,7 @@ Work on features, fixes, or improvements in your local environment or Codespace.
 ```bash
 git add -A
 git commit -m "feat: your feature description"
-git push origin V1.00D
+git push origin main  # Note: After migration, push to 'main' instead of 'V1.00D'
 ```
 
 ### 3. Automatic Deployment

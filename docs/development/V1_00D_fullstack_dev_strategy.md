@@ -1,8 +1,12 @@
 # V1.00D Full-Stack Development Strategy
 
+> **⚠️ Branch Migration Notice (October 2025)**
+> 
+> As of October 2025, the V1.00D branch has been renamed to `main`. All references to "V1.00D" in this document now refer to the `main` branch. See [Branch Migration Guide](../BRANCH_MIGRATION_GUIDE.md) for details.
+
 > Last updated: 2025-10-09
 
-This guide maps the V1.00D branch into focused development categories, articulates stability expectations, defines the guardrails needed for "vibe coding" without breakage, and prepares a foundation for future MCP-driven AI agents.
+This guide maps the main development branch into focused development categories, articulates stability expectations, defines the guardrails needed for "vibe coding" without breakage, and prepares a foundation for future MCP-driven AI agents.
 
 ---
 
