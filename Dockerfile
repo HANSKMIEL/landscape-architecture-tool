@@ -5,7 +5,7 @@
 # docker build --no-cache -t landscape-architecture-tool .
 #
 # Stage 1: Build stage
-FROM python:3.11-slim as builder
+FROM python:3.14-slim as builder
 
 WORKDIR /app
 
@@ -44,7 +44,7 @@ RUN python -c "import sys; sys.path.insert(0, '/tmp'); from dependency_validator
 >>>>>>> origin/main
 
 # Stage 2: Production stage
-FROM python:3.11-slim as production
+FROM python:3.14-slim as production
 
 WORKDIR /app
 
