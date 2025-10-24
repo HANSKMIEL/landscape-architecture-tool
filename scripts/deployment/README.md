@@ -2,6 +2,33 @@
 
 This directory contains all deployment-related scripts for the Landscape Architecture Tool.
 
+## 📚 Essential Documentation
+
+Before using deployment scripts, review these comprehensive guides:
+
+- **[DEVELOPMENT_GUIDE.md](../../docs/DEVELOPMENT_GUIDE.md)** - Environment parity and deployment workflow (Section 1)
+- **[BRANCHING_STRATEGY.md](../../docs/BRANCHING_STRATEGY.md)** - Promotion workflow V1.00D → main
+- **[DEBUGGING_GUIDE.md](../../docs/DEBUGGING_GUIDE.md)** - Troubleshooting deployment issues
+- **[Deployment Guide](../../docs/deployment/DEPLOYMENT_SCRIPTS_GUIDE.md)** - Detailed deployment documentation
+
+## Best Practices
+
+All deployment scripts follow these principles from the engineering velocity framework:
+
+1. **Environment Parity** ([DEVELOPMENT_GUIDE.md - Section 1](../../docs/DEVELOPMENT_GUIDE.md#1-bulletproof-development-environment))
+   - Docker ensures consistent environments
+   - Configuration via environment variables
+
+2. **Safe Promotion** ([BRANCHING_STRATEGY.md](../../docs/BRANCHING_STRATEGY.md#3-promotion-to-production))
+   - V1.00D (development) → DevDeploy testing
+   - Validation and approval required
+   - Automated promotion to main (production)
+
+3. **Automated Testing** ([DEVELOPMENT_GUIDE.md - Section 4](../../docs/DEVELOPMENT_GUIDE.md#4-proactive-code-quality--automation))
+   - Pre-deployment validation
+   - Health checks post-deployment
+   - Rollback on failure
+
 ## 📋 Available Scripts
 
 ### 🎯 Main Deployment Scripts

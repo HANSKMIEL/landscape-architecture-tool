@@ -1,6 +1,23 @@
 #!/bin/bash
+###############################################################################
 # Enhanced V1.00D → V1.00 Promotion Script
 # Safely promotes development changes to production with complete isolation
+#
+# Best Practices Framework:
+# - Branching Strategy: docs/BRANCHING_STRATEGY.md - Section "Promotion to Production"
+# - Development Guide: docs/DEVELOPMENT_GUIDE.md - Version control principles
+# - Testing Strategy: docs/DEVELOPMENT_GUIDE.md - Section 4 (Code Quality)
+#
+# Usage:
+#   ./scripts/deployment/promote_v1d_to_v1.sh
+#
+# Prerequisites:
+#   - All tests passing on V1.00D (run `make test`)
+#   - Changes tested on DevDeploy (http://72.60.176.200:8080)
+#   - Stakeholder approval for promotion
+#
+# For detailed workflow, see docs/BRANCHING_STRATEGY.md#promotion-to-production
+###############################################################################
 
 set -e
 

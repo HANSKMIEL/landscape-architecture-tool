@@ -7,6 +7,23 @@ the pipeline remains healthy and all systems are working properly.
 
 This addresses the user's frustration about having to constantly check
 if everything is working after changes.
+
+Framework Alignment:
+- Code Quality: docs/DEVELOPMENT_GUIDE.md - Section 4 (Proactive Code Quality)
+- Testing: docs/DEVELOPMENT_GUIDE.md - Test-Driven Development  
+- Debugging: docs/DEBUGGING_GUIDE.md - Prevention strategies
+- Pre-commit: docs/DEVELOPMENT_GUIDE.md - Pre-commit hooks
+
+Usage:
+    python scripts/automated_validation.py [--quick] [--full]
+
+Options:
+    --quick: Run quick validation (linting and basic tests)
+    --full:  Run comprehensive validation (all checks including security)
+
+For debugging validation failures:
+- docs/DEBUGGING_GUIDE.md - 5-step debugging process
+- docs/DEBUGGING_GUIDE.md - Common issues and solutions
 """
 
 import contextlib

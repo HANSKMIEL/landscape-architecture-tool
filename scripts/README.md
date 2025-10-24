@@ -1,8 +1,25 @@
-# Deployment Scripts
+# Scripts Directory
 
-This directory contains scripts for deploying and configuring the Landscape Architecture Tool.
+This directory contains scripts for deploying, testing, and maintaining the Landscape Architecture Tool.
 
-**📚 Complete Guide**: See `docs/deployment/DEPLOYMENT_SCRIPTS_GUIDE.md` for comprehensive documentation.
+## 📚 Essential Documentation (Read First)
+
+Before using these scripts, familiarize yourself with our comprehensive best practices:
+
+- **[DEVELOPMENT_GUIDE.md](../docs/DEVELOPMENT_GUIDE.md)** - Complete framework covering all 5 pillars
+- **[BRANCHING_STRATEGY.md](../docs/BRANCHING_STRATEGY.md)** - Git workflow and V1.00D approach
+- **[DEBUGGING_GUIDE.md](../docs/DEBUGGING_GUIDE.md)** - Systematic 5-step debugging process
+- **[API_DOCUMENTATION.md](../docs/API_DOCUMENTATION.md)** - REST API reference
+- **[Deployment Guide](../docs/deployment/DEPLOYMENT_SCRIPTS_GUIDE.md)** - Detailed deployment documentation
+
+## Best Practices for Using Scripts
+
+All scripts follow the engineering velocity framework principles:
+
+1. **Environment Parity**: Scripts use Docker and standardized commands (see [DEVELOPMENT_GUIDE.md - Section 1](../docs/DEVELOPMENT_GUIDE.md#1-bulletproof-development-environment))
+2. **Systematic Workflow**: Follow branching strategy (see [BRANCHING_STRATEGY.md](../docs/BRANCHING_STRATEGY.md))
+3. **Automated Testing**: Scripts validate changes before deployment (see [DEVELOPMENT_GUIDE.md - Section 4](../docs/DEVELOPMENT_GUIDE.md#4-proactive-code-quality--automation))
+4. **Systematic Debugging**: When scripts fail, use the 5-step process (see [DEBUGGING_GUIDE.md](../docs/DEBUGGING_GUIDE.md#the-5-step-debugging-process))
 
 ## Script Organization
 
