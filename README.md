@@ -123,7 +123,15 @@ See **[VPS Deployment Solution](docs/VPS_DEPLOYMENT_SOLUTION.md)** for complete 
 
 ## 📚 Documentation
 
-Comprehensive documentation is organized in the `documentation/` directory by category:
+### 🎯 Core Development Guides (NEW)
+- **[Development Guide](docs/DEVELOPMENT_GUIDE.md)** - Engineering velocity framework covering environment setup, version control, architecture, code quality, and debugging
+- **[API Documentation](docs/API_DOCUMENTATION.md)** - Complete REST API reference with all endpoints
+- **[Debugging Guide](docs/DEBUGGING_GUIDE.md)** - Systematic 5-step debugging framework for full-stack issues
+- **[Branching Strategy](docs/BRANCHING_STRATEGY.md)** - Git workflow, feature branches, and promotion process
+
+### 📖 Comprehensive Documentation Library
+
+Organized in the `documentation/` directory by category:
 
 - **📖 [Documentation Index](documentation/README.md)** - Complete documentation overview and navigation
 - **🛠️ [Development](documentation/development/)** - Developer guidelines, setup, and contributing
@@ -137,6 +145,7 @@ Comprehensive documentation is organized in the `documentation/` directory by ca
 - **Getting Started**: [Setup Instructions](documentation/development/SETUP_INSTRUCTIONS.md)
 - **For Developers**: [Developer Guidelines](documentation/development/DEVELOPER_GUIDELINES.md)
 - **For DevOps**: [Deployment Guide](documentation/deployment/DEPLOYMENT_GUIDE.md)
+- **VPS Deployment**: [VPS Solution Guide](docs/VPS_DEPLOYMENT_SOLUTION.md)
 - **Troubleshooting**: [Pipeline Troubleshooting](documentation/pipeline/PIPELINE_TROUBLESHOOTING.md)
 - **MCP Guardrails & Agent Workflow**: [`docs/development/V1_00D_fullstack_dev_strategy.md`](docs/development/V1_00D_fullstack_dev_strategy.md)
 

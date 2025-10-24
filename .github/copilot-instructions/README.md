@@ -1,6 +1,14 @@
 # MCP Agent Triage Map for V1.00D
 
-Use this directory as the entry point for routing work to the right guardrail before starting a “vibe coding” session or dispatching an MCP automation agent. Each category below pairs with a guardrail file (ID in parentheses) that details expectations, validation commands, and documentation touchpoints. When a task spans multiple domains, follow the cross-category workflow to make sure hand-offs stay traceable.
+## 📚 Essential Documentation Framework (NEW)
+**All agents must follow the comprehensive best practices guides:**
+- **[DEVELOPMENT_GUIDE.md](../../docs/DEVELOPMENT_GUIDE.md)** - Complete framework covering all 5 pillars of engineering velocity
+- **[API_DOCUMENTATION.md](../../docs/API_DOCUMENTATION.md)** - REST API reference (update when endpoints change)
+- **[DEBUGGING_GUIDE.md](../../docs/DEBUGGING_GUIDE.md)** - Systematic 5-step debugging process  
+- **[BRANCHING_STRATEGY.md](../../docs/BRANCHING_STRATEGY.md)** - Git workflow and V1.00D approach
+- **[BEST_PRACTICES_OVERVIEW.md](../../docs/BEST_PRACTICES_OVERVIEW.md)** - Framework adherence summary
+
+Use this directory as the entry point for routing work to the right guardrail before starting a "vibe coding" session or dispatching an MCP automation agent. Each category below pairs with a guardrail file (ID in parentheses) that details expectations, validation commands, and documentation touchpoints. When a task spans multiple domains, follow the cross-category workflow to make sure hand-offs stay traceable.
 
 ## Quick Links
 

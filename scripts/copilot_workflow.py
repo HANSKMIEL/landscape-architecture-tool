@@ -2,6 +2,16 @@
 """
 Copilot workflow helper script.
 Assists with formatting and validating Copilot-generated content.
+
+This script follows the comprehensive best practices framework:
+- DEVELOPMENT_GUIDE.md - Environment setup and workflows
+- DEBUGGING_GUIDE.md - Systematic debugging process
+- BRANCHING_STRATEGY.md - Git workflow conventions
+
+For more information, see:
+- docs/DEVELOPMENT_GUIDE.md - Complete framework
+- docs/DEBUGGING_GUIDE.md - 5-step debugging process
+- .github/copilot-instructions.md - Copilot-specific guidelines
 """
 
 import argparse
