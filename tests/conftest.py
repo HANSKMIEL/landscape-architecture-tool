@@ -1,3 +1,24 @@
+"""Test configuration and fixtures for the Landscape Architecture Tool.
+
+This module provides pytest configuration and shared fixtures following the
+comprehensive best practices framework.
+
+Framework Alignment:
+- Testing: docs/DEVELOPMENT_GUIDE.md - Section 4 (Test-Driven Development)
+- Debugging: docs/DEBUGGING_GUIDE.md - Test debugging strategies
+- Database: Uses SAVEPOINT transactions for test isolation
+
+Key Fixtures:
+- app: Flask application instance
+- client: Flask test client for API testing
+- session: Database session with automatic rollback
+
+For comprehensive testing guidelines, see:
+- tests/README.md - Complete testing documentation
+- docs/DEVELOPMENT_GUIDE.md - TDD workflow and best practices
+- docs/DEBUGGING_GUIDE.md - Debugging test failures
+"""
+
 import logging
 import os
 import time
