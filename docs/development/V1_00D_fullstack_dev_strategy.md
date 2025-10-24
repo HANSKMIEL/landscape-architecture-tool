@@ -6,7 +6,7 @@
 
 > Last updated: 2025-10-09
 
-This guide maps the main development branch into focused development categories, articulates stability expectations, defines the guardrails needed for "vibe coding" without breakage, and prepares a foundation for future MCP-driven AI agents.
+This guide maps the main development branch (formerly V1.00D) into focused development categories, articulates stability expectations, defines the guardrails needed for "vibe coding" without breakage, and prepares a foundation for future MCP-driven AI agents.
 
 ---
 

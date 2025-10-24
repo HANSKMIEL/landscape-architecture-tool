@@ -38,7 +38,8 @@ Work on features, fixes, or improvements in your local environment or Codespace.
 ```bash
 git add -A
 git commit -m "feat: your feature description"
-git push origin main  # Note: After migration, push to 'main' instead of 'V1.00D'
+# After the GitHub branch rename is completed, push to 'main' instead of 'V1.00D'
+git push origin main
 ```
 
 ### 3. Automatic Deployment

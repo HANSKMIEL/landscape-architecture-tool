@@ -17,9 +17,9 @@ This PR prepares the repository for a branch migration where:
    - Rename `V1.00D` → `main`
    - Set `main` as the default branch
 
-3. **Merge this PR** after the rename is complete
+3. **Notify team members** to update their local repositories
 
-4. **Notify team members** to update their local repositories
+4. **Merge this PR** - This can be done before, during, or after the rename since the workflows are designed to work with both branch names during the transition
 
 ### 📚 Documentation
 
