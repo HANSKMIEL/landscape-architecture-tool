@@ -168,7 +168,7 @@ const PasswordReset = () => {
                 Please request a new password reset from the login page.
               </AlertDescription>
             </Alert>
-            <Button 
+            <Button
               onClick={() => navigate('/login')}
               className="w-full"
             >
@@ -245,13 +245,13 @@ const PasswordReset = () => {
                   )}
                 </button>
               </div>
-              
+
               {/* Password Strength Indicator */}
               {formData.new_password && (
                 <div className="space-y-2">
                   <div className="flex items-center space-x-2">
                     <div className="flex-1 bg-gray-200 rounded-full h-2">
-                      <div 
+                      <div
                         className={`h-2 rounded-full transition-all duration-300 ${getStrengthColor(getPasswordStrength(formData.new_password))}`}
                         style={{ width: `${(getPasswordStrength(formData.new_password) / 5) * 100}%` }}
                       />
@@ -312,7 +312,7 @@ const PasswordReset = () => {
                   )}
                 </button>
               </div>
-              
+
               {/* Password Match Indicator */}
               {formData.confirm_password && (
                 <div className="text-xs">
@@ -326,8 +326,8 @@ const PasswordReset = () => {
             </div>
 
             <div className="space-y-3">
-              <Button 
-                type="submit" 
+              <Button
+                type="submit"
                 className="w-full bg-green-600 hover:bg-green-700"
                 disabled={isLoading || !formData.new_password || !formData.confirm_password}
               >
@@ -341,7 +341,7 @@ const PasswordReset = () => {
                 )}
               </Button>
 
-              <Button 
+              <Button
                 type="button"
                 onClick={() => navigate('/login')}
                 className="w-full"

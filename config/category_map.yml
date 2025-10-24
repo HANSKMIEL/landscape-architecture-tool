@@ -1,0 +1,82 @@
+categories:
+  backend:
+    name: "Backend API & Services"
+    instruction_file: ".github/copilot-instructions/backend.md"
+    description: "Flask routes, services, schemas, and models that power the API."
+    patterns:
+      - "src/main.py"
+      - "src/routes/**"
+      - "src/services/**"
+      - "src/models/**"
+      - "src/schemas/**"
+    commands:
+      - "python -m pytest tests/routes tests/services"
+      - "python -m pytest tests/test_dependency_validator_import.py"
+  frontend:
+    name: "Frontend UI & Client API"
+    instruction_file: ".github/copilot-instructions/frontend.md"
+    description: "React/Vite application, API clients, and UI components."
+    patterns:
+      - "frontend/src/**"
+      - "frontend/package.json"
+      - "frontend/vite.config.js"
+      - "frontend/tailwind.config.js"
+    commands:
+      - "cd frontend && npm run test:run"
+      - "cd frontend && npm run build"
+  deployment:
+    name: "Deployment & Infrastructure"
+    instruction_file: ".github/copilot-instructions/deployment.md"
+    description: "CI workflows, deployment scripts, and VPS configuration helpers."
+    patterns:
+      - ".github/workflows/**"
+      - "scripts/deployment/**"
+      - "docs/deployment/**"
+    commands:
+      - "python -m pytest tests/test_dependency_validator_import.py"
+      - "cd frontend && npm run build"
+  data_tooling:
+    name: "Data Ingestion & Tooling"
+    instruction_file: ".github/copilot-instructions/data_tooling.md"
+    description: "Excel importers, data cleaning utilities, and related scripts."
+    patterns:
+      - "src/routes/excel_import.py"
+      - "src/services/**/excel*"
+      - "scripts/development/**"
+      - "tests/test_excel_import.py"
+      - "tests/fixtures/**"
+    commands:
+      - "python -m pytest tests/test_excel_import.py tests/fixtures/test_stability.py"
+  automation:
+    name: "Automation & Integrations"
+    instruction_file: ".github/copilot-instructions/automation.md"
+    description: "n8n workflows, webhook handlers, and automation scripts."
+    patterns:
+      - "n8n-workflows/**"
+      - "src/routes/n8n_receivers.py"
+      - "scripts/**/*.py"
+    commands:
+      - "python -m pytest tests/routes/test_n8n_receivers.py"
+  documentation:
+    name: "Documentation & Ops"
+    instruction_file: ".github/copilot-instructions/documentation.md"
+    description: "Operational runbooks, architecture docs, and developer notes."
+    patterns:
+      - "docs/**"
+      - "reports/**"
+      - "_internal/**"
+      - "dev_log.md"
+    commands: []
+  testing:
+    name: "Testing & Quality Gates"
+    instruction_file: ".github/copilot-instructions/testing.md"
+    description: "Test infrastructure, fixtures, and linting configuration."
+    patterns:
+      - "tests/**"
+      - "Makefile"
+      - "pyproject.toml"
+      - "frontend/tests/**"
+    commands:
+      - "make backend-test"
+      - "make lint"
+      - "cd frontend && npm run test:run"

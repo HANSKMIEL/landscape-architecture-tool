@@ -1,4 +1,4 @@
-# Landscape Architecture Management Tool - V1.00
+# Landscape Architecture Management Tool - V1.00D
 
 A comprehensive web application for managing landscape architecture projects, suppliers, plants, products, and clients. Now organized with a robust V1.00 release structure for sustainable development and production deployment.
 
@@ -42,6 +42,15 @@ cd packages/v1.00/deploy
 ./deploy.sh
 ```
 
+### For VPS Clean Reinstall (V1.00D Branch) ⭐ NEW
+```bash
+# Complete clean reinstall on VPS from V1.00D branch
+ssh root@72.60.176.200
+bash <(curl -fsSL https://raw.githubusercontent.com/HANSKMIEL/landscape-architecture-tool/V1.00D/scripts/vps_clean_reinstall.sh)
+
+# See: docs/VPS_DEPLOYMENT_SOLUTION.md for complete guide
+```
+
 ### For Updates (Development → Production)
 ```bash
 # Promote tested V1.00D changes to V1.00
@@ -56,6 +65,16 @@ cd packages/v1.00/deploy
 - **Rollback Protection** - Automatic backups before V1.00 updates
 - **CI/CD Pipeline** - Comprehensive testing before production promotion
 - **GitHub Pages** - Automated deployment for V1.00 frontend
+
+### 🖥️ VPS Deployment (NEW)
+- **Clean Reinstall Script** - Complete VPS reinstallation from V1.00D branch
+- **Automatic Backup** - Full backup before any destructive operations
+- **Configuration Preservation** - Saves and restores .env settings
+- **Comprehensive Testing** - Automated verification after deployment
+- **Rollback Support** - Easy restoration from backups if needed
+- **Detailed Documentation** - Step-by-step guides and troubleshooting
+
+See **[VPS Deployment Solution](docs/VPS_DEPLOYMENT_SOLUTION.md)** for complete guide.
 
 ### 🛡️ Production Stability
 - **Branch Protection** - V1.00 protected from direct modifications
@@ -119,6 +138,7 @@ Comprehensive documentation is organized in the `documentation/` directory by ca
 - **For Developers**: [Developer Guidelines](documentation/development/DEVELOPER_GUIDELINES.md)
 - **For DevOps**: [Deployment Guide](documentation/deployment/DEPLOYMENT_GUIDE.md)
 - **Troubleshooting**: [Pipeline Troubleshooting](documentation/pipeline/PIPELINE_TROUBLESHOOTING.md)
+- **MCP Guardrails & Agent Workflow**: [`docs/development/V1_00D_fullstack_dev_strategy.md`](docs/development/V1_00D_fullstack_dev_strategy.md)
 
 ### New in v2.0 (Backend Refactoring)
 - **Modular Architecture** - Separated models, services, routes, and utilities

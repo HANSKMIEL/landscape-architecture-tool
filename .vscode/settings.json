@@ -1,0 +1,61 @@
+{
+  "chat.agent.maxRequests": 50,
+
+  // Python formatting and linting settings
+  "python.formatting.provider": "black",
+  "python.formatting.blackArgs": ["--line-length=120"],
+  "python.linting.enabled": true,
+  "python.linting.pylintEnabled": false,
+  "python.linting.flake8Enabled": false,
+  "python.linting.ruffEnabled": true,
+  "python.linting.ruffArgs": ["--line-length=120"],
+
+  // Editor rulers and line length
+  "editor.rulers": [120],
+
+  // Language-specific settings
+  "[python]": {
+    "editor.rulers": [120],
+    "editor.wordWrapColumn": 120,
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": "explicit"
+    }
+  },
+
+  "[javascript]": {
+    "editor.rulers": [120],
+    "editor.formatOnSave": true
+  },
+
+  "[javascriptreact]": {
+    "editor.rulers": [120],
+    "editor.formatOnSave": true
+  },
+
+  "[json]": {
+    "editor.rulers": [120]
+  },
+
+  "[yaml]": {
+    "editor.rulers": [120]
+  },
+
+  // Pylance/Pyright configuration
+  "python.languageServer": "Pylance",
+  "python.analysis.typeCheckingMode": "basic",
+  "python.analysis.diagnosticSeverityOverrides": {
+    "reportUnusedImport": "none",
+    "reportUnusedVariable": "none",
+    "reportGeneralTypeIssues": "none",
+    "reportOptionalMemberAccess": "none"
+  },
+  "pyright.disableLanguageServices": false,
+  "pyright.disableOrganizeImports": false,
+
+  // File associations
+  "files.associations": {
+    "*.yml": "yaml",
+    "*.yaml": "yaml"
+  }
+}

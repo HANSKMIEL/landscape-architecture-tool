@@ -11,12 +11,20 @@ from sqlalchemy.pool import StaticPool
 from tests.fixtures.test_stability import (
     cleanup_test_data,
     error_recovery_context,
+    register_test_app,
+    safe_log,
     test_monitor,
     validate_test_environment,
 )
 
+pytest_plugins = [
+    "tests.fixtures.auth_fixtures",
+    "tests.fixtures.test_data",
+]
+
 # Configure logging for tests
 logging.basicConfig(level=logging.INFO)
+logging.raiseExceptions = False
 logger = logging.getLogger(__name__)
 
 # Use a dedicated test DB URL and NEVER touch prod/dev DBs.
@@ -43,6 +51,9 @@ def test_session_setup():
     """Session-level setup with comprehensive validation and monitoring."""
     start_time = time.time()
 
+    # Ensure required test environment defaults exist to avoid spurious exits on local runs
+    os.environ.setdefault("FLASK_ENV", "testing")
+
     # Validate test environment
     validations = validate_test_environment()
     failed_validations = [k for k, v in validations.items() if not v]
@@ -51,7 +62,7 @@ def test_session_setup():
         logger.error(f"Test environment validation failed: {failed_validations}")
         pytest.exit("Test environment is not properly configured", 1)
 
-    logger.info("Test session starting with validated environment")
+    safe_log(logger.info, "Test session starting with validated environment")
 
     yield
 
@@ -59,14 +70,14 @@ def test_session_setup():
     duration = time.time() - start_time
     performance_report = test_monitor.get_performance_report()
 
-    logger.info(f"Test session completed in {duration:.2f}s")
-    logger.info(f"Performance report: {performance_report}")
+    safe_log(logger.info, f"Test session completed in {duration:.2f}s")
+    safe_log(logger.info, f"Performance report: {performance_report}")
 
     # Final cleanup
     try:
         cleanup_test_data()
     except Exception as e:
-        logger.warning(f"Final cleanup warning: {e}")
+        safe_log(logger.warning, f"Final cleanup warning: {e}")
 
 
 @pytest.fixture(scope="session")
@@ -104,6 +115,9 @@ def connection(engine):
             pass
 
         # Create database tables for the test session
+        from importlib import import_module
+
+        import_module("src.models.landscape")
         from src.models.user import db as flask_db
 
         # Create all tables in the test database
@@ -192,7 +206,7 @@ def db_session(Session, connection, app):
             logger.error(f"Test session error: {e}")
             # Record failure in monitor
             if hasattr(pytest, "current_test_name"):
-                test_monitor.record_retry(pytest.current_test_name)
+                test_monitor.record_retry(str(pytest.current_test_name))
             raise
         finally:
             # Enhanced cleanup with error handling
@@ -232,6 +246,8 @@ def app():
         from src.models.user import db as flask_db
 
         app = create_app()
+
+        register_test_app(app)
 
         # Enhanced test configuration
         app.config.update(

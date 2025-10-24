@@ -4,14 +4,14 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
-import { 
-  Package, 
-  Plus, 
-  Upload, 
-  Edit, 
-  Trash2, 
-  Search, 
-  X, 
+import {
+  Package,
+  Plus,
+  Upload,
+  Edit,
+  Trash2,
+  Search,
+  X,
   Loader2,
   DollarSign,
   Package2
@@ -75,11 +75,11 @@ const Products = () => {
       setError(null)
       const params = searchTerm ? { search: searchTerm } : {}
       const data = await ApiService.getProducts(params)
-      
+
       // Defensive programming: ensure products is always an array
-      const productsArray = Array.isArray(data?.products) ? data.products : 
-                           Array.isArray(data) ? data : []
-      
+      const productsArray = Array.isArray(data?.products) ? data.products :
+        Array.isArray(data) ? data : []
+
       setProducts(productsArray)
       setTotalProducts(data?.total || data?.pagination?.total || productsArray.length)
     } catch (err) {
@@ -108,13 +108,14 @@ const Products = () => {
   }, [loadProducts])
 
   // Handle form input changes
-  const handleInputChange = (e) => {
+  const handleInputChange = useCallback((e) => {
     const { name, value } = e.target
+
     setFormData(prev => ({
       ...prev,
       [name]: value
     }))
-  }
+  }, [])
 
   // Reset form
   const resetForm = () => {
@@ -451,14 +452,14 @@ const Products = () => {
           </p>
         </div>
         <div className="flex space-x-2">
-          <Button 
+          <Button
             variant="outline"
             className="flex items-center space-x-2"
           >
             <Upload className="h-4 w-4" />
             <span>{t('products.importExcel', 'Import Excel/CSV')}</span>
           </Button>
-          <Button 
+          <Button
             className="flex items-center space-x-2"
             onClick={() => setShowAddModal(true)}
           >
@@ -501,7 +502,7 @@ const Products = () => {
                 {t('products.noProducts', 'No products found')}
               </h2>
               <p className="text-gray-500 mb-6">
-                {searchTerm 
+                {searchTerm
                   ? t('products.noSearchResults', 'No products match your search criteria')
                   : t('products.createFirst', 'Add your first product to get started')
                 }
@@ -557,7 +558,7 @@ const Products = () => {
                       {product.description}
                     </p>
                   )}
-                  
+
                   <div className="flex items-center justify-between">
                     {product.price && (
                       <div className="flex items-center text-green-600 font-semibold">
@@ -570,7 +571,7 @@ const Products = () => {
                         )}
                       </div>
                     )}
-                    
+
                     <Badge variant={stockBadge.variant}>
                       {stockBadge.label}
                     </Badge>

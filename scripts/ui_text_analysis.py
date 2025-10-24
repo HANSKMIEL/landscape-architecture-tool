@@ -307,7 +307,7 @@ class UITextAnalyzer:
                     "category": "Text Display",
                     "action": "Implement Consistent Translation System",
                     "description": "Fix hardcoded text and ensure all components use translation system",
-                    "affected_files": len(set(issue["file"] for issue in self.analysis_results["text_display_issues"])),
+                    "affected_files": len({issue["file"] for issue in self.analysis_results["text_display_issues"]}),
                 }
             )
 
@@ -319,7 +319,7 @@ class UITextAnalyzer:
                     "category": "Input Fields",
                     "action": "Fix Input Field Accessibility and Validation",
                     "description": "Add proper labels, validation, and form handling to all input fields",
-                    "affected_files": len(set(issue["file"] for issue in self.analysis_results["input_field_issues"])),
+                    "affected_files": len({issue["file"] for issue in self.analysis_results["input_field_issues"]}),
                 }
             )
 
@@ -331,7 +331,7 @@ class UITextAnalyzer:
                     "category": "Translation",
                     "action": "Restore and Standardize Translation Usage",
                     "description": "Fix disabled translation functions and standardize translation usage",
-                    "affected_files": len(set(issue["file"] for issue in self.analysis_results["translation_issues"])),
+                    "affected_files": len({issue["file"] for issue in self.analysis_results["translation_issues"]}),
                 }
             )
 
@@ -344,7 +344,7 @@ class UITextAnalyzer:
                     "action": "Restore Disabled Functionality and Add Error Handling",
                     "description": "Fix disabled state variables and add proper error handling",
                     "affected_files": len(
-                        set(issue["file"] for issue in self.analysis_results["ui_functionality_issues"])
+                        {issue["file"] for issue in self.analysis_results["ui_functionality_issues"]}
                     ),
                 }
             )
@@ -453,8 +453,7 @@ class UITextAnalyzer:
 
 def main():
     analyzer = UITextAnalyzer()
-    results = analyzer.generate_report()
-    return results
+    return analyzer.generate_report()
 
 
 if __name__ == "__main__":

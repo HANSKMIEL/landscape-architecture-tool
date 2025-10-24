@@ -80,9 +80,6 @@ def validate_file_structure(df: pd.DataFrame, import_type: str) -> dict[str, Any
             "address",
             "city",
             "postal_code",
-            "website",
-            "specialization",
-            "notes",
         ],
         "plants": [
             "name",
@@ -112,7 +109,7 @@ def validate_file_structure(df: pd.DataFrame, import_type: str) -> dict[str, Any
     }
 
     optional_columns = {
-        "suppliers": ["website", "specialization", "notes"],
+        "suppliers": ["country", "website", "specialization", "notes"],
         "plants": ["notes", "native_region", "soil_type"],
         "products": ["stock_quantity", "notes"],
         "clients": ["company", "notes"],
@@ -490,7 +487,6 @@ def import_client_row(row_dict: dict[str, Any], update_existing: bool) -> dict[s
             "address": row_dict["address"],
             "city": row_dict["city"],
             "postal_code": row_dict["postal_code"],
-            "country": row_dict["country"],
             "client_type": row_dict["client_type"],
             "company": row_dict.get("company", ""),
             "notes": row_dict.get("notes", ""),

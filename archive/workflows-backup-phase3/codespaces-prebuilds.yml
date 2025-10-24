@@ -1,0 +1,55 @@
+name: Codespaces Prebuilds
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  prebuild:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install Python dependencies
+        run: |
+          pip install -r requirements.txt
+
+      - name: Install Node.js dependencies
+        run: |
+          cd frontend
+          npm ci
+
+      - name: Build frontend
+        run: |
+          cd frontend
+          npm run build
+
+      - name: Test backend
+        run: |
+          export FLASK_ENV=testing
+          python -m pytest tests/ --maxfail=5 -x
+
+      - name: Prebuild summary
+        run: |
+          echo "✅ Codespace prebuild completed successfully"
+          echo "- Python dependencies installed"
+          echo "- Node.js dependencies installed"
+          echo "- Frontend built successfully"
+          echo "- Backend tests passed"

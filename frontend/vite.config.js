@@ -1,4 +1,4 @@
-import { defineConfig, loadEnv } from 'vite'
+import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import path from 'path'
 import { fileURLToPath } from 'url'
@@ -7,9 +7,6 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 // https://vitejs.dev/config/
 export default defineConfig(({ _command, mode }) => {
-  // Load environment variables based on mode
-  const env = loadEnv(mode, process.cwd(), '')
-  
   // Determine base path based on environment
   let basePath = '/'
   if (mode === 'demo') {
@@ -48,8 +45,14 @@ export default defineConfig(({ _command, mode }) => {
     build: {
       outDir: 'dist',
       sourcemap: mode !== 'production',
+      // Enable cache busting with hashed filenames
+      assetsInlineLimit: 0,
       rollupOptions: {
         output: {
+          // Add hash to filenames for cache busting
+          entryFileNames: 'assets/[name]-[hash].js',
+          chunkFileNames: 'assets/[name]-[hash].js',
+          assetFileNames: 'assets/[name]-[hash].[ext]',
           manualChunks: {
             // Vendor chunk for React and router
             vendor: ['react', 'react-dom', 'react-router-dom'],

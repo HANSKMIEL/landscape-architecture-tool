@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Any, Sequence, cast
 
 from src.models.user import db
 
@@ -24,7 +25,11 @@ class Supplier(db.Model):
     products = db.relationship("Product", backref="supplier", lazy=True, cascade="all, delete-orphan")
     plants = db.relationship("Plant", backref="supplier", lazy=True)
 
+    def __init__(self, **kwargs: Any) -> None:
+        super().__init__(**kwargs)
+
     def to_dict(self):
+        products = cast(Sequence[Any], self.products or [])
         return {
             "id": self.id,
             "name": self.name,
@@ -37,7 +42,7 @@ class Supplier(db.Model):
             "specialization": self.specialization,
             "website": self.website,
             "notes": self.notes,
-            "product_count": len(self.products) if self.products else 0,
+            "product_count": len(products),
             "created_at": (self.created_at.isoformat() if self.created_at else None),
             "updated_at": (self.updated_at.isoformat() if self.updated_at else None),
         }
@@ -64,7 +69,11 @@ class Product(db.Model):
     # Relationships
     photos = db.relationship("Photo", foreign_keys="Photo.material_id", back_populates="material", lazy=True)
 
+    def __init__(self, **kwargs: Any) -> None:
+        super().__init__(**kwargs)
+
     def to_dict(self):
+        supplier = cast("Supplier | None", getattr(self, "supplier", None))
         return {
             "id": self.id,
             "name": self.name,
@@ -74,7 +83,7 @@ class Product(db.Model):
             "unit": self.unit,
             "sku": self.sku,
             "supplier_id": self.supplier_id,
-            "supplier_name": self.supplier.name if self.supplier else None,
+            "supplier_name": supplier.name if supplier else None,
             "stock_quantity": self.stock_quantity,
             "weight": self.weight,
             "dimensions": self.dimensions,
@@ -165,7 +174,11 @@ class Plant(db.Model):
     # Relationships
     photos = db.relationship("Photo", foreign_keys="Photo.plant_id", back_populates="plant", lazy=True)
 
+    def __init__(self, **kwargs: Any) -> None:
+        super().__init__(**kwargs)
+
     def to_dict(self):
+        supplier = cast("Supplier | None", getattr(self, "supplier", None))
         return {
             "id": self.id,
             "name": self.name,
@@ -225,7 +238,7 @@ class Plant(db.Model):
             "suitable_for_slopes": self.suitable_for_slopes,
             # Existing attributes
             "supplier_id": self.supplier_id,
-            "supplier_name": self.supplier.name if self.supplier else None,
+            "supplier_name": supplier.name if supplier else None,
             "price": self.price,
             "availability": self.availability,
             "planting_season": self.planting_season,
@@ -290,6 +303,9 @@ class PlantRecommendationRequest(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
+    def __init__(self, **kwargs: Any) -> None:
+        super().__init__(**kwargs)
+
     def to_dict(self):
         return {
             "id": self.id,
@@ -351,6 +367,9 @@ class Client(db.Model):
     projects = db.relationship("Project", backref="client", lazy=True, cascade="all, delete-orphan")
     photos = db.relationship("Photo", foreign_keys="Photo.client_id", back_populates="client", lazy=True)
 
+    def __init__(self, **kwargs: Any) -> None:
+        super().__init__(**kwargs)
+
     def to_dict(self):
         return {
             "id": self.id,
@@ -366,7 +385,7 @@ class Client(db.Model):
             "budget_range": self.budget_range,
             "notes": self.notes,
             "registration_date": self.registration_date,
-            "project_count": len(self.projects) if self.projects else 0,
+            "project_count": len(cast(Sequence[Any], self.projects or [])),
             "created_at": (self.created_at.isoformat() if self.created_at else None),
             "updated_at": (self.updated_at.isoformat() if self.updated_at else None),
         }
@@ -397,13 +416,17 @@ class Project(db.Model):
     project_plants = db.relationship("ProjectPlant", backref="project", lazy=True, cascade="all, delete-orphan")
     photos = db.relationship("Photo", foreign_keys="Photo.project_id", back_populates="project", lazy=True)
 
+    def __init__(self, **kwargs: Any) -> None:
+        super().__init__(**kwargs)
+
     def to_dict(self):
+        client = cast("Client | None", getattr(self, "client", None))
         return {
             "id": self.id,
             "name": self.name,
             "description": self.description,
             "client_id": self.client_id,
-            "client_name": self.client.name if self.client else None,
+            "client_name": client.name if client else None,
             "status": self.status,
             "project_type": self.project_type,
             "start_date": self.start_date,
@@ -444,6 +467,9 @@ class ProjectPlant(db.Model):
 
     # Unique constraint to prevent duplicate plant entries per project
     __table_args__ = (db.UniqueConstraint("project_id", "plant_id", name="unique_project_plant"),)
+
+    def __init__(self, **kwargs: Any) -> None:
+        super().__init__(**kwargs)
 
     def to_dict(self):
         return {

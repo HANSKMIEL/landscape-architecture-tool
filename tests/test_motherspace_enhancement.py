@@ -16,11 +16,10 @@ def test_motherspace_workflow_syntax():
     workflow_path = Path(__file__).parent.parent / ".github" / "workflows" / "motherspace-orchestrator.yml"
 
     if workflow_path.exists():
-        with open(workflow_path) as f:
-            try:
-                yaml.safe_load(f)
-            except yaml.YAMLError as e:
-                pytest.fail(f"MotherSpace workflow YAML syntax error: {e}")
+        try:
+            yaml.safe_load(workflow_path.read_text(encoding="utf-8"))
+        except yaml.YAMLError as e:
+            pytest.fail(f"MotherSpace workflow YAML syntax error: {e}")
     else:
         pytest.skip("MotherSpace workflow file not found")
 
@@ -32,8 +31,7 @@ def test_motherspace_workflow_has_issue_management():
     if not workflow_path.exists():
         pytest.skip("MotherSpace workflow file not found")
 
-    with open(workflow_path) as f:
-        workflow_content = f.read()
+    workflow_content = workflow_path.read_text(encoding="utf-8")
 
     # Check for issue management keywords
     issue_keywords = ["issue", "bug", "enhancement", "feature"]
@@ -49,8 +47,7 @@ def test_motherspace_workflow_has_automation():
     if not workflow_path.exists():
         pytest.skip("MotherSpace workflow file not found")
 
-    with open(workflow_path) as f:
-        workflow_content = f.read()
+    workflow_content = workflow_path.read_text(encoding="utf-8")
 
     # Check for automation keywords
     automation_keywords = ["auto", "trigger", "schedule", "workflow"]
@@ -67,12 +64,11 @@ class TestMotherSpaceIntegration:
         config_path = Path(__file__).parent.parent / ".motherspace" / "config.yml"
 
         if config_path.exists():
-            with open(config_path) as f:
-                try:
-                    config = yaml.safe_load(f)
-                    assert isinstance(config, dict), "MotherSpace config should be a valid YAML dictionary"
-                except yaml.YAMLError as e:
-                    pytest.fail(f"MotherSpace config YAML syntax error: {e}")
+            try:
+                config = yaml.safe_load(config_path.read_text(encoding="utf-8"))
+                assert isinstance(config, dict), "MotherSpace config should be a valid YAML dictionary"
+            except yaml.YAMLError as e:
+                pytest.fail(f"MotherSpace config YAML syntax error: {e}")
         else:
             pytest.skip("MotherSpace config file not found")
 
@@ -83,8 +79,7 @@ class TestMotherSpaceIntegration:
         if not env_example_path.exists():
             pytest.skip(".env.example file not found")
 
-        with open(env_example_path) as f:
-            env_content = f.read()
+        env_content = env_example_path.read_text(encoding="utf-8")
 
         # Check for MotherSpace-related environment variables
         motherspace_vars = ["MOTHERSPACE", "ORCHESTRATOR", "AUTOMATION"]
@@ -105,11 +100,10 @@ class TestMotherSpaceIntegration:
         motherspace_mentioned = False
         for doc_path in docs_paths:
             if doc_path.exists():
-                with open(doc_path) as f:
-                    content = f.read().lower()
-                    if "motherspace" in content:
-                        motherspace_mentioned = True
-                        break
+                content = doc_path.read_text(encoding="utf-8").lower()
+                if "motherspace" in content:
+                    motherspace_mentioned = True
+                    break
 
         if not motherspace_mentioned:
             pytest.skip("MotherSpace not mentioned in documentation")
@@ -125,11 +119,10 @@ class TestMotherSpaceWorkflowValidation:
         if not workflow_path.exists():
             pytest.skip("MotherSpace workflow file not found")
 
-        with open(workflow_path) as f:
-            try:
-                workflow = yaml.safe_load(f)
-            except yaml.YAMLError:
-                pytest.skip("Invalid YAML in workflow file")
+        try:
+            workflow = yaml.safe_load(workflow_path.read_text(encoding="utf-8"))
+        except yaml.YAMLError:
+            pytest.skip("Invalid YAML in workflow file")
 
         if not isinstance(workflow, dict) or "on" not in workflow:
             pytest.skip("Workflow does not have trigger configuration")
@@ -153,11 +146,10 @@ class TestMotherSpaceWorkflowValidation:
         if not workflow_path.exists():
             pytest.skip("MotherSpace workflow file not found")
 
-        with open(workflow_path) as f:
-            try:
-                workflow = yaml.safe_load(f)
-            except yaml.YAMLError:
-                pytest.skip("Invalid YAML in workflow file")
+        try:
+            workflow = yaml.safe_load(workflow_path.read_text(encoding="utf-8"))
+        except yaml.YAMLError:
+            pytest.skip("Invalid YAML in workflow file")
 
         if not isinstance(workflow, dict) or "jobs" not in workflow:
             pytest.skip("Workflow does not have jobs configuration")
@@ -173,8 +165,7 @@ class TestMotherSpaceWorkflowValidation:
         if not workflow_path.exists():
             pytest.skip("MotherSpace workflow file not found")
 
-        with open(workflow_path) as f:
-            workflow_content = f.read()
+        workflow_content = workflow_path.read_text(encoding="utf-8")
 
         # Check for GitHub Actions usage
         action_indicators = ["uses:", "actions/", "run:", "steps:"]
@@ -193,8 +184,7 @@ class TestMotherSpaceSecurityAndCompliance:
         if not workflow_path.exists():
             pytest.skip("MotherSpace workflow file not found")
 
-        with open(workflow_path) as f:
-            workflow_content = f.read().lower()
+        workflow_content = workflow_path.read_text(encoding="utf-8").lower()
 
         # Check for security-related keywords
         security_keywords = ["secret", "token", "permission", "security"]
@@ -211,8 +201,7 @@ class TestMotherSpaceSecurityAndCompliance:
         if not workflow_path.exists():
             pytest.skip("MotherSpace workflow file not found")
 
-        with open(workflow_path) as f:
-            workflow_content = f.read()
+        workflow_content = workflow_path.read_text(encoding="utf-8")
 
         # Check for best practices
         best_practices = {

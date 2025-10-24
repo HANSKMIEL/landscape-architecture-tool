@@ -6,8 +6,8 @@ import PhotoUpload from './PhotoUpload';
 import PhotoGallery from './PhotoGallery';
 import { useLanguage } from '../i18n/LanguageProvider';
 
-const PhotoManager = ({ 
-  category = null, 
+const PhotoManager = ({
+  category = null,
   entityId = null,
   entityName = null,
   title = null,
@@ -53,7 +53,7 @@ const PhotoManager = ({
               onUploadSuccess={handleUploadSuccess}
               allowedCategories={allowedCategories}
             />
-            
+
             <div key={refreshKey}>
               <PhotoGallery
                 category={category}
@@ -89,7 +89,7 @@ const PhotoManager = ({
               {t('photos.upload', 'Upload')}
             </TabsTrigger>
           </TabsList>
-          
+
           <TabsContent value="gallery" className="mt-6">
             <div key={refreshKey}>
               <PhotoGallery
@@ -100,7 +100,7 @@ const PhotoManager = ({
               />
             </div>
           </TabsContent>
-          
+
           <TabsContent value="upload" className="mt-6">
             <PhotoUpload
               category={category}

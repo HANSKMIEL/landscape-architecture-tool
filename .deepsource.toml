@@ -52,10 +52,10 @@ enabled = true
 [[analyzers]]
 name = "javascript"
 enabled = true
+
+[analyzers.meta]
 environment = [
-  {
-    "NODE_VERSION" = "20"
-  }
+  { NODE_VERSION = "20" }
 ]
 
 # Enhanced transformers for automatic code quality improvements

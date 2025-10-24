@@ -85,3 +85,40 @@
   - '**/vectorworks*'
   - '**/plant_recommendations*'
   - 'src/routes/excel_import.py'
+
+# Guardrail scopes
+'scope:D1':
+  - '.github/workflows/**/*'
+  - 'scripts/deployment/**/*'
+  - 'docs/deployment/**/*'
+
+'scope:A1':
+  - 'n8n-workflows/**/*'
+  - 'src/routes/n8n_receivers.py'
+  - '_internal/n8n-workflows/**/*'
+
+'scope:B1':
+  - 'src/routes/**/*'
+  - 'src/services/**/*'
+  - 'src/schemas/**/*'
+  - 'src/models/**/*'
+
+'scope:F1':
+  - 'frontend/src/**/*'
+  - 'frontend/public/**/*'
+
+'scope:DT1':
+  - 'src/routes/excel_import.py'
+  - 'tests/test_excel_import.py'
+  - 'tests/fixtures/**/*'
+
+'scope:DOC1':
+  - 'docs/**/*'
+  - '_internal/**/*'
+  - 'reports/**/*'
+
+'scope:T1':
+  - 'tests/**/*'
+  - 'Makefile'
+  - 'pyproject.toml'
+  - '.pre-commit-config.yaml'

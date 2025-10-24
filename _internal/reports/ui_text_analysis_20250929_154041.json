@@ -1,0 +1,1157 @@
+{
+  "timestamp": "2025-09-29T15:40:40.994026",
+  "text_display_issues": [
+    {
+      "type": "hardcoded_text",
+      "description": "Long hardcoded text found - should use translation system",
+      "examples": [
+        "\"Foto Beheer\"",
+        "\"Foto Galerij\""
+      ],
+      "file": "frontend/src/components/PhotoManager.jsx"
+    },
+    {
+      "type": "missing_translation",
+      "description": "Component contains text but doesn't use translation system",
+      "suggestion": "Import and use useTranslation hook",
+      "file": "frontend/src/components/PhotoManager.jsx"
+    },
+    {
+      "type": "hardcoded_text",
+      "description": "Long hardcoded text found - should use translation system",
+      "examples": [
+        "'Design Phase'",
+        "'Site Preparation'",
+        "'Installation'"
+      ],
+      "file": "frontend/src/components/ProjectTimeline.jsx"
+    },
+    {
+      "type": "hardcoded_text",
+      "description": "Long hardcoded text found - should use translation system",
+      "examples": [
+        "'Failed to fetch'",
+        "'Opnieuw proberen'"
+      ],
+      "file": "frontend/src/components/Dashboard.jsx"
+    },
+    {
+      "type": "hardcoded_text",
+      "description": "Long hardcoded text found - should use translation system",
+      "examples": [
+        "'Plant Recommendations'"
+      ],
+      "file": "frontend/src/components/sidebar.jsx"
+    },
+    {
+      "type": "missing_translation",
+      "description": "Component contains text but doesn't use translation system",
+      "suggestion": "Import and use useTranslation hook",
+      "file": "frontend/src/components/sidebar.jsx"
+    },
+    {
+      "type": "hardcoded_text",
+      "description": "Long hardcoded text found - should use translation system",
+      "examples": [
+        "'Landscape Architecture Tool'",
+        "'Landscape Architecture'"
+      ],
+      "file": "frontend/src/components/Header.jsx"
+    },
+    {
+      "type": "hardcoded_text",
+      "description": "Long hardcoded text found - should use translation system",
+      "examples": [
+        "\"Enter your new password\"",
+        "\"Confirm your new password\""
+      ],
+      "file": "frontend/src/components/PasswordReset.jsx"
+    },
+    {
+      "type": "hardcoded_text",
+      "description": "Long hardcoded text found - should use translation system",
+      "examples": [
+        "'Password must contain at least one lowercase letter'",
+        "'Password must contain at least one uppercase letter'",
+        "'Password must contain at least one number'"
+      ],
+      "file": "frontend/src/components/PasswordReset.jsx"
+    },
+    {
+      "type": "hardcoded_text",
+      "description": "Long hardcoded text found - should use translation system",
+      "examples": [
+        "'Leveranciers'",
+        "'Selecteer eerst een bestand'",
+        "'Valideer eerst het bestand'"
+      ],
+      "file": "frontend/src/components/ExcelImportManager.jsx"
+    },
+    {
+      "type": "hardcoded_text",
+      "description": "Long hardcoded text found - should use translation system",
+      "examples": [
+        "'Fertilizers'",
+        "'Square Meter'",
+        "'Cubic Meter'"
+      ],
+      "file": "frontend/src/components/Products.jsx"
+    },
+    {
+      "type": "poor_placeholder",
+      "description": "Poor or incomplete placeholder text",
+      "examples": [
+        "placeholder=\"0\""
+      ],
+      "file": "frontend/src/components/Products.jsx"
+    },
+    {
+      "type": "hardcoded_text",
+      "description": "Long hardcoded text found - should use translation system",
+      "examples": [
+        "'Business Overview'",
+        "'Client Analysis'",
+        "'Project Performance'"
+      ],
+      "file": "frontend/src/components/Reports.jsx"
+    },
+    {
+      "type": "hardcoded_text",
+      "description": "Long hardcoded text found - should use translation system",
+      "examples": [
+        "'In Progress'",
+        "'Back to Projects'",
+        "'Edit Project'"
+      ],
+      "file": "frontend/src/components/Projects.jsx"
+    },
+    {
+      "type": "hardcoded_text",
+      "description": "Long hardcoded text found - should use translation system",
+      "examples": [
+        "'Inspiration'",
+        "'Failed to fetch photos'",
+        "'Photos uploaded successfully'"
+      ],
+      "file": "frontend/src/components/Photos.jsx"
+    },
+    {
+      "type": "hardcoded_text",
+      "description": "Long hardcoded text found - should use translation system",
+      "examples": [
+        "'Niet ingesteld'"
+      ],
+      "file": "frontend/src/components/InvoiceQuoteManager.jsx"
+    },
+    {
+      "type": "hardcoded_text",
+      "description": "Long hardcoded text found - should use translation system",
+      "examples": [
+        "'Error loading suppliers'",
+        "'Edit Supplier'",
+        "'Add Supplier'"
+      ],
+      "file": "frontend/src/components/Suppliers.jsx"
+    },
+    {
+      "type": "hardcoded_text",
+      "description": "Long hardcoded text found - should use translation system",
+      "examples": [
+        "'Project Plants'",
+        "'Manage plants for this project'",
+        "'Cost Analysis'"
+      ],
+      "file": "frontend/src/components/ProjectPlantManagement.jsx"
+    },
+    {
+      "type": "poor_placeholder",
+      "description": "Poor or incomplete placeholder text",
+      "examples": [
+        "placeholder=\"Optional notes...\""
+      ],
+      "file": "frontend/src/components/ProjectPlantManagement.jsx"
+    },
+    {
+      "type": "hardcoded_text",
+      "description": "Long hardcoded text found - should use translation system",
+      "examples": [
+        "'Configure your landscape architecture application preferences'",
+        "'API Integrations'",
+        "'Connect with external software and services'"
+      ],
+      "file": "frontend/src/components/Settings.jsx"
+    },
+    {
+      "type": "hardcoded_text",
+      "description": "Long hardcoded text found - should use translation system",
+      "examples": [
+        "'Please select a file first'",
+        "'Validation failed'",
+        "'Please validate the file first'"
+      ],
+      "file": "frontend/src/components/ImportExport.jsx"
+    },
+    {
+      "type": "hardcoded_text",
+      "description": "Long hardcoded text found - should use translation system",
+      "examples": [
+        "\"Filter by role\""
+      ],
+      "file": "frontend/src/components/UserManagement.jsx"
+    },
+    {
+      "type": "hardcoded_text",
+      "description": "Long hardcoded text found - should use translation system",
+      "examples": [
+        "'System Admin'",
+        "'Failed to fetch users'",
+        "'User created successfully'"
+      ],
+      "file": "frontend/src/components/UserManagement.jsx"
+    },
+    {
+      "type": "poor_placeholder",
+      "description": "Poor or incomplete placeholder text",
+      "examples": [
+        "placeholder=\"Search users...\""
+      ],
+      "file": "frontend/src/components/UserManagement.jsx"
+    },
+    {
+      "type": "hardcoded_text",
+      "description": "Long hardcoded text found - should use translation system",
+      "examples": [
+        "'No data available to export'",
+        "'Contact Person'",
+        "'Postal Code'"
+      ],
+      "file": "frontend/src/components/Clients.jsx"
+    },
+    {
+      "type": "hardcoded_text",
+      "description": "Long hardcoded text found - should use translation system",
+      "examples": [
+        "\"Voer uw wachtwoord in\""
+      ],
+      "file": "frontend/src/components/Login.jsx"
+    },
+    {
+      "type": "hardcoded_text",
+      "description": "Long hardcoded text found - should use translation system",
+      "examples": [
+        "'Login successful'",
+        "'Account is temporarily locked due to failed login attempts'",
+        "'Invalid username or password'"
+      ],
+      "file": "frontend/src/components/Login.jsx"
+    },
+    {
+      "type": "hardcoded_text",
+      "description": "Long hardcoded text found - should use translation system",
+      "examples": [
+        "\"Total Value\""
+      ],
+      "file": "frontend/src/components/ReportingDashboard.jsx"
+    },
+    {
+      "type": "hardcoded_text",
+      "description": "Long hardcoded text found - should use translation system",
+      "examples": [
+        "'Advanced Reporting Dashboard'",
+        "'Comprehensive business intelligence and analytics'",
+        "'Plant Analytics'"
+      ],
+      "file": "frontend/src/components/ReportingDashboard.jsx"
+    },
+    {
+      "type": "hardcoded_text",
+      "description": "Long hardcoded text found - should use translation system",
+      "examples": [
+        "'Groundcover'",
+        "'Partial Sun'",
+        "'Partial Shade'"
+      ],
+      "file": "frontend/src/components/Plants.jsx"
+    },
+    {
+      "type": "poor_placeholder",
+      "description": "Poor or incomplete placeholder text",
+      "examples": [
+        "placeholder=\"0.5\"",
+        "placeholder=\"2.0\"",
+        "placeholder=\"0.5\"",
+        "placeholder=\"1.5\""
+      ],
+      "file": "frontend/src/components/Plants.jsx"
+    },
+    {
+      "type": "hardcoded_text",
+      "description": "Long hardcoded text found - should use translation system",
+      "examples": [
+        "\"Main navigation\""
+      ],
+      "file": "frontend/src/components/ResponsiveSidebar.jsx"
+    },
+    {
+      "type": "hardcoded_text",
+      "description": "Long hardcoded text found - should use translation system",
+      "examples": [
+        "'Project Timeline'",
+        "'Plant Recommendations'",
+        "'AI Assistant'"
+      ],
+      "file": "frontend/src/components/ResponsiveSidebar.jsx"
+    },
+    {
+      "type": "missing_translation",
+      "description": "Component contains text but doesn't use translation system",
+      "suggestion": "Import and use useTranslation hook",
+      "file": "frontend/src/components/ErrorBoundary.jsx"
+    },
+    {
+      "type": "hardcoded_text",
+      "description": "Long hardcoded text found - should use translation system",
+      "examples": [
+        "\"Foto Galerij\"",
+        "\"Primaire foto ingesteld\"",
+        "\"Foto verwijderd\""
+      ],
+      "file": "frontend/src/components/PhotoGallery.jsx"
+    },
+    {
+      "type": "hardcoded_text",
+      "description": "Long hardcoded text found - should use translation system",
+      "examples": [
+        "'Failed to fetch photos'"
+      ],
+      "file": "frontend/src/components/PhotoGallery.jsx"
+    },
+    {
+      "type": "hardcoded_text",
+      "description": "Long hardcoded text found - should use translation system",
+      "examples": [
+        "\"Select zone\"",
+        "\"Select exposure\"",
+        "\"Select soil type\""
+      ],
+      "file": "frontend/src/components/PlantRecommendations.jsx"
+    },
+    {
+      "type": "hardcoded_text",
+      "description": "Long hardcoded text found - should use translation system",
+      "examples": [
+        "'Plant Recommendations'",
+        "'Get Recommendations'",
+        "'Search Criteria'"
+      ],
+      "file": "frontend/src/components/PlantRecommendations.jsx"
+    },
+    {
+      "type": "poor_placeholder",
+      "description": "Poor or incomplete placeholder text",
+      "examples": [
+        "placeholder=\"6.5\"",
+        "placeholder=\"Min\"",
+        "placeholder=\"Max\"",
+        "placeholder=\"Min\"",
+        "placeholder=\"Max\""
+      ],
+      "file": "frontend/src/components/PlantRecommendations.jsx"
+    },
+    {
+      "type": "hardcoded_text",
+      "description": "Long hardcoded text found - should use translation system",
+      "examples": [
+        "\"Alleen afbeeldingen toegestaan\"",
+        "\"Upload voltooid\"",
+        "\"Upload mislukt\""
+      ],
+      "file": "frontend/src/components/PhotoUpload.jsx"
+    },
+    {
+      "type": "hardcoded_text",
+      "description": "Long hardcoded text found - should use translation system",
+      "examples": [
+        "'Materiaal Foto'",
+        "'Eigendom Foto'",
+        "'Project Foto'"
+      ],
+      "file": "frontend/src/components/PhotoUpload.jsx"
+    },
+    {
+      "type": "poor_placeholder",
+      "description": "Poor or incomplete placeholder text",
+      "examples": [
+        "placeholder=\"Foto titel...\"",
+        "placeholder=\"Beschrijf de foto...\""
+      ],
+      "file": "frontend/src/components/PhotoUpload.jsx"
+    },
+    {
+      "type": "hardcoded_text",
+      "description": "Long hardcoded text found - should use translation system",
+      "examples": [
+        "'AI service unavailable'",
+        "'Prestatie Analyse'",
+        "'Performance Analysis'"
+      ],
+      "file": "frontend/src/components/AIAssistant.jsx"
+    },
+    {
+      "type": "missing_translation",
+      "description": "Component contains text but doesn't use translation system",
+      "suggestion": "Import and use useTranslation hook",
+      "file": "frontend/src/components/DesignSystemShowcase.jsx"
+    },
+    {
+      "type": "hardcoded_text",
+      "description": "Long hardcoded text found - should use translation system",
+      "examples": [
+        "\"Overzicht Database\"",
+        "\"Omzet vs Projecten per Maand\""
+      ],
+      "file": "frontend/src/components/Charts/LandscapeCharts.jsx"
+    },
+    {
+      "type": "hardcoded_text",
+      "description": "Long hardcoded text found - should use translation system",
+      "examples": [
+        "'Leveranciers'"
+      ],
+      "file": "frontend/src/components/Charts/LandscapeCharts.jsx"
+    },
+    {
+      "type": "missing_translation",
+      "description": "Component contains text but doesn't use translation system",
+      "suggestion": "Import and use useTranslation hook",
+      "file": "frontend/src/components/Charts/LandscapeCharts.jsx"
+    },
+    {
+      "type": "missing_translation",
+      "description": "Component contains text but doesn't use translation system",
+      "suggestion": "Import and use useTranslation hook",
+      "file": "frontend/src/components/ui/table.jsx"
+    },
+    {
+      "type": "missing_translation",
+      "description": "Component contains text but doesn't use translation system",
+      "suggestion": "Import and use useTranslation hook",
+      "file": "frontend/src/components/ui/calendar.jsx"
+    },
+    {
+      "type": "hardcoded_text",
+      "description": "Long hardcoded text found - should use translation system",
+      "examples": [
+        "\"Toggle Sidebar\"",
+        "\"Toggle Sidebar\""
+      ],
+      "file": "frontend/src/components/ui/sidebar.jsx"
+    },
+    {
+      "type": "missing_translation",
+      "description": "Component contains text but doesn't use translation system",
+      "suggestion": "Import and use useTranslation hook",
+      "file": "frontend/src/components/ui/switch.jsx"
+    },
+    {
+      "type": "missing_translation",
+      "description": "Component contains text but doesn't use translation system",
+      "suggestion": "Import and use useTranslation hook",
+      "file": "frontend/src/components/ui/resizable.jsx"
+    },
+    {
+      "type": "missing_translation",
+      "description": "Component contains text but doesn't use translation system",
+      "suggestion": "Import and use useTranslation hook",
+      "file": "frontend/src/components/ui/checkbox.jsx"
+    },
+    {
+      "type": "hardcoded_text",
+      "description": "Long hardcoded text found - should use translation system",
+      "examples": [
+        "\"Go to previous page\"",
+        "\"Go to next page\""
+      ],
+      "file": "frontend/src/components/ui/pagination.jsx"
+    },
+    {
+      "type": "missing_translation",
+      "description": "Component contains text but doesn't use translation system",
+      "suggestion": "Import and use useTranslation hook",
+      "file": "frontend/src/components/ui/slider.jsx"
+    },
+    {
+      "type": "hardcoded_text",
+      "description": "Long hardcoded text found - should use translation system",
+      "examples": [
+        "\"Command Palette\""
+      ],
+      "file": "frontend/src/components/ui/command.jsx"
+    },
+    {
+      "type": "missing_translation",
+      "description": "Component contains text but doesn't use translation system",
+      "suggestion": "Import and use useTranslation hook",
+      "file": "frontend/src/components/ui/sonner.jsx"
+    },
+    {
+      "type": "missing_translation",
+      "description": "Component contains text but doesn't use translation system",
+      "suggestion": "Import and use useTranslation hook",
+      "file": "frontend/src/components/ui/progress.jsx"
+    },
+    {
+      "type": "missing_translation",
+      "description": "Component contains text but doesn't use translation system",
+      "suggestion": "Import and use useTranslation hook",
+      "file": "frontend/src/components/ui/avatar.jsx"
+    },
+    {
+      "type": "missing_translation",
+      "description": "Component contains text but doesn't use translation system",
+      "suggestion": "Import and use useTranslation hook",
+      "file": "frontend/src/components/ui/radio-group.jsx"
+    },
+    {
+      "type": "missing_translation",
+      "description": "Component contains text but doesn't use translation system",
+      "suggestion": "Import and use useTranslation hook",
+      "file": "frontend/src/components/ui/scroll-area.jsx"
+    },
+    {
+      "type": "hardcoded_text",
+      "description": "Long hardcoded text found - should use translation system",
+      "examples": [
+        "'API Integrations'",
+        "'Connect with external software and services'",
+        "'CAD Software Integration'"
+      ],
+      "file": "frontend/src/components/settings/APISettings.jsx"
+    },
+    {
+      "type": "hardcoded_text",
+      "description": "Long hardcoded text found - should use translation system",
+      "examples": [
+        "'Bulk Data Management'",
+        "'Import Settings'",
+        "'Configure how data is imported from Excel files'"
+      ],
+      "file": "frontend/src/components/settings/BulkDataSettings.jsx"
+    },
+    {
+      "type": "hardcoded_text",
+      "description": "Long hardcoded text found - should use translation system",
+      "examples": [
+        "'Appearance Settings'",
+        "'Customize the look and feel of your application'",
+        "'Color Scheme'"
+      ],
+      "file": "frontend/src/components/settings/AppearanceSettings.jsx"
+    },
+    {
+      "type": "missing_translation",
+      "description": "Component contains text but doesn't use translation system",
+      "suggestion": "Import and use useTranslation hook",
+      "file": "frontend/src/components/settings/AppearanceSettings.jsx"
+    },
+    {
+      "type": "hardcoded_text",
+      "description": "Long hardcoded text found - should use translation system",
+      "examples": [
+        "'AI Assistant Settings'",
+        "'Configure intelligent automation and AI features'",
+        "'API Configuration'"
+      ],
+      "file": "frontend/src/components/settings/AISettings.jsx"
+    },
+    {
+      "type": "hardcoded_text",
+      "description": "Long hardcoded text found - should use translation system",
+      "examples": [
+        "'Report Generation Settings'",
+        "'Output Formats'",
+        "'Configure default report formats and options'"
+      ],
+      "file": "frontend/src/components/settings/ReportSettings.jsx"
+    }
+  ],
+  "input_field_issues": [
+    {
+      "type": "missing_validation",
+      "description": "Input field appears to lack validation",
+      "input": "<input\n                      type=\"text\"\n                      value={newMilestone.title}\n          ...",
+      "file": "frontend/src/components/ProjectTimeline.jsx"
+    },
+    {
+      "type": "missing_validation",
+      "description": "Input field appears to lack validation",
+      "input": "<input\n                        type=\"date\"\n                        value={newMilestone.target_date}\n...",
+      "file": "frontend/src/components/ProjectTimeline.jsx"
+    },
+    {
+      "type": "missing_validation",
+      "description": "Input field appears to lack validation",
+      "input": "<input\n                        type=\"text\"\n                        value={newMilestone.assigned_to}\n...",
+      "file": "frontend/src/components/ProjectTimeline.jsx"
+    },
+    {
+      "type": "missing_validation",
+      "description": "Input field appears to lack validation",
+      "input": "<input\n              type=\"checkbox\"\n              id=\"update-existing\"\n              checked={updat...",
+      "file": "frontend/src/components/ExcelImportManager.jsx"
+    },
+    {
+      "type": "missing_validation",
+      "description": "Input field appears to lack validation",
+      "input": "<input\n                id=\"file-input\"\n                type=\"file\"\n                accept=\".xlsx,.xl...",
+      "file": "frontend/src/components/ExcelImportManager.jsx"
+    },
+    {
+      "type": "missing_validation",
+      "description": "Input field appears to lack validation",
+      "input": "<input\n              type=\"text\"\n              placeholder={t('photos.searchPlaceholder', 'Search ph...",
+      "file": "frontend/src/components/Photos.jsx"
+    },
+    {
+      "type": "missing_validation",
+      "description": "Input field appears to lack validation",
+      "input": "<input\n            type=\"date\"\n            value={dateRange.start}\n            onChange={(e) =>",
+      "file": "frontend/src/components/ReportingDashboard.jsx"
+    },
+    {
+      "type": "missing_validation",
+      "description": "Input field appears to lack validation",
+      "input": "<input\n            type=\"date\"\n            value={dateRange.end}\n            onChange={(e) =>",
+      "file": "frontend/src/components/ReportingDashboard.jsx"
+    },
+    {
+      "type": "missing_validation",
+      "description": "Input field appears to lack validation",
+      "input": "<input\n                type=\"checkbox\"\n                name=\"native\"\n                checked={formDa...",
+      "file": "frontend/src/components/Plants.jsx"
+    },
+    {
+      "type": "missing_label",
+      "description": "Input field with id 'file-upload' has no corresponding label",
+      "accessibility_impact": "HIGH",
+      "file": "frontend/src/components/PhotoUpload.jsx"
+    },
+    {
+      "type": "missing_validation",
+      "description": "Input field appears to lack validation",
+      "input": "<input\n            type=\"file\"\n            multiple\n            accept=\"image/*\"\n            onChang...",
+      "file": "frontend/src/components/PhotoUpload.jsx"
+    },
+    {
+      "type": "missing_validation",
+      "description": "Input field appears to lack validation",
+      "input": "<input\n      type={type}\n      data-slot=\"input\"\n      className={cn(\n        \"file:text-foreground ...",
+      "file": "frontend/src/components/ui/input.jsx"
+    },
+    {
+      "type": "missing_validation",
+      "description": "Input field appears to lack validation",
+      "input": "<input\n                    type=\"password\"\n                    value={apiKeys[integration.keyField]}...",
+      "file": "frontend/src/components/settings/APISettings.jsx"
+    },
+    {
+      "type": "missing_validation",
+      "description": "Input field appears to lack validation",
+      "input": "<input\n                    type=\"url\"\n                    value={apiEndpoints[integration.keyField] ...",
+      "file": "frontend/src/components/settings/APISettings.jsx"
+    },
+    {
+      "type": "missing_validation",
+      "description": "Input field appears to lack validation",
+      "input": "<input\n                  type=\"checkbox\"\n                  checked={importSettings.validateDuplicate...",
+      "file": "frontend/src/components/settings/BulkDataSettings.jsx"
+    },
+    {
+      "type": "missing_validation",
+      "description": "Input field appears to lack validation",
+      "input": "<input\n                  type=\"checkbox\"\n                  checked={importSettings.autoCorrectData}\n...",
+      "file": "frontend/src/components/settings/BulkDataSettings.jsx"
+    },
+    {
+      "type": "missing_validation",
+      "description": "Input field appears to lack validation",
+      "input": "<input\n                  type=\"checkbox\"\n                  checked={importSettings.requireAllFields}...",
+      "file": "frontend/src/components/settings/BulkDataSettings.jsx"
+    },
+    {
+      "type": "missing_validation",
+      "description": "Input field appears to lack validation",
+      "input": "<input\n                type=\"range\"\n                min=\"100\"\n                max=\"5000\"\n           ...",
+      "file": "frontend/src/components/settings/BulkDataSettings.jsx"
+    },
+    {
+      "type": "missing_validation",
+      "description": "Input field appears to lack validation",
+      "input": "<input\n                type=\"checkbox\"\n                checked={importSettings.enableBackup}\n       ...",
+      "file": "frontend/src/components/settings/BulkDataSettings.jsx"
+    },
+    {
+      "type": "missing_validation",
+      "description": "Input field appears to lack validation",
+      "input": "<input\n                type=\"checkbox\"\n                checked={exportSettings.includeEmptyFields}\n ...",
+      "file": "frontend/src/components/settings/BulkDataSettings.jsx"
+    },
+    {
+      "type": "missing_validation",
+      "description": "Input field appears to lack validation",
+      "input": "<input\n                type=\"checkbox\"\n                checked={exportSettings.includeImages}\n      ...",
+      "file": "frontend/src/components/settings/BulkDataSettings.jsx"
+    },
+    {
+      "type": "missing_validation",
+      "description": "Input field appears to lack validation",
+      "input": "<input\n                type=\"password\"\n                value={openaiKey}\n                onChange={(...",
+      "file": "frontend/src/components/settings/AISettings.jsx"
+    },
+    {
+      "type": "missing_validation",
+      "description": "Input field appears to lack validation",
+      "input": "<input\n                type=\"checkbox\"\n                checked={aiFeatures.plantRecommendations}\n   ...",
+      "file": "frontend/src/components/settings/AISettings.jsx"
+    },
+    {
+      "type": "missing_validation",
+      "description": "Input field appears to lack validation",
+      "input": "<input\n                type=\"checkbox\"\n                checked={aiFeatures.dataMapping}\n            ...",
+      "file": "frontend/src/components/settings/AISettings.jsx"
+    },
+    {
+      "type": "missing_validation",
+      "description": "Input field appears to lack validation",
+      "input": "<input\n                type=\"checkbox\"\n                checked={aiFeatures.smartCorrection}\n        ...",
+      "file": "frontend/src/components/settings/AISettings.jsx"
+    },
+    {
+      "type": "missing_validation",
+      "description": "Input field appears to lack validation",
+      "input": "<input\n                type=\"checkbox\"\n                checked={aiFeatures.languageDetection}\n      ...",
+      "file": "frontend/src/components/settings/AISettings.jsx"
+    },
+    {
+      "type": "missing_validation",
+      "description": "Input field appears to lack validation",
+      "input": "<input\n                    type=\"radio\"\n                    id={level.id}\n                    name=\"...",
+      "file": "frontend/src/components/settings/AISettings.jsx"
+    },
+    {
+      "type": "missing_validation",
+      "description": "Input field appears to lack validation",
+      "input": "<input\n                type=\"checkbox\"\n                checked={reportSettings.includeImages}\n      ...",
+      "file": "frontend/src/components/settings/ReportSettings.jsx"
+    },
+    {
+      "type": "missing_validation",
+      "description": "Input field appears to lack validation",
+      "input": "<input\n                type=\"checkbox\"\n                checked={reportSettings.includePricing}\n     ...",
+      "file": "frontend/src/components/settings/ReportSettings.jsx"
+    },
+    {
+      "type": "missing_validation",
+      "description": "Input field appears to lack validation",
+      "input": "<input\n                type=\"checkbox\"\n                checked={reportSettings.autoGenerateQuotes}\n ...",
+      "file": "frontend/src/components/settings/ReportSettings.jsx"
+    },
+    {
+      "type": "missing_validation",
+      "description": "Input field appears to lack validation",
+      "input": "<input\n              type=\"checkbox\"\n              checked={reportSettings.companyBranding}\n        ...",
+      "file": "frontend/src/components/settings/ReportSettings.jsx"
+    },
+    {
+      "type": "missing_validation",
+      "description": "Input field appears to lack validation",
+      "input": "<input\n              type=\"checkbox\"\n              checked={reportSettings.watermark}\n              ...",
+      "file": "frontend/src/components/settings/ReportSettings.jsx"
+    },
+    {
+      "type": "missing_validation",
+      "description": "Input field appears to lack validation",
+      "input": "<input\n                    type=\"checkbox\"\n                    checked={template.enabled}\n          ...",
+      "file": "frontend/src/components/settings/ReportSettings.jsx"
+    },
+    {
+      "type": "missing_validation",
+      "description": "Input field appears to lack validation",
+      "input": "<input\n                type=\"checkbox\"\n                checked={automation.scheduleReports}\n        ...",
+      "file": "frontend/src/components/settings/ReportSettings.jsx"
+    },
+    {
+      "type": "missing_validation",
+      "description": "Input field appears to lack validation",
+      "input": "<input\n                type=\"checkbox\"\n                checked={automation.emailReports}\n           ...",
+      "file": "frontend/src/components/settings/ReportSettings.jsx"
+    },
+    {
+      "type": "missing_validation",
+      "description": "Input field appears to lack validation",
+      "input": "<input\n                    type=\"text\"\n                    value={automation.recipients}\n           ...",
+      "file": "frontend/src/components/settings/ReportSettings.jsx"
+    }
+  ],
+  "translation_issues": [
+    {
+      "type": "disabled_translation",
+      "description": "Translation function appears to be disabled (prefixed with _)",
+      "impact": "Users may see untranslated text",
+      "file": "frontend/src/components/Dashboard.jsx"
+    },
+    {
+      "type": "mixed_translation",
+      "description": "Component mixes translation system with hardcoded text",
+      "recommendation": "Consistently use translation system",
+      "file": "frontend/src/components/Dashboard.jsx"
+    },
+    {
+      "type": "mixed_translation",
+      "description": "Component mixes translation system with hardcoded text",
+      "recommendation": "Consistently use translation system",
+      "file": "frontend/src/components/Header.jsx"
+    },
+    {
+      "type": "mixed_translation",
+      "description": "Component mixes translation system with hardcoded text",
+      "recommendation": "Consistently use translation system",
+      "file": "frontend/src/components/PasswordReset.jsx"
+    },
+    {
+      "type": "mixed_translation",
+      "description": "Component mixes translation system with hardcoded text",
+      "recommendation": "Consistently use translation system",
+      "file": "frontend/src/components/Products.jsx"
+    },
+    {
+      "type": "mixed_translation",
+      "description": "Component mixes translation system with hardcoded text",
+      "recommendation": "Consistently use translation system",
+      "file": "frontend/src/components/Reports.jsx"
+    },
+    {
+      "type": "mixed_translation",
+      "description": "Component mixes translation system with hardcoded text",
+      "recommendation": "Consistently use translation system",
+      "file": "frontend/src/components/Projects.jsx"
+    },
+    {
+      "type": "mixed_translation",
+      "description": "Component mixes translation system with hardcoded text",
+      "recommendation": "Consistently use translation system",
+      "file": "frontend/src/components/InvoiceQuoteManager.jsx"
+    },
+    {
+      "type": "mixed_translation",
+      "description": "Component mixes translation system with hardcoded text",
+      "recommendation": "Consistently use translation system",
+      "file": "frontend/src/components/Suppliers.jsx"
+    },
+    {
+      "type": "mixed_translation",
+      "description": "Component mixes translation system with hardcoded text",
+      "recommendation": "Consistently use translation system",
+      "file": "frontend/src/components/ProjectPlantManagement.jsx"
+    },
+    {
+      "type": "mixed_translation",
+      "description": "Component mixes translation system with hardcoded text",
+      "recommendation": "Consistently use translation system",
+      "file": "frontend/src/components/ImportExport.jsx"
+    },
+    {
+      "type": "mixed_translation",
+      "description": "Component mixes translation system with hardcoded text",
+      "recommendation": "Consistently use translation system",
+      "file": "frontend/src/components/UserManagement.jsx"
+    },
+    {
+      "type": "mixed_translation",
+      "description": "Component mixes translation system with hardcoded text",
+      "recommendation": "Consistently use translation system",
+      "file": "frontend/src/components/Clients.jsx"
+    },
+    {
+      "type": "disabled_translation",
+      "description": "Translation function appears to be disabled (prefixed with _)",
+      "impact": "Users may see untranslated text",
+      "file": "frontend/src/components/Login.jsx"
+    },
+    {
+      "type": "mixed_translation",
+      "description": "Component mixes translation system with hardcoded text",
+      "recommendation": "Consistently use translation system",
+      "file": "frontend/src/components/Login.jsx"
+    },
+    {
+      "type": "mixed_translation",
+      "description": "Component mixes translation system with hardcoded text",
+      "recommendation": "Consistently use translation system",
+      "file": "frontend/src/components/ReportingDashboard.jsx"
+    },
+    {
+      "type": "mixed_translation",
+      "description": "Component mixes translation system with hardcoded text",
+      "recommendation": "Consistently use translation system",
+      "file": "frontend/src/components/Plants.jsx"
+    },
+    {
+      "type": "mixed_translation",
+      "description": "Component mixes translation system with hardcoded text",
+      "recommendation": "Consistently use translation system",
+      "file": "frontend/src/components/ResponsiveSidebar.jsx"
+    },
+    {
+      "type": "mixed_translation",
+      "description": "Component mixes translation system with hardcoded text",
+      "recommendation": "Consistently use translation system",
+      "file": "frontend/src/components/PhotoGallery.jsx"
+    },
+    {
+      "type": "mixed_translation",
+      "description": "Component mixes translation system with hardcoded text",
+      "recommendation": "Consistently use translation system",
+      "file": "frontend/src/components/PlantRecommendations.jsx"
+    },
+    {
+      "type": "mixed_translation",
+      "description": "Component mixes translation system with hardcoded text",
+      "recommendation": "Consistently use translation system",
+      "file": "frontend/src/components/PhotoUpload.jsx"
+    },
+    {
+      "type": "mixed_translation",
+      "description": "Component mixes translation system with hardcoded text",
+      "recommendation": "Consistently use translation system",
+      "file": "frontend/src/components/AIAssistant.jsx"
+    },
+    {
+      "type": "mixed_translation",
+      "description": "Component mixes translation system with hardcoded text",
+      "recommendation": "Consistently use translation system",
+      "file": "frontend/src/components/ui/chart.jsx"
+    },
+    {
+      "type": "mixed_translation",
+      "description": "Component mixes translation system with hardcoded text",
+      "recommendation": "Consistently use translation system",
+      "file": "frontend/src/components/ui/sidebar.jsx"
+    },
+    {
+      "type": "mixed_translation",
+      "description": "Component mixes translation system with hardcoded text",
+      "recommendation": "Consistently use translation system",
+      "file": "frontend/src/components/ui/popover.jsx"
+    },
+    {
+      "type": "mixed_translation",
+      "description": "Component mixes translation system with hardcoded text",
+      "recommendation": "Consistently use translation system",
+      "file": "frontend/src/components/ui/menubar.jsx"
+    },
+    {
+      "type": "mixed_translation",
+      "description": "Component mixes translation system with hardcoded text",
+      "recommendation": "Consistently use translation system",
+      "file": "frontend/src/components/ui/breadcrumb.jsx"
+    },
+    {
+      "type": "mixed_translation",
+      "description": "Component mixes translation system with hardcoded text",
+      "recommendation": "Consistently use translation system",
+      "file": "frontend/src/components/ui/dropdown-menu.jsx"
+    },
+    {
+      "type": "mixed_translation",
+      "description": "Component mixes translation system with hardcoded text",
+      "recommendation": "Consistently use translation system",
+      "file": "frontend/src/components/ui/input-otp.jsx"
+    },
+    {
+      "type": "mixed_translation",
+      "description": "Component mixes translation system with hardcoded text",
+      "recommendation": "Consistently use translation system",
+      "file": "frontend/src/components/ui/pagination.jsx"
+    },
+    {
+      "type": "mixed_translation",
+      "description": "Component mixes translation system with hardcoded text",
+      "recommendation": "Consistently use translation system",
+      "file": "frontend/src/components/ui/navigation-menu.jsx"
+    },
+    {
+      "type": "mixed_translation",
+      "description": "Component mixes translation system with hardcoded text",
+      "recommendation": "Consistently use translation system",
+      "file": "frontend/src/components/ui/context-menu.jsx"
+    },
+    {
+      "type": "mixed_translation",
+      "description": "Component mixes translation system with hardcoded text",
+      "recommendation": "Consistently use translation system",
+      "file": "frontend/src/components/ui/alert.jsx"
+    },
+    {
+      "type": "mixed_translation",
+      "description": "Component mixes translation system with hardcoded text",
+      "recommendation": "Consistently use translation system",
+      "file": "frontend/src/components/ui/command.jsx"
+    },
+    {
+      "type": "mixed_translation",
+      "description": "Component mixes translation system with hardcoded text",
+      "recommendation": "Consistently use translation system",
+      "file": "frontend/src/components/ui/sheet.jsx"
+    },
+    {
+      "type": "mixed_translation",
+      "description": "Component mixes translation system with hardcoded text",
+      "recommendation": "Consistently use translation system",
+      "file": "frontend/src/components/ui/carousel.jsx"
+    },
+    {
+      "type": "mixed_translation",
+      "description": "Component mixes translation system with hardcoded text",
+      "recommendation": "Consistently use translation system",
+      "file": "frontend/src/components/ui/select.jsx"
+    },
+    {
+      "type": "mixed_translation",
+      "description": "Component mixes translation system with hardcoded text",
+      "recommendation": "Consistently use translation system",
+      "file": "frontend/src/components/ui/alert-dialog.jsx"
+    },
+    {
+      "type": "mixed_translation",
+      "description": "Component mixes translation system with hardcoded text",
+      "recommendation": "Consistently use translation system",
+      "file": "frontend/src/components/ui/toggle-group.jsx"
+    },
+    {
+      "type": "mixed_translation",
+      "description": "Component mixes translation system with hardcoded text",
+      "recommendation": "Consistently use translation system",
+      "file": "frontend/src/components/ui/button.jsx"
+    },
+    {
+      "type": "mixed_translation",
+      "description": "Component mixes translation system with hardcoded text",
+      "recommendation": "Consistently use translation system",
+      "file": "frontend/src/components/settings/APISettings.jsx"
+    },
+    {
+      "type": "mixed_translation",
+      "description": "Component mixes translation system with hardcoded text",
+      "recommendation": "Consistently use translation system",
+      "file": "frontend/src/components/settings/BulkDataSettings.jsx"
+    },
+    {
+      "type": "mixed_translation",
+      "description": "Component mixes translation system with hardcoded text",
+      "recommendation": "Consistently use translation system",
+      "file": "frontend/src/components/settings/AISettings.jsx"
+    },
+    {
+      "type": "mixed_translation",
+      "description": "Component mixes translation system with hardcoded text",
+      "recommendation": "Consistently use translation system",
+      "file": "frontend/src/components/settings/ReportSettings.jsx"
+    }
+  ],
+  "ui_functionality_issues": [
+    {
+      "type": "missing_error_handling",
+      "description": "Component has state management but lacks error handling",
+      "recommendation": "Add try-catch blocks and error boundaries",
+      "file": "frontend/src/components/PhotoManager.jsx"
+    },
+    {
+      "type": "missing_error_handling",
+      "description": "Component has state management but lacks error handling",
+      "recommendation": "Add try-catch blocks and error boundaries",
+      "file": "frontend/src/components/Header.jsx"
+    },
+    {
+      "type": "missing_error_handling",
+      "description": "Component has state management but lacks error handling",
+      "recommendation": "Add try-catch blocks and error boundaries",
+      "file": "frontend/src/components/Settings.jsx"
+    },
+    {
+      "type": "missing_error_handling",
+      "description": "Component has state management but lacks error handling",
+      "recommendation": "Add try-catch blocks and error boundaries",
+      "file": "frontend/src/components/ResponsiveSidebar.jsx"
+    },
+    {
+      "type": "disabled_state",
+      "description": "State variables appear to be disabled",
+      "examples": [
+        "const [_open, _setOpen]"
+      ],
+      "impact": "Functionality may be broken",
+      "file": "frontend/src/components/ui/sidebar.jsx"
+    },
+    {
+      "type": "missing_error_handling",
+      "description": "Component has state management but lacks error handling",
+      "recommendation": "Add try-catch blocks and error boundaries",
+      "file": "frontend/src/components/ui/sidebar.jsx"
+    },
+    {
+      "type": "missing_error_handling",
+      "description": "Component has state management but lacks error handling",
+      "recommendation": "Add try-catch blocks and error boundaries",
+      "file": "frontend/src/components/ui/carousel.jsx"
+    },
+    {
+      "type": "missing_error_handling",
+      "description": "Component has state management but lacks error handling",
+      "recommendation": "Add try-catch blocks and error boundaries",
+      "file": "frontend/src/components/settings/BulkDataSettings.jsx"
+    },
+    {
+      "type": "missing_error_handling",
+      "description": "Component has state management but lacks error handling",
+      "recommendation": "Add try-catch blocks and error boundaries",
+      "file": "frontend/src/components/settings/AppearanceSettings.jsx"
+    },
+    {
+      "type": "missing_error_handling",
+      "description": "Component has state management but lacks error handling",
+      "recommendation": "Add try-catch blocks and error boundaries",
+      "file": "frontend/src/components/settings/ReportSettings.jsx"
+    }
+  ],
+  "recommendations": [
+    {
+      "priority": "HIGH",
+      "category": "Text Display",
+      "action": "Implement Consistent Translation System",
+      "description": "Fix hardcoded text and ensure all components use translation system",
+      "affected_files": 48
+    },
+    {
+      "priority": "HIGH",
+      "category": "Input Fields",
+      "action": "Fix Input Field Accessibility and Validation",
+      "description": "Add proper labels, validation, and form handling to all input fields",
+      "affected_files": 11
+    },
+    {
+      "priority": "MEDIUM",
+      "category": "Translation",
+      "action": "Restore and Standardize Translation Usage",
+      "description": "Fix disabled translation functions and standardize translation usage",
+      "affected_files": 42
+    },
+    {
+      "priority": "HIGH",
+      "category": "Functionality",
+      "action": "Restore Disabled Functionality and Add Error Handling",
+      "description": "Fix disabled state variables and add proper error handling",
+      "affected_files": 9
+    }
+  ]
+}

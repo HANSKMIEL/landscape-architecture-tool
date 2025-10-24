@@ -12,7 +12,7 @@ import os
 import re
 from dataclasses import dataclass
 from datetime import UTC, datetime
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 import requests
 
@@ -57,8 +57,12 @@ class PRInfo:
                 if len(from_parts) >= 1 and len(to_parts) >= 1:
                     if from_parts[0] != to_parts[0]:
                         return "major"
-                    if len(from_parts) >= 2 and len(to_parts) >= 2 and from_parts[1] != to_parts[1]:
-                        return "minor"
+                    if len(from_parts) >= 2 and len(to_parts) >= 2:
+                        minor_diff = to_parts[1] - from_parts[1]
+                        if abs(minor_diff) > 1:
+                            return "major"
+                        if minor_diff != 0:
+                            return "minor"
                     return "patch"
             except ValueError:
                 pass
@@ -91,6 +95,7 @@ class PRAnalyzer:
         self.owner = owner or os.getenv("GITHUB_OWNER", "HANSKMIEL")
         self.repo = repo or os.getenv("GITHUB_REPO", "landscape-architecture-tool")
         self.github_token = github_token or os.getenv("GITHUB_TOKEN")
+        self._cached_pr_counts: dict[str, Any] | None = None
 
         # Default categorization rules
         self.critical_dependencies = [
@@ -170,7 +175,10 @@ class PRAnalyzer:
                 page += 1
 
             except requests.RequestException as e:
-                logger.error(f"Failed to fetch PRs: {e}")
+                logger.error("Failed to fetch PRs: %s", e)
+                break
+            except Exception:  # pragma: no cover - defensive catch for unexpected issues
+                logger.exception("Unexpected error while fetching PRs")
                 break
 
         return prs
@@ -195,7 +203,17 @@ class PRAnalyzer:
             update_type = pr.get_update_type()
 
             # Check if it contains critical dependencies
-            has_critical_dep = any(dep.lower() in pr.title.lower() for dep in self.critical_dependencies)
+            package_name = self._extract_package_name(pr.title)
+            has_critical_dep = False
+            if package_name:
+                normalized_package = package_name.lower().strip()
+                candidates = {normalized_package}
+                if normalized_package.startswith("@"):
+                    candidates.add(normalized_package[1:])
+                has_critical_dep = any(candidate in self.critical_dependencies for candidate in candidates)
+
+            if not has_critical_dep and package_name is None:
+                has_critical_dep = any(dep.lower() in pr.title.lower() for dep in self.critical_dependencies)
 
             if has_critical_dep:
                 manual_review.append(pr)
@@ -218,6 +236,13 @@ class PRAnalyzer:
             "major_updates": major_updates,
         }
 
+    def _extract_package_name(self, title: str) -> str | None:
+        """Extract the package name from a Dependabot PR title."""
+        match = re.search(r"bump\s+(.+?)\s+from\s+[\d.]+\s+to\s+[\d.]+", title, re.IGNORECASE)
+        if match:
+            return match.group(1).strip()
+        return None
+
     def generate_pr_counts(
         self,
         categorized_prs: dict[str, list[PRInfo]] | None = None,
@@ -233,8 +258,17 @@ class PRAnalyzer:
         Returns:
             Dictionary with PR count statistics
         """
-        if categorized_prs is None or all_prs is None:
-            all_prs = self.fetch_pull_requests()
+        if all_prs is None:
+            if categorized_prs is not None:
+                all_prs = (
+                    categorized_prs.get("safe_auto_merge", [])
+                    + categorized_prs.get("manual_review", [])
+                    + categorized_prs.get("major_updates", [])
+                )
+            else:
+                all_prs = self.fetch_pull_requests()
+
+        if categorized_prs is None:
             categorized_prs = self.categorize_dependabot_prs(all_prs)
 
         safe_count = len(categorized_prs["safe_auto_merge"])
@@ -246,7 +280,7 @@ class PRAnalyzer:
         total_open_prs = len(all_prs)
         non_dependabot_prs = total_open_prs - total_dependabot
 
-        return {
+        result = {
             "timestamp": datetime.now(UTC).isoformat(),
             "total_open_prs": total_open_prs,
             "dependabot_prs": {
@@ -263,6 +297,9 @@ class PRAnalyzer:
             },
         }
 
+        self._cached_pr_counts = result
+        return result
+
     def generate_validation_report(
         self,
         backend_status: str = "unknown",
@@ -270,6 +307,7 @@ class PRAnalyzer:
         database_status: str = "unknown",
         security_status: str = "unknown",
         additional_data: dict | None = None,
+        pr_counts: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         """
         Generate a comprehensive validation report with dynamic PR counts.
@@ -284,7 +322,10 @@ class PRAnalyzer:
         Returns:
             Complete validation report dictionary
         """
-        pr_counts = self.generate_pr_counts()
+        if pr_counts is None:
+            pr_counts = self._cached_pr_counts or self.generate_pr_counts()
+        else:
+            self._cached_pr_counts = pr_counts
 
         report = {
             "validation_timestamp": datetime.now(UTC).isoformat(),
@@ -329,9 +370,8 @@ class PRAnalyzer:
 
         if dependabot_data["major_updates_requiring_testing"] > 0:
             major_prs = pr_counts["pr_numbers"]["major_updates"]
-            steps.append(
-                f"Extensive testing needed for {dependabot_data['major_updates_requiring_testing']} major updates: {major_prs}"
-            )
+            major_update_count = dependabot_data["major_updates_requiring_testing"]
+            steps.append(f"Extensive testing needed for {major_update_count} major updates: {major_prs}")
 
         if pr_counts["non_dependabot_prs"] > 0:
             steps.append(f"Review {pr_counts['non_dependabot_prs']} non-Dependabot PRs separately")
@@ -370,9 +410,9 @@ def create_validation_report(
     )
 
     if output_file:
-        with open(output_file, "w") as f:
+        with open(output_file, "w", encoding="utf-8") as f:
             json.dump(report, f, indent=2)
-        logger.info(f"Validation report saved to {output_file}")
+        logger.info("Validation report saved to %s", output_file)
 
     return report
 

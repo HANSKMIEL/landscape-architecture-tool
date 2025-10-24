@@ -18,14 +18,14 @@ import {
   DialogTrigger,
 } from './ui/dialog';
 
-const PhotoGallery = ({ 
-  category = null, 
-  entityId = null, 
+const PhotoGallery = ({
+  category = null,
+  entityId = null,
   title = "Foto Galerij",
   showUpload = true,
   maxPhotos = 50,
   columns = 4,
-  onPhotoUpdate = () => {}
+  onPhotoUpdate = () => { }
 }) => {
   const [photos, setPhotos] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -147,7 +147,7 @@ const PhotoGallery = ({
         <CardContent className="p-6">
           <div className="flex items-center justify-center">
             <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-            <span className="ml-2">Foto's laden...</span>
+            <span className="ml-2">Foto’s laden...</span>
           </div>
         </CardContent>
       </Card>
@@ -160,7 +160,7 @@ const PhotoGallery = ({
         <h3 className="text-lg font-semibold">{title}</h3>
         {photos.length > 0 && (
           <span className="text-sm text-gray-500">
-            {photos.length} foto{photos.length > 1 ? "'s" : ''}
+            {photos.length} foto{photos.length > 1 ? '’s' : ''}
           </span>
         )}
       </div>
@@ -169,7 +169,7 @@ const PhotoGallery = ({
         <Card>
           <CardContent className="p-6 text-center">
             <Camera className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-            <p className="text-gray-500 mb-2">Nog geen foto's geüpload</p>
+            <p className="text-gray-500 mb-2">Nog geen foto’s geüpload</p>
             {showUpload && (
               <p className="text-sm text-gray-400">
                 Upload je eerste foto om te beginnen
@@ -190,7 +190,7 @@ const PhotoGallery = ({
                     e.target.src = `/api/photos/file/${photo.id}`;
                   }}
                 />
-                
+
                 {/* Primary badge */}
                 {photo.is_primary && (
                   <Badge variant="secondary" className="absolute top-2 left-2">
@@ -257,7 +257,7 @@ const PhotoGallery = ({
                           </DropdownMenuItem>
                         )}
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem 
+                        <DropdownMenuItem
                           onClick={() => handleDeletePhoto(photo.id)}
                           className="text-red-600"
                         >

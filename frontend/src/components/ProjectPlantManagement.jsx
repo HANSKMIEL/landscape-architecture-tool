@@ -4,16 +4,49 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { 
-  Plus, 
-  Trash2, 
-  DollarSign, 
-  ShoppingCart, 
+import {
+  Plus,
+  Trash2,
+  DollarSign,
+  ShoppingCart,
   Download,
   Loader2
 } from 'lucide-react';
 
-const ProjectPlantManagement = ({ projectId, language = 'en' }) => {
+const translationDefaults = {
+  title: 'Project Plants',
+  subtitle: 'Manage plants for this project',
+  addPlant: 'Add Plant',
+  generateOrderList: 'Generate Order List',
+  costAnalysis: 'Cost Analysis',
+  totalProjectCost: 'Total Project Cost',
+  totalPlantsLabel: 'Total Plants',
+  plantsWithCost: 'Plants with Cost',
+  plantsWithoutCost: 'Plants without Cost',
+  noPlants: 'No plants added to this project yet',
+  addFirstPlant: 'Add your first plant to get started',
+  plantName: 'Plant Name',
+  quantity: 'Quantity',
+  unitCost: 'Unit Cost',
+  totalCost: 'Total Cost',
+  status: 'Status',
+  actions: 'Actions',
+  planned: 'Planned',
+  ordered: 'Ordered',
+  planted: 'Planted',
+  completed: 'Completed',
+  search: 'Search plants...',
+  notes: 'Notes',
+  cancel: 'Cancel',
+  save: 'Save',
+  selectPlant: 'Select Plant',
+  notesPlaceholder: 'Optional notes...',
+  removeConfirmation: 'Are you sure you want to remove this plant from the project?',
+  errorLoading: 'Error Loading Data',
+  tryAgain: 'Try Again'
+};
+
+const ProjectPlantManagement = ({ projectId }) => {
   const [projectPlants, setProjectPlants] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -26,82 +59,20 @@ const ProjectPlantManagement = ({ projectId, language = 'en' }) => {
   const [unitCost, setUnitCost] = useState('');
   const [notes, setNotes] = useState('');
 
-  const translations = {
-    en: {
-      title: 'Project Plants',
-      subtitle: 'Manage plants for this project',
-      addPlant: 'Add Plant',
-      plantName: 'Plant Name',
-      quantity: 'Quantity',
-      unitCost: 'Unit Cost',
-      totalCost: 'Total Cost',
-      status: 'Status',
-      actions: 'Actions',
-      notes: 'Notes',
-      search: 'Search plants...',
-      costAnalysis: 'Cost Analysis',
-      totalProjectCost: 'Total Project Cost',
-      plantsWithCost: 'Plants with Cost',
-      plantsWithoutCost: 'Plants without Cost',
-      generateOrderList: 'Generate Order List',
-      exportData: 'Export Data',
-      remove: 'Remove',
-      edit: 'Edit',
-      save: 'Save',
-      cancel: 'Cancel',
-      loading: 'Loading...',
-      noPlants: 'No plants added to this project yet',
-      addFirstPlant: 'Add your first plant to get started',
-      planned: 'Planned',
-      ordered: 'Ordered',
-      planted: 'Planted',
-      completed: 'Completed'
-    },
-    nl: {
-      title: 'Project Planten',
-      subtitle: 'Beheer planten voor dit project',
-      addPlant: 'Plant Toevoegen',
-      plantName: 'Plant Naam',
-      quantity: 'Aantal',
-      unitCost: 'Stukprijs',
-      totalCost: 'Totale Kosten',
-      status: 'Status',
-      actions: 'Acties',
-      notes: 'Notities',
-      search: 'Zoek planten...',
-      costAnalysis: 'Kostenanalyse',
-      totalProjectCost: 'Totale Project Kosten',
-      plantsWithCost: 'Planten met Kosten',
-      plantsWithoutCost: 'Planten zonder Kosten',
-      generateOrderList: 'Bestellijst Genereren',
-      exportData: 'Data Exporteren',
-      remove: 'Verwijderen',
-      edit: 'Bewerken',
-      save: 'Opslaan',
-      cancel: 'Annuleren',
-      loading: 'Laden...',
-      noPlants: 'Nog geen planten toegevoegd aan dit project',
-      addFirstPlant: 'Voeg je eerste plant toe om te beginnen',
-      planned: 'Gepland',
-      ordered: 'Besteld',
-      planted: 'Geplant',
-      completed: 'Voltooid'
-    }
-  };
-
   const { t } = useLanguage();
+  const translate = (key) => t(`projectPlantManagement.${key}`, translationDefaults[key] ?? key);
 
   // Fetch project plants
   const fetchProjectPlants = async () => {
     try {
       setLoading(true);
       setError(null);
-      
+
       const response = await fetch(`/api/projects/${projectId}/plants`);
       if (!response.ok) {
         throw new Error(`API error: ${response.status}`);
       }
-      
+
       const data = await response.json();
       setProjectPlants(data);
     } catch (err) {
@@ -118,7 +89,7 @@ const ProjectPlantManagement = ({ projectId, language = 'en' }) => {
       if (!response.ok) {
         throw new Error(`API error: ${response.status}`);
       }
-      
+
       const data = await response.json();
       setAvailablePlants(data);
     } catch (err) {
@@ -133,7 +104,7 @@ const ProjectPlantManagement = ({ projectId, language = 'en' }) => {
       if (!response.ok) {
         throw new Error(`API error: ${response.status}`);
       }
-      
+
       const data = await response.json();
       setCostAnalysis(data);
     } catch (err) {
@@ -147,7 +118,7 @@ const ProjectPlantManagement = ({ projectId, language = 'en' }) => {
 
     try {
       setLoading(true);
-      
+
       const response = await fetch(`/api/projects/${projectId}/plants`, {
         method: 'POST',
         headers: {
@@ -171,7 +142,7 @@ const ProjectPlantManagement = ({ projectId, language = 'en' }) => {
       setUnitCost('');
       setNotes('');
       setShowAddModal(false);
-      
+
       await fetchProjectPlants();
       await fetchCostAnalysis();
     } catch (err) {
@@ -183,13 +154,13 @@ const ProjectPlantManagement = ({ projectId, language = 'en' }) => {
 
   // Remove plant from project
   const removePlantFromProject = async (plantId) => {
-    if (!confirm('Are you sure you want to remove this plant from the project?')) {
+    if (!confirm(translate('removeConfirmation'))) {
       return;
     }
 
     try {
       setLoading(true);
-      
+
       const response = await fetch(`/api/projects/${projectId}/plants/${plantId}`, {
         method: 'DELETE',
       });
@@ -237,9 +208,9 @@ const ProjectPlantManagement = ({ projectId, language = 'en' }) => {
       if (!response.ok) {
         throw new Error(`API error: ${response.status}`);
       }
-      
+
       const data = await response.json();
-      
+
       // Create and download CSV
       const csvContent = generateCSVContent(data);
       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -259,13 +230,13 @@ const ProjectPlantManagement = ({ projectId, language = 'en' }) => {
   // Generate CSV content for order list
   const generateCSVContent = (orderData) => {
     let csv = 'Supplier,Plant Name,Common Name,Quantity,Unit Cost,Total Cost,Status,Notes\n';
-    
+
     orderData.forEach(supplier => {
       supplier.plants.forEach(plant => {
         csv += `"${supplier.supplier_name}","${plant.plant_name}","${plant.common_name || ''}",${plant.quantity},${plant.unit_cost || 0},${plant.total_cost || 0},"${plant.status}","${plant.notes || ''}"\n`;
       });
     });
-    
+
     return csv;
   };
 
@@ -308,10 +279,10 @@ const ProjectPlantManagement = ({ projectId, language = 'en' }) => {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
       </div>
-      <h3 className="text-lg font-semibold text-red-800 mb-2">Error Loading Data</h3>
+      <h3 className="text-lg font-semibold text-red-800 mb-2">{translate('errorLoading')}</h3>
       <p className="text-red-600 mb-4">{error}</p>
       <Button onClick={fetchProjectPlants} variant="destructive">
-        Try Again
+        {translate('tryAgain')}
       </Button>
     </div>
   );
@@ -324,17 +295,17 @@ const ProjectPlantManagement = ({ projectId, language = 'en' }) => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">{t.title}</h1>
-          <p className="text-gray-600">{t.subtitle}</p>
+          <h1 className="text-2xl font-bold text-gray-900">{translate('title')}</h1>
+          <p className="text-gray-600">{translate('subtitle')}</p>
         </div>
         <div className="flex space-x-2">
           <Button onClick={() => setShowAddModal(true)} className="flex items-center space-x-2">
             <Plus className="h-4 w-4" />
-            <span>{t.addPlant}</span>
+            <span>{translate('addPlant')}</span>
           </Button>
           <Button onClick={generateOrderList} variant="outline" className="flex items-center space-x-2">
             <Download className="h-4 w-4" />
-            <span>{t.generateOrderList}</span>
+            <span>{translate('generateOrderList')}</span>
           </Button>
         </div>
       </div>
@@ -345,7 +316,7 @@ const ProjectPlantManagement = ({ projectId, language = 'en' }) => {
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
               <DollarSign className="h-5 w-5" />
-              <span>{t.costAnalysis}</span>
+              <span>{translate('costAnalysis')}</span>
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -354,25 +325,25 @@ const ProjectPlantManagement = ({ projectId, language = 'en' }) => {
                 <div className="text-2xl font-bold text-green-600">
                   {formatCurrency(costAnalysis.total_cost)}
                 </div>
-                <div className="text-sm text-gray-600">{t.totalProjectCost}</div>
+                <div className="text-sm text-gray-600">{translate('totalProjectCost')}</div>
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-blue-600">
                   {costAnalysis.total_plants}
                 </div>
-                <div className="text-sm text-gray-600">Total Plants</div>
+                <div className="text-sm text-gray-600">{translate('totalPlantsLabel')}</div>
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-purple-600">
                   {costAnalysis.plants_with_cost}
                 </div>
-                <div className="text-sm text-gray-600">{t.plantsWithCost}</div>
+                <div className="text-sm text-gray-600">{translate('plantsWithCost')}</div>
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-orange-600">
                   {costAnalysis.plants_without_cost}
                 </div>
-                <div className="text-sm text-gray-600">{t.plantsWithoutCost}</div>
+                <div className="text-sm text-gray-600">{translate('plantsWithoutCost')}</div>
               </div>
             </div>
           </CardContent>
@@ -389,22 +360,22 @@ const ProjectPlantManagement = ({ projectId, language = 'en' }) => {
               <div className="w-24 h-24 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
                 <ShoppingCart className="w-12 h-12 text-gray-400" />
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">{t.noPlants}</h3>
-              <p className="text-gray-600 mb-6">{t.addFirstPlant}</p>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">{translate('noPlants')}</h3>
+              <p className="text-gray-600 mb-6">{translate('addFirstPlant')}</p>
               <Button onClick={() => setShowAddModal(true)}>
-                {t.addPlant}
+                {translate('addPlant')}
               </Button>
             </div>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>{t.plantName}</TableHead>
-                  <TableHead>{t.quantity}</TableHead>
-                  <TableHead>{t.unitCost}</TableHead>
-                  <TableHead>{t.totalCost}</TableHead>
-                  <TableHead>{t.status}</TableHead>
-                  <TableHead>{t.actions}</TableHead>
+                  <TableHead>{translate('plantName')}</TableHead>
+                  <TableHead>{translate('quantity')}</TableHead>
+                  <TableHead>{translate('unitCost')}</TableHead>
+                  <TableHead>{translate('totalCost')}</TableHead>
+                  <TableHead>{translate('status')}</TableHead>
+                  <TableHead>{translate('actions')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -425,10 +396,10 @@ const ProjectPlantManagement = ({ projectId, language = 'en' }) => {
                         onChange={(e) => updatePlantStatus(projectPlant.plant_id, e.target.value)}
                         className="text-xs rounded px-2 py-1 border"
                       >
-                        <option value="planned">{t.planned}</option>
-                        <option value="ordered">{t.ordered}</option>
-                        <option value="planted">{t.planted}</option>
-                        <option value="completed">{t.completed}</option>
+                        <option value="planned">{translate('planned')}</option>
+                        <option value="ordered">{translate('ordered')}</option>
+                        <option value="planted">{translate('planted')}</option>
+                        <option value="completed">{translate('completed')}</option>
                       </select>
                     </TableCell>
                     <TableCell>
@@ -453,7 +424,7 @@ const ProjectPlantManagement = ({ projectId, language = 'en' }) => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between p-6 border-b">
-              <h2 className="text-xl font-semibold text-gray-900">{t.addPlant}</h2>
+              <h2 className="text-xl font-semibold text-gray-900">{translate('addPlant')}</h2>
               <button
                 onClick={() => setShowAddModal(false)}
                 className="text-gray-400 hover:text-gray-600 transition-colors duration-200"
@@ -463,25 +434,25 @@ const ProjectPlantManagement = ({ projectId, language = 'en' }) => {
                 </svg>
               </button>
             </div>
-            
+
             <div className="p-6 space-y-4">
               {/* Search Plants */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  {t.search}
+                  {translate('search')}
                 </label>
                 <Input
                   type="text"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  placeholder={t.search}
+                  placeholder={translate('search')}
                 />
               </div>
 
               {/* Select Plant */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Select Plant
+                  {translate('selectPlant')}
                 </label>
                 <div className="max-h-40 overflow-y-auto border rounded-md">
                   {filteredPlants.map((plant) => (
@@ -491,9 +462,8 @@ const ProjectPlantManagement = ({ projectId, language = 'en' }) => {
                         setSelectedPlant(plant);
                         setUnitCost(plant.price?.toString() || '');
                       }}
-                      className={`p-3 cursor-pointer hover:bg-gray-50 border-b ${
-                        selectedPlant?.id === plant.id ? 'bg-blue-50 border-blue-200' : ''
-                      }`}
+                      className={`p-3 cursor-pointer hover:bg-gray-50 border-b ${selectedPlant?.id === plant.id ? 'bg-blue-50 border-blue-200' : ''
+                        }`}
                     >
                       <div className="font-medium">{plant.name}</div>
                       <div className="text-sm text-gray-600">{plant.common_name}</div>
@@ -506,7 +476,7 @@ const ProjectPlantManagement = ({ projectId, language = 'en' }) => {
               {/* Quantity */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  {t.quantity}
+                  {translate('quantity')}
                 </label>
                 <Input
                   type="number"
@@ -519,7 +489,7 @@ const ProjectPlantManagement = ({ projectId, language = 'en' }) => {
               {/* Unit Cost */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  {t.unitCost}
+                  {translate('unitCost')}
                 </label>
                 <Input
                   type="number"
@@ -533,24 +503,24 @@ const ProjectPlantManagement = ({ projectId, language = 'en' }) => {
               {/* Notes */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  {t.notes}
+                  {translate('notes')}
                 </label>
                 <Input
                   type="text"
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
-                  placeholder="Optional notes..."
+                  placeholder={translate('notesPlaceholder')}
                 />
               </div>
             </div>
 
             <div className="flex items-center justify-end space-x-2 p-6 border-t">
               <Button onClick={() => setShowAddModal(false)} variant="outline">
-                {t.cancel}
+                {translate('cancel')}
               </Button>
               <Button onClick={addPlantToProject} disabled={!selectedPlant || loading}>
                 {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-                {t.save}
+                {translate('save')}
               </Button>
             </div>
           </div>

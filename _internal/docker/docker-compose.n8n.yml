@@ -1,0 +1,229 @@
+version: '3.8'
+
+services:
+  # Existing Landscape Architecture Backend
+  landscape-backend:
+    build: .
+    ports:
+      - "5000:5000"
+    environment:
+      - DATABASE_URL=postgresql://landscape_user:landscape_password@postgres:5432/landscape_architecture_prod
+      - REDIS_URL=redis://redis:6379/0
+      - SECRET_KEY=your-secret-key-here-change-this
+      - FLASK_ENV=production
+      - DEBUG=false
+      # N8n integration environment variables
+      - N8N_BASE_URL=http://n8n:5678
+      - N8N_WEBHOOK_SECRET=your-webhook-secret-here-change-this
+      - N8N_BASIC_AUTH_USER=admin
+      - N8N_BASIC_AUTH_PASSWORD=secure-n8n-password
+      - N8N_WEBHOOK_TIMEOUT=30
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      n8n:
+        condition: service_started
+    networks:
+      - landscape-network
+    restart: unless-stopped
+    volumes:
+      - ./logs:/app/logs
+
+  # Existing Landscape Architecture Frontend
+  landscape-frontend:
+    build: ./frontend
+    ports:
+      - "5174:80"
+    depends_on:
+      - landscape-backend
+    networks:
+      - landscape-network
+    restart: unless-stopped
+
+  # N8n Workflow Automation Service
+  n8n:
+    image: n8nio/n8n:latest
+    ports:
+      - "5678:5678"
+    environment:
+      # Database configuration for N8n
+      - DB_TYPE=postgresdb
+      - DB_POSTGRESDB_HOST=postgres
+      - DB_POSTGRESDB_PORT=5432
+      - DB_POSTGRESDB_DATABASE=n8n_db
+      - DB_POSTGRESDB_USER=n8n_user
+      - DB_POSTGRESDB_PASSWORD=n8n_password
+      
+      # Basic authentication
+      - N8N_BASIC_AUTH_ACTIVE=true
+      - N8N_BASIC_AUTH_USER=admin
+      - N8N_BASIC_AUTH_PASSWORD=secure-n8n-password
+      
+      # Webhook configuration
+      - WEBHOOK_URL=https://yourdomain.com/
+      - N8N_HOST=0.0.0.0
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=http
+      
+      # Timezone and locale
+      - GENERIC_TIMEZONE=Europe/Amsterdam
+      - N8N_DEFAULT_LOCALE=en
+      
+      # Security settings
+      - N8N_SECURE_COOKIE=false
+      - N8N_COOKIES_SECURE=false
+      
+      # Execution settings
+      - EXECUTIONS_PROCESS=main
+      - EXECUTIONS_TIMEOUT=3600
+      - EXECUTIONS_TIMEOUT_MAX=7200
+      
+      # Email configuration (for notifications)
+      - N8N_EMAIL_MODE=smtp
+      - N8N_SMTP_HOST=smtp.gmail.com
+      - N8N_SMTP_PORT=587
+      - N8N_SMTP_USER=your-email@gmail.com
+      - N8N_SMTP_PASS=your-app-password
+      - N8N_SMTP_SENDER=your-email@gmail.com
+      
+    volumes:
+      - n8n_data:/home/node/.n8n
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - landscape-network
+    restart: unless-stopped
+
+  # Enhanced Nginx with N8n routing
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx-n8n.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+      - ./frontend/dist:/usr/share/nginx/html:ro
+      - /var/www/certbot:/var/www/certbot:ro
+    depends_on:
+      - landscape-frontend
+      - landscape-backend
+      - n8n
+    networks:
+      - landscape-network
+    restart: unless-stopped
+
+  # Enhanced PostgreSQL with multiple databases
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_DB=landscape_architecture_prod
+      - POSTGRES_USER=landscape_user
+      - POSTGRES_PASSWORD=landscape_password
+      # Multiple database initialization
+      - POSTGRES_MULTIPLE_DATABASES=n8n_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init-multiple-databases.sh:/docker-entrypoint-initdb.d/init-multiple-databases.sh:ro
+    ports:
+      - "5432:5432"
+    networks:
+      - landscape-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U landscape_user -d landscape_architecture_prod"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # Redis for caching and sessions
+  redis:
+    image: redis:7-alpine
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    networks:
+      - landscape-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+
+  # Optional: Monitoring with Prometheus
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    networks:
+      - landscape-network
+    restart: unless-stopped
+    profiles:
+      - monitoring
+
+  # Optional: Grafana for monitoring dashboards
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+    depends_on:
+      - prometheus
+    networks:
+      - landscape-network
+    restart: unless-stopped
+    profiles:
+      - monitoring
+
+  # Optional: Certbot for SSL certificate management
+  certbot:
+    image: certbot/certbot
+    volumes:
+      - ./ssl:/etc/letsencrypt
+      - /var/www/certbot:/var/www/certbot
+    command: certonly --webroot --webroot-path=/var/www/certbot --email your-email@domain.com --agree-tos --no-eff-email -d yourdomain.com
+    profiles:
+      - ssl-init
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  n8n_data:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+
+networks:
+  landscape-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

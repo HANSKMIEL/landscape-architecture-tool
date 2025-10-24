@@ -2,23 +2,23 @@ name: Enhanced Zero-Downtime Deployment with Parallel Testing
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
-    types: [ closed ]
+    branches: [main]
+    types: [closed]
   workflow_dispatch:
     inputs:
       environment:
-        description: 'Deployment environment'
+        description: "Deployment environment"
         required: true
-        default: 'staging'
+        default: "staging"
         type: choice
         options:
-        - staging
-        - production
-        - both
+          - staging
+          - production
+          - both
       skip_tests:
-        description: 'Skip comprehensive testing'
+        description: "Skip comprehensive testing"
         required: false
         default: false
         type: boolean
@@ -81,8 +81,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
+          node-version: "20"
+          cache: "npm"
           cache-dependency-path: frontend/package-lock.json
 
       - name: Install frontend dependencies
@@ -143,8 +143,8 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
-          cache: 'pip'
+          python-version: "3.12"
+          cache: "pip"
 
       - name: Install backend dependencies
         run: |
@@ -201,19 +201,24 @@ jobs:
       - name: Setup SSH connection
         uses: webfactory/ssh-agent@v0.9.0
         with:
-          ssh-private-key: ${{ secrets.HOSTINGER_SSH_KEY }}
+          ssh-private-key: ${{ secrets.VPS_SSH_KEY != '' && secrets.VPS_SSH_KEY || secrets.HOSTINGER_SSH_KEY }}
 
-      - name: Add Hostinger to known hosts
+      - name: Add VPS to known hosts
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST != '' && secrets.VPS_HOST || secrets.HOSTINGER_HOST }}
         run: |
-          ssh-keyscan -H ${{ secrets.HOSTINGER_HOST }} >> ~/.ssh/known_hosts
+          ssh-keyscan -H $VPS_HOST >> ~/.ssh/known_hosts
 
       - name: Deploy to staging
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST != '' && secrets.VPS_HOST || secrets.HOSTINGER_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER != '' && secrets.VPS_USER || secrets.HOSTINGER_USERNAME }}
         run: |
           # Upload deployment script
-          scp scripts/enhanced-deploy.sh ${{ secrets.HOSTINGER_USERNAME }}@${{ secrets.HOSTINGER_HOST }}:/tmp/
-          
+          scp scripts/enhanced-deploy.sh $VPS_USER@$VPS_HOST:/tmp/
+
           # Run staging deployment
-          ssh ${{ secrets.HOSTINGER_USERNAME }}@${{ secrets.HOSTINGER_HOST }} "
+          ssh $VPS_USER@$VPS_HOST "
             chmod +x /tmp/enhanced-deploy.sh
             DEPLOY_TYPE=staging SKIP_PRODUCTION=true /tmp/enhanced-deploy.sh
           "
@@ -222,7 +227,7 @@ jobs:
         run: |
           max_retries=20
           retry_count=0
-          
+
           while [ $retry_count -lt $max_retries ]; do
             if curl -f -s "${{ env.STAGING_URL }}/health" > /dev/null; then
               echo "✅ Staging environment is healthy"
@@ -233,7 +238,7 @@ jobs:
               sleep 30
             fi
           done
-          
+
           if [ $retry_count -eq $max_retries ]; then
             echo "❌ Staging health check failed"
             exit 1
@@ -244,7 +249,7 @@ jobs:
     needs: [deploy-staging]
     if: github.event.inputs.skip_tests != 'true'
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -252,48 +257,24 @@ jobs:
       - name: Setup Python for API testing
         uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: "3.12"
 
       - name: Install testing dependencies
         run: |
           pip install requests pytest
 
       - name: API endpoint tests
+        env:
+          STAGING_URL: ${{ env.STAGING_URL }}
         run: |
-          python -c "
-import requests
-import sys
-
-def test_api_endpoints():
-    base_url = '${{ env.STAGING_URL }}'
-    
-    # Test health endpoint
-    response = requests.get(f'{base_url}/health')
-    assert response.status_code == 200, f'Health check failed: {response.status_code}'
-    print('✅ Health endpoint working')
-    
-    # Test dashboard stats
-    response = requests.get(f'{base_url}/api/dashboard/stats')
-    assert response.status_code == 200, f'Dashboard stats failed: {response.status_code}'
-    print('✅ Dashboard stats working')
-    
-    # Test authentication
-    auth_data = {'username': 'admin', 'password': 'admin123'}
-    response = requests.post(f'{base_url}/api/auth/login', json=auth_data)
-    assert response.status_code == 200, f'Authentication failed: {response.status_code}'
-    print('✅ Authentication working')
-    
-    print('✅ All API tests passed')
-
-test_api_endpoints()
-"
+          python scripts/test_api_endpoints.py
 
       - name: Frontend tests
         run: |
           # Test if frontend is serving correctly
           curl -f -s "${{ env.STAGING_URL }}/" > /dev/null
           echo "✅ Frontend serving correctly"
-          
+
           # Test settings page loads
           curl -f -s "${{ env.STAGING_URL }}/settings" > /dev/null || echo "⚠️ Settings page test warning"
 
@@ -302,7 +283,7 @@ test_api_endpoints()
           # Test response times
           response_time=$(curl -o /dev/null -s -w '%{time_total}' "${{ env.STAGING_URL }}/api/dashboard/stats")
           echo "Dashboard response time: ${response_time}s"
-          
+
           if (( $(echo "$response_time > 3.0" | bc -l) )); then
             echo "⚠️ Performance warning: Response time ${response_time}s > 3s"
           else
@@ -334,19 +315,24 @@ test_api_endpoints()
       - name: Setup SSH connection
         uses: webfactory/ssh-agent@v0.9.0
         with:
-          ssh-private-key: ${{ secrets.HOSTINGER_SSH_KEY }}
+          ssh-private-key: ${{ secrets.VPS_SSH_KEY != '' && secrets.VPS_SSH_KEY || secrets.HOSTINGER_SSH_KEY }}
 
-      - name: Add Hostinger to known hosts
+      - name: Add VPS to known hosts
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST != '' && secrets.VPS_HOST || secrets.HOSTINGER_HOST }}
         run: |
-          ssh-keyscan -H ${{ secrets.HOSTINGER_HOST }} >> ~/.ssh/known_hosts
+          ssh-keyscan -H $VPS_HOST >> ~/.ssh/known_hosts
 
       - name: Deploy to production
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST != '' && secrets.VPS_HOST || secrets.HOSTINGER_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER != '' && secrets.VPS_USER || secrets.HOSTINGER_USERNAME }}
         run: |
           # Upload deployment script
-          scp scripts/enhanced-deploy.sh ${{ secrets.HOSTINGER_USERNAME }}@${{ secrets.HOSTINGER_HOST }}:/tmp/
-          
+          scp scripts/enhanced-deploy.sh $VPS_USER@$VPS_HOST:/tmp/
+
           # Run production deployment
-          ssh ${{ secrets.HOSTINGER_USERNAME }}@${{ secrets.HOSTINGER_HOST }} "
+          ssh $VPS_USER@$VPS_HOST "
             chmod +x /tmp/enhanced-deploy.sh
             DEPLOY_TYPE=production /tmp/enhanced-deploy.sh
           "
@@ -355,7 +341,7 @@ test_api_endpoints()
         run: |
           max_retries=30
           retry_count=0
-          
+
           while [ $retry_count -lt $max_retries ]; do
             if curl -f -s "${{ env.PRODUCTION_URL }}/health" > /dev/null; then
               echo "✅ Production environment is healthy"
@@ -366,7 +352,7 @@ test_api_endpoints()
               sleep 30
             fi
           done
-          
+
           if [ $retry_count -eq $max_retries ]; then
             echo "❌ Production health check failed"
             exit 1
@@ -381,7 +367,7 @@ test_api_endpoints()
             "/api/suppliers"
             "/api/plants"
           )
-          
+
           for endpoint in "${endpoints[@]}"; do
             if curl -f -s "${{ env.PRODUCTION_URL }}${endpoint}" > /dev/null; then
               echo "✅ ${endpoint} working"
@@ -403,7 +389,7 @@ test_api_endpoints()
         run: |
           staging_status="${{ needs.deploy-staging.result }}"
           production_status="${{ needs.deploy-production.result }}"
-          
+
           if [[ "$staging_status" == "success" && "$production_status" == "success" ]]; then
             echo "status=success" >> $GITHUB_OUTPUT
             echo "message=✅ Deployment completed successfully to both staging and production" >> $GITHUB_OUTPUT
@@ -435,18 +421,20 @@ test_api_endpoints()
         uses: actions/github-script@v7
         with:
           script: |
+            const message = `## 🚀 Deployment Status
+
+            ${{ steps.status.outputs.message }}
+
+            **Environments:**
+            - **Staging**: ${{ env.STAGING_URL }}
+            - **Production**: ${{ env.PRODUCTION_URL }}
+
+            **Commit**: \`${{ needs.validate-environment.outputs.git-sha }}\`
+            **Workflow**: [View Run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})`;
+
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: `## 🚀 Deployment Status
-
-${{ steps.status.outputs.message }}
-
-**Environments:**
-- **Staging**: ${{ env.STAGING_URL }}
-- **Production**: ${{ env.PRODUCTION_URL }}
-
-**Commit**: \`${{ needs.validate-environment.outputs.git-sha }}\`
-**Workflow**: [View Run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})`
+              body: message
             })

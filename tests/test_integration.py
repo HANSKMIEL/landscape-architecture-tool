@@ -11,8 +11,6 @@ from pathlib import Path
 
 import pytest
 
-from tests.fixtures.auth_fixtures import authenticated_test_user, setup_test_authentication
-
 # Add project root to Python path using relative paths
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
@@ -63,6 +61,34 @@ def integration_client(integration_app):
     return integration_app.test_client()
 
 
+@pytest.fixture
+def authenticated_integration_client(integration_app, integration_client):
+    """Provide an authenticated integration client with admin privileges."""
+    from src.models.user import User, db  # imported lazily to avoid circulars
+
+    with integration_app.app_context():
+        existing_user = User.query.filter_by(username="integration_admin").first()
+        if existing_user is None:
+            user = User(username="integration_admin", email="integration@test.com", role="admin")
+            user.set_password("password")
+            db.session.add(user)
+            db.session.commit()
+            user_id = user.id
+            username = user.username
+            role = user.role
+        else:
+            user_id = existing_user.id
+            username = existing_user.username
+            role = existing_user.role
+
+    with integration_client.session_transaction() as sess:
+        sess["user_id"] = user_id
+        sess["username"] = username
+        sess["role"] = role
+
+    return integration_client
+
+
 @pytest.mark.integration
 class TestIntegrationEndpoints:
     """Test the main integration test scenarios from the CI workflow"""
@@ -80,9 +106,9 @@ class TestIntegrationEndpoints:
         assert data["database_status"] == "connected"
         assert "timestamp" in data
 
-    def test_dashboard_stats_endpoint(self, integration_client):
+    def test_dashboard_stats_endpoint(self, authenticated_integration_client):
         """Test the dashboard stats endpoint"""
-        response = integration_client.get("/api/dashboard/stats")
+        response = authenticated_integration_client.get("/api/dashboard/stats")
 
         assert response.status_code == 200
         data = response.get_json()
@@ -104,11 +130,10 @@ class TestIntegrationEndpoints:
         assert totals["projects"] >= 0
         assert totals["clients"] >= 0
 
-    def test_supplier_crud_operations(self, integration_client):
+    def test_supplier_crud_operations(self, authenticated_integration_client):
         """Test supplier CRUD operations as done in CI"""
-        # Authentication handled by authenticated_test_user fixture
         # Test listing suppliers first
-        response = integration_client.get("/api/suppliers")
+        response = authenticated_integration_client.get("/api/suppliers")
         assert response.status_code == 200
         initial_data = response.get_json()
         initial_count = initial_data["total"]
@@ -122,7 +147,7 @@ class TestIntegrationEndpoints:
             "address": "123 Test St",
         }
 
-        response = integration_client.post(
+        response = authenticated_integration_client.post(
             "/api/suppliers",
             json=supplier_data,
             headers={"Content-Type": "application/json"},
@@ -141,7 +166,7 @@ class TestIntegrationEndpoints:
         assert created_supplier["created_at"] is not None
 
         # Test listing suppliers again to verify the new supplier is included
-        response = integration_client.get("/api/suppliers")
+        response = authenticated_integration_client.get("/api/suppliers")
         assert response.status_code == 200
         updated_data = response.get_json()
 

@@ -2,11 +2,11 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Menu, ChevronDown, User, Settings, LogOut } from 'lucide-react';
 import { useLanguage, LanguageSelector } from '../i18n/LanguageProvider';
 
-const Header = ({ 
-  onMenuClick, 
-  sidebarOpen, 
-  user, 
-  onLogout 
+const Header = ({
+  onMenuClick,
+  sidebarOpen,
+  user,
+  onLogout
 }) => {
   const { t } = useLanguage();
   const [showUserMenu, setShowUserMenu] = useState(false);
@@ -29,12 +29,12 @@ const Header = ({
   };
 
   const getRoleColor = (role) => {
-    const colors = {
+    const roleColors = {
       admin: 'bg-red-600',
       employee: 'bg-blue-600',
       client: 'bg-green-600'
     };
-    return colors[role] || 'bg-gray-600';
+    return roleColors[role] || 'bg-gray-600';
   };
 
   return (
@@ -50,7 +50,7 @@ const Header = ({
           >
             <Menu className="w-6 h-6" />
           </button>
-          
+
           <div className="hidden sm:block">
             <h1 className="text-xl font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
               {t('dashboard.title', 'Landscape Architecture Tool')}
@@ -62,7 +62,7 @@ const Header = ({
         <div className="flex items-center space-x-4">
           {/* Language Selector */}
           <LanguageSelector className="hidden sm:block" />
-          
+
           {/* User Menu */}
           {user && (
             <div className="relative" ref={userMenuRef}>
@@ -77,13 +77,13 @@ const Header = ({
                     {user.username.charAt(0).toUpperCase()}
                   </span>
                 </div>
-                
+
                 {/* User Info - Hidden on small screens */}
                 <div className="hidden sm:block text-left">
                   <div className="font-medium text-gray-900">{user.username}</div>
                   <div className="text-xs text-gray-500">{getRoleDisplay(user.role)}</div>
                 </div>
-                
+
                 <ChevronDown className="w-4 h-4 text-gray-500" />
               </button>
 
@@ -105,7 +105,7 @@ const Header = ({
                       <User className="w-4 h-4 mr-3" />
                       {t('common.profile', 'Profile')}
                     </button>
-                    
+
                     <button className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
                       <Settings className="w-4 h-4 mr-3" />
                       {t('navigation.settings', 'Settings')}
@@ -131,7 +131,7 @@ const Header = ({
           )}
         </div>
       </div>
-      
+
       {/* Mobile title - shown when sidebar is closed */}
       <div className="sm:hidden mt-2">
         <h1 className="text-lg font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">

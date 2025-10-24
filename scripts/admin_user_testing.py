@@ -345,8 +345,7 @@ def main():
         return False
 
     # Run comprehensive testing
-    results = tester.run_comprehensive_test()
-    return results
+    return tester.run_comprehensive_test()
 
 
 if __name__ == "__main__":

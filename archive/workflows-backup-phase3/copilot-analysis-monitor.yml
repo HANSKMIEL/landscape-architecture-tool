@@ -1,0 +1,292 @@
+name: Copilot Analysis Monitor
+
+on:
+  schedule:
+    # Check every 2 hours during work hours
+    - cron: "0 */2 8-18 * * 1-5"
+  workflow_dispatch:
+    inputs:
+      force_check:
+        description: 'Force check all open analyses'
+        default: false
+        type: boolean
+
+jobs:
+  monitor-analyses:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      pull-requests: read
+      contents: read
+      
+    steps:
+      - name: Find active Copilot analyses
+        id: find-analyses
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'dependabot-analysis,copilot-analyzing',
+              per_page: 50
+            });
+            
+            const activeAnalyses = [];
+            const currentTime = new Date();
+            
+            for (const issue of issues.data) {
+              const createdTime = new Date(issue.created_at);
+              const ageHours = (currentTime - createdTime) / (1000 * 60 * 60);
+              
+              // Extract priority from labels
+              const priority = issue.labels.find(l => l.name.startsWith('priority-'))?.name.replace('priority-', '') || 'medium';
+              
+              // Extract PR number from issue body
+              const prMatch = issue.body.match(/\*\*PR:\*\* #(\d+)/);
+              const prNumber = prMatch ? parseInt(prMatch[1]) : null;
+              
+              // Check if overdue based on priority
+              const timeoutHours = priority === 'critical' ? 4 : priority === 'high' ? 8 : 24;
+              const isOverdue = ageHours > timeoutHours;
+              
+              // Check progress by looking for checkmarks in issue body
+              const checkboxes = (issue.body.match(/- \[[ x]\]/g) || []);
+              const completed = (issue.body.match(/- \[x\]/g) || []).length;
+              const total = checkboxes.length;
+              const progressPercent = total > 0 ? Math.round((completed / total) * 100) : 0;
+              
+              activeAnalyses.push({
+                number: issue.number,
+                title: issue.title,
+                prNumber,
+                priority,
+                ageHours: Math.round(ageHours * 10) / 10,
+                timeoutHours,
+                isOverdue,
+                progressPercent,
+                completed,
+                total,
+                lastUpdated: issue.updated_at
+              });
+            }
+            
+            console.log(`Found ${activeAnalyses.length} active analyses`);
+            return activeAnalyses;
+
+      - name: Send progress notifications
+        if: fromJSON(steps.find-analyses.outputs.result).length > 0
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const analyses = ${{ steps.find-analyses.outputs.result }};
+            
+            for (const analysis of analyses) {
+              const lastUpdate = new Date(analysis.lastUpdated);
+              const hoursSinceUpdate = (new Date() - lastUpdate) / (1000 * 60 * 60);
+              
+              // Send progress reminder if no updates in 2+ hours for critical/high priority
+              const reminderThreshold = analysis.priority === 'critical' ? 2 : 
+                                      analysis.priority === 'high' ? 4 : 8;
+              
+              if (hoursSinceUpdate >= reminderThreshold && !analysis.isOverdue) {
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: analysis.number,
+                  body: [
+                    `⏰ **Analysis Progress Check**`,
+                    ``,
+                    `**Current Status:**`,
+                    `- Progress: ${analysis.progressPercent}% (${analysis.completed}/${analysis.total} tasks)`,
+                    `- Time elapsed: ${analysis.ageHours} hours`,
+                    `- Priority: ${analysis.priority}`,
+                    `- Target completion: ${analysis.timeoutHours} hours`,
+                    ``,
+                    `**Remaining Time:** ${Math.max(0, analysis.timeoutHours - analysis.ageHours).toFixed(1)} hours`,
+                    ``,
+                    analysis.progressPercent < 25 ? 
+                      `🔍 **Status:** Early analysis phase - gathering requirements and impact assessment` :
+                    analysis.progressPercent < 50 ?
+                      `🧪 **Status:** Testing phase - running validation and identifying issues` :
+                    analysis.progressPercent < 75 ?
+                      `🔧 **Status:** Implementation phase - applying fixes and updates` :
+                      `✅ **Status:** Final validation - completing testing and documentation`,
+                    ``,
+                    `**Quick Commands:**`,
+                    `- Comment \`@copilot status\` for detailed progress`,
+                    `- Comment \`@copilot help\` if you need assistance`,
+                    `- Comment \`@copilot prioritize\` to escalate if urgent`,
+                    ``,
+                    `---`,
+                    `*Automated progress monitoring*`
+                  ].join('\n')
+                });
+                
+                console.log(`Sent progress reminder for issue #${analysis.number}`);
+              }
+              
+              // Send overdue notification
+              if (analysis.isOverdue) {
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: analysis.number,
+                  body: [
+                    `🚨 **Analysis Overdue - Escalation Required**`,
+                    ``,
+                    `**Analysis Status:**`,
+                    `- Time elapsed: ${analysis.ageHours} hours (Target: ${analysis.timeoutHours} hours)`,
+                    `- Progress: ${analysis.progressPercent}% (${analysis.completed}/${analysis.total} tasks)`,
+                    `- Priority: ${analysis.priority}`,
+                    `- PR: ${analysis.prNumber ? `#${analysis.prNumber}` : 'Not specified'}`,
+                    ``,
+                    `**Escalation Actions:**`,
+                    `- [ ] Manual review initiated`,
+                    `- [ ] Additional resources assigned`,
+                    `- [ ] Alternative approach considered`,
+                    `- [ ] Timeline adjustment approved`,
+                    ``,
+                    `**Immediate Actions Available:**`,
+                    `- Comment \`@copilot emergency\` for immediate attention`,
+                    `- Comment \`@copilot handoff\` to request manual takeover`,
+                    `- Comment \`@copilot extend\` to request timeline extension`,
+                    ``,
+                    `@HANSKMIEL Please review this overdue analysis and determine next steps.`,
+                    ``,
+                    `---`,
+                    `*Automated escalation due to overdue analysis*`
+                  ].join('\n')
+                });
+                
+                // Add escalation labels
+                await github.rest.issues.addLabels({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: analysis.number,
+                  labels: ['escalation-required', 'overdue']
+                });
+                
+                console.log(`Escalated overdue analysis #${analysis.number}`);
+              }
+            }
+
+      - name: Generate analysis dashboard
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const analyses = ${{ steps.find-analyses.outputs.result }};
+            
+            if (analyses.length === 0) {
+              console.log('No active analyses to report');
+              return;
+            }
+            
+            // Group analyses by status
+            const onTrack = analyses.filter(a => !a.isOverdue && a.progressPercent >= 25);
+            const starting = analyses.filter(a => !a.isOverdue && a.progressPercent < 25);
+            const overdue = analyses.filter(a => a.isOverdue);
+            
+            // Calculate average progress
+            const avgProgress = analyses.length > 0 ? 
+              Math.round(analyses.reduce((sum, a) => sum + a.progressPercent, 0) / analyses.length) : 0;
+            
+            const dashboard = [
+              `## 📊 Copilot Dependency Analysis Dashboard`,
+              ``,
+              `**Generated:** ${new Date().toISOString()}`,
+              `**Active Analyses:** ${analyses.length}`,
+              `**Average Progress:** ${avgProgress}%`,
+              ``,
+              `### 🟢 On Track (${onTrack.length})`,
+              ...onTrack.map(a => 
+                `- Issue #${a.number}: ${a.progressPercent}% (${a.ageHours}h/${a.timeoutHours}h) - ${a.priority} priority`
+              ),
+              onTrack.length === 0 ? '- None' : '',
+              ``,
+              `### 🟡 Starting (${starting.length})`,
+              ...starting.map(a => 
+                `- Issue #${a.number}: ${a.progressPercent}% (${a.ageHours}h/${a.timeoutHours}h) - ${a.priority} priority`
+              ),
+              starting.length === 0 ? '- None' : '',
+              ``,
+              `### 🔴 Overdue/Escalated (${overdue.length})`,
+              ...overdue.map(a => 
+                `- Issue #${a.number}: ${a.progressPercent}% (${a.ageHours}h/${a.timeoutHours}h) - ${a.priority} priority ⚠️`
+              ),
+              overdue.length === 0 ? '- None' : '',
+              ``,
+              `### 📈 Progress Summary`,
+              `- Total dependencies being analyzed: ${analyses.length}`,
+              `- Critical priority: ${analyses.filter(a => a.priority === 'critical').length}`,
+              `- High priority: ${analyses.filter(a => a.priority === 'high').length}`,
+              `- Medium priority: ${analyses.filter(a => a.priority === 'medium').length}`,
+              ``,
+              `### 🎯 Next Actions`,
+              overdue.length > 0 ? `- ⚠️ ${overdue.length} analyses require immediate attention` : '',
+              starting.length > 0 ? `- 🚀 ${starting.length} analyses in early stages` : '',
+              onTrack.length > 0 ? `- ✅ ${onTrack.length} analyses progressing normally` : '',
+              ``,
+              `---`,
+              `*This dashboard is automatically updated every 2 hours during work hours*`,
+              `*For real-time status, check individual analysis issues*`
+            ].filter(line => line !== '').join('\n');
+            
+            console.log('Generated analysis dashboard:');
+            console.log(dashboard);
+            
+            // Save dashboard for potential future use (like sending to Slack, email, etc.)
+            return dashboard;
+
+      - name: Auto-complete stale analyses
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const analyses = ${{ steps.find-analyses.outputs.result }};
+            
+            for (const analysis of analyses) {
+              // Auto-complete if 90%+ progress and no updates for 4+ hours
+              const lastUpdate = new Date(analysis.lastUpdated);
+              const hoursSinceUpdate = (new Date() - lastUpdate) / (1000 * 60 * 60);
+              
+              if (analysis.progressPercent >= 90 && hoursSinceUpdate >= 4) {
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: analysis.number,
+                  body: [
+                    `🏁 **Analysis Auto-Completion Check**`,
+                    ``,
+                    `This analysis shows ${analysis.progressPercent}% completion with no updates for ${hoursSinceUpdate.toFixed(1)} hours.`,
+                    ``,
+                    `**Final Status Check:**`,
+                    `- [ ] All critical tasks completed`,
+                    `- [ ] Tests passing`,
+                    `- [ ] PR ready for merge`,
+                    `- [ ] Documentation updated`,
+                    ``,
+                    `**Next Steps:**`,
+                    `1. If analysis is complete, please close this issue`,
+                    `2. If more work needed, comment \`@copilot continue\``,
+                    `3. If help needed, comment \`@copilot help\``,
+                    ``,
+                    `**Auto-actions in 2 hours if no response:**`,
+                    `- Issue will be marked as 'pending-completion'`,
+                    `- Manual review will be requested`,
+                    ``,
+                    `---`,
+                    `*Automated completion check*`
+                  ].join('\n')
+                });
+                
+                await github.rest.issues.addLabels({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: analysis.number,
+                  labels: ['pending-completion']
+                });
+                
+                console.log(`Marked analysis #${analysis.number} for completion check`);
+              }
+            }

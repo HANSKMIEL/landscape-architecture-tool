@@ -90,7 +90,7 @@ const Dashboard = () => {
           {t('errors.connectionFailed', 'Connection to backend failed')}
         </h3>
         <p className="text-gray-600 mb-6">
-          {error.includes('Failed to fetch') 
+          {error.includes('Failed to fetch')
             ? t('errors.checkBackendServer', 'Check if the backend server is running on http://127.0.0.1:5000')
             : error
           }
@@ -283,7 +283,7 @@ const Dashboard = () => {
           <div className="bg-white rounded-lg shadow-sm border p-6">
             <h2 className="text-xl font-semibold text-gray-900 mb-4">Projectoverzicht</h2>
             {stats && (
-              <DashboardStatsChart 
+              <DashboardStatsChart
                 data={{
                   suppliers: stats.suppliers,
                   plants: stats.plants,
@@ -343,7 +343,7 @@ const Dashboard = () => {
               </svg>
               <span>Leverancier toevoegen</span>
             </button>
-            
+
             <button
               onClick={() => window.location.href = '/plants'}
               className="flex items-center justify-center space-x-2 bg-landscape-secondary hover:bg-landscape-secondary-dark text-white font-medium py-3 px-4 rounded-lg transition-colors duration-200"
@@ -353,7 +353,7 @@ const Dashboard = () => {
               </svg>
               <span>Plant toevoegen</span>
             </button>
-            
+
             <button
               onClick={() => window.location.href = '/clients'}
               className="flex items-center justify-center space-x-2 bg-landscape-accent hover:bg-landscape-accent-dark text-white font-medium py-3 px-4 rounded-lg transition-colors duration-200"
@@ -363,7 +363,7 @@ const Dashboard = () => {
               </svg>
               <span>Klant toevoegen</span>
             </button>
-            
+
             <button
               onClick={() => window.location.href = '/projects'}
               className="flex items-center justify-center space-x-2 bg-gray-600 hover:bg-gray-700 text-white font-medium py-3 px-4 rounded-lg transition-colors duration-200"

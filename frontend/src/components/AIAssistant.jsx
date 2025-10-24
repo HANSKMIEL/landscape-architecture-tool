@@ -1,17 +1,17 @@
-import React, { useState, useRef, useEffect } from 'react'
+import React, { useState, useRef, useEffect, useCallback } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input as _Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { 
-  Bot, 
-  Send, 
-  Loader2, 
-  Lightbulb, 
-  Leaf, 
-  TrendingUp, 
+import {
+  Bot,
+  Send,
+  Loader2,
+  Lightbulb,
+  Leaf,
+  TrendingUp,
   MessageSquare,
   Sparkles,
   Brain,
@@ -32,44 +32,125 @@ const AIAssistant = () => {
   const [messages, setMessages] = useState([])
   const [inputMessage, setInputMessage] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-  const [suggestions, setSuggestions] = useState([])
   const [insights, setInsights] = useState([])
   const [plantRecommendations, setPlantRecommendations] = useState([])
   const messagesEndRef = useRef(null)
 
   // Scroll to bottom of messages
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
-  }
+  const scrollToBottom = useCallback(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [])
 
   useEffect(() => {
     scrollToBottom()
-  }, [messages])
+  }, [messages, scrollToBottom])
+
+  const generateInsights = useCallback(async () => {
+    try {
+      const stats = await ApiService.getDashboardStats()
+
+      const insightPrompts = [
+        {
+          type: 'performance',
+          icon: TrendingUp,
+          title: language === 'nl' ? 'Prestatie Analyse' : 'Performance Analysis',
+          prompt: `Based on ${stats.total_projects} projects and ${stats.total_clients} clients, what are key performance insights?`,
+        },
+        {
+          type: 'growth',
+          icon: BarChart3,
+          title: language === 'nl' ? 'Groei Mogelijkheden' : 'Growth Opportunities',
+          prompt: 'With current project portfolio, what growth opportunities exist?',
+        },
+        {
+          type: 'efficiency',
+          icon: Zap,
+          title: language === 'nl' ? 'Efficiëntie Tips' : 'Efficiency Tips',
+          prompt: 'How can landscape architecture workflow be optimized?',
+        },
+      ]
+
+      const generatedInsights = insightPrompts.map((insight) => ({
+        ...insight,
+        content:
+          language === 'nl'
+            ? `Gebaseerd op je huidige data van ${stats.total_projects} projecten en ${stats.total_clients} klanten, raad ik aan om te focussen op het verbeteren van client retentie en het uitbreiden van je plantencatalogus.`
+            : `Based on your current data of ${stats.total_projects} projects and ${stats.total_clients} clients, I recommend focusing on improving client retention and expanding your plant catalog.`,
+        id: Date.now() + Math.random(),
+      }))
+
+      setInsights(generatedInsights)
+    } catch (error) {
+      console.error('Error generating insights:', error)
+    }
+  }, [language])
+
+  const generatePlantRecommendations = useCallback(async () => {
+    try {
+      const plants = await ApiService.getPlants()
+
+      const recommendations = [
+        {
+          id: 1,
+          type: 'native',
+          title: language === 'nl' ? 'Inheemse Planten' : 'Native Plants',
+          description:
+            language === 'nl'
+              ? 'Bevorder biodiversiteit met inheemse plantensoorten'
+              : 'Promote biodiversity with native plant species',
+          plants: plants.plants?.filter((p) => p.native).slice(0, 3) || [],
+          icon: Leaf,
+          color: 'text-green-600',
+        },
+        {
+          id: 2,
+          type: 'drought_resistant',
+          title: language === 'nl' ? 'Droogtebestendige Planten' : 'Drought Resistant Plants',
+          description:
+            language === 'nl'
+              ? 'Waterbesparende opties voor duurzame tuinen'
+              : 'Water-saving options for sustainable gardens',
+          plants: plants.plants?.filter((p) => p.water_needs === 'low').slice(0, 3) || [],
+          icon: Target,
+          color: 'text-blue-600',
+        },
+        {
+          id: 3,
+          type: 'seasonal',
+          title: language === 'nl' ? 'Seizoensgebonden Keuzes' : 'Seasonal Choices',
+          description:
+            language === 'nl'
+              ? 'Perfecte planten voor het huidige seizoen'
+              : 'Perfect plants for the current season',
+          plants: plants.plants?.slice(0, 3) || [],
+          icon: Sparkles,
+          color: 'text-purple-600',
+        },
+      ]
+
+      setPlantRecommendations(recommendations)
+    } catch (error) {
+      console.error('Error generating plant recommendations:', error)
+    }
+  }, [language])
+
+  const loadInitialData = useCallback(async () => {
+    await Promise.all([generateInsights(), generatePlantRecommendations()])
+  }, [generateInsights, generatePlantRecommendations])
 
   // Initialize with welcome message
   useEffect(() => {
     const welcomeMessage = {
       id: Date.now(),
       type: 'assistant',
-      content: language === 'nl' 
+      content: language === 'nl'
         ? 'Hallo! Ik ben je AI-assistent voor landschapsarchitectuur. Ik kan je helpen met plantaanbevelingen, projectinzichten, en data-analyse. Hoe kan ik je vandaag helpen?'
         : 'Hello! I\'m your landscape architecture AI assistant. I can help you with plant recommendations, project insights, and data analysis. How can I help you today?',
       timestamp: new Date()
     }
     setMessages([welcomeMessage])
-    loadInitialData, [loadInitialData]()
-  }, [language])
-
-  // Load initial data for insights
-  const loadInitialData = async () => {
-    try {
-      // Generate initial insights
-      await generateInsights()
-      await generatePlantRecommendations()
-    } catch (error) {
-      console.error('Error loading initial data:', error)
-    }
-  }
+    loadInitialData()
+  }, [language, loadInitialData])
 
   // Send message to AI
   const sendMessage = async () => {
@@ -82,7 +163,7 @@ const AIAssistant = () => {
       timestamp: new Date()
     }
 
-    setMessages(prev => [...prev, userMessage])
+    setMessages((prev) => [...prev, userMessage])
     setInputMessage('')
     setIsLoading(true)
 
@@ -105,7 +186,7 @@ const AIAssistant = () => {
       }
 
       const data = await response.json()
-      
+
       const assistantMessage = {
         id: Date.now() + 1,
         type: 'assistant',
@@ -113,112 +194,22 @@ const AIAssistant = () => {
         timestamp: new Date()
       }
 
-      setMessages(prev => [...prev, assistantMessage])
+      setMessages((prev) => [...prev, assistantMessage])
 
     } catch (error) {
       console.error('AI chat error:', error)
       const errorMessage = {
         id: Date.now() + 1,
         type: 'assistant',
-        content: language === 'nl' 
+        content: language === 'nl'
           ? 'Sorry, ik kan je vraag momenteel niet verwerken. Probeer het later opnieuw.'
           : 'Sorry, I can\'t process your question right now. Please try again later.',
         timestamp: new Date(),
         isError: true
       }
-      setMessages(prev => [...prev, errorMessage])
+      setMessages((prev) => [...prev, errorMessage])
     } finally {
       setIsLoading(false)
-    }
-  }
-
-  // Generate business insights
-  const generateInsights = async () => {
-    try {
-      // Get dashboard stats for context
-      const stats = await ApiService.getDashboardStats()
-      
-      const insightPrompts = [
-        {
-          type: 'performance',
-          icon: TrendingUp,
-          title: language === 'nl' ? 'Prestatie Analyse' : 'Performance Analysis',
-          prompt: `Based on ${stats.total_projects} projects and ${stats.total_clients} clients, what are key performance insights?`
-        },
-        {
-          type: 'growth',
-          icon: BarChart3,
-          title: language === 'nl' ? 'Groei Mogelijkheden' : 'Growth Opportunities',
-          prompt: `With current project portfolio, what growth opportunities exist?`
-        },
-        {
-          type: 'efficiency',
-          icon: Zap,
-          title: language === 'nl' ? 'Efficiëntie Tips' : 'Efficiency Tips',
-          prompt: `How can landscape architecture workflow be optimized?`
-        }
-      ]
-
-      const generatedInsights = insightPrompts.map(insight => ({
-        ...insight,
-        content: language === 'nl' 
-          ? `Gebaseerd op je huidige data van ${stats.total_projects} projecten en ${stats.total_clients} klanten, raad ik aan om te focussen op het verbeteren van client retentie en het uitbreiden van je plantencatalogus.`
-          : `Based on your current data of ${stats.total_projects} projects and ${stats.total_clients} clients, I recommend focusing on improving client retention and expanding your plant catalog.`,
-        id: Date.now() + Math.random()
-      }))
-
-      setInsights(generatedInsights)
-
-    } catch (error) {
-      console.error('Error generating insights:', error)
-    }
-  }
-
-  // Generate plant recommendations
-  const generatePlantRecommendations = async () => {
-    try {
-      const plants = await ApiService.getPlants()
-      
-      const recommendations = [
-        {
-          id: 1,
-          type: 'native',
-          title: language === 'nl' ? 'Inheemse Planten' : 'Native Plants',
-          description: language === 'nl' 
-            ? 'Bevorder biodiversiteit met inheemse plantensoorten'
-            : 'Promote biodiversity with native plant species',
-          plants: plants.plants?.filter(p => p.native).slice(0, 3) || [],
-          icon: Leaf,
-          color: 'text-green-600'
-        },
-        {
-          id: 2,
-          type: 'drought_resistant',
-          title: language === 'nl' ? 'Droogtebestendige Planten' : 'Drought Resistant Plants',
-          description: language === 'nl' 
-            ? 'Waterbesparende opties voor duurzame tuinen'
-            : 'Water-saving options for sustainable gardens',
-          plants: plants.plants?.filter(p => p.water_needs === 'low').slice(0, 3) || [],
-          icon: Target,
-          color: 'text-blue-600'
-        },
-        {
-          id: 3,
-          type: 'seasonal',
-          title: language === 'nl' ? 'Seizoensgebonden Keuzes' : 'Seasonal Choices',
-          description: language === 'nl' 
-            ? 'Perfecte planten voor het huidige seizoen'
-            : 'Perfect plants for the current season',
-          plants: plants.plants?.slice(0, 3) || [],
-          icon: Sparkles,
-          color: 'text-purple-600'
-        }
-      ]
-
-      setPlantRecommendations(recommendations)
-
-    } catch (error) {
-      console.error('Error generating plant recommendations:', error)
     }
   }
 
@@ -297,13 +288,12 @@ const AIAssistant = () => {
                     className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
                   >
                     <div
-                      className={`max-w-[80%] p-3 rounded-lg ${
-                        message.type === 'user'
-                          ? 'bg-green-600 text-white'
-                          : message.isError
+                      className={`max-w-[80%] p-3 rounded-lg ${message.type === 'user'
+                        ? 'bg-green-600 text-white'
+                        : message.isError
                           ? 'bg-red-50 text-red-800 border border-red-200'
                           : 'bg-gray-100 text-gray-800'
-                      }`}
+                        }`}
                     >
                       <div className="flex items-start space-x-2">
                         {message.type === 'assistant' && (
@@ -417,7 +407,7 @@ const AIAssistant = () => {
                     {t('aiAssistant.positive', 'Positive')}
                   </Badge>
                 </div>
-                
+
                 <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
                   <div className="flex items-center space-x-2">
                     <CheckCircle className="h-4 w-4 text-green-600" />
