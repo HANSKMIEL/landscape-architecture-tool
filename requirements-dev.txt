@@ -133,8 +133,6 @@ flask-limiter==3.12
     # via -r requirements.in
 flask-migrate==4.1.0
     # via -r requirements.in
-flask-swagger-ui==4.11.1
-    # via -r requirements.in
 flask-sqlalchemy==3.1.1
     # via
     #   -r requirements.in
@@ -248,7 +246,7 @@ mypy-extensions==1.1.0
     # via black
 numpy==2.3.2
     # via pandas
-openai==1.98.0
+openai==2.6.0
     # via -r requirements.in
 openpyxl==3.1.5
     # via -r requirements.in
