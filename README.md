@@ -1,6 +1,16 @@
-# Landscape Architecture Management Tool - V1.00D
+# Landscape Architecture Management Tool
 
-A comprehensive web application for managing landscape architecture projects, suppliers, plants, products, and clients. Now organized with a robust V1.00 release structure for sustainable development and production deployment.
+A comprehensive web application for managing landscape architecture projects, suppliers, plants, products, and clients.
+
+## 📋 Important: Branch Migration (October 2025)
+
+**The repository branch structure has been updated:**
+- **`main`** (formerly `V1.00D`) - Active development branch, deployed to VPS
+- **`Archive-main`** (formerly `main`) - Archived historical production state
+
+All development now happens on the `main` branch. The old dual-branch promotion workflow is deprecated.
+
+For migration details, see: [Branch Migration Guide](docs/BRANCH_MIGRATION_GUIDE.md)
 
 ## 🏗️ V1.00 Repository Organization
 
@@ -28,7 +38,8 @@ landscape-architecture-tool/
 # Clone and setup development environment
 git clone <repository-url>
 cd landscape-architecture-tool
-git checkout v1.00D
+# Note: After October 2025, 'main' is the active development branch (formerly V1.00D)
+git checkout main
 
 # Install dependencies and start developing
 make install
@@ -42,19 +53,20 @@ cd packages/v1.00/deploy
 ./deploy.sh
 ```
 
-### For VPS Clean Reinstall (V1.00D Branch) ⭐ NEW
+### For VPS Clean Reinstall ⭐
 ```bash
-# Complete clean reinstall on VPS from V1.00D branch
+# Complete clean reinstall on VPS from main branch (active development)
 ssh root@72.60.176.200
-bash <(curl -fsSL https://raw.githubusercontent.com/HANSKMIEL/landscape-architecture-tool/V1.00D/scripts/vps_clean_reinstall.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/HANSKMIEL/landscape-architecture-tool/main/scripts/vps_clean_reinstall.sh)
 
 # See: docs/VPS_DEPLOYMENT_SOLUTION.md for complete guide
 ```
 
-### For Updates (Development → Production)
+### For Updates (Deprecated Post-Migration)
 ```bash
-# Promote tested V1.00D changes to V1.00
-./scripts/update_v1_from_dev.sh
+# Note: Post-October 2025 migration, the dual-branch promotion workflow is deprecated
+# Development happens directly on 'main' branch with appropriate PR reviews
+./scripts/update_v1_from_dev.sh  # Preserved for historical reference
 ```
 
 ## 🏢 Enterprise Features

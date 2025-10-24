@@ -1,10 +1,12 @@
 name: Enhanced Zero-Downtime Deployment with Parallel Testing
 
+# Note: After branch migration, V1.00D will be renamed to main, and old main to Archive-main
+# This workflow should trigger on the active development branch (V1.00D/main)
 on:
   push:
-    branches: [main]
+    branches: [main, V1.00D]
   pull_request:
-    branches: [main]
+    branches: [main, V1.00D]
     types: [closed]
   workflow_dispatch:
     inputs:

@@ -15,7 +15,8 @@ echo -e "${RED}🚨 EMERGENCY PRODUCTION TITLE RESTORATION${NC}"
 echo -e "${RED}=========================================${NC}"
 echo ""
 echo -e "${YELLOW}This script will restore the correct production title on optura.nl${NC}"
-echo -e "${YELLOW}by deploying the main branch (NOT V1.00D) to production.${NC}"
+echo -e "${YELLOW}NOTE: After branch migration, 'main' branch is the active development branch.${NC}"
+echo -e "${YELLOW}The old production state is archived in 'Archive-main' branch.${NC}"
 echo ""
 
 # Safety check
@@ -63,7 +64,8 @@ cd "$PRODUCTION_DIR"
 echo "📍 Current branch: $(git branch --show-current)"
 echo "📍 Current commit: $(git log -1 --oneline)"
 
-# Checkout main branch (production)
+# Checkout main branch (production archive)
+# NOTE: After branch migration, use 'Archive-main' for old production state
 echo "🔄 Switching to main branch..."
 git fetch --all
 git checkout main
