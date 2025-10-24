@@ -1,10 +1,11 @@
 name: Makefile Commands Test
 
+# Note: After branch migration, V1.00D will be renamed to main
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ main, V1.00D, develop ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, V1.00D ]
 
 permissions:
   contents: read

@@ -1,7 +1,10 @@
 # Landscape Architecture Tool – Copilot Guide
 ## Branch & deployment guardrails
-- Work exclusively on `V1.00D`; `main` is production-only and promoted via `scripts/deployment/promote_v1d_to_v1.sh`.
-- Dev pushes auto-deploy to http://72.60.176.200:8080; no Docker builds locally (Dockerfile currently broken).
+- **Primary development branch**: `main` (formerly `V1.00D` before October 2025 migration)
+- **Archive branch**: `Archive-main` (historical production state, archived)
+- Work on `main` branch for all development; it auto-deploys to http://72.60.176.200:8080
+- No Docker builds locally (Dockerfile currently broken)
+- The old promotion script (`scripts/deployment/promote_v1d_to_v1.sh`) is deprecated post-migration
 ## System architecture
 - Backend: Flask app in `src/main.py` with blueprints under `src/routes/`, SQLAlchemy models in `src/models/`, services in `src/services/`, schemas in `src/schemas/`.
 - Frontend: React/Vite in `frontend/`, API layer at `frontend/src/services/api.js`, components under `frontend/src/components/`.

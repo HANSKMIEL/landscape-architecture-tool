@@ -11,11 +11,12 @@
 #
 name: "CodeQL Advanced"
 
+# Note: After branch migration, V1.00D will be renamed to main
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "V1.00D" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "main", "V1.00D" ]
   schedule:
     - cron: '39 23 * * 1'
 

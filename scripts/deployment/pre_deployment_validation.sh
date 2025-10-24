@@ -51,10 +51,11 @@ else
 fi
 
 CURRENT_BRANCH=$(git branch --show-current)
-if [ "$CURRENT_BRANCH" = "V1.00D" ]; then
-    print_status "On V1.00D development branch"
-elif [ "$CURRENT_BRANCH" = "main" ]; then
-    print_error "On main/production branch - switch to V1.00D for development"
+# Note: After branch migration, 'main' is the active development branch (formerly V1.00D)
+if [ "$CURRENT_BRANCH" = "V1.00D" ] || [ "$CURRENT_BRANCH" = "main" ]; then
+    print_status "On active development branch: $CURRENT_BRANCH"
+elif [ "$CURRENT_BRANCH" = "Archive-main" ]; then
+    print_warning "On archived production branch - switch to main for development"
 else
     print_info "On branch: $CURRENT_BRANCH"
 fi

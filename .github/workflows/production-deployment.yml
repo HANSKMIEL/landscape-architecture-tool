@@ -1,10 +1,12 @@
 name: Production Deployment
 
+# Note: After branch migration, V1.00D will be renamed to main
+# This workflow should trigger on the main development branch
 on:
   push:
-    branches: [main, production]
+    branches: [main, V1.00D, production]
   pull_request:
-    branches: [main]
+    branches: [main, V1.00D]
   workflow_dispatch:
     inputs:
       deployment_type:

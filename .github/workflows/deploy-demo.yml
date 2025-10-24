@@ -1,8 +1,10 @@
 name: Deploy Demo to GitHub Pages
 
+# Note: After branch migration, V1.00D will be renamed to main
+# This deploys from the main development branch
 on:
   push:
-    branches: [ main ]
+    branches: [ main, V1.00D ]
   workflow_dispatch:
 
 permissions:
