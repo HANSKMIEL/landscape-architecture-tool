@@ -171,7 +171,7 @@ multidict==6.6.3
     #   yarl
 numpy==2.3.2
     # via pandas
-openai==1.98.0
+openai==2.6.1
     # via -r requirements.in
 openpyxl==3.1.5
     # via -r requirements.in
@@ -298,7 +298,3 @@ yarl==1.20.1
     # via aiohttp
 zipp==3.23.0
     # via importlib-metadata
-
-# Phase 4: API Enhancement dependencies
-flask-swagger-ui>=4.11.1
-Flask-Limiter>=3.5.0
