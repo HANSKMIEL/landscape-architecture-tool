@@ -69,7 +69,7 @@ click==8.2.2
     #   pip-tools
     #   safety
     #   typer
-coverage[toml]==7.3.2
+coverage[toml]==7.11.0
     # via
     #   -r requirements-dev.in
     #   pytest-cov
@@ -133,8 +133,6 @@ flask-limiter==3.12
     # via -r requirements.in
 flask-migrate==4.1.0
     # via -r requirements.in
-flask-swagger-ui==4.11.1
-    # via -r requirements.in
 flask-sqlalchemy==3.1.1
     # via
     #   -r requirements.in
@@ -197,6 +195,7 @@ jedi==0.19.2
 jinja2==3.1.6
     # via
     #   flask
+    #   pytest-html
     #   safety
     #   sphinx
 jiter==0.10.0
@@ -296,7 +295,9 @@ pip-tools==7.5.0
 platformdirs==4.3.8
     # via black
 pluggy==1.6.0
-    # via pytest
+    # via
+    #   pytest
+    #   pytest-cov
 prompt-toolkit==3.0.51
     # via ipython
 propcache==0.3.2
@@ -311,8 +312,6 @@ ptyprocess==0.7.0
     # via pexpect
 pure-eval==0.2.3
     # via stack-data
-py==1.11.0
-    # via pytest-html
 pycodestyle==2.14.0
     # via flake8
 pycparser==2.22
@@ -331,6 +330,7 @@ pygments==2.19.2
     # via
     #   ipython
     #   ipython-pygments-lexers
+    #   pytest
     #   rich
     #   sphinx
 pyjwt[crypto]==2.10.1
@@ -341,7 +341,7 @@ pyproject-hooks==1.2.0
     # via
     #   build
     #   pip-tools
-pytest==7.4.0
+pytest==8.4.2
     # via
     #   -r requirements-dev.in
     #   pytest-cov
@@ -351,19 +351,19 @@ pytest==7.4.0
     #   pytest-mock
     #   pytest-timeout
     #   pytest-xdist
-pytest-cov==4.1.0
+pytest-cov==7.0.0
     # via -r requirements-dev.in
 pytest-flask==1.3.0
     # via -r requirements-dev.in
-pytest-html==3.2.0
+pytest-html==4.1.1
     # via -r requirements-dev.in
 pytest-metadata==3.1.1
     # via pytest-html
-pytest-mock==3.11.1
+pytest-mock==3.15.1
     # via -r requirements-dev.in
-pytest-timeout==2.1.0
+pytest-timeout==2.4.0
     # via -r requirements-dev.in
-pytest-xdist==3.3.1
+pytest-xdist==3.8.0
     # via -r requirements-dev.in
 python-dateutil==2.9.0.post0
     # via
