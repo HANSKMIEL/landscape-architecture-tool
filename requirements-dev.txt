@@ -12,7 +12,7 @@ aiosignal==1.4.0
     # via aiohttp
 alabaster==1.0.0
     # via sphinx
-alembic==1.16.4
+alembic==1.17.0
     # via
     #   -r requirements-dev.in
     #   flask-migrate
@@ -132,8 +132,6 @@ flask-cors==6.0.1
 flask-limiter==3.12
     # via -r requirements.in
 flask-migrate==4.1.0
-    # via -r requirements.in
-flask-swagger-ui==4.11.1
     # via -r requirements.in
 flask-sqlalchemy==3.1.1
     # via
@@ -305,7 +303,7 @@ propcache==0.3.2
     #   yarl
 psutil==6.0.0
     # via safety
-psycopg2-binary==2.9.10
+psycopg2-binary==2.9.11
     # via -r requirements.in
 ptyprocess==0.7.0
     # via pexpect
@@ -439,7 +437,7 @@ sphinxcontrib-qthelp==2.0.0
     # via sphinx
 sphinxcontrib-serializinghtml==2.0.0
     # via sphinx
-sqlalchemy==2.0.42
+sqlalchemy==2.0.44
     # via
     #   -r requirements.in
     #   alembic
