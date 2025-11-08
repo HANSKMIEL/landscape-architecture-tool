@@ -77,7 +77,7 @@ flask==3.1.1
     #   flask-wtf
 flask-cors==6.0.1
     # via -r requirements.in
-flask-limiter==3.12
+flask-limiter==4.0.0
     # via -r requirements.in
 flask-migrate==4.1.0
     # via -r requirements.in
@@ -264,6 +264,7 @@ typing-extensions==4.14.1
     #   azure-identity
     #   azure-storage-blob
     #   azure-storage-file-datalake
+    #   flask-limiter
     #   limits
     #   openai
     #   opentelemetry-api
@@ -298,7 +299,3 @@ yarl==1.20.1
     # via aiohttp
 zipp==3.23.0
     # via importlib-metadata
-
-# Phase 4: API Enhancement dependencies
-flask-swagger-ui>=4.11.1
-Flask-Limiter>=3.5.0
