@@ -26,7 +26,7 @@ asttokens==3.0.0
     # via stack-data
 attrs==25.3.0
     # via aiohttp
-authlib==1.6.1
+authlib==1.6.5
     # via safety
 azure-core==1.35.0
     # via
@@ -132,8 +132,6 @@ flask-cors==6.0.1
 flask-limiter==3.12
     # via -r requirements.in
 flask-migrate==4.1.0
-    # via -r requirements.in
-flask-swagger-ui==4.11.1
     # via -r requirements.in
 flask-sqlalchemy==3.1.1
     # via
